@@ -49,7 +49,7 @@ PPDB_SMK_TarunaBhakti/
 │   │   │   ├── auth.ts         # Endpoint autentikasi admin lokal & YSBMO
 │   │   │   ├── config.ts       # Endpoint konfigurasi landing page
 │   │   │   ├── informasi.ts    # Endpoint artikel pengumuman
-│   │   │   └── payment.ts      # Endpoint pembayaran gerbang Xendit
+│   │   │   └── payment.ts      # Endpoint pembayaran gerbang Midtrans
 │   │   ├── ws/
 │   │   │   └── handler.ts      # Pengendali komunikasi WebSocket real-time
 │   │   └── index.ts            # Entrypoint utama server backend
@@ -187,7 +187,6 @@ Menyimpan seluruh data formulir pendaftaran calon peserta didik baru.
 | metode_pembayaran| VARCHAR(50) | Default: 'Payment Gateway', Nullable |
 | status | VARCHAR(20) | Default: 'Pending', Nullable |
 | payment_status| VARCHAR(20) | Default: 'Unpaid', Nullable |
-| xendit_invoice_url| TEXT | Nullable |
 | tgl_daftar | TIMESTAMP | Default: NOW(), Nullable |
 
 ### Tabel: informasi

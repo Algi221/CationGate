@@ -189,6 +189,101 @@ Menyimpan seluruh data formulir pendaftaran calon peserta didik baru.
 | payment_status| VARCHAR(20) | Default: 'Unpaid', Nullable |
 | tgl_daftar | TIMESTAMP | Default: NOW(), Nullable |
 
+### Tabel: siswa_aktif
+Menyimpan data siswa yang sudah diverifikasi (Approved) dan aktif bersekolah di SMK Taruna Bhakti.
+
+| Nama Kolom | Tipe Data | Deskripsi / Kendala |
+|---|---|---|
+| id | SERIAL | Primary Key, Auto-increment |
+| calon_siswa_id | INTEGER | Link/Foreign Key ke `calon_siswa`, Unique, Nullable |
+| nama | VARCHAR(150) | Not Null |
+| nisn | VARCHAR(10) | Unique, Not Null |
+| nik | VARCHAR(16) | Unique, Not Null |
+| tempat_lahir | VARCHAR(100) | Not Null |
+| tgl_lahir | DATE | Not Null |
+| jenis_kelamin | CHAR(1) | Not Null |
+| agama | VARCHAR(20) | Not Null |
+| kewarganegaraan| VARCHAR(3) | Default: 'WNI', Nullable |
+| alamat | TEXT | Not Null |
+| rt_rw | VARCHAR(10) | Not Null |
+| kelurahan | VARCHAR(50) | Not Null |
+| kecamatan | VARCHAR(50) | Not Null |
+| kode_pos | VARCHAR(5) | Not Null |
+| whatsapp | VARCHAR(15) | Not Null |
+| email | VARCHAR(100) | Not Null |
+| tinggal_dengan| VARCHAR(30) | Not Null |
+| transportasi | VARCHAR(30) | Not Null |
+| tinggi_badan | INTEGER | Not Null |
+| berat_badan | INTEGER | Not Null |
+| jarak_sekolah | VARCHAR(30) | Not Null |
+| jarak_km | DECIMAL(5,2) | Not Null |
+| waktu_jam | INTEGER | Not Null |
+| waktu_menit | INTEGER | Not Null |
+| jumlah_saudara| INTEGER | Not Null |
+| golongan_darah| VARCHAR(5) | Not Null |
+| penyakit_diderita| VARCHAR(150) | Nullable |
+| kebutuhan_khusus| JSONB | Nullable |
+| punya_kps | VARCHAR(5) | Default: 'Tidak', Nullable |
+| no_kps | VARCHAR(30) | Nullable |
+| punya_kip | VARCHAR(5) | Default: 'Tidak', Nullable |
+| no_kip | VARCHAR(30) | Nullable |
+| jenis_prestasi| JSONB | Nullable |
+| tingkat_prestasi| JSONB | Nullable |
+| uraian_prestasi| TEXT | Nullable |
+| tahun_prestasi| VARCHAR(10) | Nullable |
+| penyelenggara | VARCHAR(100) | Nullable |
+| jenis_beasiswa| JSONB | Nullable |
+| uraian_beasiswa| TEXT | Nullable |
+| tahun_mulai_beasiswa| VARCHAR(10)| Nullable |
+| tahun_selesai_beasiswa| VARCHAR(10)| Nullable |
+| nama_ayah | VARCHAR(150) | Nullable |
+| status_ayah | VARCHAR(30) | Default: 'Masih Hidup', Nullable |
+| nama_ibu | VARCHAR(150) | Nullable |
+| status_ibu | VARCHAR(30) | Default: 'Masih Hidup', Nullable |
+| nama_wali | VARCHAR(150) | Nullable |
+| status_wali | VARCHAR(30) | Default: 'Masih Hidup', Nullable |
+| telepon_ortu | VARCHAR(15) | Not Null |
+| sekolah_asal | VARCHAR(150) | Not Null |
+| tgl_lulus | DATE | Not Null |
+| no_ijazah | VARCHAR(50) | Nullable |
+| no_skhun | VARCHAR(50) | Nullable |
+| no_peserta_un | VARCHAR(50) | Nullable |
+| lama_belajar | INTEGER | Nullable |
+| pindahan_dari | VARCHAR(150) | Nullable |
+| alasan_pindah | TEXT | Nullable |
+| diterima_kelas| VARCHAR(20) | Nullable |
+| diterima_tanggal| DATE | Nullable |
+| jurusan | VARCHAR(50) | Jurusan Utama Kompetensi Keahlian, Not Null |
+| alasan_memilih| TEXT | Nullable |
+| hobi | JSONB | Nullable |
+| cita_cita | VARCHAR(100) | Nullable |
+| nilai_us_teori| DECIMAL(5,2) | Nullable |
+| nilai_us_praktik| DECIMAL(5,2)| Nullable |
+| nilai_muatan_lokal| DECIMAL(5,2)| Nullable |
+| cita_cita_setelah_lulus| VARCHAR(100)| Nullable |
+| pelajaran_disenangi| VARCHAR(100)| Nullable |
+| alasan_disenangi| TEXT | Nullable |
+| kesulitan_belajar| TEXT | Nullable |
+| perkelahian | VARCHAR(5) | Default: 'Tidak', Nullable |
+| ket_perkelahian| TEXT | Nullable |
+| narkoba | VARCHAR(5) | Default: 'Tidak', Nullable |
+| ket_narkoba | TEXT | Nullable |
+| pelanggaran_lain| VARCHAR(5) | Default: 'Tidak', Nullable |
+| ket_pelanggaran_lain| TEXT | Nullable |
+| janji_taat | BOOLEAN | Default: FALSE, Nullable |
+| janji_sanksi | BOOLEAN | Default: FALSE, Nullable |
+| janji_akrab | BOOLEAN | Default: FALSE, Nullable |
+| janji_belajar | BOOLEAN | Default: FALSE, Nullable |
+| janji_nama_baik| BOOLEAN | Default: FALSE, Nullable |
+| periode | VARCHAR(20) | Default: '2026-2027', Nullable |
+| gelombang | VARCHAR(20) | Default: 'Gelombang 1', Nullable |
+| berkas_kk | TEXT | Nullable |
+| berkas_ktp | TEXT | Nullable |
+| berkas_akta | TEXT | Nullable |
+| berkas_ijazah | TEXT | Nullable |
+| berkas_foto | TEXT | Nullable |
+| created_at | TIMESTAMP | Default: NOW(), Nullable |
+
 ### Tabel: informasi
 Menyimpan data artikel berita atau pengumuman terkait PPDB.
 

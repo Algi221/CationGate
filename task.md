@@ -1,0 +1,17 @@
+- [x] Configure environment variables in backend
+  - [x] Update `backend/.env` with default admin credentials and mock token keys
+  - [x] Update `backend/.env.example` with description of new environment variables
+- [x] Configure environment variables in frontend
+  - [x] Create `frontend/.env.local` with Next.js public environment variables for credentials and mock token
+  - [x] Create `frontend/.env.example` to document public configuration keys
+- [x] Refactor backend auth routes (`backend/src/routes/auth.ts`)
+  - [x] Remove hardcoded default admin usernames and passwords
+  - [x] Read credentials from env variables
+  - [x] Remove hardcoded JWT secret fallback and validate its existence
+- [x] Refactor backend auth middleware (`backend/src/middleware/auth.ts`)
+  - [x] Remove hardcoded JWT secret fallback
+  - [x] Remove hardcoded mock token and read from `MOCK_JWT_TOKEN`
+- [x] Refactor frontend auth context (`frontend/src/context/PPDBContext.tsx`)
+  - [x] Replace hardcoded fallback values with `process.env.NEXT_PUBLIC_...` variables
+- [x] Verification and tests
+  - [x] Verify compilation and runtime logs for backend and frontend

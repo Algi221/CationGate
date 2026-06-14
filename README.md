@@ -178,10 +178,6 @@ Menyimpan seluruh data formulir pendaftaran calon peserta didik baru.
 | janji_nama_baik| BOOLEAN | Default: FALSE, Nullable |
 | periode | VARCHAR(20) | Default: '2026-2027', Nullable |
 | gelombang | VARCHAR(20) | Default: 'Gelombang 1', Nullable |
-| berkas_kk | TEXT | Nullable |
-| berkas_ktp | TEXT | Nullable |
-| berkas_akta | TEXT | Nullable |
-| berkas_ijazah | TEXT | Nullable |
 | berkas_foto | TEXT | Nullable |
 | bukti_bayar | TEXT | Nullable |
 | metode_pembayaran| VARCHAR(50) | Default: 'Payment Gateway', Nullable |
@@ -277,10 +273,6 @@ Menyimpan data siswa yang sudah diverifikasi (Approved) dan aktif bersekolah di 
 | janji_nama_baik| BOOLEAN | Default: FALSE, Nullable |
 | periode | VARCHAR(20) | Default: '2026-2027', Nullable |
 | gelombang | VARCHAR(20) | Default: 'Gelombang 1', Nullable |
-| berkas_kk | TEXT | Nullable |
-| berkas_ktp | TEXT | Nullable |
-| berkas_akta | TEXT | Nullable |
-| berkas_ijazah | TEXT | Nullable |
 | berkas_foto | TEXT | Nullable |
 | created_at | TIMESTAMP | Default: NOW(), Nullable |
 

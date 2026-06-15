@@ -1,64 +1,44 @@
-# Walkthrough - Security Vulnerability Fixes & SQL Injection Audit
+# Walkthrough - Auto-Fullscreen Proof of Transfer & Admin WhatsApp Invoice Sender
 
-We have successfully resolved the Snyk security vulnerabilities and completed a comprehensive audit of the database queries.
+We have successfully implemented the requested flow for payment proof visualization, redirect on payment verification, and admin WhatsApp invoice sending.
 
 ## Changes Made
 
-### 1. Configuration Layer (Environment Variables)
-* **Backend Configurations**:
-  * Added fallback variables to [backend/.env](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/backend/.env):
-    * `SUPER_ADMIN_USERNAME`
-    * `SUPER_ADMIN_PASSWORD`
-    * `ADMIN_USERNAME`
-    * `ADMIN_PASSWORD`
-    * `MOCK_JWT_TOKEN`
-  * Documented all new options in [backend/.env.example](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/backend/.env.example).
-* **Frontend Configurations**:
-  * Created [frontend/.env.local](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/frontend/.env.local) to expose Next.js public variables:
-    * `NEXT_PUBLIC_SUPER_ADMIN_USERNAME`
-    * `NEXT_PUBLIC_SUPER_ADMIN_PASSWORD`
-    * `NEXT_PUBLIC_ADMIN_USERNAME`
-    * `NEXT_PUBLIC_ADMIN_PASSWORD`
-    * `NEXT_PUBLIC_MOCK_JWT_TOKEN`
-  * Documented these keys in [frontend/.env.example](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/frontend/.env.example).
+### 1. Frontend - Detail Modal Pendaftar
+* **File**: [page.tsx (pendaftar)](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/frontend/src/app/dashboard/pendaftar/page.tsx)
+* **Changes**:
+  * Removed the dark hover translucent overlay (which displayed "Buka Fullscreen" and "Buka di Tab Baru" buttons) on the manual proof of payment image.
+  * Configured the `<img>` tag to have the `cursor-pointer` class and added an `onClick` handler directly on it to trigger `setIsFullscreenImageOpen(true)` for auto-fullscreen.
+  * Updated the "Verifikasi Pembayaran Lunas" action to redirect the admin's browser automatically to `/invoice?nisn=${selectedApplicant.nisn}&isAdmin=true` upon successful status update (`payment_status: "Paid"`).
 
-### 2. Backend Security Refactor
-* **Auth Routes ([auth.ts](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/backend/src/routes/auth.ts))**:
-  * Removed hardcoded fallback admin usernames (`'super_admin_TB'`, `'admin_tb'`) and bcrypt hash checks.
-  * Verified that it queries the database first; if the database is unreachable, it checks the username and password against env variables.
-  * Fixed a fallback compare bug: previously, it directly compared plaintext password input with the bcrypt hash string. It now generates the bcrypt hash dynamically from the env password and compares securely.
-  * Enforced that `JWT_SECRET` must exist in the environment; the backend will throw an error and refuse to boot if it is missing.
-* **Auth Middleware ([auth.ts (middleware)](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/backend/src/middleware/auth.ts))**:
-  * Removed hardcoded `JWT_SECRET` default fallback string.
-  * Removed hardcoded `'mock_jwt_token_for_taruna_bhakti_dev_purposes'` string. It is now loaded from `process.env.MOCK_JWT_TOKEN`.
-
-### 3. Frontend Security Refactor
-* **Auth Context ([PPDBContext.tsx](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/frontend/src/context/PPDBContext.tsx))**:
-  * Replaced all hardcoded fallback credential usernames, passwords, and mock token strings in `loginAdmin` error catching block with Next.js public environment variables (`process.env.NEXT_PUBLIC_...`).
-
----
-
-## SQL Injection Audit Report
-
-We conducted a thorough search across all database-access modules:
-* `backend/src/routes/applicants.ts`
-* `backend/src/routes/auth.ts`
-* `backend/src/routes/config.ts`
-* `backend/src/routes/informasi.ts`
-* `backend/src/routes/payment.ts`
-* `backend/src/routes/admin-users.ts`
-* `backend/seed.js`
-
-**Findings**:
-* Every single SQL query is fully parameterized, utilizing the standard PostgreSQL driver placeholder syntax (`$1`, `$2`, etc.) and passing values as an array.
-* No string concatenation or template literal variables containing raw user input are used within SQL query strings.
-* **Verdict**: The application is **immune** to SQL Injection attacks.
+### 2. Frontend - Invoice Page
+* **File**: [page.tsx (invoice)](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/frontend/src/app/invoice/page.tsx)
+* **Changes**:
+  * Extracted the `isAdmin` parameter using Next.js `useSearchParams`.
+  * Added conditional logic to dynamically change the "Kembali" button's destination and text:
+    * **Admin (`isAdmin=true`)**: Pointing to `/dashboard/pendaftar` with the label `"Kembali ke Dashboard"`.
+    * **Student/Public (`isAdmin=false`)**: Pointing to `/` with the label `"Kembali ke Beranda"`.
+  * Added a WhatsApp Group / WA Sender card component displaying conditionally:
+    * **Admin (`isAdmin=true`)**: Displays a **Kirim Invoice WA** action card. Clicking the button opens WhatsApp Web/App with a formatted draft text containing the student's name, NISN, and the verified online invoice URL. It then automatically redirects the admin's tab back to the dashboard page (`/dashboard/pendaftar`) after 1 second.
+    * **Student/Public (`isAdmin=false`)**: Displays the standard **Gabung Grup WhatsApp** link.
+  * Created a notice box (**📢 HIMBAUAN**) displayed to verified students (`!isAdmin && data.payment_status === "Paid"`) notifying them that the verified invoice receipt will be sent by the admin via WhatsApp.
 
 ---
 
 ## Verification & Build Results
 
-### Automated Verification
-* Ran TypeScript compilation checks on both the backend and frontend repositories:
-  * **Backend**: `npx tsc --noEmit` completed successfully with **0 errors**.
-  * **Frontend**: `npx tsc --noEmit` completed successfully with **0 errors**.
+### 1. TypeScript Validation
+* Verified compilation correctness by running `bun x tsc --noEmit` in both folders:
+  * **Frontend**: Compiles successfully with **0 errors**.
+  * **Backend**: Compiles successfully with **0 errors**.
+
+### 2. Next.js Production Build
+* Ran `bun run build` in the `frontend` directory. The production build was successfully generated:
+  * **Status**: **Successful**
+  * **Route Optimization**: All paths rendered as static/dynamic optimized content.
+
+### 3. GitHub Push
+* The changes in the `frontend` submodule have been committed and successfully pushed to `origin/main`:
+  * **Commit**: `b9d49cc`
+  * **Status**: **Up to date**
+* The parent repository submodule reference has been updated to point to commit `b9d49cc` and committed locally.

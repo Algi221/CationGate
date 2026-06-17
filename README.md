@@ -89,6 +89,7 @@ Menyimpan kredensial admin sistem PPDB lokal dan token autentikasi integrasi YSB
 | role | VARCHAR(20) | Default: 'admin', Nullable |
 | ysbmo_token | TEXT | Token akses YSBMO hasil login (Nullable) |
 | created_at | TIMESTAMP | Default: NOW(), Nullable |
+| deleted_at | TIMESTAMP | Tanggal penghapusan soft-delete (Nullable) |
 
 ### Tabel: calon_siswa
 Menyimpan seluruh data formulir pendaftaran calon peserta didik baru.
@@ -184,6 +185,7 @@ Menyimpan seluruh data formulir pendaftaran calon peserta didik baru.
 | status | VARCHAR(20) | Default: 'Pending', Nullable |
 | payment_status| VARCHAR(20) | Default: 'Unpaid', Nullable |
 | tgl_daftar | TIMESTAMP | Default: NOW(), Nullable |
+| deleted_at | TIMESTAMP | Tanggal penghapusan soft-delete (Nullable) |
 
 ### Tabel: siswa_aktif
 Menyimpan data siswa yang sudah diverifikasi (Approved) dan aktif bersekolah di SMK Taruna Bhakti.
@@ -307,6 +309,25 @@ Menyimpan riwayat revisi dan perubahan konfigurasi landing page.
 | changed_by | VARCHAR(100) | Default: 'admin', Nullable |
 | description | TEXT | Nullable |
 | created_at | TIMESTAMP | Default: NOW(), Nullable |
+
+## Fitur Soft-Delete & Tempat Sampah (Trash Bin)
+
+Untuk mencegah kehilangan data secara tidak sengaja, sistem PPDB ini menerapkan mekanisme **Soft-Delete** untuk data **Panitia/Admin** dan **Calon Siswa**:
+
+1. **Mekanisme Soft-Delete**:
+   - Saat pengguna menghapus data admin atau calon siswa dari antarmuka utama, backend tidak langsung menghapus baris data dari database.
+   - Sebagai gantinya, sistem mengisi kolom `deleted_at` dengan waktu penghapusan saat itu.
+   - Data dengan `deleted_at` bernilai non-null secara otomatis disembunyikan dari query aktif harian.
+   
+2. **Tempat Sampah (Trash Bin)**:
+   - Pengguna dengan wewenang (Superadmin untuk data Admin; seluruh Admin untuk Calon Siswa) dapat membuka tab **Sampah** di dashboard masing-masing.
+   - Di tab sampah ini, admin dapat melihat riwayat data yang telah dihapus dan memiliki pilihan untuk:
+     - **Pulihkan (Restore)**: Mengosongkan kembali kolom `deleted_at` menjadi `null`, sehingga data aktif kembali.
+     - **Hapus Permanen**: Menghapus data tersebut secara fisik dari database (`hard delete`).
+
+3. **Sinkronisasi Otomatis**:
+   - Jika calon siswa yang dihapus sebelumnya memiliki status disetujui (`Approved`), maka saat dipindahkan ke tempat sampah, data relasi `siswa_aktif` juga akan dibersihkan agar sinkron.
+   - Begitu pula saat dipulihkan, data akan didaftarkan kembali ke tabel `siswa_aktif`.
 
 ---
 

@@ -1,0 +1,357 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AdminUser {
+  id             Int       @id @default(autoincrement())
+  username       String    @unique @db.VarChar(50)
+  password_hash  String    @db.VarChar(255)
+  nama_lengkap   String    @db.VarChar(100)
+  role           String?   @default("admin") @db.VarChar(20)
+  ysbmo_token    String?   @db.Text
+  foto_profil    String?   @db.Text
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at     DateTime? @db.Timestamp(6)
+
+  @@map("admin_users")
+}
+
+model CalonSiswa {
+  id                  Int       @id @default(autoincrement())
+  nama                String    @db.VarChar(150)
+  nisn                String    @unique @db.VarChar(10)
+  nipd                String?   @unique @db.VarChar(20)
+  nik                 String    @unique @db.VarChar(16)
+  tempat_lahir        String    @db.VarChar(100)
+  tgl_lahir           DateTime  @db.Date
+  jenis_kelamin       String    @db.Char(1)
+  agama               String    @db.VarChar(20)
+  kewarganegaraan     String?   @default("WNI") @db.VarChar(3)
+  
+  alamat              String    @db.Text
+  rt_rw               String    @db.VarChar(10)
+  kelurahan           String    @db.VarChar(50)
+  kecamatan           String    @db.VarChar(50)
+  kode_pos            String    @db.VarChar(5)
+  whatsapp            String    @db.VarChar(15)
+  email               String    @db.VarChar(100)
+  tinggal_dengan      String    @db.VarChar(30)
+  transportasi        String    @db.VarChar(30)
+  
+  tinggi_badan        Int
+  berat_badan         Int
+  jarak_sekolah       String    @db.VarChar(30)
+  jarak_km            Decimal   @db.Decimal(5, 2)
+  waktu_jam           Int
+  waktu_menit         Int
+  jumlah_saudara      Int
+  golongan_darah      String    @db.VarChar(5)
+  
+  penyakit_diderita   String?   @db.VarChar(150)
+  kebutuhan_khusus    Json?
+  punya_kps           String?   @default("Tidak") @db.VarChar(5)
+  no_kps              String?   @db.VarChar(30)
+  punya_kip           String?   @default("Tidak") @db.VarChar(5)
+  no_kip              String?   @db.VarChar(30)
+  
+  jenis_prestasi      Json?
+  tingkat_prestasi    Json?
+  uraian_prestasi     String?   @db.Text
+  tahun_prestasi      String?   @db.VarChar(10)
+  penyelenggara       String?   @db.VarChar(100)
+  
+  jenis_beasiswa      Json?
+  uraian_beasiswa     String?   @db.Text
+  tahun_mulai_beasiswa String?  @db.VarChar(10)
+  tahun_selesai_beasiswa String? @db.VarChar(10)
+  
+  nama_ayah           String?   @db.VarChar(150)
+  tempat_lahir_ayah    String?   @db.VarChar(100)
+  tgl_lahir_ayah       DateTime? @db.Date
+  agama_ayah          String?   @db.VarChar(20)
+  kewarganegaraan_ayah String?  @default("WNI") @db.VarChar(3)
+  pendidikan_ayah     String?   @db.VarChar(50)
+  pekerjaan_ayah      String?   @db.VarChar(100)
+  penghasilan_ayah    String?   @db.VarChar(50)
+  alamat_ayah         String?   @db.Text
+  rtrw_ayah           String?   @db.VarChar(10)
+  kelurahan_ayah      String?   @db.VarChar(50)
+  kecamatan_ayah      String?   @db.VarChar(50)
+  kode_pos_ayah       String?   @db.VarChar(5)
+  status_ayah         String?   @default("Masih Hidup") @db.VarChar(30)
+  
+  nama_ibu            String?   @db.VarChar(150)
+  tempat_lahir_ibu     String?   @db.VarChar(100)
+  tgl_lahir_ibu        DateTime? @db.Date
+  agama_ibu           String?   @db.VarChar(20)
+  kewarganegaraan_ibu  String?   @default("WNI") @db.VarChar(3)
+  pendidikan_ibu      String?   @db.VarChar(50)
+  pekerjaan_ibu       String?   @db.VarChar(100)
+  penghasilan_ibu     String?   @db.VarChar(50)
+  alamat_ibu          String?   @db.Text
+  rtrw_ibu            String?   @db.VarChar(10)
+  kelurahan_ibu       String?   @db.VarChar(50)
+  kecamatan_ibu       String?   @db.VarChar(50)
+  kode_pos_ibu        String?   @db.VarChar(5)
+  status_ibu          String?   @default("Masih Hidup") @db.VarChar(30)
+  
+  nama_wali           String?   @db.VarChar(150)
+  tempat_lahir_wali    String?   @db.VarChar(100)
+  tgl_lahir_wali       DateTime? @db.Date
+  agama_wali          String?   @db.VarChar(20)
+  kewarganegaraan_wali String?  @default("WNI") @db.VarChar(3)
+  pendidikan_wali     String?   @db.VarChar(50)
+  pekerjaan_wali      String?   @db.VarChar(100)
+  penghasilan_wali    String?   @db.VarChar(50)
+  alamat_wali         String?   @db.Text
+  rtrw_wali           String?   @db.VarChar(10)
+  kelurahan_wali      String?   @db.VarChar(50)
+  kecamatan_wali      String?   @db.VarChar(50)
+  kode_pos_wali       String?   @db.VarChar(5)
+  status_wali         String?   @default("Masih Hidup") @db.VarChar(30)
+  
+  telepon_ortu        String    @db.VarChar(15)
+  
+  sekolah_asal        String    @db.VarChar(150)
+  tgl_lulus           DateTime  @db.Date
+  no_ijazah           String?   @db.VarChar(50)
+  no_skhun            String?   @db.VarChar(50)
+  no_peserta_un       String?   @db.VarChar(50)
+  lama_belajar        Int?
+  pindahan_dari       String?   @db.VarChar(150)
+  alasan_pindah       String?   @db.Text
+  diterima_kelas      String?   @db.VarChar(20)
+  diterima_tanggal    DateTime? @db.Date
+  
+  jurusan_1           String    @db.VarChar(50)
+  alasan_memilih      String?   @db.Text
+  
+  hobi                Json?
+  cita_cita           String?   @db.VarChar(100)
+  nilai_us_teori      Decimal?  @db.Decimal(5, 2)
+  nilai_us_praktik    Decimal?  @db.Decimal(5, 2)
+  nilai_muatan_lokal  Decimal?  @db.Decimal(5, 2)
+  cita_cita_setelah_lulus String? @db.VarChar(100)
+  pelajaran_disenangi String?   @db.VarChar(100)
+  alasan_disenangi    String?   @db.Text
+  kesulitan_belajar   String?   @db.Text
+  
+  perkelahian         String?   @default("Tidak") @db.VarChar(5)
+  ket_perkelahian     String?   @db.Text
+  narkoba             String?   @default("Tidak") @db.VarChar(5)
+  ket_narkoba         String?   @db.Text
+  pelanggaran_lain    String?   @default("Tidak") @db.VarChar(5)
+  ket_pelanggaran_lain String?   @db.Text
+  janji_taat          Boolean?  @default(false)
+  janji_sanksi        Boolean?  @default(false)
+  janji_akrab         Boolean?  @default(false)
+  janji_belajar       Boolean?  @default(false)
+  janji_nama_baik     Boolean?  @default(false)
+  
+  periode             String?   @default("2026-2027") @db.VarChar(20)
+  gelombang           String?   @default("Gelombang 1") @db.VarChar(20)
+  berkas_foto         String?   @db.Text
+  bukti_bayar         String?   @db.Text
+  metode_pembayaran   String?   @default("Payment Gateway") @db.VarChar(50)
+
+  status              String?   @default("Pending") @db.VarChar(20)
+  payment_status      String?   @default("Unpaid") @db.VarChar(20)
+  tgl_daftar          DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at          DateTime? @db.Timestamp(6)
+  verified_by         String?   @db.VarChar(100)
+  rejected_by         String?   @db.VarChar(100)
+  alasan_ditolak      String?   @db.Text
+  deleted_by          String?   @db.VarChar(100)
+
+  @@index([nisn])
+  @@index([nik])
+  @@index([status])
+  @@map("calon_siswa")
+}
+
+model SiswaAktif {
+  id                  Int       @id @default(autoincrement())
+  calon_siswa_id      Int?      @unique
+  nama                String    @db.VarChar(150)
+  nisn                String    @unique @db.VarChar(10)
+  nipd                String?   @unique @db.VarChar(20)
+  nik                 String    @unique @db.VarChar(16)
+  tempat_lahir        String    @db.VarChar(100)
+  tgl_lahir           DateTime  @db.Date
+  jenis_kelamin       String    @db.Char(1)
+  agama               String    @db.VarChar(20)
+  kewarganegaraan     String?   @default("WNI") @db.VarChar(3)
+  
+  alamat              String    @db.Text
+  rt_rw               String    @db.VarChar(10)
+  kelurahan           String    @db.VarChar(50)
+  kecamatan           String    @db.VarChar(50)
+  kode_pos            String    @db.VarChar(5)
+  whatsapp            String    @db.VarChar(15)
+  email               String    @db.VarChar(100)
+  tinggal_dengan      String    @db.VarChar(30)
+  transportasi        String    @db.VarChar(30)
+  
+  tinggi_badan        Int
+  berat_badan         Int
+  jarak_sekolah       String    @db.VarChar(30)
+  jarak_km            Decimal   @db.Decimal(5, 2)
+  waktu_jam           Int
+  waktu_menit         Int
+  jumlah_saudara      Int
+  golongan_darah      String    @db.VarChar(5)
+  
+  penyakit_diderita   String?   @db.VarChar(150)
+  kebutuhan_khusus    Json?
+  punya_kps           String?   @default("Tidak") @db.VarChar(5)
+  no_kps              String?   @db.VarChar(30)
+  punya_kip           String?   @default("Tidak") @db.VarChar(5)
+  no_kip              String?   @db.VarChar(30)
+  
+  jenis_prestasi      Json?
+  tingkat_prestasi    Json?
+  uraian_prestasi     String?   @db.Text
+  tahun_prestasi      String?   @db.VarChar(10)
+  penyelenggara       String?   @db.VarChar(100)
+  
+  jenis_beasiswa      Json?
+  uraian_beasiswa     String?   @db.Text
+  tahun_mulai_beasiswa String?  @db.VarChar(10)
+  tahun_selesai_beasiswa String? @db.VarChar(10)
+  
+  nama_ayah           String?   @db.VarChar(150)
+  tempat_lahir_ayah    String?   @db.VarChar(100)
+  tgl_lahir_ayah       DateTime? @db.Date
+  agama_ayah          String?   @db.VarChar(20)
+  kewarganegaraan_ayah String?  @default("WNI") @db.VarChar(3)
+  pendidikan_ayah     String?   @db.VarChar(50)
+  pekerjaan_ayah      String?   @db.VarChar(100)
+  penghasilan_ayah    String?   @db.VarChar(50)
+  alamat_ayah         String?   @db.Text
+  rtrw_ayah           String?   @db.VarChar(10)
+  kelurahan_ayah      String?   @db.VarChar(50)
+  kecamatan_ayah      String?   @db.VarChar(50)
+  kode_pos_ayah       String?   @db.VarChar(5)
+  status_ayah         String?   @default("Masih Hidup") @db.VarChar(30)
+  
+  nama_ibu            String?   @db.VarChar(150)
+  tempat_lahir_ibu     String?   @db.VarChar(100)
+  tgl_lahir_ibu        DateTime? @db.Date
+  agama_ibu           String?   @db.VarChar(20)
+  kewarganegaraan_ibu  String?   @default("WNI") @db.VarChar(3)
+  pendidikan_ibu      String?   @db.VarChar(50)
+  pekerjaan_ibu       String?   @db.VarChar(100)
+  penghasilan_ibu     String?   @db.VarChar(50)
+  alamat_ibu          String?   @db.Text
+  rtrw_ibu            String?   @db.VarChar(10)
+  kelurahan_ibu       String?   @db.VarChar(50)
+  kecamatan_ibu       String?   @db.VarChar(50)
+  kode_pos_ibu        String?   @db.VarChar(5)
+  status_ibu          String?   @default("Masih Hidup") @db.VarChar(30)
+  
+  nama_wali           String?   @db.VarChar(150)
+  tempat_lahir_wali    String?   @db.VarChar(100)
+  tgl_lahir_wali       DateTime? @db.Date
+  agama_wali          String?   @db.VarChar(20)
+  kewarganegaraan_wali String?  @default("WNI") @db.VarChar(3)
+  pendidikan_wali     String?   @db.VarChar(50)
+  pekerjaan_wali      String?   @db.VarChar(100)
+  penghasilan_wali    String?   @db.VarChar(50)
+  alamat_wali         String?   @db.Text
+  rtrw_wali           String?   @db.VarChar(10)
+  kelurahan_wali      String?   @db.VarChar(50)
+  kecamatan_wali      String?   @db.VarChar(50)
+  kode_pos_wali       String?   @db.VarChar(5)
+  status_wali         String?   @default("Masih Hidup") @db.VarChar(30)
+  
+  telepon_ortu        String    @db.VarChar(15)
+  
+  sekolah_asal        String    @db.VarChar(150)
+  tgl_lulus           DateTime  @db.Date
+  no_ijazah           String?   @db.VarChar(50)
+  no_skhun            String?   @db.VarChar(50)
+  no_peserta_un       String?   @db.VarChar(50)
+  lama_belajar        Int?
+  pindahan_dari       String?   @db.VarChar(150)
+  alasan_pindah       String?   @db.Text
+  diterima_kelas      String?   @db.VarChar(20)
+  diterima_tanggal    DateTime? @db.Date
+  
+  jurusan             String    @db.VarChar(50)
+  alasan_memilih      String?   @db.Text
+  
+  hobi                Json?
+  cita_cita           String?   @db.VarChar(100)
+  nilai_us_teori      Decimal?  @db.Decimal(5, 2)
+  nilai_us_praktik    Decimal?  @db.Decimal(5, 2)
+  nilai_muatan_lokal  Decimal?  @db.Decimal(5, 2)
+  cita_cita_setelah_lulus String? @db.VarChar(100)
+  pelajaran_disenangi String?   @db.VarChar(100)
+  alasan_disenangi    String?   @db.Text
+  kesulitan_belajar   String?   @db.Text
+  
+  perkelahian         String?   @default("Tidak") @db.VarChar(5)
+  ket_perkelahian     String?   @db.Text
+  narkoba             String?   @default("Tidak") @db.VarChar(5)
+  ket_narkoba         String?   @db.Text
+  pelanggaran_lain    String?   @default("Tidak") @db.VarChar(5)
+  ket_pelanggaran_lain String?   @db.Text
+  janji_taat          Boolean?  @default(false)
+  janji_sanksi        Boolean?  @default(false)
+  janji_akrab         Boolean?  @default(false)
+  janji_belajar       Boolean?  @default(false)
+  janji_nama_baik     Boolean?  @default(false)
+  
+  periode             String?   @default("2026-2027") @db.VarChar(20)
+  gelombang           String?   @default("Gelombang 1") @db.VarChar(20)
+  berkas_foto         String?   @db.Text
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([nisn])
+  @@index([nik])
+  @@map("siswa_aktif")
+}
+
+model MutasiHistory {
+  id               Int      @id @default(autoincrement())
+  siswa_aktif_id   Int
+  jurusan_asal     String   @db.VarChar(50)
+  jurusan_tujuan   String   @db.VarChar(50)
+  tanggal_mutasi   DateTime @default(now())
+  dilakukan_oleh   String?  @db.VarChar(100)
+
+  @@map("mutasi_history")
+}
+
+model Informasi {
+  id         Int      @id @default(autoincrement())
+  judul      String   @db.VarChar(255)
+  konten     String   @db.Text
+  tanggal    DateTime @db.Date
+  foto_url   String?  @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("informasi")
+}
+
+model LandingPageConfig {
+  config_key String   @id @db.VarChar(50)
+  config_value Json
+  updated_at DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+
+  @@map("landing_page_config")
+}
+
+model UIRevision {
+  id            Int      @id @default(autoincrement())
+  config_values Json
+  changed_by    String?  @default("admin") @db.VarChar(100)
+  description   String?  @db.Text
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("ui_revisions")
+}

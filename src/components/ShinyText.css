@@ -1,0 +1,23 @@
+@keyframes shiny {
+  0% {
+    background-position: 150% center;
+  }
+  100% {
+    background-position: -50% center;
+  }
+}
+
+.shiny-text {
+  display: inline-block;
+  background-size: 200% auto;
+  animation: shiny var(--shiny-duration, 2s) linear infinite;
+  animation-delay: var(--shiny-delay, 0s);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  will-change: background-position;
+}
+
+.shiny-text.paused {
+  animation-play-state: paused;
+}

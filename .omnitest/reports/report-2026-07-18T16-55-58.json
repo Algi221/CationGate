@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-07-18T16:55:58.822Z",
+  "project": "D:\\Website Project\\PPDB_SMK_TarunaBhakti",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "warnings": 0
+  },
+  "results": [
+    {
+      "name": "Test Suite Run",
+      "category": "functional",
+      "status": "fail",
+      "duration": 4367
+    }
+  ]
+}

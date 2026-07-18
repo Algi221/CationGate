@@ -1,0 +1,1286 @@
+{
+  "timestamp": "2026-07-18T18:10:20.534Z",
+  "project": "D:\\Website Project\\PPDB_SMK_TarunaBhakti",
+  "summary": {
+    "total": 182,
+    "passed": 181,
+    "failed": 0,
+    "warnings": 1
+  },
+  "results": [
+    {
+      "name": "GET /health",
+      "category": "functional",
+      "status": "pass",
+      "duration": 25,
+      "details": "200 OK (25ms)"
+    },
+    {
+      "name": "GET /ws",
+      "category": "functional",
+      "status": "pass",
+      "duration": 3,
+      "details": "404 OK (3ms)"
+    },
+    {
+      "name": "GET /api/admin/users/ysbmo/staff",
+      "category": "functional",
+      "status": "pass",
+      "duration": 3,
+      "details": "401 OK (3ms)"
+    },
+    {
+      "name": "GET /api/admin/users",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "GET /api/admin/users/trashed",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "POST /api/admin/users/:id/restore",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "POST /api/admin/users",
+      "category": "functional",
+      "status": "pass",
+      "duration": 3,
+      "details": "401 OK (3ms)"
+    },
+    {
+      "name": "PUT /api/admin/users/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 3,
+      "details": "401 OK (3ms)"
+    },
+    {
+      "name": "DELETE /api/admin/users/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 3,
+      "details": "401 OK (3ms)"
+    },
+    {
+      "name": "POST /api/applicants",
+      "category": "functional",
+      "status": "pass",
+      "duration": 46,
+      "details": "400 OK (46ms)"
+    },
+    {
+      "name": "GET /api/applicants/public",
+      "category": "functional",
+      "status": "pass",
+      "duration": 19,
+      "details": "200 OK (19ms)"
+    },
+    {
+      "name": "GET /api/applicants",
+      "category": "functional",
+      "status": "pass",
+      "duration": 3,
+      "details": "401 OK (3ms)"
+    },
+    {
+      "name": "GET /api/applicants/trashed",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "POST /api/applicants/:id/restore",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "GET /api/applicants/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "PUT /api/applicants/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "PATCH /api/applicants/:id/status",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "DELETE /api/applicants/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "GET /api/applicants/check-payment/:nisn",
+      "category": "functional",
+      "status": "pass",
+      "duration": 6,
+      "details": "404 OK (6ms)"
+    },
+    {
+      "name": "GET /api/applicants/public-invoice/:nisn",
+      "category": "functional",
+      "status": "pass",
+      "duration": 4,
+      "details": "404 OK (4ms)"
+    },
+    {
+      "name": "GET /api/applicants/verify/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 7,
+      "details": "404 OK (7ms)"
+    },
+    {
+      "name": "POST /api/auth/login",
+      "category": "functional",
+      "status": "pass",
+      "duration": 5,
+      "details": "400 OK (5ms)"
+    },
+    {
+      "name": "PATCH /api/auth/change-password",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "PATCH /api/auth/profile",
+      "category": "functional",
+      "status": "pass",
+      "duration": 3,
+      "details": "401 OK (3ms)"
+    },
+    {
+      "name": "GET /api/config",
+      "category": "functional",
+      "status": "pass",
+      "duration": 4,
+      "details": "200 OK (4ms)"
+    },
+    {
+      "name": "POST /api/config",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "GET /api/config/revisions",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "POST /api/config/save-all",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "POST /api/config/restore",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "GET /api/informasi",
+      "category": "functional",
+      "status": "pass",
+      "duration": 6,
+      "details": "200 OK (6ms)"
+    },
+    {
+      "name": "GET /api/informasi/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "404 OK (2ms)"
+    },
+    {
+      "name": "POST /api/informasi",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "PUT /api/informasi/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "DELETE /api/informasi/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "GET /api/kuota",
+      "category": "functional",
+      "status": "pass",
+      "duration": 38,
+      "details": "200 OK (38ms)"
+    },
+    {
+      "name": "POST /api/kuota/targets",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "400 OK (2ms)"
+    },
+    {
+      "name": "POST /api/payment/confirm-payment-option",
+      "category": "functional",
+      "status": "pass",
+      "duration": 4,
+      "details": "400 OK (4ms)"
+    },
+    {
+      "name": "GET /api/siswa-aktif",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "GET /api/siswa-aktif/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "PUT /api/siswa-aktif/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "DELETE /api/siswa-aktif/:id",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "POST /api/siswa-aktif/generate-nipd",
+      "category": "functional",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 OK (1ms)"
+    },
+    {
+      "name": "POST /api/siswa-aktif/:id/mutasi",
+      "category": "functional",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 OK (2ms)"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → POST /api/applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 6,
+      "details": "Sanitized OK — Server returned 400"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → POST /api/applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 3,
+      "details": "Sanitized OK — Server returned 400"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → POST /api/applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 429"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → POST /api/applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 429"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → POST /api/applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 429"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → POST /api/applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → POST /api/applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → POST /api/applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → POST /api/applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → POST /api/applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 401"
+    },
+    {
+      "name": "XSS [Script Tag] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [IMG onerror] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Event Handler] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 3,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [SVG onload] → POST /api/admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Script Tag] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [IMG onerror] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Event Handler] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [SVG onload] → POST /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Script Tag] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [IMG onerror] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Event Handler] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [SVG onload] → PUT /api/admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /api/applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /api/applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /api/applicants/trashed",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /api/applicants/trashed",
+      "category": "security",
+      "status": "pass",
+      "duration": 3,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /api/applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /api/applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /api/applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 3,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /api/applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PUT /api/applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 3,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PUT /api/applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 3,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PATCH /api/applicants/:id/status",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PATCH /api/applicants/:id/status",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → DELETE /api/applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → DELETE /api/applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PATCH /api/auth/change-password",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PATCH /api/auth/change-password",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PATCH /api/auth/profile",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PATCH /api/auth/profile",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /api/config",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /api/config",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /api/config/revisions",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /api/config/revisions",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /api/config/save-all",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /api/config/save-all",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /api/config/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /api/config/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /api/informasi",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /api/informasi",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PUT /api/informasi/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PUT /api/informasi/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → DELETE /api/informasi/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → DELETE /api/informasi/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /api/siswa-aktif",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /api/siswa-aktif",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /api/siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /api/siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 3,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PUT /api/siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PUT /api/siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → DELETE /api/siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → DELETE /api/siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /api/siswa-aktif/generate-nipd",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /api/siswa-aktif/generate-nipd",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /api/siswa-aktif/:id/mutasi",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /api/siswa-aktif/:id/mutasi",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked correctly — returned 401"
+    },
+    {
+      "name": "Header: X-CONTENT-TYPE-OPTIONS",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Present: x-content-type-options: nosniff"
+    },
+    {
+      "name": "Header: X-FRAME-OPTIONS",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Present: x-frame-options: SAMEORIGIN"
+    },
+    {
+      "name": "Header: STRICT-TRANSPORT-SECURITY",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Present: strict-transport-security: max-age=63072000; includeSubDomains; preload"
+    },
+    {
+      "name": "Header: CONTENT-SECURITY-POLICY",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Present: content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self'; frame-ancestors 'self'"
+    },
+    {
+      "name": "Header: X-Powered-By should be hidden",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Good — X-Powered-By not exposed"
+    },
+    {
+      "name": "CORS: Access-Control-Allow-Origin",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "CORS: http://localhost:3000"
+    },
+    {
+      "name": "Path Traversal: Access .env via path traversal",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "Blocked — returned 404"
+    },
+    {
+      "name": "Path Traversal: Access package.json via traversal",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked — returned 404"
+    },
+    {
+      "name": "Path Traversal: URL-encoded traversal to .env",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked — returned 404"
+    },
+    {
+      "name": "Path Traversal: API prefix traversal to .env",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked — returned 404"
+    },
+    {
+      "name": "Data Leak Check → GET /health",
+      "category": "security",
+      "status": "pass",
+      "duration": 3,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Data Leak Check → GET /ws",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Data Leak Check → GET /api/admin/users/ysbmo/staff",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Data Leak Check → GET /api/admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Data Leak Check → GET /api/admin/users/trashed",
+      "category": "security",
+      "status": "pass",
+      "duration": 2,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Endpoint Health: GET /health",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "200 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /ws",
+      "category": "bugs",
+      "status": "warn",
+      "duration": 2,
+      "details": "⚠️ 404 Not Found — route may not exist: GET /ws"
+    },
+    {
+      "name": "Endpoint Health: GET /api/admin/users/ysbmo/staff",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/admin/users",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/admin/users/trashed",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/admin/users/:id/restore",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/admin/users",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: PUT /api/admin/users/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: DELETE /api/admin/users/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/applicants",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "429 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/applicants/public",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 21,
+      "details": "200 (21ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/applicants",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/applicants/trashed",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/applicants/:id/restore",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/applicants/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: PUT /api/applicants/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: PATCH /api/applicants/:id/status",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: DELETE /api/applicants/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/applicants/check-payment/:nisn",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 3,
+      "details": "404 (3ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/applicants/public-invoice/:nisn",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 3,
+      "details": "404 (3ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/applicants/verify/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 4,
+      "details": "404 (4ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/auth/login",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "429 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: PATCH /api/auth/change-password",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: PATCH /api/auth/profile",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/config",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 3,
+      "details": "200 (3ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/config",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/config/revisions",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/config/save-all",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/config/restore",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/informasi",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 3,
+      "details": "200 (3ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/informasi/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "404 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/informasi",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: PUT /api/informasi/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: DELETE /api/informasi/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 3,
+      "details": "401 (3ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/kuota",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 10,
+      "details": "200 (10ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/kuota/targets",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "400 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/payment/confirm-payment-option",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 3,
+      "details": "400 (3ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/siswa-aktif",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: GET /api/siswa-aktif/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: PUT /api/siswa-aktif/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: DELETE /api/siswa-aktif/:id",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 2,
+      "details": "401 (2ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/siswa-aktif/generate-nipd",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    },
+    {
+      "name": "Endpoint Health: POST /api/siswa-aktif/:id/mutasi",
+      "category": "bugs",
+      "status": "pass",
+      "duration": 1,
+      "details": "401 (1ms)"
+    }
+  ]
+}

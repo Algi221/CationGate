@@ -1,1418 +1,287 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import {
-  Menu,
-  ArrowRight,
-  X,
-  GraduationCap,
-  FileText,
-  Award,
-  Milestone,
-  Check,
-  Upload,
-  User,
-  MapPin,
-  Calendar,
-  Bell,
-  ArrowLeft,
-  HelpCircle,
-  CreditCard,
-  ShieldCheck,
-  ChevronRight,
-  ChevronLeft,
-  BookOpen,
-  Cpu,
-  Layers,
-  Video,
-  AlertCircle,
-  Palette,
-  Sun,
-  Moon,
-  Users,
-  Phone,
-  Megaphone,
-  Clock,
-  Radio,
-  Search,
-  School
+import { 
+  Menu, X, CheckCircle2, ArrowRight, LayoutDashboard,
+  Users, ShieldCheck, Database, Zap, ArrowUpRight
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
 
-import dynamic from "next/dynamic";
-const DataPendaftarTable = dynamic(() => import("../components/DataPendaftarTable"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
-      <p className="text-xs font-semibold">Memuat data pendaftar...</p>
-    </div>
-  )
-});
-import ShinyText from "../components/ShinyText";
-const ScrollFloat = dynamic(() => import("../components/ScrollFloat"), {
-  ssr: false,
-  loading: (props: any) => <div className={props.containerClassName}>{props.children}</div>
-});
-import dompurify from "dompurify";
-import { usePPDB } from "@/context/PPDBContext";
-
-const sanitizeUrl = (url: string | undefined | null): string | null => {
-  if (!url) return null;
-  try {
-    return dompurify.sanitize(url, {
-      ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-    }) || null;
-  } catch (e) {
-    return null;
-  }
-};
-
-const sanitizeSrc = (src: string | undefined | null): string | null => {
-  let url = sanitizeUrl(src);
-  if (url && url.startsWith("/jurusan/")) {
-    url = url.replace("/jurusan/", "/assets/jurusan/");
-  }
-  return url;
-};
-
-const SafeImage = ({ src, alt, width, height, className, onError, ...props }: any) => {
-  const [useFallbackImg, setUseFallbackImg] = useState(false);
-  const isDataUrl = src && src.startsWith("data:");
-  
-  if (isDataUrl || useFallbackImg || !src) {
-    return (
-      <img 
-        src={src || "/logo_smktb.png"} 
-        alt={alt} 
-        width={width} 
-        height={height} 
-        className={className} 
-        onError={onError} 
-        {...props} 
-      />
-    );
-  }
-  
-  return (
-    <Image 
-      src={src} 
-      alt={alt} 
-      width={width} 
-      height={height} 
-      className={className} 
-      onError={(e) => {
-        setUseFallbackImg(true);
-        if (onError) onError(e);
-      }}
-      unoptimized={src && (src.startsWith('http') && !src.includes('localhost') && !src.includes('127.0.0.1'))}
-      {...props}
-    />
-  );
-};
-
-interface InformasiItem {
-  id: number;
-  judul: string;
-  konten: string;
-  tanggal: string;
-  foto_url?: string | null;
-}
-
-interface AlurItem {
-  id: number;
-  title: string;
-  desc: string;
-}
-
-interface FaqItem {
-  q: string;
-  a: string;
-}
-
-const DEFAULT_FAQ: FaqItem[] = [
-  {
-    q: "Bagaimana cara melakukan pembayaran biaya pendaftaran?",
-    a: "Pembayaran administrasi pendaftaran dapat diselesaikan melalui Transfer Bank Manual ke rekening resmi yayasan sekolah. Setelah melakukan transfer, harap unggah bukti transfer di portal pendaftaran untuk divalidasi oleh panitia."
-  },
-  {
-    q: "Apa saja berkas persyaratan fisik yang wajib dibawa ke sekolah?",
-    a: "Calon peserta didik baru diimbau membawa berkas asli dan fotokopi berupa: 1) Kartu Keluarga (KK), 2) KTP Orang Tua (Ayah & Ibu), 3) Akta Kelahiran, 4) Ijazah SMP/sederajat atau Surat Keterangan Lulus (SKL) resmi dilegalisir, dan 5) Pas foto berwarna terbaru ukuran 3x4 sebanyak 3 lembar."
-  },
-  {
-    q: "Apakah ada batasan kuota pendaftaran untuk masing-masing jurusan?",
-    a: "Ya, setiap program kompetensi keahlian memiliki batas kuota tampung maksimal yang diselaraskan dengan ketersediaan fasilitas laboratorium praktikum (misal 100 siswa per jurusan). Pendaftaran untuk jurusan tertentu akan ditutup otomatis ketika kuota terpenuhi. Selesaikan pembayaran segera untuk mengamankan kuota Anda."
-  },
-  {
-    q: "Apakah ada tes seleksi masuk di SMK Taruna Bhakti?",
-    a: "Ya, calon peserta didik baru akan mengikuti seleksi potensi akademik, tes minat bakat, serta wawancara kompetensi keahlian secara terjadwal setelah menyelesaikan pengisian formulir pendaftaran dan pembayaran biaya administrasi."
-  }
-];
-
-const DEFAULT_ALUR: AlurItem[] = [
-  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap." },
-  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000 via Transfer Bank." },
-  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis via WhatsApp" },
-  { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
-  { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
-  { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
-];
-
-export default function Home() {
-  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
-  
-  const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
+export default function CationGateSaaSLanding() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [activeModal, setActiveModal] = useState<string | null>(null);
-
-  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
-  const [waAdmin, setWaAdmin] = useState("6281292244456");
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
-  const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
-  const [faqTitle, setFaqTitle] = useState("Pertanyaan yang Sering Diajukan");
-  const [faqSubtitle, setFaqSubtitle] = useState("Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.");
-
-  const toggleFaq = (idx: number) => {
-    setActiveFaq(activeFaq === idx ? null : idx);
-  };
-
-  const [heroTitle, setHeroTitle] = useState("Penerimaan Peserta Didik Baru");
-  const [heroTitleSub, setHeroTitleSub] = useState("SPMB SMK Taruna Bhakti");
-  const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
-  const [phone, setPhone] = useState("(021) 8740756");
-  const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
-  const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
-  const [mapTitle, setMapTitle] = useState("Kunjungi SMK Taruna Bhakti");
-  const [mapUrl, setMapUrl] = useState("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid");
-  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
-  const [gelombangConfig, setGelombangConfig] = useState({
-    gelombang1: { start: "2026-06-03", end: "2026-07-24" },
-    gelombang2: { start: "2026-07-25", end: "2026-08-30" }
-  });
-
-  const getGelombangStatus = (startStr: string, endStr: string) => {
-    if (!startStr || !endStr) return { label: "Belum Diatur", color: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700", active: false };
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const start = new Date(startStr);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(endStr);
-    end.setHours(23, 59, 59, 999);
-    
-    if (today < start) {
-      return { label: "Akan Datang", color: "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/30", active: false };
-    } else if (today >= start && today <= end) {
-      return { label: "Sedang Berlangsung", color: "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30", active: true };
-    } else {
-      return { label: "Telah Ditutup", color: "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-900/30", active: false };
-    }
-  };
-
-  const [partnersList, setPartnersList] = useState<any[]>([]);
-  const [showAllPartners, setShowAllPartners] = useState(false);
-
-  const [majors, setMajors] = useState([
-    {
-      code: "RPL",
-      title: "Rekayasa Perangkat Lunak",
-      icon: Cpu,
-      logo: "/assets/jurusan/pplg.png",
-      desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI) dengan teknologi mutakhir.",
-      color: "#0066ff",
-      careers: "Software Engineer, Web Developer, Mobile Developer, Game Designer, AI Specialist",
-      facilities: "Lab iMac Core-i9, Smart Classroom, AWS Cloud Academy, Google Developer Partner Studio"
-    },
-    {
-      code: "TJKT",
-      title: "Teknik Jaringan Komputer & Telekomunikasi",
-      icon: Layers,
-      logo: "/assets/jurusan/tjkt.png",
-      desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, infrastruktur cloud, dan sertifikasi CISCO.",
-      color: "#0ea5e9",
-      careers: "Network Engineer, Cloud Administrator, Cybersecurity Analyst, System Administrator",
-      facilities: "CISCO Networking Academy Lab, Mikrotik Academy Lab, Cyber Security Operations Center"
-    },
-    {
-      code: "DKV",
-      title: "Desain Komunikasi Visual",
-      icon: BookOpen,
-      logo: "/assets/jurusan/dkv.png",
-      desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, fotografi komersil, serta branding korporat.",
-      color: "#6366f1",
-      careers: "UI/UX Designer, Graphic Designer, Illustrator, Creative Director, Brand Specialist",
-      facilities: "Wacom Creative Studio, Photo & Video Lighting Lab, Digital Illustration Studio"
-    },
-    {
-      code: "BC",
-      title: "Broadcasting & Perfilman",
-      icon: Video,
-      logo: "/assets/jurusan/bc.png",
-      desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, penyutradaraan film, tata kamera, serta editing video profesional.",
-      color: "#f59e0b",
-      careers: "Video Editor, Cameraman, Director, Scriptwriter, Podcast Producer, Content Creator",
-      facilities: "Green Screen Studio, Professional TV Control Room, Podcast Soundproof Studio"
-    },
-    {
-      code: "ANM",
-      title: "Animasi",
-      icon: Palette,
-      logo: "/assets/jurusan/animasi.png",
-      desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, storyboard, serta visual effects (VFX) standar industri perfilman.",
-      color: "#ec4899",
-      careers: "3D Animator, 2D Animator, 3D Modeler, Storyboard Artist, VFX Compositor, Character Designer",
-      facilities: "iMac Render Farm Studio, Wacom Cintiq Digital Drawing Lab, Motion Capture Lab, Sound Recording Room"
-    },
-    {
-      code: "TE",
-      title: "Teknik Elektronika",
-      icon: Cpu,
-      logo: "/assets/jurusan/te.png",
-      desc: "Pelajari teknologi mikroprosesor, Internet of Things (IoT), robotika cerdas, automasi industri, dan smart home system.",
-      color: "#10b981",
-      careers: "IoT Engineer, Robotics Technician, Automation Programmer, Hardware Specialist",
-      facilities: "Robotics Design Lab, IoT Smart-Home Prototype Sandbox, Microcontroller Lab"
-    }
-  ]);
-
-  const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
-
-  const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return "";
-    try {
-      const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-      return new Date(dateString).toLocaleDateString('id-ID', options);
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  const [loadVideo, setLoadVideo] = useState(false);
-  const [currentVideo, setCurrentVideo] = useState(0);
-  const videos = ["/assets/videos/vid1.webm", "/assets/videos/vid2.webm"];
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const handleVideoEnded = () => {
-    setCurrentVideo((prev) => (prev + 1) % videos.length);
-  };
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(e => console.log(e));
-    }
-  }, [currentVideo, loadVideo]);
-
-  useEffect(() => {
-    const handleLoad = () => {
-      const timer = setTimeout(() => {
-        setLoadVideo(true);
-      }, 3500);
-      return timer;
-    };
-
-    if (document.readyState === 'complete') {
-      const timer = handleLoad();
-      return () => {
-        if (timer) clearTimeout(timer);
-      };
-    } else {
-      let timer: any;
-      const onWindowLoad = () => {
-        timer = handleLoad();
-      };
-      window.addEventListener('load', onWindowLoad);
-      return () => {
-        window.removeEventListener('load', onWindowLoad);
-        if (timer) clearTimeout(timer);
-      };
-    }
-  }, []);
-
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('ppdb-theme');
-    if (saved === 'dark') {
-      document.documentElement.classList.add('dark');
-      setIsDark(true);
-    }
-
-    const loadDynamicConfig = async () => {
-      try {
-        
-        const localAlur = localStorage.getItem("ppdb_alur_config");
-        if (localAlur) {
-          try {
-            setAlurList(JSON.parse(localAlur));
-          } catch (e) {
-            console.error("Gagal parse alur dari localStorage", e);
-          }
-        }
-
-        const localFaq = localStorage.getItem("ppdb_faq_config");
-        if (localFaq) {
-          try {
-            setFaqList(JSON.parse(localFaq));
-          } catch (e) {
-            console.error("Gagal parse FAQ dari localStorage", e);
-          }
-        }
-
-        const res = await fetch("http://localhost:5000/api/config");
-        const data = await res.json();
-
-        if (data.success && data.data) {
-          const config = data.data;
-          if (config.ppdb_hero_title) setHeroTitle(config.ppdb_hero_title);
-          if (config.ppdb_hero_title_sub) setHeroTitleSub(config.ppdb_hero_title_sub);
-          if (config.ppdb_hero_subtitle) setHeroSubtitle(config.ppdb_hero_subtitle);
-          if (config.ppdb_phone) setPhone(config.ppdb_phone);
-          if (config.ppdb_email) setEmail(config.ppdb_email);
-          if (config.ppdb_address) setAddress(config.ppdb_address);
-          if (config.ppdb_map_title) setMapTitle(config.ppdb_map_title);
-          if (config.ppdb_map_url) setMapUrl(config.ppdb_map_url);
-          if (config.ppdb_school_period) setSchoolPeriod(config.ppdb_school_period);
-          if (config.ppdb_wa_group_url) setWaGroupUrl(config.ppdb_wa_group_url);
-          if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
-          if (config.ppdb_alur_config) setAlurList(config.ppdb_alur_config);
-          if (config.ppdb_faq_config) setFaqList(config.ppdb_faq_config);
-          if (config.ppdb_faq_title) setFaqTitle(config.ppdb_faq_title);
-          if (config.ppdb_faq_subtitle) setFaqSubtitle(config.ppdb_faq_subtitle);
-          if (config.ppdb_gelombang_config) setGelombangConfig(config.ppdb_gelombang_config);
-          if (config.ppdb_partners_config && Array.isArray(config.ppdb_partners_config)) {
-            setPartnersList(config.ppdb_partners_config);
-          } else {
-            // Load defaults if empty
-            const DEFAULT_PARTNERS = [
-              { id: 1, name: "TOA", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/PT-TOA.png", url: "https://toa.co.id/", h: "h-8" },
-              { id: 2, name: "Biznet", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/biznet_vertical_logo.png", url: "https://www.biznetnetworks.com/", h: "h-20" },
-              { id: 3, name: "Icon+", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/56e83c6db8cd5587e87161281dfba75b.webp", url: "https://plniconplus.co.id/", h: "h-14" },
-              { id: 4, name: "MD Animation", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo_md_animation.png", url: "https://mdentertainment.com/", h: "h-8" },
-              { id: 5, name: "Hompimpa Animworks", logo: "https://www.google.com/s2/favicons?domain=hompimpa.co.id&sz=256", url: "https://hompimpa.co.id/", h: "h-12" },
-              { id: 6, name: "Monsterdata", logo: "https://www.google.com/s2/favicons?domain=monsterdata.asia&sz=256", url: "https://monsterdata.asia/?utm_source=chatgpt.com", h: "h-12" },
-              { id: 7, name: "Ciptadrasoft", logo: "https://www.google.com/s2/favicons?domain=citcom.id&sz=256", url: "https://citcom.id/", h: "h-12" },
-              { id: 8, name: "Assemblr", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/6156e76e275fa19ed9a33fa3_Group-33959.png", url: "https://assemblrworld.com/", h: "h-20" },
-              { id: 9, name: "Daun Biru Engineering", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/E-Learning-5.png", url: "https://daunbiru.co.id/", h: "h-12" },
-              { id: 10, name: "Citra Film School", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/cropped-Logo-baru-citra.png", url: "https://citrafilmschool.net/", h: "h-20" },
-              { id: 11, name: "Prasimax", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Prasimax_Logo.png", url: "https://prasimax.com/", h: "h-10" },
-              { id: 12, name: "Panasonic", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/8225.png", url: "https://www.panasonic.com/id/", h: "h-8" },
-              { id: 13, name: "LUWES INOVASI MANDIRI", logo: "https://luwesinovasimandiri.com/_astro/logo.DBn-6O1s.webp", url: "https://luwesinovasimandiri.com/", h: "h-12" },
-              { id: 14, name: "PUDAK SCIENTIFIC", logo: "https://www.google.com/s2/favicons?domain=pudak-scientific.com&sz=256", url: "https://www.pudak-scientific.com/", h: "h-12" },
-              { id: 15, name: "Pupuk Kujang Cikampek", logo: "https://www.google.com/s2/favicons?domain=pupuk-kujang.co.id&sz=256", url: "https://www.pupuk-kujang.co.id/", h: "h-12" },
-              { id: 16, name: "Rasil AM 720", logo: "https://www.google.com/s2/favicons?domain=radiosilaturahim.com&sz=256", url: "https://www.radiosilaturahim.com/", h: "h-12" },
-              { id: 17, name: "Beyond Films", logo: "https://www.google.com/s2/favicons?domain=beyondfilms.co.id&sz=256", url: "http://www.beyondfilms.co.id", h: "h-12" },
-              { id: 18, name: "POSTPLAY", logo: "https://www.google.com/s2/favicons?domain=linktr.ee&sz=256", url: "https://linktr.ee/postplayindonesia?utm_source=chatgpt.com", h: "h-12" },
-              { id: 19, name: "VISI 8", logo: "https://www.google.com/s2/favicons?domain=visi8.com&sz=256", url: "https://visi8.com/", h: "h-12" },
-              { id: 20, name: "MEMENTO", logo: "https://www.google.com/s2/favicons?domain=mementoworks.id&sz=256", url: "https://mementoworks.id", h: "h-12" },
-              { id: 21, name: "SKYNET", logo: "https://www.google.com/s2/favicons?domain=sky.net.id&sz=256", url: "https://sky.net.id/?utm_source=chatgpt.com", h: "h-12" },
-              { id: 22, name: "Museum Nasional Indonesia", logo: "https://www.google.com/s2/favicons?domain=museumnasional.or.id&sz=256", url: "https://www.museumnasional.or.id/", h: "h-12" },
-              { id: 23, name: "ANIMO", logo: "https://www.google.com/s2/favicons?domain=fiverr.com&sz=256", url: "https://www.fiverr.com/animo_studio?utm_source=chatgpt.com", h: "h-12" },
-              { id: 24, name: "PIONICON", logo: "/partners/pionicon.jpg", url: "https://pionicon.com/", h: "h-12" },
-              { id: 25, name: "Circle Logo", logo: "https://www.google.com/s2/favicons?domain=seamolec.org&sz=256", url: "https://seamolec.org/", h: "h-12" },
-              { id: 26, name: "mvnet", logo: "https://www.google.com/s2/favicons?domain=mvnet.co.id&sz=256", url: "https://mvnet.co.id/", h: "h-12" },
-              { id: 27, name: "SADA TECHNOLOGY", logo: "https://www.google.com/s2/favicons?domain=sada.id&sz=256", url: "https://sada.id/", h: "h-12" },
-              { id: 28, name: "LIGHT CODE DIGITAL", logo: "https://www.google.com/s2/favicons?domain=lightcodedigital.com&sz=256", url: "https://lightcodedigital.com/", h: "h-12" },
-            ];
-            setPartnersList(DEFAULT_PARTNERS);
-          }
-          if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-            const iconMap: Record<string, any> = {
-              RPL: Cpu,
-              TJKT: Layers,
-              DKV: BookOpen,
-              BC: Video,
-              ANM: Palette,
-              TE: Cpu
-            };
-            const mapped = config.ppdb_majors_config.map((m: any) => ({
-              ...m,
-              icon: iconMap[m.code] || Cpu
-            }));
-            setMajors(mapped);
-          }
-        }
-      } catch (e) {
-        console.log("Failed to load dynamic configuration from backend:", e);
-      }
-    };
-
-    loadDynamicConfig();
-  }, []);
-
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('ppdb-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('ppdb-theme', 'light');
-    }
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setIsNavbarScrolled(true);
-      } else {
-        setIsNavbarScrolled(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const [isMajorsVisible, setIsMajorsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsMajorsVisible(true);
-          observer.unobserve(entry.target); 
-        }
-      },
-      { threshold: 0.05 }
-    );
-    const element = document.getElementById("majors");
-    if (element) observer.observe(element);
-    return () => {
-      if (element) observer.unobserve(element);
-    };
-  }, []);
-
   return (
-    <div className="relative min-h-screen flex flex-col overflow-x-hidden">
-
-      {/* FLOATING NAVBAR */}
-      <div className="navbar-wrapper">
-        <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
-          <div className="nav-left">
-            <Link href="/" className="logo-container">
-              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={36} height={36} className="w-9 h-9 object-contain" />
-              <span className="logo-text font-extrabold">{ppdbTitle}</span>
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden flex flex-col">
+      
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+              CG
+            </div>
+            <span className="text-lg font-bold tracking-tight text-slate-900">CationGate</span>
+          </div>
+          
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+            <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
+            <a href="#preview" className="hover:text-blue-600 transition-colors">Preview</a>
+            <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
+          </div>
+          
+          <div className="hidden md:flex items-center gap-4">
+            <Link href="/daftar">
+              <Button className="rounded-full shadow-sm">
+                Get Started
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
-            <a href="#alur" className="btn-nav-link">Alur Pendaftaran</a>
-            <a href="#majors" className="btn-nav-link">Jurusan</a>
-            <a href="#kemitraan" className="btn-nav-link">Mitra Industri</a>
-              <a href="#faq" className="btn-nav-link">FAQ</a>
-            <Link href="/forum" className="btn-nav-link">Forum Informasi</Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleDark}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
-              title={isDark ? 'Mode Terang' : 'Mode Gelap'}
-            >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <Link href="/daftar" className="btn-primary-pill !hidden md:!inline-flex">
-              Daftar
-            </Link>
-
-            {/* Hamburger Button visible only on mobile/tablet */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex md:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-[101]"
-              aria-label="Toggle Mobile Menu"
-            >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
-          </div>
-        </nav>
-      </div>
-
-      {/* Fullscreen Mobile Navigation Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/98 backdrop-blur-2xl animate-in fade-in duration-300 md:hidden">
-          {/* Close Button X in top right */}
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-6 right-6 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
-            aria-label="Close Mobile Menu"
-          >
-            <X size={20} />
+          <button className="md:hidden text-slate-900" onClick={() => setMobileMenuOpen(true)}>
+            <Menu className="w-6 h-6" />
           </button>
+        </div>
+      </nav>
 
-          {/* Decorative gradients */}
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
-
-          <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
-            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
-              <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
-            </Link>
-
-            <a
-              href="#alur"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              Alur Pendaftaran
-            </a>
-            <a
-              href="#majors"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              Jurusan
-            </a>
-            <a
-              href="#kemitraan"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              Mitra Industri
-            </a>
-            <a
-              href="#faq"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              FAQ
-            </a>
-            <Link
-              href="/forum"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              Forum Informasi
-            </Link>
-
-            <div className="w-full flex flex-col gap-3 mt-8">
-              <Link
-                href="/daftar"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98]"
-              >
-                Daftar Sekarang
-              </Link>
-              <button
-                onClick={() => { toggleDark(); setMobileMenuOpen(false); }}
-                className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl border border-slate-200 dark:border-slate-700/80 text-slate-750 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-              >
-                {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed inset-0 z-[60] bg-white p-6 flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-8 border-b border-slate-100 pb-4">
+              <span className="text-lg font-bold tracking-tight text-slate-900">CationGate</span>
+              <button onClick={() => setMobileMenuOpen(false)}>
+                <X className="w-6 h-6 text-slate-600" />
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* HERO SECTION WRAPPER */}
-      <main className="flex-grow w-full">
-        <div className="relative w-full overflow-hidden">
-          {/* Video Background - Full Width */}
-          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-            {loadVideo && (
-              <video
-                ref={videoRef}
-                src={videos[currentVideo]}
-                autoPlay
-                muted
-                playsInline
-                preload="none"
-                onEnded={handleVideoEnded}
-                className="w-full h-full object-cover transition-opacity duration-1000"
-                aria-hidden="true"
-              >
-                <track kind="captions" label="No captions" default />
-              </video>
-            )}
-            <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
-          </div>
-
-        {/* HERO SECTION */}
-        <section className="hero">
-
-          {/* Floating elements representing major names dynamically */}
-          {majors.map((m, index) => {
-            const isEven = index % 2 === 0;
-            const sideIndex = Math.floor(index / 2);
-            // Balance left & right positions flanking the screen
-            const topPos = isEven ? (130 + sideIndex * 120) : (130 + sideIndex * 160);
-            const horizPos = isEven ? (5 + (sideIndex % 3) * 3) : (2 + (sideIndex % 3) * 2);
-            const animName = `float${(index % 4) + 1}`;
-            const animDuration = `${6 + (index % 3) * 1.5}s`;
-            const animDelay = `-${(index % 5) * 1}s`;
-
-            // Map code to route link
-            const routeCode = m.code.toLowerCase() === 'anm' ? 'an' : m.code.toLowerCase();
-            const routeLink = `/jurusan/${routeCode}`;
-
-            // Map standard code aliases for display
-            const displayAlias = m.code === 'RPL' ? 'PPLG' : (m.code === 'ANM' ? 'Animasi' : (m.code === 'BC' ? 'Broadcasting' : m.code));
-
-            return (
-              <Link 
-                key={m.code} 
-                href={routeLink} 
-                className="floating-badge animate-[fadeIn_0.5s_ease-out]"
-                style={{
-                  top: `${topPos}px`,
-                  [isEven ? 'left' : 'right']: `${horizPos}%`,
-                  animation: `${animName} ${animDuration} infinite alternate ease-in-out ${animDelay}`
-                }}
-              >
-                <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-                  {m.logo ? (
-                    <SafeImage 
-                      src={sanitizeSrc(m.logo) || "/logo_smktb.png"} 
-                      alt="" 
-                      width={48} 
-                      height={48} 
-                      className="w-full h-full object-cover rounded-full" 
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white font-bold text-[10px] rounded-full">
-                      {displayAlias.substring(0, 3).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="badge-info">
-                  <span>{displayAlias}</span>
-                </div>
+            <div className="flex flex-col gap-4 text-base font-medium text-slate-600">
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="py-2">Features</a>
+              <a href="#preview" onClick={() => setMobileMenuOpen(false)} className="py-2">Preview</a>
+              <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="py-2">Pricing</a>
+              <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full mt-4">Mulai Sekarang</Button>
               </Link>
-            );
-          })}
-
-          {/* Hero Copy */}
-          <div className="badge-wrapper relative z-10 flex flex-col items-center gap-3">
-            <span className="badge-pill">SMK TARUNA BHAKTI DEPOK</span>
-            <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-800/60 px-4 py-2 rounded-full backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-               <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
-               <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hero Section */}
+      <section className="pt-24 pb-20 px-6 max-w-5xl mx-auto text-center flex-1">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.6 }}
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold mb-8">
+            <span className="flex h-2 w-2 rounded-full bg-blue-600"></span>
+            Sistem PPDB Modern Generasi Baru
           </div>
-
-          <h1 className="hero-title relative z-10">
-            {heroTitle} <br />
-            <ShinyText 
-              text={heroTitleSub} 
-              speed={3} 
-              delay={1} 
-              color="var(--primary)" 
-              shineColor="#0ea5e9" 
-              spread={135} 
-            />
-          </h1>
-
-          <p className="hero-subtitle relative z-10">
-            {heroSubtitle}
-          </p>
-
-          <div className="hero-action">
-            <Link href="/daftar" className="btn-hero-action">
-              Daftar Sekarang <ArrowRight size={18} />
-            </Link>
-          </div>
-
-          {/* APP MOCKUP WRAPPER */}
-          <div className="mockup-container relative z-10">
-            <div className="app-mockup">
-
-              {/* Mockup Browser Top bar */}
-              <div className="mockup-browser-bar">
-                <div className="browser-dots">
-                  <span className="dot-red"></span>
-                  <span className="dot-yellow"></span>
-                  <span className="dot-green"></span>
-                </div>
-                <div className="browser-address">ppdb.smktarunabhakti.sch.id/dashboard</div>
-                <div className="w-4"></div>
-              </div>
-
-              {/* Data Pendaftar Table View */}
-              <div className="dashboard-view block w-full p-6 h-[600px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
-                <DataPendaftarTable />
-              </div>
-
-            </div>
-          </div>
-
-        </section>
-      </div>
-      {/* JADWAL GELOMBANG PENDAFTARAN */}
-      <section id="gelombang" className="py-20 max-w-6xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-12">
-          <span className="inline-block mb-2 text-blue-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">
-            Jadwal Penerimaan · TP. {schoolPeriod}
-          </span>
-          <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white mt-3 mb-3">
-            Gelombang Pendaftaran PPDB
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-xs md:text-sm leading-relaxed">
-            Perhatikan rentang tanggal pendaftaran di setiap gelombang untuk mengamankan kuota jurusan pilihan Anda.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Gelombang 1 Card */}
-          {(() => {
-            const status = getGelombangStatus(gelombangConfig.gelombang1.start, gelombangConfig.gelombang1.end);
-            return (
-              <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border ${status.active ? 'border-blue-500/30 dark:border-blue-500/20 shadow-blue-500/5' : 'border-white/50 dark:border-slate-800'} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
-                {status.active && (
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
-                )}
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Periode Pertama</span>
-                    <h3 className="text-xl font-black text-slate-800 dark:text-white mt-1">Gelombang 1</h3>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${status.color}`}>
-                    {status.active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
-                    {status.label}
-                  </span>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-950/40 p-4.5 rounded-2xl border border-slate-150 dark:border-white/5">
-                    <Calendar size={18} className="text-blue-500 shrink-0" />
-                    <div>
-                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Tanggal Pendaftaran</span>
-                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
-                        {gelombangConfig.gelombang1.start ? formatDate(gelombangConfig.gelombang1.start) : "Belum diatur"} - {gelombangConfig.gelombang1.end ? formatDate(gelombangConfig.gelombang1.end) : "Belum diatur"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Gelombang 2 Card */}
-          {(() => {
-            const status = getGelombangStatus(gelombangConfig.gelombang2.start, gelombangConfig.gelombang2.end);
-            return (
-              <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border ${status.active ? 'border-blue-500/30 dark:border-blue-500/20 shadow-blue-500/5' : 'border-white/50 dark:border-slate-800'} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
-                {status.active && (
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
-                )}
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Periode Kedua</span>
-                    <h3 className="text-xl font-black text-slate-800 dark:text-white mt-1">Gelombang 2</h3>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${status.color}`}>
-                    {status.active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
-                    {status.label}
-                  </span>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-950/40 p-4.5 rounded-2xl border border-slate-155 dark:border-white/5">
-                    <Calendar size={18} className="text-blue-500 shrink-0" />
-                    <div>
-                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Tanggal Pendaftaran</span>
-                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
-                        {gelombangConfig.gelombang2.start ? formatDate(gelombangConfig.gelombang2.start) : "Belum diatur"} - {gelombangConfig.gelombang2.end ? formatDate(gelombangConfig.gelombang2.end) : "Belum diatur"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </section>
-
-      {/* ALUR PENDAFTARAN */}
-      <section id="alur" className="py-24 relative z-10 border-b border-slate-200/50 dark:border-slate-800">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <ScrollFloat
-              containerClassName="inline-block mb-2"
-              textClassName="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full"
-              animationDuration={1}
-              ease='back.inOut(2)'
-              scrollStart='top 90%'
-              scrollEnd='bottom bottom-=40%'
-              stagger={0.02}
-            >
-              Proses Mudah &amp; Transparan · TP. {schoolPeriod}
-            </ScrollFloat>
-            <ScrollFloat
-              containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm pb-2"
-              animationDuration={1}
-              ease='back.inOut(2)'
-              scrollStart='top 90%'
-              scrollEnd='bottom bottom-=40%'
-              stagger={0.03}
-            >
-              Alur Pendaftaran PPDB
-            </ScrollFloat>
-            <ScrollFloat
-              containerClassName="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium"
-              animationDuration={1}
-              ease='back.inOut(2)'
-              scrollStart='top 90%'
-              scrollEnd='bottom bottom-=40%'
-              stagger={0.01}
-              textMode={false}
-            >
-              Ikuti 6 langkah sederhana berikut untuk menjadi bagian dari SMK Taruna Bhakti Depok.
-            </ScrollFloat>
-          </div>
-
-          <div className="relative">
-            <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
-            <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
-
-            <div className="space-y-16 relative z-10 w-full">
-              {alurList.map((item, index) => {
-                const isLeft = index % 2 === 0;
-
-                const styles = [
-                  { color: "blue", bg: "bg-blue-600", text: "text-blue-700 dark:text-blue-300", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20", icon: FileText },
-                  { color: "amber", bg: "bg-amber-500", text: "text-amber-800 dark:text-amber-300", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20", icon: CreditCard },
-                  { color: "teal", bg: "bg-teal-500", text: "text-teal-700 dark:text-teal-300", bgLight: "bg-teal-50 dark:bg-teal-950/60", shadow: "shadow-[0_0_20px_rgba(20,184,166,0.4)]", borderHover: "hover:border-teal-500/20", icon: Phone },
-                  { color: "rose", bg: "bg-rose-500", text: "text-rose-700 dark:text-rose-300", bgLight: "bg-rose-50 dark:bg-rose-950/60", shadow: "shadow-[0_0_20px_rgba(244,63,94,0.4)]", borderHover: "hover:border-rose-500/20", icon: Users },
-                  { color: "indigo", bg: "bg-indigo-600", text: "text-indigo-700 dark:text-indigo-300", bgLight: "bg-indigo-50 dark:bg-indigo-950/60", shadow: "shadow-[0_0_20px_rgba(79,70,229,0.4)]", borderHover: "hover:border-indigo-500/20", icon: Award },
-                  { color: "emerald", bg: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-300", bgLight: "bg-emerald-50 dark:bg-emerald-950/60", shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]", borderHover: "hover:border-emerald-500/20", icon: ShieldCheck },
-                ];
-
-                const stepStyle = styles[index % styles.length];
-                const Icon = stepStyle.icon;
-
-                return (
-                  <ScrollFloat
-                    key={item.id}
-                    containerClassName="w-full"
-                    textClassName="w-full"
-                    textMode={false}
-                    scrollStart="top 85%"
-                    scrollEnd="bottom 60%"
-                  >
-                    <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                      {isLeft ? (
-                        <>
-                          <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
-                            <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
-                              <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
-                              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
-                            </div>
-                          </div>
-                          <div className="hidden md:block"></div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="hidden md:block"></div>
-                          <div className="pl-20 md:pl-12 md:text-left">
-                            <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
-                              <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
-                              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full ${stepStyle.bg} border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 ${stepStyle.shadow} transition-all duration-300`}>
-                        <Icon size={22} />
-                      </div>
-                    </div>
-                  </ScrollFloat>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PROGRAM KEAHLIAN / JURUSAN GRID */}
-      <section id="majors" className="py-24 max-w-6xl mx-auto px-6 relative z-10">
-        <div className={`text-center mb-16 transform transition-all duration-1000 ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <ScrollFloat
-            containerClassName="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4"
-            animationDuration={1}
-            ease='back.inOut(2)'
-            scrollStart='center bottom+=50%'
-            scrollEnd='bottom bottom-=40%'
-            stagger={0.03}
-          >
-            Program Kompetensi Keahlian
-          </ScrollFloat>
-          <ScrollFloat
-            containerClassName="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed"
-            animationDuration={1}
-            ease='back.inOut(2)'
-            scrollStart='center bottom+=50%'
-            scrollEnd='bottom bottom-=40%'
-            stagger={0.01}
-            textMode={false}
-          >
-            Tersedia 6 jurusan unggulan dengan kurikulum berstandar industri nasional maupun internasional.
-          </ScrollFloat>
-        </div>
-
-        <ScrollFloat containerClassName="w-full" textClassName="w-full" textMode={false}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {majors.map((major, index) => {
-            return (
-              <Link
-                href={`/jurusan/${major.code.toLowerCase()}`}
-                key={major.code}
-                className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
-                style={{ transitionDelay: `${index * 150}ms` }}
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
-                <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
-
-                <div className="relative z-10">
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white border border-slate-100 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
-                    <SafeImage
-                      src={sanitizeSrc(major.logo) || "/logo_smktb.png"}
-                      alt={`Logo ${major.code}`}
-                      width={56}
-                      height={56}
-                      className="w-14 h-14 object-contain drop-shadow-sm"
-                      onError={(e: any) => {
-                        e.target.style.display = 'none';
-                        const parent = e.target.parentElement;
-                        if (parent) {
-                          parent.classList.add('bg-blue-50');
-                          parent.querySelectorAll('.fallback-code').forEach((el: any) => el.remove());
-                          const fallbackDiv = document.createElement('div');
-                          fallbackDiv.style.color = '#0066ff';
-                          fallbackDiv.style.display = 'flex';
-                          fallbackDiv.style.alignItems = 'center';
-                          fallbackDiv.style.justifyContent = 'center';
-                          fallbackDiv.style.width = '100%';
-                          fallbackDiv.style.height = '100%';
-                          fallbackDiv.style.fontWeight = '800';
-                          fallbackDiv.style.fontSize = '11px';
-                          fallbackDiv.textContent = major.code;
-                          fallbackDiv.classList.add('fallback-code');
-                          parent.appendChild(fallbackDiv);
-                        }
-                      }}
-                    />
-                  </div>
-                  <h3 className="text-lg font-extrabold text-slate-800 dark:text-white mb-3">
-                    {major.code === "AN" ? major.title : `${major.title} (${major.code})`}
-                  </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">{major.desc.substring(0, 105)}...</p>
-                </div>
-                <span className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-bold group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors relative z-10">
-                  Lihat Selengkapnya <ChevronRight size={14} className="transform group-hover:translate-x-1.5 transition-transform duration-300" />
-                </span>
-              </Link>
-            );
-          })}
-          </div>
-        </ScrollFloat>
-      </section>
-
-      {/* KEMITRAAN INDUSTRI */}
-      <section id="kemitraan" className="py-24 max-w-6xl mx-auto px-6 relative z-10 border-t border-slate-200/30">
-        <div className="text-center mb-16">
-          <ScrollFloat
-            containerClassName="inline-block mb-2"
-            textClassName="text-blue-600 font-bold text-xs uppercase tracking-wider bg-blue-50 px-3 py-1.5 rounded-full"
-            animationDuration={1}
-            ease='back.inOut(2)'
-            scrollStart='center bottom+=50%'
-            scrollEnd='bottom bottom-=40%'
-            stagger={0.02}
-          >
-            Kemitraan Industri
-          </ScrollFloat>
-          <ScrollFloat
-            containerClassName="text-3xl md:text-4xl font-extrabold text-slate-800 mt-4 mb-4"
-            animationDuration={1}
-            ease='back.inOut(2)'
-            scrollStart='center bottom+=50%'
-            scrollEnd='bottom bottom-=40%'
-            stagger={0.03}
-          >
-            Gerbang Karir Global Taruna Bhakti
-          </ScrollFloat>
-          <ScrollFloat
-            containerClassName="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed"
-            animationDuration={1}
-            ease='back.inOut(2)'
-            scrollStart='center bottom+=50%'
-            scrollEnd='bottom bottom-=40%'
-            stagger={0.01}
-            textMode={false}
-          >
-            Kurikulum berstandar internasional yang diselaraskan langsung dengan raksasa teknologi dunia, menghasilkan lulusan berdaya saing tinggi.
-          </ScrollFloat>
-        </div>
-
-        <ScrollFloat containerClassName="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 mb-12 shadow-sm w-full" textClassName="w-full" textMode={false}>
-          <p className="text-center text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">
-            Partner Industri Utama &amp; Sertifikasi Internasional &middot;
-          </p>
-            {(() => {
-              const displayedPartners = showAllPartners ? partnersList : partnersList.slice(0, 10);
-
-              const getPartnerDimensions = (hClass: string) => {
-                switch (hClass) {
-                  case "h-20": return { width: 150, height: 80 };
-                  case "h-16": return { width: 120, height: 64 };
-                  case "h-14": return { width: 105, height: 56 };
-                  case "h-12": return { width: 90, height: 48 };
-                  case "h-10": return { width: 75, height: 40 };
-                  case "h-8": return { width: 60, height: 32 };
-                  default: return { width: 120, height: 60 };
-                }
-              };
-
-              return (
-                <div className="w-full">
-                  <div key={showAllPartners ? 'all' : 'some'} className="flex flex-wrap justify-center items-center gap-x-8 gap-y-10 max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-500">
-                    {displayedPartners.map((partner, idx) => {
-                      const { width, height } = getPartnerDimensions(partner.h);
-                      return (
-                        <a
-                          key={partner.id || idx}
-                          href={sanitizeUrl(partner.url) || "#"}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
-                          title={partner.name}
-                        >
-                          <img
-                            src={dompurify.sanitize(sanitizeSrc(partner.logo) || "") || undefined}
-                            alt={partner.name}
-                            className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
-                            loading="lazy"
-                            width={width}
-                            height={height}
-                          />
-                        </a>
-                      );
-                    })}
-                  </div>
-                  
-                  {/* Show All Controls */}
-                  {partnersList.length > 10 && (
-                    <div className="flex justify-center items-center mt-12">
-                      <button 
-                        onClick={() => setShowAllPartners(!showAllPartners)}
-                        className="px-6 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2 shadow-sm"
-                      >
-                        {showAllPartners ? (
-                          <>
-                            Sembunyikan
-                            <ChevronLeft size={16} className="rotate-90" />
-                          </>
-                        ) : (
-                          <>
-                            Lihat Selengkapnya
-                            <ChevronRight size={16} className="rotate-90" />
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-        </ScrollFloat>
-      </section>
-
-      {/* FAQ SECTION */}
-      <section id="faq" className="py-24 bg-white dark:bg-slate-950 relative z-10 border-t border-slate-200/50 dark:border-slate-900 transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <ScrollFloat
-              containerClassName="inline-block mb-2"
-              textClassName="text-blue-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full"
-              animationDuration={1}
-              ease='back.inOut(2)'
-              scrollStart='top 90%'
-              scrollEnd='bottom bottom-=40%'
-              stagger={0.02}
-            >
-              FAQ PPDB
-            </ScrollFloat>
-            <ScrollFloat
-            containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm"
-            animationDuration={1}
-            ease='back.inOut(2)'
-            scrollStart='center bottom+=50%'
-            scrollEnd='bottom bottom-=40%'
-            stagger={0.03}
-          >
-            {faqTitle}
-            </ScrollFloat>
-            <ScrollFloat
-              containerClassName="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium"
-              animationDuration={1}
-              ease='back.inOut(2)'
-              scrollStart='top 90%'
-              scrollEnd='bottom bottom-=40%'
-              stagger={0.01}
-              textMode={false}
-            >
-              {faqSubtitle}
-              </ScrollFloat>
-          </div>
-
-          <div className="space-y-6 w-full">
-            {faqList.map((faq, idx) => {
-              const isOpen = activeFaq === idx;
-              return (
-                <ScrollFloat
-                  key={idx}
-                  containerClassName="w-full"
-                  textClassName="w-full"
-                  textMode={false}
-                  scrollStart="top 90%"
-                  scrollEnd="bottom 75%"
-                >
-                  <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-3xl overflow-hidden transition-all duration-300 shadow-sm">
-                    <button
-                      onClick={() => toggleFaq(idx)}
-                      className="w-full px-6 py-5 flex items-center justify-between text-left font-black text-sm md:text-base text-slate-800 dark:text-white focus:outline-none"
-                    >
-                      <span>{faq.q}</span>
-                      <span className={`text-blue-500 transform transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}>
-                        <ChevronRight size={20} className="rotate-90" />
-                      </span>
-                    </button>
-                    <div 
-                      className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                        isOpen ? "max-h-60 border-t border-slate-200/50 dark:border-slate-800/50" : "max-h-0"
-                      }`}
-                    >
-                      <p className="px-6 py-5 text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-                        {faq.a}
-                      </p>
-                    </div>
-                  </div>
-                </ScrollFloat>
-              );
-            })}
-          </div>
-
           
-        </div>
-      </section>
-      {/* MAP SECTION */}
-        <section className="w-full bg-slate-50/50 dark:bg-slate-950/50 py-24 relative z-10 transition-colors duration-300">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <ScrollFloat
-                containerClassName="inline-block mb-2"
-                textClassName="text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100/50 dark:border-emerald-900/30 px-3.5 py-1.5 rounded-full"
-                animationDuration={1}
-                ease='back.inOut(2)'
-                scrollStart='top 90%'
-                scrollEnd='bottom bottom-=40%'
-                stagger={0.02}
-              >
-                Lokasi Kami
-              </ScrollFloat>
-              <ScrollFloat
-                containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm pb-2"
-                animationDuration={1}
-                ease='back.inOut(2)'
-                scrollStart='center bottom+=50%'
-                scrollEnd='bottom bottom-=40%'
-                stagger={0.03}
-              >
-                {mapTitle}
-              </ScrollFloat>
-              <ScrollFloat
-                containerClassName="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium"
-                animationDuration={1}
-                ease='back.inOut(2)'
-                scrollStart='top 90%'
-                scrollEnd='bottom bottom-=40%'
-                stagger={0.01}
-                textMode={false}
-              >
-                Pusat informasi dan pendaftaran offline tersedia di gedung utama kami.
-              </ScrollFloat>
-            </div>
-
-            <div className="relative w-full h-[500px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200/60 dark:border-slate-800/80 group">
-              <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
-              
-              <iframe
-                src={sanitizeUrl(mapUrl) || ""}
-                width="100%" 
-                height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen={true} 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0 w-full h-full grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
-              ></iframe>
-
-              {/* Floating Address Card */}
-              <div className="absolute bottom-6 left-6 right-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[450px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-white/20 dark:border-slate-800/50 shadow-2xl z-20 transition-transform duration-300 hover:-translate-y-2">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-500/20">
-                    <MapPin size={24} className="text-emerald-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-1.5">Alamat Kami</h3>
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                      {address}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="w-full max-w-6xl mx-auto px-6 pb-24 relative z-10">
-          <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-150/40 dark:border-blue-900 rounded-[2.5rem] p-8 text-center relative overflow-hidden">
-            <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
-              <HelpCircle size={96} className="text-blue-600 animate-pulse" />
-            </div>
-            
-            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Masih Mengalami Kendala atau Pertanyaan Lain?</h3>
-            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-lg mx-auto leading-relaxed">
-              Tim panitia PPDB SMK Taruna Bhakti siap membantu Anda secara langsung. Klik tombol di bawah untuk konsultasi via WhatsApp.
-            </p>
-            
-            <a 
-              href={sanitizeUrl(`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                "Halo Admin PPDB SMK Taruna Bhakti, saya calon pendaftar PPDB TP 2026/2027. Saya ingin berkonsultasi mengenai proses pendaftaran karena mengalami kendala teknis."
-              )}`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Phone size={14} />
-              <span>Konsultasi Lewat WA Admin</span>
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-6 leading-tight">
+            Kelola Penerimaan Siswa <br className="hidden md:block" /> 
+            Dengan Lebih <span className="text-blue-600">Cerdas.</span>
+          </h1>
+          
+          <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Platform SaaS minimalis namun kuat untuk manajemen PPDB sekolah Anda. Tanpa ribet instalasi server, cukup berlangganan dan langsung gunakan.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/daftar">
+              <Button size="lg" className="rounded-full w-full sm:w-auto text-base h-12 px-8 shadow-sm">
+                Deploy Instansi Anda
+              </Button>
+            </Link>
+            <a href="#preview">
+              <Button variant="outline" size="lg" className="rounded-full w-full sm:w-auto text-base h-12 px-8">
+                Lihat Demo UI
+              </Button>
             </a>
           </div>
-        </section>
-        </main>
+        </motion.div>
+      </section>
 
-      {/* FOOTER */}
-      <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-slate-500 dark:text-slate-400">
-            {/* Col 1 */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
-                <div>
-                  <span className="logo-text font-black text-slate-800 dark:text-white text-lg">{ppdbTitle}</span>
-                  <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>
-                </div>
-              </div>
-              <p className="text-xs leading-relaxed font-medium">
-                Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global sejak 1987.
-              </p>
-              <div className="flex items-center gap-3 pt-2">
-                <a
-                  href="https://www.instagram.com/smktarunabhakti.depok"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="footer-social-link instagram"
-                  title="Instagram Resmi SMK Taruna Bhakti"
-                  aria-label="Instagram Resmi SMK Taruna Bhakti"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                  </svg>
-                </a>
-                <a
-                  href="https://www.youtube.com/@smktarunabhaktidepok"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="footer-social-link youtube"
-                  title="YouTube Resmi SMK Taruna Bhakti"
-                  aria-label="YouTube Resmi SMK Taruna Bhakti"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M23.498 6.163c-.272-1.022-1.074-1.826-2.099-2.099C19.55 3.5 12 3.5 12 3.5s-7.55 0-9.399.564C.776 4.337-.026 5.141-.298 6.163 0 8.01 0 12 0 12s0 3.99.298 5.837c.272 1.022 1.074 1.826 2.099 2.099C4.45 20.5 12 20.5 12 20.5s7.55 0 9.399-.564c1.025-.273 1.827-1.077 2.099-2.099C24 15.99 24 12 24 12s0-3.99-.298-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                  </svg>
-                </a>
-                <a
-                  href="https://www.tiktok.com/@starbhak.official?lang=id-ID"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="footer-social-link tiktok"
-                  title="TikTok Resmi SMK Taruna Bhakti"
-                  aria-label="TikTok Resmi SMK Taruna Bhakti"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.81-.6-4.03-1.46-.07-.05-.13-.1-.19-.15v5.08c.03 2.76-1.11 5.46-3.21 7.15-2.3 1.88-5.5 2.5-8.29 1.63-2.93-.93-5.27-3.41-6.01-6.42-.87-3.51.52-7.46 3.49-9.56 1.86-1.32 4.17-1.83 6.41-1.42V9.3c-1.07-.34-2.28-.19-3.22.42-1.08.7-1.74 1.94-1.73 3.22.01 1.42.87 2.77 2.19 3.29 1.34.52 2.92.21 3.93-.76.92-.88 1.34-2.18 1.25-3.44V0h-.02z" />
-                  </svg>
-                </a>
-                <a
-                  href="https://www.facebook.com/smktarunabhaktidepok"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="footer-social-link facebook"
-                  title="Facebook Resmi SMK Taruna Bhakti"
-                  aria-label="Facebook Resmi SMK Taruna Bhakti"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-
-            {/* Col 2 */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Program Keahlian</h4>
-              <ul className="space-y-2 text-xs font-semibold">
-                <li><Link href="/jurusan/rpl" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Rekayasa Perangkat Lunak (PPLG)</Link></li>
-                <li><Link href="/jurusan/tjkt" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Jaringan Komputer &amp; Telkom (TJKT)</Link></li>
-                <li><Link href="/jurusan/dkv" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Desain Komunikasi Visual (DKV)</Link></li>
-                <li><Link href="/jurusan/bc" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Broadcasting &amp; Perfilman (BC)</Link></li>
-                <li><Link href="/jurusan/an" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Animasi (AN)</Link></li>
-                <li><Link href="/jurusan/te" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Elektronika (TE)</Link></li>
-              </ul>
-            </div>
-
-            {/* Col 3 */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Link Terkait</h4>
-              <ul className="space-y-2 text-xs font-semibold">
-                <li><Link href="#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
-                <li><Link href="#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Pendaftaran</Link></li>
-                <li><Link href="/forum" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Forum Informasi</Link></li>
-                <li><a href="https://smktarunabhakti.sch.id/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Company Profil Sekolah</a></li>
-              </ul>
-            </div>
-
-            {/* Col 4 */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Sekretariat PPDB</h4>
-              <p className="text-xs leading-relaxed font-semibold">
-                {address}
-              </p>
-              <div className="text-xs font-bold space-y-1">
-                <div>Telp: {phone}</div>
-                <div>Email: {email}</div>
-              </div>
-            </div>
+      {/* Dashboard Preview Section (Clean UI) */}
+      <section id="preview" className="py-20 px-6 bg-slate-50 border-y border-slate-100 overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Pengalaman Admin yang Intuitif</h2>
+            <p className="text-slate-500 mt-2">Antarmuka yang bersih dan mudah dimengerti, mempercepat kerja panitia.</p>
           </div>
 
-          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-            <div>© {new Date().getFullYear()} SMK Taruna Bhakti Depok. All Rights Reserved.</div>
-            <div className="flex gap-4">
-              <Link href="/" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Kebijakan Privasi</Link>
-              <span>·</span>
-              <Link href="/" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Syarat &amp; Ketentuan</Link>
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.7 }}
+            className="rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden"
+          >
+            {/* Fake Browser Header */}
+            <div className="h-12 border-b border-slate-100 bg-slate-50/50 flex items-center px-4 gap-2">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-slate-300"></div>
+                <div className="w-3 h-3 rounded-full bg-slate-300"></div>
+                <div className="w-3 h-3 rounded-full bg-slate-300"></div>
+              </div>
+              <div className="mx-auto flex items-center gap-2 bg-white border border-slate-200 px-3 py-1 rounded text-xs text-slate-400 font-mono shadow-sm">
+                admin.cationgate.com
+              </div>
             </div>
+
+            {/* Fake Dashboard Body */}
+            <div className="flex">
+              {/* Sidebar */}
+              <div className="w-64 border-r border-slate-100 p-4 hidden md:block space-y-1">
+                {['Overview', 'Pendaftar', 'Validasi Berkas', 'Pengaturan'].map((item, i) => (
+                  <div key={i} className={`px-3 py-2 rounded-md text-sm font-medium ${i === 0 ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}>
+                    {item}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Content area */}
+              <div className="flex-1 p-6 md:p-8 bg-white">
+                <h3 className="text-lg font-bold text-slate-900 mb-6">Dashboard Overview</h3>
+                
+                {/* Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  {[
+                    { l: "Total Pendaftar", v: "1,248", i: <Users className="w-4 h-4 text-blue-500" /> },
+                    { l: "Terverifikasi", v: "892", i: <ShieldCheck className="w-4 h-4 text-emerald-500" /> },
+                    { l: "Pending", v: "314", i: <LayoutDashboard className="w-4 h-4 text-amber-500" /> },
+                    { l: "Ditolak", v: "42", i: <Database className="w-4 h-4 text-rose-500" /> }
+                  ].map((s, idx) => (
+                    <Card key={idx} className="shadow-none border-slate-200">
+                      <CardContent className="p-4 flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-slate-500">{s.l}</span>
+                          {s.i}
+                        </div>
+                        <span className="text-2xl font-bold text-slate-900">{s.v}</span>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Table Mockup */}
+                <Card className="shadow-none border-slate-200">
+                  <div className="border-b border-slate-100 px-4 py-3 bg-slate-50/50 rounded-t-xl">
+                    <h4 className="text-sm font-semibold text-slate-800">Pendaftar Terbaru</h4>
+                  </div>
+                  <div className="p-0 overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-slate-500 border-b border-slate-100">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">Nama Siswa</th>
+                          <th className="px-4 py-3 font-medium">Asal Sekolah</th>
+                          <th className="px-4 py-3 font-medium">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {[
+                          { n: "Budi Santoso", s: "SMPN 1 Jakarta", st: "Terverifikasi", c: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+                          { n: "Siti Aminah", s: "SMPN 3 Depok", st: "Pending", c: "text-amber-700 bg-amber-50 border-amber-200" },
+                          { n: "Ahmad Rizky", s: "SMP PGRI 2", st: "Terverifikasi", c: "text-emerald-700 bg-emerald-50 border-emerald-200" }
+                        ].map((r, i) => (
+                          <tr key={i} className="hover:bg-slate-50/50">
+                            <td className="px-4 py-3 font-medium text-slate-900">{r.n}</td>
+                            <td className="px-4 py-3 text-slate-500">{r.s}</td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${r.c}`}>
+                                {r.st}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-24 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Infrastruktur Andal</h2>
+            <p className="text-slate-500 mt-2">Fokus pada proses penerimaan, biarkan kami yang mengurus sistemnya.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { t: "Multi-Tenant", d: "Data setiap instansi terpisah secara aman. Privasi pendaftar terjamin.", i: <Database className="w-5 h-5" /> },
+              { t: "Dashboard Analitik", d: "Pantau statistik pendaftar dan kuota secara real-time tanpa delay.", i: <LayoutDashboard className="w-5 h-5" /> },
+              { t: "Performa Tinggi", d: "Arsitektur cloud modern memastikan web tetap cepat diakses saat load tinggi.", i: <Zap className="w-5 h-5" /> }
+            ].map((ft, idx) => (
+              <div key={idx} className="flex flex-col items-center text-center p-6">
+                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                  {ft.i}
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">{ft.t}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{ft.d}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="py-24 px-6 bg-slate-50 border-t border-slate-100">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-4">Investasi Terjangkau</h2>
+          <p className="text-slate-500 mb-12">Satu harga transparan untuk semua fitur premium.</p>
+
+          <Card className="mx-auto max-w-sm shadow-xl shadow-slate-200/50 border-slate-200 relative overflow-hidden">
+            <div className="h-2 w-full bg-blue-600 absolute top-0 left-0"></div>
+            <CardContent className="p-8">
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Paket Institusi</h3>
+              <div className="flex justify-center items-end gap-1 mb-8">
+                <span className="text-sm font-medium text-slate-500 mb-2">Rp</span>
+                <span className="text-5xl font-extrabold text-slate-900 tracking-tighter">750k</span>
+                <span className="text-sm font-medium text-slate-500 mb-2">/thn</span>
+              </div>
+
+              <div className="space-y-4 mb-8 text-left">
+                {[
+                  "Akses Dashboard Lengkap",
+                  "Unlimited Data Calon Siswa",
+                  "Subdomain Instansi Khusus",
+                  "Dukungan Teknis Prioritas"
+                ].map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Link href="/daftar" className="block w-full">
+                <Button className="w-full h-12 text-base shadow-sm">
+                  Berlangganan Sekarang
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 text-center border-t border-slate-100 text-slate-500 text-sm">
+        <p>© {new Date().getFullYear()} CationGate Platform. All Rights Reserved.</p>
       </footer>
-
-      {/* MODAL BERITA / INFORMASI DETAIL DIHAPUS KARENA TIDAK DIGUNAKAN DI LANDING PAGE */}
-
     </div>
   );
 }

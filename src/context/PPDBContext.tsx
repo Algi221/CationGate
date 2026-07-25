@@ -47,14 +47,22 @@ interface PPDBContextType {
   ppdbLogo: string;
   ppdbTitle: string;
   fetchConfigs: () => Promise<void>;
+  schoolId: string;
 }
 
 const PPDBContext = createContext<PPDBContextType | null>(null);
 
-const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
-const WS_URL = typeof window !== 'undefined' ? `ws://${window.location.hostname}:5000/ws` : "ws://localhost:5000/ws";
+import { useParams } from "next/navigation";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+const WS_PROTOCOL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const WS_URL = typeof window !== 'undefined' ? `${WS_PROTOCOL}//${window.location.host}/api/ws` : "ws://localhost:3000/api/ws";
 
 export function PPDBProvider({ children }: { children: React.ReactNode }) {
+  const params = useParams();
+  const slug = params?.school_slug as string || "";
+  const [schoolId, setSchoolId] = useState<string>("");
+
   const [applicants, setApplicants] = useState<any[]>([]);
   const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
   const [activeStudents, setActiveStudents] = useState<any[]>([]);
@@ -98,7 +106,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   const fetchConfigs = useCallback(async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/config`);
+      const res = await fetch(`\${BACKEND_URL}/config`);
       const data = await res.json();
       if (data.success && data.data) {
         if (data.data.ppdb_logo_url) {
@@ -116,6 +124,21 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetchConfigs();
   }, [fetchConfigs]);
+
+  useEffect(() => {
+    if (slug) {
+      fetch(`\${BACKEND_URL}/saas/school-by-slug/${slug}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            setSchoolId(data.data.id);
+            if (data.data.logo_url) setPpdbLogo(data.data.logo_url);
+            if (data.data.name) setPpdbTitle(data.data.name);
+          }
+        })
+        .catch(err => console.error("Gagal mengambil data sekolah:", err));
+    }
+  }, [slug]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<any>(null);
@@ -207,7 +230,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   const fetchPublicApplicants = useCallback(async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants/public`);
+      const res = await fetch(`\${BACKEND_URL}/applicants/public`);
       const data = await res.json();
       if (data.success) setPublicApplicants(data.data);
     } catch (err: any) {
@@ -232,7 +255,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.status === 401) {
@@ -251,7 +274,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.status === 401) {
@@ -272,7 +295,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   const registerApplicant = useCallback(async (formData: any) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -307,7 +330,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants/${id}/status`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ status: "Approved" })
@@ -335,7 +358,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants/${id}/status`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ status: "Rejected", alasan_ditolak })
@@ -370,7 +393,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants/${id}`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -397,7 +420,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return { success: false, message: "Tidak terautentikasi." };
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants/${id}`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(updatedData)
@@ -426,7 +449,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return { success: false, message: "Tidak terautentikasi." };
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants/${id}`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(updatedData)
@@ -452,7 +475,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants/${id}`, {
+      const res = await fetch(`\${BACKEND_URL}/applicants/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -473,7 +496,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   const loginAdmin = useCallback(async (username: string, password: string) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      const res = await fetch(`\${BACKEND_URL}/auth/login${schoolId ? '?school_id=' + schoolId : ''}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -493,7 +516,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       console.error("Auth API error:", err.message);
       return { success: false, message: "Koneksi ke server backend gagal." };
     }
-  }, []);
+  }, [schoolId]);
 
   const connectWs = useCallback(() => {
     if (wsRef.current) {
@@ -656,7 +679,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   const checkPaymentStatus = useCallback(async (nisn: string) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/applicants/check-payment/${nisn}`);
+      const res = await fetch(`\${BACKEND_URL}/applicants/check-payment/${nisn}`);
       const data = await res.json();
       return data;
     } catch (err: any) {
@@ -733,7 +756,8 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         checkPaymentStatus,
         ppdbLogo,
         ppdbTitle,
-        fetchConfigs
+        fetchConfigs,
+        schoolId
       }}
     >
       {children}

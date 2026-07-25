@@ -47,8 +47,8 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
       setLoading(true);
       setError(null);
       const url = periode
-        ? `http://localhost:5000/api/kuota?periode=${encodeURIComponent(periode)}`
-        : 'http://localhost:5000/api/kuota';
+        ? `/api/kuota?periode=${encodeURIComponent(periode)}`
+        : '/api/kuota';
       const res = await fetch(url);
       const json = await res.json();
       if (json.success) {
@@ -110,7 +110,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
   const saveTargets = async () => {
     try {
       setIsSavingTargets(true);
-      const res = await fetch('http://localhost:5000/api/kuota/targets', {
+      const res = await fetch('/api/kuota/targets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targets: editingTargets })

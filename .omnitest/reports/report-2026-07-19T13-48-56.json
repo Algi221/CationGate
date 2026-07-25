@@ -1,0 +1,1328 @@
+{
+  "timestamp": "2026-07-19T13:48:56.818Z",
+  "project": "D:\\Website Project\\CationGate",
+  "summary": {
+    "total": 188,
+    "passed": 94,
+    "failed": 90,
+    "warnings": 4
+  },
+  "results": [
+    {
+      "name": "GET /health",
+      "category": "functional",
+      "status": "fail",
+      "duration": 45,
+      "details": "Connection refused — server not running? (http://localhost:5000/health)"
+    },
+    {
+      "name": "GET /admin/users/ysbmo/staff",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/admin/users/ysbmo/staff)"
+    },
+    {
+      "name": "GET /admin/users",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/admin/users)"
+    },
+    {
+      "name": "GET /admin/users/trashed",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/admin/users/trashed)"
+    },
+    {
+      "name": "POST /admin/users/:id/restore",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/admin/users/1/restore)"
+    },
+    {
+      "name": "POST /admin/users",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/admin/users)"
+    },
+    {
+      "name": "PUT /admin/users/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/admin/users/1)"
+    },
+    {
+      "name": "DELETE /admin/users/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/admin/users/1)"
+    },
+    {
+      "name": "POST /applicants",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants)"
+    },
+    {
+      "name": "GET /applicants/public",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/public)"
+    },
+    {
+      "name": "GET /applicants",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants)"
+    },
+    {
+      "name": "GET /applicants/trashed",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/trashed)"
+    },
+    {
+      "name": "POST /applicants/:id/restore",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/1/restore)"
+    },
+    {
+      "name": "GET /applicants/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/1)"
+    },
+    {
+      "name": "PUT /applicants/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/1)"
+    },
+    {
+      "name": "PATCH /applicants/:id/status",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/1/status)"
+    },
+    {
+      "name": "DELETE /applicants/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/1)"
+    },
+    {
+      "name": "GET /applicants/check-payment/:nisn",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/check-payment/1)"
+    },
+    {
+      "name": "GET /applicants/public-invoice/:nisn",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/public-invoice/1)"
+    },
+    {
+      "name": "GET /applicants/verify/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/verify/1)"
+    },
+    {
+      "name": "POST /auth/login",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/auth/login)"
+    },
+    {
+      "name": "PATCH /auth/change-password",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/auth/change-password)"
+    },
+    {
+      "name": "PATCH /auth/profile",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/auth/profile)"
+    },
+    {
+      "name": "GET /config",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/config)"
+    },
+    {
+      "name": "POST /config",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/config)"
+    },
+    {
+      "name": "GET /config/revisions",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/config/revisions)"
+    },
+    {
+      "name": "POST /config/save-all",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/config/save-all)"
+    },
+    {
+      "name": "POST /config/restore",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/config/restore)"
+    },
+    {
+      "name": "GET /applicants/stats",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/applicants/stats)"
+    },
+    {
+      "name": "GET /api/informasi",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/api/informasi)"
+    },
+    {
+      "name": "GET /api/informasi/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/api/informasi/1)"
+    },
+    {
+      "name": "POST /api/informasi",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/api/informasi)"
+    },
+    {
+      "name": "PUT /api/informasi/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/api/informasi/1)"
+    },
+    {
+      "name": "DELETE /api/informasi/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/api/informasi/1)"
+    },
+    {
+      "name": "GET /api/kuota",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/api/kuota)"
+    },
+    {
+      "name": "POST /api/kuota/targets",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/api/kuota/targets)"
+    },
+    {
+      "name": "POST /payment/confirm-payment-option",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/payment/confirm-payment-option)"
+    },
+    {
+      "name": "GET /saas/school-by-slug/:slug",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/saas/school-by-slug/1)"
+    },
+    {
+      "name": "POST /saas/register",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/saas/register)"
+    },
+    {
+      "name": "GET /siswa-aktif",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/siswa-aktif)"
+    },
+    {
+      "name": "GET /siswa-aktif/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/siswa-aktif/1)"
+    },
+    {
+      "name": "PUT /siswa-aktif/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/siswa-aktif/1)"
+    },
+    {
+      "name": "DELETE /siswa-aktif/:id",
+      "category": "functional",
+      "status": "fail",
+      "duration": 1,
+      "details": "Connection refused — server not running? (http://localhost:5000/siswa-aktif/1)"
+    },
+    {
+      "name": "POST /siswa-aktif/generate-nipd",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/siswa-aktif/generate-nipd)"
+    },
+    {
+      "name": "POST /siswa-aktif/:id/mutasi",
+      "category": "functional",
+      "status": "fail",
+      "duration": 0,
+      "details": "Connection refused — server not running? (http://localhost:5000/siswa-aktif/1/mutasi)"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → POST /applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → POST /applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → POST /applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → POST /applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → POST /applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Classic OR 1=1] → POST /applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [DROP TABLE] → POST /applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [UNION SELECT] → POST /applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Boolean Blind] → POST /applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "SQLi [Time-Based Blind] → POST /applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — Server returned 0"
+    },
+    {
+      "name": "XSS [Script Tag] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [IMG onerror] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Event Handler] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [SVG onload] → POST /admin/users/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Script Tag] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [IMG onerror] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Event Handler] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [SVG onload] → POST /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Script Tag] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [IMG onerror] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [Event Handler] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "XSS [SVG onload] → PUT /admin/users/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Sanitized OK — XSS payload not reflected"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /applicants",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /applicants/trashed",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /applicants/trashed",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /applicants/:id/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PUT /applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PUT /applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PATCH /applicants/:id/status",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PATCH /applicants/:id/status",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → DELETE /applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → DELETE /applicants/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PATCH /auth/change-password",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PATCH /auth/change-password",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PATCH /auth/profile",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PATCH /auth/profile",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /config",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /config",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /config/revisions",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /config/revisions",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /config/save-all",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /config/save-all",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /config/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /config/restore",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /applicants/stats",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /applicants/stats",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /api/informasi",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /api/informasi",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PUT /api/informasi/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PUT /api/informasi/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → DELETE /api/informasi/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → DELETE /api/informasi/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /siswa-aktif",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /siswa-aktif",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → GET /siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → GET /siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → PUT /siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → PUT /siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → DELETE /siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → DELETE /siswa-aktif/:id",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /siswa-aktif/generate-nipd",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /siswa-aktif/generate-nipd",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (No Token) → POST /siswa-aktif/:id/mutasi",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Auth Bypass (Bad JWT) → POST /siswa-aktif/:id/mutasi",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked correctly — returned 0"
+    },
+    {
+      "name": "Header: X-CONTENT-TYPE-OPTIONS",
+      "category": "security",
+      "status": "warn",
+      "duration": 1,
+      "details": "⚠️ MISSING header: X-CONTENT-TYPE-OPTIONS — recommended for security"
+    },
+    {
+      "name": "Header: X-FRAME-OPTIONS",
+      "category": "security",
+      "status": "warn",
+      "duration": 1,
+      "details": "⚠️ MISSING header: X-FRAME-OPTIONS — recommended for security"
+    },
+    {
+      "name": "Header: STRICT-TRANSPORT-SECURITY",
+      "category": "security",
+      "status": "warn",
+      "duration": 1,
+      "details": "⚠️ MISSING header: STRICT-TRANSPORT-SECURITY — recommended for security"
+    },
+    {
+      "name": "Header: CONTENT-SECURITY-POLICY",
+      "category": "security",
+      "status": "warn",
+      "duration": 1,
+      "details": "⚠️ MISSING header: CONTENT-SECURITY-POLICY — recommended for security"
+    },
+    {
+      "name": "Header: X-Powered-By should be hidden",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Good — X-Powered-By not exposed"
+    },
+    {
+      "name": "CORS: Access-Control-Allow-Origin",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "CORS: Not set (OK for same-origin)"
+    },
+    {
+      "name": "Path Traversal: Access .env via path traversal",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked — returned 0"
+    },
+    {
+      "name": "Path Traversal: Access package.json via traversal",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked — returned 0"
+    },
+    {
+      "name": "Path Traversal: URL-encoded traversal to .env",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "Blocked — returned 0"
+    },
+    {
+      "name": "Path Traversal: API prefix traversal to .env",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "Blocked — returned 0"
+    },
+    {
+      "name": "Data Leak Check → GET /health",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Data Leak Check → GET /admin/users/ysbmo/staff",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Data Leak Check → GET /admin/users",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Data Leak Check → GET /admin/users/trashed",
+      "category": "security",
+      "status": "pass",
+      "duration": 1,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Data Leak Check → GET /applicants/public",
+      "category": "security",
+      "status": "pass",
+      "duration": 0,
+      "details": "No sensitive fields leaked"
+    },
+    {
+      "name": "Endpoint Health: GET /health",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/health"
+    },
+    {
+      "name": "Endpoint Health: GET /admin/users/ysbmo/staff",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/admin/users/ysbmo/staff"
+    },
+    {
+      "name": "Endpoint Health: GET /admin/users",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/admin/users"
+    },
+    {
+      "name": "Endpoint Health: GET /admin/users/trashed",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/admin/users/trashed"
+    },
+    {
+      "name": "Endpoint Health: POST /admin/users/:id/restore",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/admin/users/1/restore"
+    },
+    {
+      "name": "Endpoint Health: POST /admin/users",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/admin/users"
+    },
+    {
+      "name": "Endpoint Health: PUT /admin/users/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/admin/users/1"
+    },
+    {
+      "name": "Endpoint Health: DELETE /admin/users/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/admin/users/1"
+    },
+    {
+      "name": "Endpoint Health: POST /applicants",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants"
+    },
+    {
+      "name": "Endpoint Health: GET /applicants/public",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/public"
+    },
+    {
+      "name": "Endpoint Health: GET /applicants",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants"
+    },
+    {
+      "name": "Endpoint Health: GET /applicants/trashed",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/trashed"
+    },
+    {
+      "name": "Endpoint Health: POST /applicants/:id/restore",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/1/restore"
+    },
+    {
+      "name": "Endpoint Health: GET /applicants/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/1"
+    },
+    {
+      "name": "Endpoint Health: PUT /applicants/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/1"
+    },
+    {
+      "name": "Endpoint Health: PATCH /applicants/:id/status",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/1/status"
+    },
+    {
+      "name": "Endpoint Health: DELETE /applicants/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/1"
+    },
+    {
+      "name": "Endpoint Health: GET /applicants/check-payment/:nisn",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/check-payment/1"
+    },
+    {
+      "name": "Endpoint Health: GET /applicants/public-invoice/:nisn",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/public-invoice/1"
+    },
+    {
+      "name": "Endpoint Health: GET /applicants/verify/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/verify/1"
+    },
+    {
+      "name": "Endpoint Health: POST /auth/login",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/auth/login"
+    },
+    {
+      "name": "Endpoint Health: PATCH /auth/change-password",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/auth/change-password"
+    },
+    {
+      "name": "Endpoint Health: PATCH /auth/profile",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/auth/profile"
+    },
+    {
+      "name": "Endpoint Health: GET /config",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/config"
+    },
+    {
+      "name": "Endpoint Health: POST /config",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/config"
+    },
+    {
+      "name": "Endpoint Health: GET /config/revisions",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/config/revisions"
+    },
+    {
+      "name": "Endpoint Health: POST /config/save-all",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/config/save-all"
+    },
+    {
+      "name": "Endpoint Health: POST /config/restore",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/config/restore"
+    },
+    {
+      "name": "Endpoint Health: GET /applicants/stats",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/applicants/stats"
+    },
+    {
+      "name": "Endpoint Health: GET /api/informasi",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/api/informasi"
+    },
+    {
+      "name": "Endpoint Health: GET /api/informasi/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/api/informasi/1"
+    },
+    {
+      "name": "Endpoint Health: POST /api/informasi",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/api/informasi"
+    },
+    {
+      "name": "Endpoint Health: PUT /api/informasi/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/api/informasi/1"
+    },
+    {
+      "name": "Endpoint Health: DELETE /api/informasi/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/api/informasi/1"
+    },
+    {
+      "name": "Endpoint Health: GET /api/kuota",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/api/kuota"
+    },
+    {
+      "name": "Endpoint Health: POST /api/kuota/targets",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/api/kuota/targets"
+    },
+    {
+      "name": "Endpoint Health: POST /payment/confirm-payment-option",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/payment/confirm-payment-option"
+    },
+    {
+      "name": "Endpoint Health: GET /saas/school-by-slug/:slug",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/saas/school-by-slug/1"
+    },
+    {
+      "name": "Endpoint Health: POST /saas/register",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/saas/register"
+    },
+    {
+      "name": "Endpoint Health: GET /siswa-aktif",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/siswa-aktif"
+    },
+    {
+      "name": "Endpoint Health: GET /siswa-aktif/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/siswa-aktif/1"
+    },
+    {
+      "name": "Endpoint Health: PUT /siswa-aktif/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/siswa-aktif/1"
+    },
+    {
+      "name": "Endpoint Health: DELETE /siswa-aktif/:id",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 1,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/siswa-aktif/1"
+    },
+    {
+      "name": "Endpoint Health: POST /siswa-aktif/generate-nipd",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/siswa-aktif/generate-nipd"
+    },
+    {
+      "name": "Endpoint Health: POST /siswa-aktif/:id/mutasi",
+      "category": "bugs",
+      "status": "fail",
+      "duration": 0,
+      "details": "💀 DEAD ENDPOINT — Connection refused at http://localhost:5000/siswa-aktif/1/mutasi"
+    }
+  ]
+}

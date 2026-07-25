@@ -1,7 +1,11 @@
 import React from "react";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Geist } from "next/font/google";
 import "./globals.css";
 import { PPDBProvider } from "@/context/PPDBContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -10,23 +14,19 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: "PPDB SMK Taruna Bhakti Depok - Portal Pendaftaran Siswa Baru 2026/2027",
-  description: "Selamat datang di Portal PPDB Online SMK Taruna Bhakti Depok. Pendaftaran mudah, cepat, transparan, dan terintegrasi untuk calon taruna-taruni baru bidang IT dan Elektronika.",
-  keywords: ["PPDB", "SMK Taruna Bhakti", "SMK TB", "Pendaftaran SMK", "Depok", "Sekolah IT"],
-  authors: [{ name: "SMK Taruna Bhakti Depok" }],
-  icons: {
-    icon: "/logo_smktb.png",
-    apple: "/logo_smktb.png",
-  },
+  title: "CationGate - Platform Manajemen PPDB",
+  description: "SaaS Manajemen Penerimaan Siswa Baru Cerdas dan Terintegrasi.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${plusJakarta.variable} h-full antialiased`} data-scroll-behavior="smooth">
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-slate-50 text-slate-900">
-        <PPDBProvider>
-          {children}
-        </PPDBProvider>
+    <html lang="id" className={cn("h-full", "antialiased", plusJakarta.variable, "font-sans", geist.variable)} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <PPDBProvider>
+            {children}
+          </PPDBProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

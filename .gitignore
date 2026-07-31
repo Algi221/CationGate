@@ -54,3 +54,4 @@ next-env.d.ts
 *.md
 !README.md
 hasil_export/
+opencode.json

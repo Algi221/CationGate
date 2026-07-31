@@ -325,7 +325,14 @@ export default function DaftarPage() {
     janjiSanksi: "",
     janjiAkrab: "",
     janjiBelajar: "",
+    janjiNamaBaik: "",
+    deklarasi: false,
     periode: "2026-2027",
+    berkasFotoOk: false,
+    berkasFotoFile: null as File | null,
+    berkasFotoName: "",
+    berkasFotoBase64: "",
+    berkasPrestasiBase64: "",
   });
 
   const [submittedCandidate, setSubmittedCandidate] = useState<any>(null);
@@ -334,6 +341,17 @@ export default function DaftarPage() {
 
   const [isDark, setIsDark] = useState(false);
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
+  const [regCost, setRegCost] = useState(250000);
+  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
+  const [bankConfigList, setBankConfigList] = useState<Array<{ bankName: string; accountNumber: string; accountHolder: string }>>([
+    { bankName: "Bank Mandiri", accountNumber: "157-00-0174092-2", accountHolder: "Yayasan Taruna Bhakti" }
+  ]);
+  const [showPaymentGate, setShowPaymentGate] = useState(false);
+  const [activePaymentMethod, setActivePaymentMethod] = useState<"gateway" | "manual" | "transfer" | "tu">("transfer");
+  const [manualReceiptBase64, setManualReceiptBase64] = useState("");
+  const [manualReceiptName, setManualReceiptName] = useState("");
+  const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
+
   const [majors, setMajors] = useState([
     { code: "RPL", title: "Rekayasa Perangkat Lunak" },
     { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },

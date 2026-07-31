@@ -288,6 +288,8 @@ export default function Home() {
   };
 
   const [loadVideo, setLoadVideo] = useState(false);
+  const [heroMediaUrl, setHeroMediaUrl] = useState<string>("");
+  const [heroMediaType, setHeroMediaType] = useState<string>("none");
   const [currentVideo, setCurrentVideo] = useState(0);
   const videos = ["/assets/videos/vid1.webm", "/assets/videos/vid2.webm"];
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -366,6 +368,8 @@ export default function Home() {
           if (config.ppdb_hero_title) setHeroTitle(config.ppdb_hero_title);
           if (config.ppdb_hero_title_sub) setHeroTitleSub(config.ppdb_hero_title_sub);
           if (config.ppdb_hero_subtitle) setHeroSubtitle(config.ppdb_hero_subtitle);
+          if (config.ppdb_hero_media_url) setHeroMediaUrl(config.ppdb_hero_media_url);
+          if (config.ppdb_hero_media_type) setHeroMediaType(config.ppdb_hero_media_type);
           if (config.ppdb_phone) setPhone(config.ppdb_phone);
           if (config.ppdb_email) setEmail(config.ppdb_email);
           if (config.ppdb_address) setAddress(config.ppdb_address);
@@ -607,22 +611,25 @@ export default function Home() {
       {/* HERO SECTION WRAPPER */}
       <main className="flex-grow w-full">
         <div className="relative w-full overflow-hidden">
-          {/* Video Background - Full Width */}
+          {/* Media Background - Full Width */}
           <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-            {loadVideo && (
+            {heroMediaType === "video" && heroMediaUrl ? (
               <video
-                ref={videoRef}
-                src={videos[currentVideo]}
+                src={heroMediaUrl}
                 autoPlay
                 muted
+                loop
                 playsInline
-                preload="none"
-                onEnded={handleVideoEnded}
                 className="w-full h-full object-cover transition-opacity duration-1000"
-                aria-hidden="true"
-              >
-                <track kind="captions" label="No captions" default />
-              </video>
+              />
+            ) : heroMediaType === "image" && heroMediaUrl ? (
+              <img
+                src={heroMediaUrl}
+                alt="Hero Background"
+                className="w-full h-full object-cover transition-opacity duration-1000"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
             )}
             <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
           </div>
@@ -683,7 +690,7 @@ export default function Home() {
 
           {/* Hero Copy */}
           <div className="badge-wrapper relative z-10 flex flex-col items-center gap-3">
-            <span className="badge-pill">SMK TARUNA BHAKTI DEPOK</span>
+            <span className="badge-pill">{ppdbTitle.toUpperCase()}</span>
             <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-800/60 px-4 py-2 rounded-full backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
                <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
                <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>

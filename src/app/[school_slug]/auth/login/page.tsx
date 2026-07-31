@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, User, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, CheckCircle2, Sparkles, Building2 } from "lucide-react";
 
 export default function AdminLogin() {
   const { loginAdmin, adminToken, ppdbTitle } = usePPDB();
   const router = useRouter();
+  const params = useParams();
+  const schoolSlug = params?.school_slug as string;
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +20,7 @@ export default function AdminLogin() {
 
   useEffect(() => {
     setMounted(true);
-    if (adminToken) router.push("/dashboard");
+    if (adminToken && schoolSlug) router.push(`/${schoolSlug}/dashboard`);
   }, [adminToken, router]);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function AdminLogin() {
     try {
       const res = await loginAdmin(username, password);
       if (res.success) {
-        router.push("/dashboard");
+        router.push(`/${schoolSlug}/dashboard`);
       } else {
         setError(res.message || "Username atau Password tidak valid.");
       }

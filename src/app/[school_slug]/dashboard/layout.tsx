@@ -148,16 +148,17 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
           logoutAdmin();
-          router.push("/auth/login?expired=true");
+          router.push(`/${schoolSlug}/auth/login?expired=true`);
           return;
         }
       }
       if (!adminToken) {
-        router.push("/auth/login");
+        router.push(`/${schoolSlug}/auth/login`);
         return;
       }
       // Redirect unverified schools to verification onboarding
-      if (schoolStatus && schoolStatus !== "verified" && schoolSlug) {
+      const isVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified';
+      if (!isVerified && schoolSlug) {
         router.push(`/${schoolSlug}/verify-account`);
       }
     }

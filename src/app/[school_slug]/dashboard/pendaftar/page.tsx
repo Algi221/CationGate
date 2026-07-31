@@ -215,7 +215,7 @@ function buildKey(a: Applicant): string {
 }
 
 function ApplicantsDirectoryContent() {
-  const { applicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant, fetchAdminApplicants } = usePPDB();
+  const { applicants, setApplicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant, fetchAdminApplicants, addToast } = usePPDB();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
@@ -502,94 +502,23 @@ function ApplicantsDirectoryContent() {
   }, [syncStatus]);
 
   const exportToExcel = async () => {
-    if (filteredApplicants.length === 0) return;
-
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Data Pendaftar");
-
-    worksheet.columns = [
-      { header: 'No.', key: 'no', width: 10 },
-      { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
-      { header: 'Nama Lengkap', key: 'nama', width: 35 },
-      { header: 'Jenis Kelamin', key: 'jk', width: 15 },
-      { header: 'NISN', key: 'nisn', width: 25 },
-      { header: 'NIK', key: 'nik', width: 25 },
-      { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
-      { header: 'Program Studi Pilihan Utama', key: 'jurusan1', width: 35 },
-      { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
-      { header: 'Email', key: 'email', width: 35 },
-      { header: 'Status Verifikasi', key: 'status', width: 25 },
-      { header: 'Tanggal Mendaftar', key: 'tanggal', width: 25 },
-    ];
-
-    const headerRow = worksheet.getRow(1);
-    headerRow.height = 35;
-    
-    headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FF000000' } };
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF9BC2E6' }
-      };
-      cell.alignment = { vertical: 'middle', horizontal: 'center' };
-      cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
-      };
-    });
-
-    filteredApplicants.forEach((a: Applicant, index: number) => {
-      worksheet.addRow({
-        no: index + 1,
-        no_pendaftaran: formatNoPendaftaran(a.periode, a.id),
-        nama: a.nama || "",
-        jk: (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l") ? "Laki-laki" : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p") ? "Perempuan" : "-",
-        nisn: a.nisn || "",
-        nik: a.nik || "",
-        sekolah: a.sekolah_asal || a.sekolahAsal || "",
-        jurusan1: a.jurusan_1 || a.jurusan1 || "",
-        whatsapp: a.whatsapp || "",
-        email: a.email || "",
-        status: a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending",
-        tanggal: a.tgl_daftar ? new Date(a.tgl_daftar).toLocaleDateString("id-ID") : a.createdAt ? new Date(a.createdAt).toLocaleDateString("id-ID") : ""
-      });
-    });
-
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) {
-        row.height = 25;
-      }
-      
-      row.eachCell((cell, colNumber) => {
-        if (rowNumber > 1) {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFFFFFF' }
-          };
-          
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          };
-
-          if ([1, 3, 4, 6, 9, 11, 12].includes(colNumber)) {
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-          } else {
-            cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-          }
+    try {
+      const token = localStorage.getItem("ppdb_token");
+      const res = await fetch("/api/applicants/export", {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
       });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `Data_Pendaftar_SMKTB_${Date.now()}.xlsx`);
+      if (!res.ok) throw new Error("Gagal mengunduh file ekspor Excel");
+      const blob = await res.blob();
+      saveAs(blob, `Data_Calon_Siswa_${new Date().toISOString().split("T")[0]}.xlsx`);
+    } catch (err: any) {
+      Swal.fire({
+        icon: "error",
+        title: "Ekspor Gagal",
+        text: err.message
+      });
+    }
   };
 
   return (
@@ -797,6 +726,7 @@ function ApplicantsDirectoryContent() {
                   <th className="py-4 px-6">Asal Sekolah</th>
                   <th className="py-4 px-6">Pilihan Jurusan Utama</th>
                   <th className="py-4 px-6 text-center">Status</th>
+                  <th className="py-4 px-6 text-center">Berkas Fisik</th>
                   <th className="py-4 px-6 text-right pr-8">Aksi Administrasi</th>
                 </tr>
               </thead>
@@ -808,7 +738,9 @@ function ApplicantsDirectoryContent() {
                     onDoubleClick={() => handleViewDetail(a)}
                   >
                     <td className="py-4 px-6 pl-8">
-                      <div className="font-extrabold text-blue-600 dark:text-blue-400 text-sm font-mono">{formatNoPendaftaran(a.periode, a.id)}</div>
+                      <div className="font-extrabold text-blue-600 dark:text-blue-400 text-sm font-mono">
+                        {a.registration_no || formatNoPendaftaran(a.periode, a.id)}
+                      </div>
                     </td>
                     <td className="py-4 px-6">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
@@ -848,6 +780,42 @@ function ApplicantsDirectoryContent() {
                       >
                         {a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending"}
                       </span>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const token = localStorage.getItem("ppdb_token");
+                          const targetState = !a.physical_doc_verified;
+                          try {
+                            const res = await fetch(`/api/applicants/${a.id}/physical-doc`, {
+                              method: "PATCH",
+                              headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`
+                              },
+                              body: JSON.stringify({ verified: targetState })
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                              setApplicants(prev => prev.map(item => item.id === a.id ? { ...item, physical_doc_verified: targetState, physical_doc_verified_by: data.data.physical_doc_verified_by } : item));
+                              if (typeof addToast === "function") {
+                                addToast("Verifikasi Berkas Fisik", data.message, "success");
+                              }
+                            }
+                          } catch (err: any) {
+                            console.error("Gagal update berkas fisik:", err);
+                          }
+                        }}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-extrabold border uppercase tracking-wider cursor-pointer transition-all ${
+                          a.physical_doc_verified
+                            ? "bg-emerald-50 border-emerald-250 text-emerald-600 dark:bg-emerald-950/60 dark:border-emerald-900 dark:text-emerald-400 hover:bg-emerald-100"
+                            : "bg-rose-50 border-rose-250 text-rose-600 dark:bg-rose-950/60 dark:border-rose-900 dark:text-rose-400 hover:bg-rose-100"
+                        }`}
+                        title={a.physical_doc_verified ? `Diverifikasi oleh ${a.physical_doc_verified_by || 'Admin'} - Klik untuk batalkan` : "Klik jika Berkas Fisik siswa sudah diterima di sekolah"}
+                      >
+                        {a.physical_doc_verified ? "✓ Diterima" : "⌛ Belum Ada"}
+                      </button>
                     </td>
                     <td className="py-4 px-6 text-right pr-8 shrink-0">
                       <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
@@ -1275,7 +1243,7 @@ function ApplicantsDirectoryContent() {
                   { id: "bantuan", label: "Bantuan" },
                   { id: "orangtua", label: "Orang Tua" },
                   { id: "akademik", label: "Akademik" },
-                  { id: "pembayaran", label: "Pembayaran" },
+                  { id: "pembayaran", label: "Verifikasi Berkas" },
                   { id: "pernyataan", label: "Pernyataan" }
                 ].map((t) => (
                   <button
@@ -1582,118 +1550,96 @@ function ApplicantsDirectoryContent() {
               {activeTab === "pembayaran" && (
                 <div className="space-y-6 animate-in fade-in duration-300">
                   <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                    <FileImage size={12} className="text-blue-500" /> Status & Bukti Pembayaran
+                    <FileCheck size={12} className="text-blue-500" /> Status Verifikasi Berkas Fisik
                   </h4>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Metode Pembayaran</span>
-                      <span className="text-slate-800 dark:text-white font-extrabold text-sm uppercase">
-                        {selectedApplicant.metode_pembayaran || "Payment Gateway"}
-                      </span>
-                    </div>
-                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Status Pembayaran</span>
-                      <div>
+                  <div className="p-6 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="space-y-1 text-left">
+                      <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[9px] tracking-wider block">Status Penyerahan Berkas Fisik</span>
+                      <div className="flex items-center gap-3">
                         <span
-                          className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                            selectedApplicant.payment_status === "Paid"
-                              ? "bg-emerald-50 border-emerald-250 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900"
-                              : "bg-rose-50 border-rose-250 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900"
+                          className={`inline-flex px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${
+                            selectedApplicant.physical_doc_verified
+                              ? "bg-emerald-50 border-emerald-300 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900"
+                              : "bg-rose-50 border-rose-300 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900"
                           }`}
                         >
-                          {selectedApplicant.payment_status === "Paid" ? "Lunas" : "Belum Lunas"}
+                          {selectedApplicant.physical_doc_verified ? "✓ Berkas Fisik Lengkap" : "⌛ Belum Diserahkan"}
                         </span>
                       </div>
+                      {selectedApplicant.physical_doc_verified && selectedApplicant.physical_doc_verified_by && (
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-semibold">
+                          Diverifikasi oleh admin <span className="font-bold text-slate-700 dark:text-white">{selectedApplicant.physical_doc_verified_by}</span>
+                        </p>
+                      )}
                     </div>
+
+                    <button
+                      onClick={async () => {
+                        const token = localStorage.getItem("ppdb_token");
+                        const targetState = !selectedApplicant.physical_doc_verified;
+                        try {
+                          const res = await fetch(`/api/applicants/${selectedApplicant.id}/physical-doc`, {
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ verified: targetState })
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            setSelectedApplicant(prev => prev ? {
+                              ...prev,
+                              physical_doc_verified: targetState,
+                              physical_doc_verified_by: data.data.physical_doc_verified_by
+                            } : null);
+                            setApplicants(prev => prev.map(item => item.id === selectedApplicant.id ? {
+                              ...item,
+                              physical_doc_verified: targetState,
+                              physical_doc_verified_by: data.data.physical_doc_verified_by
+                            } : item));
+                            if (typeof addToast === "function") {
+                              addToast("Verifikasi Berkas Fisik", data.message, "success");
+                            }
+                          }
+                        } catch (err: any) {
+                          console.error("Gagal update berkas fisik:", err);
+                        }
+                      }}
+                      className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider shadow transition-all flex items-center gap-2 ${
+                        selectedApplicant.physical_doc_verified
+                          ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
+                          : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20"
+                      }`}
+                    >
+                      <Check size={15} />
+                      <span>{selectedApplicant.physical_doc_verified ? "Batalkan Verifikasi Berkas" : "Tandai Berkas Fisik Diterima"}</span>
+                    </button>
                   </div>
 
-                  {/* Invoice Resmi Pembayaran Section */}
-                  {selectedApplicant.payment_status === "Paid" && (
-                    <div className="p-5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-900/50 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
-                      <div className="text-left">
-                        <span className="text-blue-600 dark:text-sky-400 font-black uppercase tracking-widest text-[9px] block">Invoice Resmi Pembayaran</span>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-455 font-bold mt-1 leading-relaxed">
-                          Invoice pendaftaran resmi telah diterbitkan dan diverifikasi untuk calon siswa ini. Klik tombol di bawah untuk melihat, mencetak, atau menyimpannya sebagai file PDF.
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => window.open(`/invoice?nisn=${selectedApplicant.nisn}`, '_blank')}
-                        className="px-5 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 shrink-0 animate-pulse"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                        </svg>
-                        <span>Cetak / Unduh Invoice</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Manual receipt slip visual display */}
-                  <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl p-5 space-y-4">
-                    <span className="text-slate-400 dark:text-slate-555 block font-bold uppercase text-[9px] tracking-wider">
-                      Dokumen Bukti Transfer Manual
+                  {/* Checklist Items */}
+                  <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl p-5 space-y-3">
+                    <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[9px] tracking-wider block">
+                      Daftar Kelengkapan Berkas Fisik Yang Harus Diterima Panitia:
                     </span>
-                    {selectedApplicant.bukti_bayar ? (
-                      <div className="flex flex-col items-center gap-4">
-                        {selectedApplicant.bukti_bayar.startsWith("data:application/pdf") ? (
-                          <div className="w-full py-10 bg-slate-100 dark:bg-slate-900 rounded-xl flex flex-col items-center justify-center border dark:border-white/5">
-                            <FileText size={48} className="text-blue-500 mb-2" />
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-350">Dokumen PDF Bukti Transfer</p>
-                            <a
-                              href={sanitizeUrl(selectedApplicant.bukti_bayar)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-750 text-white rounded-lg text-xs font-black uppercase tracking-wider shadow animate-bounce"
-                            >
-                              Unduh / Lihat PDF
-                            </a>
-                          </div>
-                        ) : (
-                          <div className="max-w-sm rounded-xl overflow-hidden border dark:border-white/5 shadow-md">
-                            <img
-                              src={sanitizeSrc(selectedApplicant.bukti_bayar)}
-                              alt="Bukti Transfer Manual"
-                              className="max-h-64 object-contain mx-auto bg-white rounded-lg cursor-pointer hover:brightness-95 transition-all w-full"
-                              onClick={() => setIsFullscreenImageOpen(true)}
-                            />
-                          </div>
-                        )}
-                        
-                        {/* Panitia Action to manually mark as Paid */}
-                        {selectedApplicant.payment_status !== "Paid" && (
-                          <button
-                            onClick={async () => {
-                              const result = await Swal.fire({
-                                title: 'Konfirmasi',
-                                text: "Apakah Anda yakin ingin memverifikasi bukti pembayaran ini dan menandai Lunas?",
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonText: 'Ya',
-                                cancelButtonText: 'Batal'
-                              });
-                              if (result.isConfirmed) {
-                                const res = await updateApplicant(selectedApplicant.id, { payment_status: "Paid" });
-                                if (res?.success) {
-                                  setSelectedApplicant(prev => prev ? { ...prev, payment_status: "Paid" } : null);
-                                  window.location.href = `/invoice?nisn=${selectedApplicant.nisn}&isAdmin=true`;
-                                } else {
-                                  alert(res?.message || "Gagal memperbarui status pembayaran.");
-                                }
-                              }
-                            }}
-                            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md flex items-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] transition"
-                          >
-                            <Check size={14} />
-                            <span>Verifikasi Pembayaran Lunas</span>
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="py-8 text-center text-slate-400 italic font-semibold">
-                        Tidak ada bukti transfer manual yang diunggah oleh pendaftar.
-                      </div>
-                    )}
+                    <ul className="text-xs space-y-2 text-slate-700 dark:text-slate-300 font-semibold">
+                      <li className="flex items-center gap-2.5">
+                        <span className="text-blue-500 font-bold">✓</span> Fotokopi Kartu Keluarga (KK)
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <span className="text-blue-500 font-bold">✓</span> Fotokopi KTP Orang Tua (Ayah &amp; Ibu)
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <span className="text-blue-500 font-bold">✓</span> Akta Kelahiran asli &amp; 1 Fotokopi
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <span className="text-blue-500 font-bold">✓</span> Fotokopi Ijazah / Surat Keterangan Lulus (SKL) legalisir
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <span className="text-blue-500 font-bold">✓</span> Pas foto berwarna terbaru ukuran 3x4 (3 lembar)
+                      </li>
+                    </ul>
                   </div>
                 </div>
               )}

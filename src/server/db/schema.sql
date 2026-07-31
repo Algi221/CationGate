@@ -1,23 +1,61 @@
-        -- Database Schema PPDB SMK Taruna Bhakti Depok
+        -- Database Schema CationGate (Multi-Tenant SaaS)
         -- Compatibility: PostgreSQL (pgAdmin ready)
 
-        -- Table for Admin Users
-        CREATE TABLE IF NOT EXISTS admin_users (
+        -- 1. Table for Tenants (Schools)
+        CREATE TABLE IF NOT EXISTS schools (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(150) NOT NULL,
+            slug VARCHAR(100) UNIQUE NOT NULL,
+            plan_type VARCHAR(50) DEFAULT 'TRIAL', -- 'TRIAL', 'YEARLY'
+            status VARCHAR(50) DEFAULT 'UNVERIFIED', -- 'UNVERIFIED', 'OTP_VERIFIED', 'FULL_VERIFIED', 'SUSPENDED'
+            npsn VARCHAR(20),
+            dapodik_code VARCHAR(50),
+            official_email VARCHAR(100),
+            social_media JSONB,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Table for Gatekeeper Platform Admins (CationGate Superadmin / Founder)
+        CREATE TABLE IF NOT EXISTS gatekeeper_users (
             id SERIAL PRIMARY KEY,
             username VARCHAR(50) UNIQUE NOT NULL,
             password_hash VARCHAR(255) NOT NULL,
             nama_lengkap VARCHAR(100) NOT NULL,
-            role VARCHAR(20) DEFAULT 'admin',
+            email VARCHAR(100) UNIQUE NOT NULL,
+            role VARCHAR(20) DEFAULT 'gatekeeper',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Table for School Admin Users (Linked to Schools Tenant)
+        CREATE TABLE IF NOT EXISTS admin_users (
+            id SERIAL PRIMARY KEY,
+            school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            nama_lengkap VARCHAR(100) NOT NULL,
+            role VARCHAR(20) DEFAULT 'superadmin', -- 'superadmin' (Superadmin Sekolah), 'admin' (Admin Sekolah Staff)
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Table for OTP Verification
+        CREATE TABLE IF NOT EXISTS verification_otps (
+            id SERIAL PRIMARY KEY,
+            school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE,
+            email VARCHAR(100) NOT NULL,
+            otp_code VARCHAR(10) NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            is_used BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         -- Table for Student Applicants (Calon Siswa)
         CREATE TABLE IF NOT EXISTS calon_siswa (
             id SERIAL PRIMARY KEY,
+            school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE,
             -- Core Identity
             nama VARCHAR(150) NOT NULL,
-            nisn VARCHAR(10) UNIQUE NOT NULL,
-            nik VARCHAR(16) UNIQUE NOT NULL,
+            nisn VARCHAR(10) NOT NULL, -- Removed UNIQUE because multiple schools can have the same NISN theoretically if migrating or testing
+            nik VARCHAR(16) NOT NULL,
             tempat_lahir VARCHAR(100) NOT NULL,
             tgl_lahir DATE NOT NULL,
             jenis_kelamin CHAR(1) NOT NULL, -- 'L' or 'P'
@@ -155,41 +193,34 @@
             janji_belajar BOOLEAN DEFAULT FALSE,
             janji_nama_baik BOOLEAN DEFAULT FALSE,
             
-            -- Period & Uploaded Documents
+            -- Period & Registration
             periode VARCHAR(20) DEFAULT '2026-2027',
             gelombang VARCHAR(20) DEFAULT 'Gelombang 1',
-            berkas_foto TEXT,
-            bukti_bayar TEXT,
-            metode_pembayaran VARCHAR(50) DEFAULT 'Payment Gateway',
+
+            -- Registration Card & Physical Doc Verification
+            registration_no VARCHAR(50),  -- Nomor Pendaftaran SPMB unik
+            physical_doc_verified BOOLEAN DEFAULT FALSE, -- Berkas fisik sudah diserahkan ke sekolah
+            physical_doc_verified_by VARCHAR(100), -- Nama admin yang memverifikasi
+            physical_doc_verified_at TIMESTAMP, -- Waktu verifikasi berkas fisik
 
             -- Administrative System Fields
             status VARCHAR(20) DEFAULT 'Pending', -- 'Pending', 'Approved', 'Rejected'
-            payment_status VARCHAR(20) DEFAULT 'Unpaid', -- 'Unpaid', 'Paid'
-            tgl_daftar TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            tgl_daftar TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(school_id, nisn),
+            UNIQUE(school_id, nik),
+            UNIQUE(registration_no)
         );
 
         -- Indexing for fast lookups
+        CREATE INDEX IF NOT EXISTS idx_calon_siswa_school ON calon_siswa(school_id);
         CREATE INDEX IF NOT EXISTS idx_calon_siswa_nisn ON calon_siswa(nisn);
         CREATE INDEX IF NOT EXISTS idx_calon_siswa_nik ON calon_siswa(nik);
         CREATE INDEX IF NOT EXISTS idx_calon_siswa_status ON calon_siswa(status);
 
-        -- Seed default admin user:
-        -- Username: Kevin
-        -- Password: RPLSTRONG (bcrypt hash: $2a$10$HJAdFhU530BR89CfkV3ssON1ttR9.BTr6G4O3NFjjgLqMR7lMeUlS)
-        INSERT INTO admin_users (username, password_hash, nama_lengkap, role) 
-        VALUES ('Kevin', '$2a$10$HJAdFhU530BR89CfkV3ssON1ttR9.BTr6G4O3NFjjgLqMR7lMeUlS', 'Administrator PPDB TB', 'superadmin')
-        ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role;
-
-        -- Seed default admin user:
-        -- Username: admin_tb
-        -- Password: AdminTarunaBhakti2026 (bcrypt hash: $2a$10$9.8ZaoTOEEpOo89r7wawguTCJRzkhMuZ.D9i21lWsQ0eBxk0O9cyi)
-        INSERT INTO admin_users (username, password_hash, nama_lengkap, role) 
-        VALUES ('admin_tb', '$2a$10$9.8ZaoTOEEpOo89r7wawguTCJRzkhMuZ.D9i21lWsQ0eBxk0O9cyi', 'Panitia PPDB Biasa', 'admin')
-        ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role;
-
         -- Table for Information & Announcements
         CREATE TABLE IF NOT EXISTS informasi (
             id SERIAL PRIMARY KEY,
+            school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE,
             judul VARCHAR(255) NOT NULL,
             konten TEXT NOT NULL,
             tanggal DATE NOT NULL,
@@ -199,16 +230,38 @@
 
         -- Table for Landing Page Configuration (Dynamic Key-Value Store)
         CREATE TABLE IF NOT EXISTS landing_page_config (
-            config_key VARCHAR(50) PRIMARY KEY,
+            school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE,
+            config_key VARCHAR(50),
             config_value JSONB NOT NULL,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (school_id, config_key)
         );
 
         -- Table for User Interface Configuration Revisions/Change Log
         CREATE TABLE IF NOT EXISTS ui_revisions (
             id SERIAL PRIMARY KEY,
+            school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE,
             config_values JSONB NOT NULL,
             changed_by VARCHAR(100) DEFAULT 'admin',
             description TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        -- ==========================================
+        -- DEFAULT SEED DATA (For Backward Compatibility)
+        -- ==========================================
+        
+        -- Insert CationGate Superadmin
+        INSERT INTO admin_users (username, password_hash, nama_lengkap, role) 
+        VALUES ('Kevin', '$2a$10$HJAdFhU530BR89CfkV3ssON1ttR9.BTr6G4O3NFjjgLqMR7lMeUlS', 'Superadmin CationGate', 'superadmin')
+        ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role;
+        
+        -- Default School (SMK Taruna Bhakti)
+        INSERT INTO schools (id, name, slug, status, plan_type)
+        VALUES (1, 'SMK Taruna Bhakti', 'smktarunabhakti', 'VERIFIED', 'YEARLY')
+        ON CONFLICT (id) DO NOTHING;
+        
+        -- Default School Admin for SMK Taruna Bhakti
+        INSERT INTO admin_users (school_id, username, password_hash, nama_lengkap, role) 
+        VALUES (1, 'admin_tb', '$2a$10$9.8ZaoTOEEpOo89r7wawguTCJRzkhMuZ.D9i21lWsQ0eBxk0O9cyi', 'Panitia PPDB Biasa', 'admin')
+        ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role;

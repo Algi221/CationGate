@@ -13,6 +13,7 @@ import siswaAktifRouter from './routes/siswa-aktif';
 import kuotaRouter from './routes/kuota';
 import saasRouter from './routes/saas';
 import dashboardRouter from './routes/dashboard';
+import verifyRouter from './routes/verify';
 import { secureHeaders } from 'hono/secure-headers';
 
 dotenv.config();
@@ -62,8 +63,11 @@ app.use('*', secureHeaders({
   xXssProtection: '1; mode=block',
 }));
 
+import gatekeeperRouter from './routes/gatekeeper';
+
 // Route mappings
 app.route('/auth', authRouter);
+app.route('/gatekeeper', gatekeeperRouter);
 app.route('/applicants', appRouter);
 app.route('/payment', paymentRouter);
 app.route('/informasi', informasiRouter);
@@ -73,6 +77,7 @@ app.route('/siswa-aktif', siswaAktifRouter);
 app.route('/kuota', kuotaRouter);
 app.route('/saas', saasRouter);
 app.route('/dashboard', dashboardRouter);
+app.route('/verify', verifyRouter);
 
 // Standard API health check
 app.get('/health', (c) => c.json({ status: 'OK', service: 'PPDB SMK Taruna Bhakti API Server v1.0.0 (Monolith)' }));

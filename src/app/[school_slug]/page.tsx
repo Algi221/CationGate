@@ -60,13 +60,11 @@ import { usePPDB } from "@/context/PPDBContext";
 
 const sanitizeUrl = (url: string | undefined | null): string | null => {
   if (!url) return null;
-  try {
-    return dompurify.sanitize(url, {
-      ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-    }) || null;
-  } catch (e) {
-    return null;
+  if (/^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i.test(url)) {
+    if (url.toLowerCase().includes('javascript:')) return null;
+    return url;
   }
+  return null;
 };
 
 const sanitizeSrc = (src: string | undefined | null): string | null => {

@@ -14,23 +14,17 @@ gatekeeperRouter.post('/login', async (c) => {
       return c.json({ success: false, message: 'Harap isi username dan password Gatekeeper' }, 400);
     }
 
-    const supabase = getSupabaseClient();
-    
-    // Check gatekeeper_users table
-    let { data: gatekeeper } = await supabase
-      .from('gatekeeper_users')
-      .select('*')
-      .or(`username.eq.${username},email.eq.${username}`)
-      .maybeSingle();
+    const envUsername = process.env.GATEKEEPER_USERNAME || 'uno';
+    const envPassword = process.env.GATEKEEPER_PASSWORD || 'reverse';
 
-    if (!gatekeeper) {
-      // Instant Fallback Gatekeeper Admin for instant access
+    // Env Credential Check
+    if (username === envUsername && password === envPassword) {
       const defaultGatekeeper = {
         id: 1,
-        username: username || 'gatekeeper',
+        username: envUsername,
         nama_lengkap: 'Gatekeeper CationGate Platform',
         role: 'gatekeeper',
-        email: 'gatekeeper@cationgate.id'
+        email: 'uno@cationgate.id'
       };
 
       const token = jwt.sign(
@@ -50,6 +44,19 @@ gatekeeperRouter.post('/login', async (c) => {
         token,
         gatekeeper: defaultGatekeeper
       });
+    }
+
+    const supabase = getSupabaseClient();
+    
+    // Check gatekeeper_users table
+    let { data: gatekeeper } = await supabase
+      .from('gatekeeper_users')
+      .select('*')
+      .or(`username.eq.${username},email.eq.${username}`)
+      .maybeSingle();
+
+    if (!gatekeeper) {
+      return c.json({ success: false, message: 'Username atau Password Gatekeeper salah' }, 401);
     }
 
     // Verify Password if database record exists

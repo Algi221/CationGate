@@ -63,6 +63,8 @@ export const configSaveSchema = z.object({
     ppdb_hero_title: z.string().max(200).optional(),
     ppdb_hero_title_sub: z.string().max(300).optional(),
     ppdb_hero_subtitle: z.string().max(1000).optional(),
+    ppdb_hero_media_url: z.string().optional(),
+    ppdb_hero_media_type: z.enum(['video', 'image', 'none']).optional(),
     ppdb_phone: z.string().max(50).optional(),
     ppdb_email: z.string().max(100).optional(),
     ppdb_address: z.string().max(1000).optional(),
@@ -93,7 +95,7 @@ export const configSaveSchema = z.object({
     ppdb_title: z.string().optional(),
     ppdb_map_title: z.string().optional(),
     ppdb_map_url: z.string().optional(),
-  }).strict(),
+  }).passthrough(),
   description: z.string().max(1000).optional().default('Melakukan pembaruan massal UI')
 });
 

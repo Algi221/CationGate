@@ -303,7 +303,7 @@ body {
 
 .navbar {
   width: 100%;
-  max-width: 900px;
+  max-width: 1120px;
   height: 64px;
   background: var(--glass-bg);
   backdrop-filter: blur(24px);
@@ -314,13 +314,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px 0 24px;
+  padding: 0 16px 0 20px;
   transition: var(--transition);
   pointer-events: auto;
+  gap: 12px;
 }
 
 .navbar.scrolled {
-  max-width: 960px;
+  max-width: 1160px;
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 15px 40px rgba(0, 102, 255, 0.05), var(--glass-shadow);
   transform: translateY(2px);
@@ -329,7 +330,10 @@ body {
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 0;
+  max-width: 280px;
 }
 
 .menu-toggle {
@@ -368,6 +372,9 @@ body {
   align-items: center;
   gap: 10px;
   text-decoration: none;
+  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .logo-icon-wrapper {

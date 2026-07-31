@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
@@ -65,10 +65,12 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
 
 // ─── Main Layout ──────────────────────────────────────────────────────────────
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
-  const { adminToken, adminUser, logoutAdmin, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
+  const { adminToken, adminUser, logoutAdmin, wsStatus, ppdbLogo, ppdbTitle, schoolStatus } = usePPDB();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const schoolSlug = params?.school_slug as string;
 
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -138,6 +140,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
+      if (schoolSlug === 'demo') return; // Bypass auth for demo
       const token = localStorage.getItem("ppdb_admin_token");
       const lastActive = localStorage.getItem("ppdb_admin_last_active");
       if (token && lastActive) {
@@ -145,16 +148,22 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
           logoutAdmin();
-          router.push("/auth/login?expired=true");
+          router.push(`/${schoolSlug}/auth/login?expired=true`);
           return;
         }
       }
       if (!adminToken) {
-        router.push("/auth/login");
+        router.push(`/${schoolSlug}/auth/login`);
+        return;
+      }
+      // Redirect unverified schools to verification onboarding
+      const isVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified';
+      if (!isVerified && schoolSlug) {
+        router.push(`/${schoolSlug}/verify-account`);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminToken, mounted]);
+  }, [adminToken, mounted, schoolStatus, schoolSlug]);
 
   useEffect(() => {
     if (!adminToken) return;
@@ -206,7 +215,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   if (!mounted) return null;
-  if (!adminToken) {
+  if (!adminToken && schoolSlug !== 'demo') {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-white transition-colors duration-300">
         <div className="flex flex-col items-center gap-3">
@@ -276,11 +285,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   // ── Nav link helper with Submenu support ───────────────────────────────────
   const renderMenuItem = (item: any, delayIndex: number) => {
+    const prefix = schoolSlug ? `/${schoolSlug}` : '';
+    const fullHref = item.href.startsWith('/') ? `${prefix}${item.href}` : item.href;
     const hasSub = !!item.subItems;
     const isOpen = !!openDropdowns[item.href];
     const isActive = item.exact
-      ? pathname === item.href
-      : pathname === item.href || pathname.startsWith(item.href + "/");
+      ? pathname === fullHref || pathname === item.href
+      : pathname === fullHref || pathname === item.href || pathname.startsWith(fullHref + "/");
 
     const currentTab = searchParams ? searchParams.get("tab") : null;
 
@@ -306,7 +317,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         className="w-full flex flex-col"
       >
         <Link
-          href={item.href}
+          href={fullHref}
           onClick={handleItemClick}
           className={`flex items-center justify-between rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
             isCollapsed ? "justify-center p-3" : "px-4 py-3"
@@ -350,17 +361,18 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   className="pl-8 pr-2 py-1.5 space-y-1"
                 >
                   {item.subItems.map((sub: any) => {
+                    const fullSubHref = sub.href.startsWith('/') ? `${prefix}${sub.href}` : sub.href;
                     const defaultTab = sub.href.includes("pendaftar") ? "active" : "hero";
                     const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");
                     const tabVal = urlParams.get("tab");
                     const isSubActive =
-                      pathname === sub.href.split("?")[0] &&
+                      (pathname === fullSubHref.split("?")[0] || pathname === sub.href.split("?")[0]) &&
                       tabVal === (currentTab || defaultTab);
 
                     return (
                       <Link
                         key={sub.href}
-                        href={sub.href}
+                        href={fullSubHref}
                         className={`flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-[10px] font-bold tracking-wide uppercase transition-all duration-200 border ${
                           isSubActive
                             ? "bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-slate-200/50 dark:border-slate-700/50 font-black"

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "enabled": true,
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      }
+    },
+    "supabase": {
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp",
+      "enabled": true,
+      "headers": {
+        "Authorization": "Bearer sbp_838d745e082587e36de4fcc87f6cea7329709e19"
+      }
+    }
+  }
+}

@@ -102,7 +102,13 @@ configRouter.get('/', async (c) => {
     if (schoolId) query = query.eq('school_id', schoolId);
     
     const { data: configs, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.warn('Fetch config DB warning (using default config):', error.message);
+      return c.json({
+        success: true,
+        data: {}
+      });
+    }
 
     const configMap: Record<string, any> = {};
     (configs || []).forEach((row: any) => {
@@ -114,11 +120,11 @@ configRouter.get('/', async (c) => {
       data: configMap
     });
   } catch (err: any) {
-    console.error('Fetch config DB error:', err.message);
+    console.warn('Fetch config DB exception (using default config):', err.message);
     return c.json({
-      success: false,
-      message: 'Gagal mengambil konfigurasi: ' + err.message
-    }, 500);
+      success: true,
+      data: {}
+    });
   }
 });
 

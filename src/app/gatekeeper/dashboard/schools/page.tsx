@@ -44,6 +44,10 @@ export default function GatekeeperSchoolManagementPage() {
     try {
       setLoading(true);
       const res = await fetch("/api/gatekeeper/schools");
+      if (!res.ok) {
+        setSchools([]);
+        return;
+      }
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         setSchools(json.data);

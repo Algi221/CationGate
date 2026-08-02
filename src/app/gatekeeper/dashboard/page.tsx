@@ -39,8 +39,11 @@ export default function GatekeeperOverviewPage() {
     try {
       setLoading(true);
       setError("");
-      const backendUrl = getBackendUrl();
-      const res = await fetch(`${backendUrl}/api/gatekeeper/schools`);
+      const res = await fetch("/api/gatekeeper/schools");
+      if (!res.ok) {
+        setSchools([]);
+        return;
+      }
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         setSchools(json.data);

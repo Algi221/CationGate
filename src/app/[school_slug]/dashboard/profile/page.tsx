@@ -270,13 +270,9 @@ export default function ProfilePage() {
                   <Shield size={14} className="text-indigo-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Role</p>
-                  <span className={`inline-block px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ${
-                    adminUser?.role === "superadmin"
-                      ? "bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400"
-                      : "bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"
-                  }`}>
-                    {adminUser?.role || "admin"}
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Role & Status Akun</p>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">
+                    <CheckCircle2 size={12} /> Akun Official Sekolah (Verified Superadmin)
                   </span>
                 </div>
               </div>

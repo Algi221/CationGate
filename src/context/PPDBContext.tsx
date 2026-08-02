@@ -51,6 +51,7 @@ interface PPDBContextType {
   schoolId: string;
   schoolStatus: string;
   isDemoMode: boolean;
+  isSchoolNotFound: boolean;
 }
 
 const PPDBContext = createContext<PPDBContextType | null>(null);
@@ -68,6 +69,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   const [schoolId, setSchoolId] = useState<string>("");
   const [schoolStatus, setSchoolStatus] = useState<string>("");
+  const [isSchoolNotFound, setIsSchoolNotFound] = useState<boolean>(false);
 
   const [applicants, setApplicants] = useState<any[]>([]);
   const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
@@ -142,18 +144,24 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
           return res.json();
         })
         .then((data) => {
-          if (data && data.success && data.data) {
+          if (data && data.notFound) {
+            setIsSchoolNotFound(true);
+          } else if (data && data.success && data.data) {
+            setIsSchoolNotFound(false);
             setSchoolId(data.data.id);
             if (data.data.status) setSchoolStatus(data.data.status);
             if (data.data.logo_url) setPpdbLogo(data.data.logo_url);
             if (data.data.name) setPpdbTitle(data.data.name);
+          } else if (slug !== 'smktarunabhakti' && slug !== 'demo') {
+            setIsSchoolNotFound(true);
           } else {
+            setIsSchoolNotFound(false);
             setSchoolId(slug);
             setPpdbTitle(slug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : slug);
           }
         })
         .catch((err) => {
-          console.warn("Gagal mengambil data sekolah (menggunakan fallback):", err?.message);
+          console.warn("Gagal mengambil data sekolah:", err?.message);
         });
     }
   }, [slug]);
@@ -260,7 +268,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const res = await fetch(`${BACKEND_URL}/applicants/public`);
+      const url = schoolId ? `${BACKEND_URL}/applicants/public?school_id=${schoolId}` : `${BACKEND_URL}/applicants/public`;
+      const res = await fetch(url);
+      if (!res.ok) return;
       const data = await res.json();
       if (data.success) setPublicApplicants(data.data);
     } catch (err: any) {
@@ -271,7 +281,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       ];
       setPublicApplicants(localSeed);
     }
-  }, [isDemoMode]);
+  }, [isDemoMode, schoolId]);
 
   const logoutAdmin = useCallback(() => {
     setAdminToken(null);
@@ -739,7 +749,8 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         fetchConfigs,
         schoolId,
         schoolStatus,
-        isDemoMode
+        isDemoMode,
+        isSchoolNotFound
       }}
     >
       {children}

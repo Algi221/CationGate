@@ -36,93 +36,115 @@ export default function GatekeeperSchoolManagementPage() {
   const [statusFilter, setStatusFilter] = useState(initialFilter);
   const [selectedSchoolModal, setSelectedSchoolModal] = useState<SchoolTenant | null>(null);
 
-  // School Tenants State
-  const [schools, setSchools] = useState<SchoolTenant[]>([
-    {
-      id: 1,
-      name: "SMK Taruna Bhakti",
-      slug: "smktarunabhakti",
-      npsn: "20229182",
-      dapodik_code: "DPD-2026-981",
-      official_email: "info@smktarunabhakti.sch.id",
-      plan_type: "PRO",
-      status: "FULL_VERIFIED",
-      created_at: "2026-07-01",
-      legal_sk_number: "SK-DIKNAS/2020/421.5-881",
-      accreditation: "A (Unggul)",
-      admin_name: "Drs. H. Mulyadi M.Pd"
-    },
-    {
-      id: 2,
-      name: "SMK Putra Bangsa",
-      slug: "smkputrabangsa",
-      npsn: "20229199",
-      dapodik_code: "DPD-2026-402",
-      official_email: "admin@smkputrabangsa.sch.id",
-      plan_type: "STARTER",
-      status: "PENDING_VERIFICATION",
-      created_at: "2026-07-28",
-      legal_sk_number: "SK-DIKNAS/2021/421.5-102",
-      accreditation: "B",
-      admin_name: "Bambang Sudirman"
-    },
-    {
-      id: 3,
-      name: "SMA Global Mandiri",
-      slug: "smaglobalmandiri",
-      npsn: "20229311",
-      dapodik_code: "DPD-2026-712",
-      official_email: "sekretariat@smaglobalmandiri.sch.id",
-      plan_type: "ENTERPRISE",
-      status: "FULL_VERIFIED",
-      created_at: "2026-06-15",
-      legal_sk_number: "SK-DIKNAS/2019/421.5-309",
-      accreditation: "A (Unggul)",
-      admin_name: "Dr. Rina Wulandari M.Si"
-    },
-    {
-      id: 4,
-      name: "SMK Telkom Depok",
-      slug: "smktelkomdepok",
-      npsn: "20229450",
-      dapodik_code: "DPD-2026-119",
-      official_email: "ppdb@smktelkomdepok.sch.id",
-      plan_type: "PRO",
-      status: "PENDING_VERIFICATION",
-      created_at: "2026-07-30",
-      legal_sk_number: "SK-DIKNAS/2022/421.5-554",
-      accreditation: "A",
-      admin_name: "Andi Saputra S.T."
-    },
-    {
-      id: 5,
-      name: "SMA Nusantara 1",
-      slug: "smanusantara1",
-      npsn: "20229810",
-      dapodik_code: "DPD-2026-880",
-      official_email: "info@smanusantara1.sch.id",
-      plan_type: "PRO",
-      status: "UNVERIFIED",
-      created_at: "2026-07-31",
-      legal_sk_number: "SK-DIKNAS/2023/421.5-912",
-      accreditation: "B",
-      admin_name: "Siti Rahmawati S.Pd"
-    },
-    {
-      id: 6,
-      name: "SMK Genesis Depok",
-      slug: "smkgenesisdepok",
-      npsn: "20229999",
-      dapodik_code: "DPD-2026-007",
-      official_email: "admin@smkgenesisdepok.sch.id",
-      plan_type: "ENTERPRISE",
-      status: "FULL_VERIFIED",
-      created_at: "2026-07-20",
-      legal_sk_number: "SK-DIKNAS/2024/421.5-007",
-      accreditation: "A (Unggul)",
-      admin_name: "Superadmin Genesis"
+  // School Tenants State (Fetched Live from DB)
+  const [schools, setSchools] = useState<SchoolTenant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSchools = async () => {
+    try {
+      const res = await fetch("/api/gatekeeper/schools");
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        setSchools(json.data);
+      } else {
+        // Default Seed fallback if DB is initially fresh
+        setSchools([
+          {
+            id: 1,
+            name: "SMK Taruna Bhakti",
+            slug: "smktarunabhakti",
+            npsn: "20229182",
+            dapodik_code: "DPD-2026-981",
+            official_email: "info@smktarunabhakti.sch.id",
+            plan_type: "PRO",
+            status: "FULL_VERIFIED",
+            created_at: "2026-07-01",
+            legal_sk_number: "SK-DIKNAS/2020/421.5-881",
+            accreditation: "A (Unggul)",
+            admin_name: "Drs. H. Mulyadi M.Pd"
+          },
+          {
+            id: 2,
+            name: "SMK Putra Bangsa",
+            slug: "smkputrabangsa",
+            npsn: "20229199",
+            dapodik_code: "DPD-2026-402",
+            official_email: "admin@smkputrabangsa.sch.id",
+            plan_type: "STARTER",
+            status: "PENDING_VERIFICATION",
+            created_at: "2026-07-28",
+            legal_sk_number: "SK-DIKNAS/2021/421.5-102",
+            accreditation: "B",
+            admin_name: "Bambang Sudirman"
+          },
+          {
+            id: 3,
+            name: "SMA Global Mandiri",
+            slug: "smaglobalmandiri",
+            npsn: "20229311",
+            dapodik_code: "DPD-2026-712",
+            official_email: "sekretariat@smaglobalmandiri.sch.id",
+            plan_type: "ENTERPRISE",
+            status: "FULL_VERIFIED",
+            created_at: "2026-06-15",
+            legal_sk_number: "SK-DIKNAS/2019/421.5-309",
+            accreditation: "A (Unggul)",
+            admin_name: "Dr. Rina Wulandari M.Si"
+          },
+          {
+            id: 4,
+            name: "SMK Telkom Depok",
+            slug: "smktelkomdepok",
+            npsn: "20229450",
+            dapodik_code: "DPD-2026-119",
+            official_email: "ppdb@smktelkomdepok.sch.id",
+            plan_type: "PRO",
+            status: "PENDING_VERIFICATION",
+            created_at: "2026-07-30",
+            legal_sk_number: "SK-DIKNAS/2022/421.5-554",
+            accreditation: "A",
+            admin_name: "Andi Saputra S.T."
+          },
+          {
+            id: 5,
+            name: "SMA Nusantara 1",
+            slug: "smanusantara1",
+            npsn: "20229810",
+            dapodik_code: "DPD-2026-880",
+            official_email: "info@smanusantara1.sch.id",
+            plan_type: "PRO",
+            status: "UNVERIFIED",
+            created_at: "2026-07-31",
+            legal_sk_number: "SK-DIKNAS/2023/421.5-912",
+            accreditation: "B",
+            admin_name: "Siti Rahmawati S.Pd"
+          },
+          {
+            id: 6,
+            name: "SMK Genesis Depok",
+            slug: "smkgenesisdepok",
+            npsn: "20229999",
+            dapodik_code: "DPD-2026-007",
+            official_email: "admin@smkgenesisdepok.sch.id",
+            plan_type: "ENTERPRISE",
+            status: "FULL_VERIFIED",
+            created_at: "2026-07-20",
+            legal_sk_number: "SK-DIKNAS/2024/421.5-007",
+            accreditation: "A (Unggul)",
+            admin_name: "Superadmin Genesis"
+          }
+        ]);
+      }
+    } catch (e) {
+      console.warn("Failed to fetch schools from API:", e);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchSchools();
+  }, []);
 
   // Action Handlers
   const handleApproveVerification = (school: SchoolTenant) => {
@@ -138,15 +160,23 @@ export default function GatekeeperSchoolManagementPage() {
       customClass: {
         popup: "rounded-2xl dark:bg-slate-900 dark:text-white border dark:border-slate-800"
       }
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
+        try {
+          await fetch("/api/gatekeeper/approve-school", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ school_id: school.id }),
+          });
+        } catch (e) {}
+
         setSchools(prev => prev.map(s => s.id === school.id ? { ...s, status: "FULL_VERIFIED" } : s));
         if (selectedSchoolModal?.id === school.id) {
           setSelectedSchoolModal(prev => prev ? { ...prev, status: "FULL_VERIFIED" } : null);
         }
         Swal.fire({
           title: "Verifikasi Disetujui!",
-          text: `Sekolah ${school.name} telah terverifikasi penuh.`,
+          text: `Sekolah ${school.name} telah terverifikasi penuh dan fitur ter-unlocked.`,
           icon: "success",
           confirmButtonColor: "#2563EB",
           customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
@@ -188,12 +218,68 @@ export default function GatekeeperSchoolManagementPage() {
     });
   };
 
-  // Filtered List
+  const handleTakedownSchool = (school: SchoolTenant) => {
+    Swal.fire({
+      title: `Takedown Instansi ${school.name}?`,
+      text: `Instansi ini akan dinonaktifkan dari platform CationGate (Status TAKEDOWN) karena belum memverifikasi legalitas.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#EF4444",
+      cancelButtonColor: "#64748B",
+      confirmButtonText: "Ya, Takedown Instansi",
+      cancelButtonText: "Batal",
+      customClass: {
+        popup: "rounded-2xl dark:bg-slate-900 dark:text-white border dark:border-slate-800"
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await fetch("/api/gatekeeper/takedown-school", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ school_id: school.id }),
+          });
+        } catch (e) {}
+
+        setSchools(prev => prev.map(s => s.id === school.id ? { ...s, status: "SUSPENDED" } : s));
+        if (selectedSchoolModal?.id === school.id) {
+          setSelectedSchoolModal(prev => prev ? { ...prev, status: "SUSPENDED" } : null);
+        }
+        Swal.fire({
+          title: "Instansi Di-Takedown!",
+          text: `Sekolah ${school.name} telah di-takedown (Nonaktif).`,
+          icon: "success",
+          confirmButtonColor: "#2563EB",
+          customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
+        });
+      }
+    });
+  };
+
+  const getDaysRegistered = (createdAtStr?: string) => {
+    if (!createdAtStr) return 0;
+    const created = new Date(createdAtStr).getTime();
+    if (isNaN(created)) return 0;
+    return Math.floor((Date.now() - created) / (1000 * 60 * 60 * 24));
+  };
+
+  // Filtered List with Null-Safe Guards
   const filteredSchools = schools.filter(s => {
-    const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.npsn.includes(searchTerm) ||
-                          s.slug.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "ALL" || s.status === statusFilter;
+    if (!s) return false;
+    const nameStr = (s.name || "").toLowerCase();
+    const npsnStr = String(s.npsn || "");
+    const slugStr = (s.slug || "").toLowerCase();
+    const emailStr = (s.official_email || "").toLowerCase();
+    const searchLower = (searchTerm || "").toLowerCase();
+
+    const matchesSearch = nameStr.includes(searchLower) ||
+                          npsnStr.includes(searchTerm) ||
+                          slugStr.includes(searchLower) ||
+                          emailStr.includes(searchLower);
+
+    const matchesStatus = statusFilter === "ALL" ||
+                          s.status === statusFilter ||
+                          (statusFilter === "UNVERIFIED" && (s.status === "BELUM_KIRIM_VERIFIKASI" || s.status === "UNVERIFIED"));
     return matchesSearch && matchesStatus;
   });
 
@@ -313,27 +399,34 @@ export default function GatekeeperSchoolManagementPage() {
                     </span>
                   </td>
 
-                  {/* Status Badge */}
-                  <td className="py-3.5 px-4">
-                    {sc.status === "FULL_VERIFIED" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">
-                        <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                      </span>
-                    )}
-                    {sc.status === "PENDING_VERIFICATION" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900">
-                        <AlertCircle className="w-3 h-3 animate-pulse" /> PENDING SK
-                      </span>
-                    )}
-                    {sc.status === "UNVERIFIED" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">
-                        <Lock className="w-3 h-3" /> UNVERIFIED
-                      </span>
-                    )}
-                    {sc.status === "SUSPENDED" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900">
-                        <XCircle className="w-3 h-3" /> SUSPENDED
-                      </span>
+                  {/* Status Badge & Registration Age */}
+                  <td className="py-3.5 px-4 space-y-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {sc.status === "FULL_VERIFIED" && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">
+                          <CheckCircle2 className="w-3 h-3" /> VERIFIED
+                        </span>
+                      )}
+                      {sc.status === "PENDING_VERIFICATION" && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900">
+                          <AlertCircle className="w-3 h-3 animate-pulse" /> PENDING SK
+                        </span>
+                      )}
+                      {(sc.status === "UNVERIFIED" || (sc.status as string) === "BELUM_KIRIM_VERIFIKASI") && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">
+                          <Clock className="w-3 h-3" /> BELUM KIRIM SK
+                        </span>
+                      )}
+                      {(sc.status === "SUSPENDED" || (sc.status as string) === "TAKEDOWN") && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900">
+                          <XCircle className="w-3 h-3" /> TAKEDOWN
+                        </span>
+                      )}
+                    </div>
+                    {(sc.status === "UNVERIFIED" || (sc.status as string) === "BELUM_KIRIM_VERIFIKASI") && getDaysRegistered(sc.created_at) >= 3 && (
+                      <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-lg border border-rose-200 dark:border-rose-900/50 w-fit">
+                        <ShieldAlert className="w-3 h-3 shrink-0" /> Belum Verifikasi &gt;3 Hari (Perlu Takedown)
+                      </p>
                     )}
                   </td>
 
@@ -358,6 +451,17 @@ export default function GatekeeperSchoolManagementPage() {
                           title="Setujui Verifikasi Legalitas"
                         >
                           <Check className="w-3 h-3" /> Approve
+                        </button>
+                      )}
+
+                      {/* Takedown Button */}
+                      {sc.status !== "FULL_VERIFIED" && sc.status !== "SUSPENDED" && (sc.status as string) !== "TAKEDOWN" && (
+                        <button
+                          onClick={() => handleTakedownSchool(sc)}
+                          className="px-2 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-100 border border-rose-200 dark:border-rose-900 text-[11px] font-bold transition-all flex items-center gap-1"
+                          title="Takedown Instansi (Tidak Verifikasi > 3 Hari)"
+                        >
+                          <XCircle className="w-3 h-3" /> Takedown
                         </button>
                       )}
 

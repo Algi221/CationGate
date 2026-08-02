@@ -91,19 +91,30 @@ export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
 
             {/* CTA Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <Link href="/demo/dashboard" className="w-full sm:w-auto">
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base px-7 py-6 rounded-xl shadow-md gap-2 group transition-all"
+                >
+                  <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
+                  <span>Coba Demo Live</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+
               <Link href="#pricing" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base px-7 py-6 rounded-xl shadow-sm gap-2 group transition-all"
+                  variant="outline"
+                  className="w-full sm:w-auto border-slate-300 hover:bg-slate-100 text-slate-800 font-bold text-sm sm:text-base px-6 py-6 rounded-xl gap-2 transition-all"
                 >
-                  <span>Discover Your Plan</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <span>Pilih Paket Sekolah</span>
                 </Button>
               </Link>
 
               <button 
                 onClick={onOpenVideo}
-                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-sm shadow-2xs transition-all cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-sm shadow-2xs transition-all cursor-pointer"
               >
                 <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                   <Play className="w-3.5 h-3.5 fill-current ml-0.5" />

@@ -57,6 +57,8 @@ const ScrollFloat = dynamic(() => import("@/components/ScrollFloat"), {
 });
 import dompurify from "dompurify";
 import { usePPDB } from "@/context/PPDBContext";
+import { useParams } from "next/navigation";
+import SchoolNotFound from "@/components/SchoolNotFound";
 
 const sanitizeUrl = (url: string | undefined | null): string | null => {
   if (!url) return null;
@@ -158,7 +160,13 @@ const DEFAULT_ALUR: AlurItem[] = [
 ];
 
 export default function Home() {
-  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
+  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle, isSchoolNotFound } = usePPDB();
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "sekolah";
+
+  if (isSchoolNotFound) {
+    return <SchoolNotFound slug={schoolSlug} />;
+  }
   
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

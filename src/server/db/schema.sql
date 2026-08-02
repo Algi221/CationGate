@@ -1,16 +1,40 @@
         -- Database Schema CationGate (Multi-Tenant SaaS)
         -- Compatibility: PostgreSQL (pgAdmin ready)
 
-        -- 1. Table for Tenants (Schools)
+        -- Table for Prospective Schools (Calon Sekolah - Unverified SaaS Tenants)
+        CREATE TABLE IF NOT EXISTS prospective_schools (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(150) NOT NULL,
+            slug VARCHAR(100) UNIQUE NOT NULL,
+            plan_type VARCHAR(50) DEFAULT 'TRIAL', -- 'TRIAL', 'YEARLY'
+            status VARCHAR(50) DEFAULT 'BELUM_KIRIM_VERIFIKASI', -- 'BELUM_KIRIM_VERIFIKASI', 'PENDING_VERIFICATION', 'TAKEDOWN'
+            is_verified BOOLEAN DEFAULT FALSE,
+            npsn VARCHAR(20),
+            dapodik_code VARCHAR(50),
+            official_email VARCHAR(100),
+            legal_sk_number VARCHAR(100),
+            accreditation VARCHAR(20),
+            admin_name VARCHAR(100),
+            social_media JSONB,
+            sk_document_name VARCHAR(255),
+            sk_document_url TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- 1. Table for Verified Tenants (Schools)
         CREATE TABLE IF NOT EXISTS schools (
             id SERIAL PRIMARY KEY,
             name VARCHAR(150) NOT NULL,
             slug VARCHAR(100) UNIQUE NOT NULL,
             plan_type VARCHAR(50) DEFAULT 'TRIAL', -- 'TRIAL', 'YEARLY'
-            status VARCHAR(50) DEFAULT 'UNVERIFIED', -- 'UNVERIFIED', 'OTP_VERIFIED', 'FULL_VERIFIED', 'SUSPENDED'
+            status VARCHAR(50) DEFAULT 'FULL_VERIFIED', -- 'UNVERIFIED', 'OTP_VERIFIED', 'FULL_VERIFIED', 'SUSPENDED'
+            is_verified BOOLEAN DEFAULT TRUE,
             npsn VARCHAR(20),
             dapodik_code VARCHAR(50),
             official_email VARCHAR(100),
+            legal_sk_number VARCHAR(100),
+            accreditation VARCHAR(20),
+            admin_name VARCHAR(100),
             social_media JSONB,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );

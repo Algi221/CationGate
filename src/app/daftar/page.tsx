@@ -88,8 +88,16 @@ export default function DaftarSaaS() {
       });
       const data = await res.json();
       
-      if (plan === 'trial') {
+      if (plan === 'trial' || data.success) {
         if (data.success) {
+          localStorage.setItem("ppdb_admin_token", `token_admin_${data.school_id}`);
+          localStorage.setItem("ppdb_admin_user", JSON.stringify({
+            id: 1,
+            username: formData.admin_username || 'admin',
+            nama_lengkap: formData.admin_name || 'Admin Sekolah',
+            role: "superadmin",
+            school_id: data.school_id
+          }));
           setSuccessData({ slug: formData.slug, school_id: data.school_id });
           setStep(4);
         } else {

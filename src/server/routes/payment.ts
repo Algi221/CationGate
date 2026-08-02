@@ -27,7 +27,7 @@ paymentRouter.post('/confirm-payment-option', async (c: Context) => {
     };
     
     const { data: updatedRecord, error } = await supabase
-      .from('calon_siswa')
+      .from('student_applicants')
       .update(updateData)
       .eq('nisn', nisn)
       .select()

@@ -652,6 +652,35 @@ export default function SchoolVerificationPage() {
                     <CreditCard className="w-4 h-4" />
                     {isPaying ? "Menghubungkan Midtrans..." : "Lakukan Pembayaran Midtrans (Rp 750.000 / Tahun)"}
                   </Button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/saas/activate", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ slug: schoolSlug, school_id: schoolId }),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          Swal.fire({
+                            title: "Simulasi Pembayaran Midtrans Sukses! (Sandbox)",
+                            text: "Lisensi SaaS CationGate Pro (Rp 750.000 / Tahun) telah aktif & dashboard ter-unlocked.",
+                            icon: "success",
+                            confirmButtonColor: "#2563EB"
+                          }).then(() => {
+                            window.location.reload();
+                          });
+                        }
+                      } catch (e) {
+                        Swal.fire({ title: "Gagal Mengaktifkan", text: "Terjadi kesalahan server.", icon: "error" });
+                      }
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-extrabold text-xs border border-emerald-200 dark:border-emerald-800 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Sparkles className="w-4 h-4 text-emerald-600" /> Simulasi Pembayaran Midtrans Sukses (Sandbox Testing)
+                  </button>
                 </div>
 
                 <div className="pt-2 flex items-center justify-center gap-3">

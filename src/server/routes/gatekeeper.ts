@@ -160,70 +160,98 @@ gatekeeperRouter.post('/approve-school', async (c) => {
   try {
     const { school_id } = await c.req.json();
     const supabase = getSupabaseClient();
-    const { pool } = await import('../db/client');
-    
-    // Find school in memory or DB
+    const idOrSlug = String(school_id);
+
+    // 1. Find school details in memory or DB
     let targetSchool: any = null;
-    fontInMemSchools.forEach((s) => {
-      if (String(s.id) === String(school_id) || String(s.slug) === String(school_id)) {
+    fontInMemSchools.forEach((s, keySlug) => {
+      if (String(s.id) === idOrSlug || String(s.slug) === idOrSlug || keySlug === idOrSlug) {
         targetSchool = s;
       }
     });
 
-    // Resolve to actual UUID
-    const resolvedId = await resolveSchoolUUID(String(school_id), fontInMemSchools);
-    
-    if (resolvedId) {
-      // 1. Try to update or insert into 'schools' table
+    if (!targetSchool) {
       try {
-        await supabase
-          .from('schools')
-          .update({ status: 'FULL_VERIFIED', is_verified: true })
-          .eq('id', resolvedId);
+        const { data: ps } = await supabase.from('prospective_schools').select('*').or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`).maybeSingle();
+        if (ps) targetSchool = ps;
       } catch (e) {}
-
-      // 2. If school was in prospective_schools / calon_sekolah, insert to schools and delete from prospective
-      if (targetSchool || resolvedId) {
-        const sName = targetSchool?.name || 'Sekolah Terverifikasi';
-        const sSlug = targetSchool?.slug || String(school_id);
-        const sEmail = targetSchool?.official_email || targetSchool?.email || 'info@school.sch.id';
-
-        try {
-          await pool.query(
-            `INSERT INTO schools (name, slug, official_email, status, is_verified, plan_type, npsn, dapodik_code, legal_sk_number, accreditation, admin_name)
-             VALUES ($1, $2, $3, 'FULL_VERIFIED', true, 'PRO', $4, $5, $6, $7, $8)
-             ON CONFLICT (slug) DO UPDATE SET status = 'FULL_VERIFIED', is_verified = true`,
-            [
-              sName, sSlug, sEmail,
-              targetSchool?.npsn || null,
-              targetSchool?.dapodik_code || null,
-              targetSchool?.legal_sk_number || null,
-              targetSchool?.accreditation || 'A',
-              targetSchool?.admin_name || 'Kepala Sekolah'
-            ]
-          );
-          // Delete from prospective_schools / calon_sekolah
-          await pool.query(`DELETE FROM prospective_schools WHERE slug = $1`, [sSlug]);
-          await pool.query(`DELETE FROM calon_sekolah WHERE slug = $1`, [sSlug]);
-        } catch (pgErr: any) {
-          console.warn('PostgreSQL approve migration warning:', pgErr.message);
-        }
-      }
     }
 
-    // Update in-memory fallback store
-    fontInMemSchools.forEach((s) => {
-      if (String(s.id) === String(school_id) || String(s.slug) === String(school_id)) {
+    if (!targetSchool) {
+      try {
+        const { data: sc } = await supabase.from('schools').select('*').or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`).maybeSingle();
+        if (sc) targetSchool = sc;
+      } catch (e) {}
+    }
+
+    const sName = targetSchool?.name || 'Sekolah Terverifikasi';
+    const sSlug = targetSchool?.slug || idOrSlug;
+    const sEmail = targetSchool?.official_email || targetSchool?.email || 'info@school.sch.id';
+
+    // 2. Update prospective_schools in Supabase
+    try {
+      await supabase
+        .from('prospective_schools')
+        .update({ status: 'FULL_VERIFIED', is_verified: true })
+        .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+    } catch (e) {}
+
+    // 3. Upsert into 'schools' table in Supabase
+    try {
+      await supabase
+        .from('schools')
+        .upsert({
+          name: sName,
+          slug: sSlug,
+          official_email: sEmail,
+          status: 'FULL_VERIFIED',
+          is_verified: true,
+          plan_type: targetSchool?.plan_type || 'PRO',
+          npsn: targetSchool?.npsn || null,
+          dapodik_code: targetSchool?.dapodik_code || null,
+          legal_sk_number: targetSchool?.legal_sk_number || null,
+          accreditation: targetSchool?.accreditation || 'A',
+          admin_name: candidateSchoolAdmin(targetSchool)
+        }, { onConflict: 'slug' });
+    } catch (sbErr: any) {
+      console.warn('Supabase schools upsert warning:', sbErr.message);
+    }
+
+    // 4. Update fontInMemSchools map for instant slug resolution & active state
+    fontInMemSchools.forEach((s, keySlug) => {
+      if (String(s.id) === idOrSlug || String(s.slug) === idOrSlug || keySlug === sSlug) {
         s.status = 'FULL_VERIFIED';
         s.is_verified = true;
       }
     });
 
-    return c.json({ success: true, message: 'Sekolah resmi terverifikasi dan dipindahkan ke tabel schools (FULL_VERIFIED & UNLOCKED)' });
+    if (sSlug) {
+      const memObj = fontInMemSchools.get(sSlug) || targetSchool || {};
+      fontInMemSchools.set(sSlug, {
+        ...memObj,
+        name: sName,
+        slug: sSlug,
+        status: 'FULL_VERIFIED',
+        is_verified: true
+      });
+    }
+
+    broadcast({ event: 'SCHOOL_VERIFIED', slug: sSlug, status: 'FULL_VERIFIED' }, true);
+
+    return c.json({
+      success: true,
+      message: `Sekolah '${sName}' resmi terverifikasi! Akses dashboard & pendaftaran SPMB terbuka (FULL_VERIFIED).`
+    });
   } catch (err: any) {
-    return c.json({ success: true, message: 'Sekolah berhasil diverifikasi' });
+    console.error('Approve school error:', err);
+    return c.json({ success: false, message: 'Gagal meng-approve sekolah: ' + err.message }, 500);
   }
 });
+
+function candidateSchoolAdmin(targetSchool: any): string {
+  if (targetSchool?.admin_name) return targetSchool.admin_name;
+  return 'Kepala Sekolah';
+}
 
 // 4. POST /api/gatekeeper/takedown-school - Suspend/Takedown unverified school tenant (>3 days)
 gatekeeperRouter.post('/takedown-school', async (c) => {

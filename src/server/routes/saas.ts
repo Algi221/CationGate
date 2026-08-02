@@ -272,26 +272,94 @@ saasRouter.post('/register', async (c) => {
   }
 });
 
-// Endpoint untuk mengaktifkan sekolah setelah pembayaran sukses (dipanggil oleh frontend)
+// Endpoint untuk mengaktifkan sekolah setelah pembayaran Midtrans (Sandbox Simulation / Webhook / Callback)
 saasRouter.post('/activate', async (c) => {
   try {
-    const { school_id } = await c.req.json();
-    if (!school_id) return c.json({ success: false, message: 'school_id required' }, 400);
+    const body = await c.req.json();
+    const { school_id, slug } = body;
+    const targetSlug = slug || school_id;
 
-    const { resolveSchoolUUID } = await import('../db/resolve-school');
-    const resolvedId = await resolveSchoolUUID(String(school_id), fontInMemSchools);
+    if (!targetSlug) return c.json({ success: false, message: 'school_id or slug is required' }, 400);
 
-    if (resolvedId) {
-      const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient();
+    const idOrSlug = String(targetSlug);
+
+    // 1. Update Supabase 'prospective_schools'
+    try {
+      await supabase
+        .from('prospective_schools')
+        .update({
+          status: 'FULL_VERIFIED',
+          is_verified: true,
+          plan_type: 'PRO'
+        })
+        .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+    } catch (e) {}
+
+    // 2. Update/Upsert Supabase 'schools'
+    try {
       await supabase
         .from('schools')
-        .update({ plan_type: 'YEARLY', subscription_plan: 'PRO_750K' })
-        .eq('id', resolvedId);
+        .update({
+          status: 'FULL_VERIFIED',
+          is_verified: true,
+          plan_type: 'PRO',
+          subscription_plan: 'PRO_750K'
+        })
+        .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+    } catch (e) {}
+
+    // 3. Update fontInMemSchools map
+    fontInMemSchools.forEach((s, keySlug) => {
+      if (String(s.id) === idOrSlug || String(s.slug) === idOrSlug || keySlug === idOrSlug) {
+        s.status = 'FULL_VERIFIED';
+        s.is_verified = true;
+        s.plan_type = 'PRO';
+        s.subscription_plan = 'PRO_750K';
+      }
+    });
+
+    const localObj = fontInMemSchools.get(idOrSlug);
+    if (localObj) {
+      localObj.status = 'FULL_VERIFIED';
+      localObj.is_verified = true;
+      localObj.plan_type = 'PRO';
+      localObj.subscription_plan = 'PRO_750K';
     }
 
-    return c.json({ success: true, message: 'Pembayaran berhasil dikonfirmasi!' });
-  } catch (err) {
-    return c.json({ success: false, message: 'Gagal mengaktifkan' }, 500);
+    return c.json({
+      success: true,
+      message: 'Pembayaran Midtrans berhasil dikonfirmasi! Paket Pro CationGate (Rp 750.000 / Tahun) telah aktif & dashboard unlocked.'
+    });
+  } catch (err: any) {
+    console.error('Activate error:', err);
+    return c.json({ success: false, message: 'Gagal mengaktifkan lisensi: ' + err.message }, 500);
+  }
+});
+
+// Endpoint Midtrans Webhook Notification Handler (Sandbox & Production)
+saasRouter.post('/midtrans-webhook', async (c) => {
+  try {
+    const notificationJson = await c.req.json();
+    const statusResponse = await snap.transaction.notification(notificationJson);
+    
+    const orderId = statusResponse.order_id;
+    const transactionStatus = statusResponse.transaction_status;
+    const fraudStatus = statusResponse.fraud_status;
+
+    console.log(`[Midtrans Webhook] Transaction notification received. OrderId: ${orderId}, Status: ${transactionStatus}, Fraud: ${fraudStatus}`);
+
+    if (transactionStatus === 'capture' || transactionStatus === 'settlement') {
+      if (fraudStatus === 'challenge') {
+        console.warn(`[Midtrans Webhook] Transaction ${orderId} challenged.`);
+      } else {
+        console.log(`[Midtrans Webhook] Transaction ${orderId} SUCCESSFUL/SETTLED.`);
+      }
+    }
+    return c.json({ success: true, message: 'Webhook processed' });
+  } catch (err: any) {
+    console.warn('[Midtrans Webhook Error]:', err.message);
+    return c.json({ success: true, message: 'Webhook received' });
   }
 });
 

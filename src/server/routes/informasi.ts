@@ -21,7 +21,7 @@ router.get('/', async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
 
-    let query = supabase.from('informasi').select('*').order('tanggal', { ascending: false }).order('created_at', { ascending: false });
+    let query = supabase.from('school_announcements').select('*').order('tanggal', { ascending: false }).order('created_at', { ascending: false });
     if (schoolId) query = query.eq('school_id', schoolId);
 
     const { data: rows, error } = await query;
@@ -75,7 +75,7 @@ router.get('/:id', async (c: Context) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
-    let query = supabase.from('informasi').select('*').eq('id', id);
+    let query = supabase.from('school_announcements').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
 
     const { data: record, error } = await query.single();
@@ -125,7 +125,7 @@ router.post('/', adminAuth, async (c: Context) => {
     };
     if (schoolId) insertData.school_id = schoolId;
 
-    const { data: savedRecord, error } = await supabase.from('informasi').insert(insertData).select().single();
+    const { data: savedRecord, error } = await supabase.from('school_announcements').insert(insertData).select().single();
     if (error) throw error;
 
     broadcast({ event: 'REFRESH_INFORMASI', data: null });
@@ -162,7 +162,7 @@ router.put('/:id', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
 
-    let checkQuery = supabase.from('informasi').select('id').eq('id', id);
+    let checkQuery = supabase.from('school_announcements').select('id').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
     
     const { data: checkExists } = await checkQuery.single();
@@ -180,7 +180,7 @@ router.put('/:id', adminAuth, async (c: Context) => {
     if (tanggal !== undefined) dataToUpdate.tanggal = new Date(tanggal).toISOString();
     if (foto_url !== undefined) dataToUpdate.foto_url = foto_url || null;
 
-    let updateQuery = supabase.from('informasi').update(dataToUpdate).eq('id', id);
+    let updateQuery = supabase.from('school_announcements').update(dataToUpdate).eq('id', id);
     if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
     
     const { data: updatedRecord, error } = await updateQuery.select().single();
@@ -211,7 +211,7 @@ router.delete('/:id', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
 
-    let query = supabase.from('informasi').delete().eq('id', id);
+    let query = supabase.from('school_announcements').delete().eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
     
     const { data, error } = await query.select();

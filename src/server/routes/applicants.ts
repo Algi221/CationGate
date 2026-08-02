@@ -46,16 +46,16 @@ export const syncCandidateToSiswaAktif = async (candidate: any): Promise<void> =
 
       // Hapus data siswa aktif yatim (orphan) yang memiliki NISN atau NIK sama tetapi calon_siswa_id berbeda
       if (nisn) {
-        const { data: existingByNisn } = await supabase.from('siswa_aktif').select('id, calon_siswa_id').eq('nisn', nisn).eq('school_id', schoolId).maybeSingle();
+        const { data: existingByNisn } = await supabase.from('active_students').select('id, calon_siswa_id').eq('nisn', nisn).eq('school_id', schoolId).maybeSingle();
         if (existingByNisn && existingByNisn.calon_siswa_id !== calon_siswa_id) {
-          await supabase.from('siswa_aktif').delete().eq('id', existingByNisn.id).eq('school_id', schoolId);
+          await supabase.from('active_students').delete().eq('id', existingByNisn.id).eq('school_id', schoolId);
         }
       }
 
       if (nik) {
-        const { data: existingByNik } = await supabase.from('siswa_aktif').select('id, calon_siswa_id').eq('nik', nik).eq('school_id', schoolId).maybeSingle();
+        const { data: existingByNik } = await supabase.from('active_students').select('id, calon_siswa_id').eq('nik', nik).eq('school_id', schoolId).maybeSingle();
         if (existingByNik && existingByNik.calon_siswa_id !== calon_siswa_id) {
-          await supabase.from('siswa_aktif').delete().eq('id', existingByNik.id).eq('school_id', schoolId);
+          await supabase.from('active_students').delete().eq('id', existingByNik.id).eq('school_id', schoolId);
         }
       }
 
@@ -79,15 +79,15 @@ export const syncCandidateToSiswaAktif = async (candidate: any): Promise<void> =
         periode, gelombang, registration_no
       };
 
-      const { data: existingSiswa } = await supabase.from('siswa_aktif').select('id').eq('calon_siswa_id', calon_siswa_id).eq('school_id', schoolId).maybeSingle();
+      const { data: existingSiswa } = await supabase.from('active_students').select('id').eq('calon_siswa_id', calon_siswa_id).eq('school_id', schoolId).maybeSingle();
 
       if (existingSiswa) {
-        await supabase.from('siswa_aktif').update(payload).eq('id', existingSiswa.id).eq('school_id', schoolId);
+        await supabase.from('active_students').update(payload).eq('id', existingSiswa.id).eq('school_id', schoolId);
       } else {
-        await supabase.from('siswa_aktif').insert(payload);
+        await supabase.from('active_students').insert(payload);
       }
     } else {
-      await supabase.from('siswa_aktif').delete().eq('calon_siswa_id', candidate.id).eq('school_id', schoolId);
+      await supabase.from('active_students').delete().eq('calon_siswa_id', candidate.id).eq('school_id', schoolId);
     }
   } catch (err) {
     console.error('Error syncing candidate to SiswaAktif:', err);
@@ -97,7 +97,7 @@ export const syncCandidateToSiswaAktif = async (candidate: any): Promise<void> =
 export const syncAllExistingApprovedApplicants = async (): Promise<void> => {
   try {
     const supabase = getSupabaseClient();
-    const { data: approvedCandidates } = await supabase.from('calon_siswa').select('*').eq('status', 'Approved');
+    const { data: approvedCandidates } = await supabase.from('student_applicants').select('*').eq('status', 'Approved');
     
     if (approvedCandidates) {
       console.log(`[Startup-Sync] Ditemukan ${approvedCandidates.length} calon siswa berstatus Approved. Mensinkronkan ke SiswaAktif...`);
@@ -117,7 +117,7 @@ export const checkAndDisqualifyExpiredApplicants = async (): Promise<void> => {
     // Auto-gugur: pendaftar yang masih Pending lebih dari 30 hari tanpa aksi admin
     const batasWaktu = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    const { data: expiredApplicants } = await supabase.from('calon_siswa')
+    const { data: expiredApplicants } = await supabase.from('student_applicants')
       .select('*')
       .eq('status', 'Pending')
       .lt('tgl_daftar', batasWaktu)
@@ -127,7 +127,7 @@ export const checkAndDisqualifyExpiredApplicants = async (): Promise<void> => {
       console.log(`[Auto-Gugur] Ditemukan ${expiredApplicants.length} pendaftar expired. Memproses...`);
       
       for (const applicant of expiredApplicants) {
-        await supabase.from('calon_siswa')
+        await supabase.from('student_applicants')
           .update({ status: 'Rejected' })
           .eq('id', applicant.id);
 
@@ -353,7 +353,7 @@ appRouter.post('/', rateLimiter({
     mapped.gelombang = detectedGelombang;
 
     // Check for duplicate NISN or NIK in Supabase
-    const { data: existing } = await supabase.from('calon_siswa')
+    const { data: existing } = await supabase.from('student_applicants')
       .select('nisn, nik')
       .eq('school_id', schoolId)
       .or(`nisn.eq.${mapped.nisn},nik.eq.${mapped.nik}`)
@@ -395,7 +395,7 @@ appRouter.post('/', rateLimiter({
 
     const target = targets[jurusanName] || 0;
     if (target > 0) {
-      const { count: currentCount } = await supabase.from('calon_siswa')
+      const { count: currentCount } = await supabase.from('student_applicants')
         .select('*', { count: 'exact', head: true })
         .eq('school_id', schoolId)
         .like('jurusan_1', `${jurusanName}%`)
@@ -412,7 +412,7 @@ appRouter.post('/', rateLimiter({
 
     let savedRecord;
     try {
-      const { data: insertData, error: dbErr } = await supabase.from('calon_siswa').insert(mapped).select().single();
+      const { data: insertData, error: dbErr } = await supabase.from('student_applicants').insert(mapped).select().single();
       if (dbErr) throw dbErr;
       savedRecord = insertData;
     } catch (dbErr: any) {
@@ -432,13 +432,13 @@ appRouter.post('/', rateLimiter({
     // Generate nomor pendaftaran SPMB unik: SPMB-TAHUN-NNNNN
     try {
       const tahun = new Date().getFullYear();
-      const { count: totalSekolah } = await supabase.from('calon_siswa')
+      const { count: totalSekolah } = await supabase.from('student_applicants')
         .select('*', { count: 'exact', head: true })
         .eq('school_id', schoolId)
         .is('deleted_at', null);
       const urutan = String((totalSekolah || 0)).padStart(5, '0');
       const registrationNo = `SPMB-${tahun}-${urutan}`;
-      await supabase.from('calon_siswa').update({ registration_no: registrationNo }).eq('id', savedRecord.id);
+      await supabase.from('student_applicants').update({ registration_no: registrationNo }).eq('id', savedRecord.id);
       savedRecord = { ...savedRecord, registration_no: registrationNo };
     } catch (regErr) {
       console.warn('Gagal generate registration_no, akan di-generate ulang kemudian:', regErr);
@@ -489,17 +489,29 @@ appRouter.get('/public', async (c: Context) => {
     const schoolId = c.req.query('school_id'); // Wajib dikirim
     
     if (!schoolId) {
-      return c.json({ success: false, message: 'Parameter school_id wajib disertakan.' }, 400);
+      return c.json({ success: true, data: [] });
     }
 
-    const { data: rows, error } = await supabase.from('calon_siswa')
+    // Resolve to actual UUID
+    const { resolveSchoolUUID } = await import('../db/resolve-school');
+    const { fontInMemSchools } = await import('./saas');
+    const resolvedId = await resolveSchoolUUID(String(schoolId), fontInMemSchools);
+    
+    if (!resolvedId) {
+      return c.json({ success: true, data: [] });
+    }
+
+    const { data: rows, error } = await supabase.from('student_applicants')
       .select('id, nama, nisn, sekolah_asal, jurusan_1, diterima_kelas, jenis_kelamin, status, tgl_daftar, alasan_ditolak')
-      .eq('school_id', schoolId)
+      .eq('school_id', resolvedId)
       .in('status', ['Pending', 'Approved', 'Rejected'])
       .is('deleted_at', null)
       .order('tgl_daftar', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.warn('Fetch public applicants Supabase query warning:', error.message);
+      return c.json({ success: true, data: [] });
+    }
 
     // Mask NISN: only show last 4 digits for privacy
     const sanitizedRows = (rows || []).map((row) => ({
@@ -511,12 +523,12 @@ appRouter.get('/public', async (c: Context) => {
       success: true,
       data: sanitizedRows
     });
-  } catch (err) {
-    console.error('Fetch public applicants list error:', err);
+  } catch (err: any) {
+    console.warn('Fetch public applicants list exception:', err?.message);
     return c.json({
-      success: false,
-      message: 'Gagal mengambil data pendaftar.'
-    }, 500);
+      success: true,
+      data: []
+    });
   }
 });
 
@@ -545,7 +557,7 @@ appRouter.get('/', adminAuth, async (c: Context) => {
       "periode", "gelombang", "registration_no", "status", "physical_doc_verified", "physical_doc_verified_by", "physical_doc_verified_at", "tgl_daftar", "verified_by", "rejected_by", "deleted_by"
     ];
     
-    let query = supabase.from('calon_siswa')
+    let query = supabase.from('student_applicants')
       .select(calonSiswaFields.join(','))
       .is('deleted_at', null)
       .order('tgl_daftar', { ascending: false });
@@ -605,7 +617,7 @@ appRouter.get('/trashed', adminAuth, async (c: Context) => {
       "periode", "gelombang", "registration_no", "status", "physical_doc_verified", "physical_doc_verified_by", "physical_doc_verified_at", "tgl_daftar", "deleted_at", "verified_by", "rejected_by", "deleted_by"
     ];
     
-    let query = supabase.from('calon_siswa')
+    let query = supabase.from('student_applicants')
       .select(calonSiswaFields.join(','))
       .not('deleted_at', 'is', null)
       .order('deleted_at', { ascending: false });
@@ -663,7 +675,7 @@ appRouter.get('/export', adminAuth, async (c: Context) => {
         let hasMore = true;
 
         while (hasMore) {
-          let query = supabase.from('calon_siswa')
+          let query = supabase.from('student_applicants')
             .select('*')
             .is('deleted_at', null)
             .order('tgl_daftar', { ascending: false })
@@ -731,7 +743,7 @@ appRouter.post('/:id/restore', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id');
 
-    let query = supabase.from('calon_siswa').select('*').eq('id', id);
+    let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
     const { data: existing } = await query.single();
 
@@ -739,7 +751,7 @@ appRouter.post('/:id/restore', adminAuth, async (c: Context) => {
       return c.json({ success: false, message: 'Calon siswa tidak ditemukan.' }, 404);
     }
 
-    let updateQuery = supabase.from('calon_siswa').update({ deleted_at: null, deleted_by: null }).eq('id', id);
+    let updateQuery = supabase.from('student_applicants').update({ deleted_at: null, deleted_by: null }).eq('id', id);
     if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
     const { data: updated, error } = await updateQuery.select().single();
     if (error) throw error;
@@ -762,7 +774,7 @@ appRouter.get('/:id', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id');
 
-    let query = supabase.from('calon_siswa').select('*').eq('id', id);
+    let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
     
     const { data: applicant, error } = await query.single();
@@ -796,7 +808,7 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id');
 
-    let query = supabase.from('calon_siswa').select('*').eq('id', id);
+    let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
     const { data: existingRecord } = await query.single();
 
@@ -932,7 +944,7 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
       jenis_beasiswa: f.jenisBeasiswa !== undefined ? f.jenisBeasiswa : (existingRecord as any).jenis_beasiswa,
     };
 
-    let updateQuery = supabase.from('calon_siswa').update(fields).eq('id', id);
+    let updateQuery = supabase.from('student_applicants').update(fields).eq('id', id);
     if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
     
     const { data: updatedRecord, error } = await updateQuery.select().single();
@@ -961,7 +973,7 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id');
 
-    let query = supabase.from('calon_siswa').select('*').eq('id', id);
+    let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
     const { data: applicant } = await query.single();
 
@@ -987,7 +999,7 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
       updateData.alasan_ditolak = null;
     }
 
-    let updateQuery = supabase.from('calon_siswa').update(updateData).eq('id', id);
+    let updateQuery = supabase.from('student_applicants').update(updateData).eq('id', id);
     if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
     
     const { data: updatedRecord, error } = await updateQuery.select().single();
@@ -1022,11 +1034,11 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
     const schoolId = c.req.query('school_id');
 
     if (permanent) {
-      let saDeleteQuery = supabase.from('siswa_aktif').delete().eq('calon_siswa_id', id);
+      let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id);
       if (schoolId) saDeleteQuery = saDeleteQuery.eq('school_id', schoolId);
       await saDeleteQuery;
 
-      let csDeleteQuery = supabase.from('calon_siswa').delete().eq('id', id);
+      let csDeleteQuery = supabase.from('student_applicants').delete().eq('id', id);
       if (schoolId) csDeleteQuery = csDeleteQuery.eq('school_id', schoolId);
       await csDeleteQuery;
 
@@ -1036,11 +1048,11 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
       const admin = (c as any).get('admin');
       const adminName = admin ? (admin.nama || admin.username) : 'Sistem';
 
-      let csUpdateQuery = supabase.from('calon_siswa').update({ deleted_at: new Date().toISOString(), deleted_by: adminName }).eq('id', id);
+      let csUpdateQuery = supabase.from('student_applicants').update({ deleted_at: new Date().toISOString(), deleted_by: adminName }).eq('id', id);
       if (schoolId) csUpdateQuery = csUpdateQuery.eq('school_id', schoolId);
       await csUpdateQuery;
 
-      let saDeleteQuery = supabase.from('siswa_aktif').delete().eq('calon_siswa_id', id);
+      let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id);
       if (schoolId) saDeleteQuery = saDeleteQuery.eq('school_id', schoolId);
       await saDeleteQuery;
 
@@ -1069,7 +1081,7 @@ appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
       physical_doc_verified_at: verified ? new Date().toISOString() : null,
     };
 
-    let query = supabase.from('calon_siswa').update(updateData).eq('id', id);
+    let query = supabase.from('student_applicants').update(updateData).eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
     
     const { data: updatedRecord, error } = await query.select().single();
@@ -1098,7 +1110,7 @@ appRouter.get('/registration-card/:nisn', async (c: Context) => {
     const supabase = getSupabaseClient();
     const schoolId = c.req.query('school_id');
 
-    let query = supabase.from('calon_siswa')
+    let query = supabase.from('student_applicants')
       .select('id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified')
       .eq('nisn', nisn);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -1122,7 +1134,7 @@ appRouter.get('/verify/:id', async (c: Context) => {
     const supabase = getSupabaseClient();
     const schoolId = c.req.query('school_id');
 
-    let query = supabase.from('calon_siswa').select('id, nama, nisn, sekolah_asal, jenis_kelamin, tgl_lahir, status, tgl_daftar, jurusan_1, periode, alasan_ditolak').eq('id', id);
+    let query = supabase.from('student_applicants').select('id, nama, nisn, sekolah_asal, jenis_kelamin, tgl_lahir, status, tgl_daftar, jurusan_1, periode, alasan_ditolak').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
     
     const { data: record, error } = await query.single();

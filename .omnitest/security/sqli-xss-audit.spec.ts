@@ -1,7 +1,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const BE_URL = 'http://localhost:5000';
+const BE_URL = 'http://localhost:3000/api';
 
 test.describe('🔒 Security Audit: SQL Injection & XSS Sanitization', () => {
   const sqliPayloads = [

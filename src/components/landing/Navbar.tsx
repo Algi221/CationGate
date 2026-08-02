@@ -74,6 +74,17 @@ export function Navbar() {
 
           {/* Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
+            <Link href="/demo/dashboard">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-blue-200 text-blue-600 hover:bg-blue-50 font-bold text-xs sm:text-sm rounded-xl gap-1.5"
+              >
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                Coba Demo Live
+              </Button>
+            </Link>
+
             <Link href="/daftar">
               <Button 
                 variant="ghost" 
@@ -126,6 +137,12 @@ export function Navbar() {
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <Link href="/demo/dashboard" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="outline" className="w-full justify-center text-blue-600 border-blue-200 hover:bg-blue-50 text-xs font-bold rounded-xl">
+                <Sparkles className="w-4 h-4 text-blue-600 mr-1.5" />
+                Coba Demo Live
+              </Button>
+            </Link>
             <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="outline" className="w-full justify-center text-xs font-semibold rounded-xl border-slate-200">
                 Login to Console

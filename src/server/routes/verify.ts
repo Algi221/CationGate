@@ -66,7 +66,25 @@ verifyRouter.post('/submit-data', async (c) => {
       }
     });
 
-    // Update Supabase if valid UUID resolved
+    // Update Supabase prospective_schools / schools table
+    try {
+      await supabase
+        .from('prospective_schools')
+        .update({
+          npsn: npsn || undefined,
+          dapodik_code: dapodik_code || undefined,
+          official_email: official_email || undefined,
+          legal_sk_number: legal_sk_number || undefined,
+          accreditation: accreditation || undefined,
+          admin_name: admin_name || undefined,
+          social_media: socialMedia,
+          sk_document_name: sk_document_name || undefined,
+          sk_document_url: sk_document_url || undefined,
+          status: 'PENDING_VERIFICATION'
+        })
+        .or(`id.eq.${targetSchoolId},slug.eq.${targetSchoolId}`);
+    } catch (err) {}
+
     if (resolvedId) {
       try {
         await supabase

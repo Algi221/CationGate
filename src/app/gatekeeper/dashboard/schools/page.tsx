@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import {
   Building2, ShieldCheck, CheckCircle2, XCircle, AlertCircle, Search,
   Filter, Eye, ExternalLink, Lock, Unlock, FileText, Check, Sparkles,
-  RefreshCw, ChevronRight, X, ShieldAlert, Award
+  RefreshCw, ChevronRight, X, ShieldAlert, Award, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,101 +42,17 @@ export default function GatekeeperSchoolManagementPage() {
 
   const fetchSchools = async () => {
     try {
+      setLoading(true);
       const res = await fetch("/api/gatekeeper/schools");
       const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+      if (json.success && Array.isArray(json.data)) {
         setSchools(json.data);
       } else {
-        // Default Seed fallback if DB is initially fresh
-        setSchools([
-          {
-            id: 1,
-            name: "SMK Taruna Bhakti",
-            slug: "smktarunabhakti",
-            npsn: "20229182",
-            dapodik_code: "DPD-2026-981",
-            official_email: "info@smktarunabhakti.sch.id",
-            plan_type: "PRO",
-            status: "FULL_VERIFIED",
-            created_at: "2026-07-01",
-            legal_sk_number: "SK-DIKNAS/2020/421.5-881",
-            accreditation: "A (Unggul)",
-            admin_name: "Drs. H. Mulyadi M.Pd"
-          },
-          {
-            id: 2,
-            name: "SMK Putra Bangsa",
-            slug: "smkputrabangsa",
-            npsn: "20229199",
-            dapodik_code: "DPD-2026-402",
-            official_email: "admin@smkputrabangsa.sch.id",
-            plan_type: "STARTER",
-            status: "PENDING_VERIFICATION",
-            created_at: "2026-07-28",
-            legal_sk_number: "SK-DIKNAS/2021/421.5-102",
-            accreditation: "B",
-            admin_name: "Bambang Sudirman"
-          },
-          {
-            id: 3,
-            name: "SMA Global Mandiri",
-            slug: "smaglobalmandiri",
-            npsn: "20229311",
-            dapodik_code: "DPD-2026-712",
-            official_email: "sekretariat@smaglobalmandiri.sch.id",
-            plan_type: "ENTERPRISE",
-            status: "FULL_VERIFIED",
-            created_at: "2026-06-15",
-            legal_sk_number: "SK-DIKNAS/2019/421.5-309",
-            accreditation: "A (Unggul)",
-            admin_name: "Dr. Rina Wulandari M.Si"
-          },
-          {
-            id: 4,
-            name: "SMK Telkom Depok",
-            slug: "smktelkomdepok",
-            npsn: "20229450",
-            dapodik_code: "DPD-2026-119",
-            official_email: "ppdb@smktelkomdepok.sch.id",
-            plan_type: "PRO",
-            status: "PENDING_VERIFICATION",
-            created_at: "2026-07-30",
-            legal_sk_number: "SK-DIKNAS/2022/421.5-554",
-            accreditation: "A",
-            admin_name: "Andi Saputra S.T."
-          },
-          {
-            id: 5,
-            name: "SMA Nusantara 1",
-            slug: "smanusantara1",
-            npsn: "20229810",
-            dapodik_code: "DPD-2026-880",
-            official_email: "info@smanusantara1.sch.id",
-            plan_type: "PRO",
-            status: "UNVERIFIED",
-            created_at: "2026-07-31",
-            legal_sk_number: "SK-DIKNAS/2023/421.5-912",
-            accreditation: "B",
-            admin_name: "Siti Rahmawati S.Pd"
-          },
-          {
-            id: 6,
-            name: "SMK Genesis Depok",
-            slug: "smkgenesisdepok",
-            npsn: "20229999",
-            dapodik_code: "DPD-2026-007",
-            official_email: "admin@smkgenesisdepok.sch.id",
-            plan_type: "ENTERPRISE",
-            status: "FULL_VERIFIED",
-            created_at: "2026-07-20",
-            legal_sk_number: "SK-DIKNAS/2024/421.5-007",
-            accreditation: "A (Unggul)",
-            admin_name: "Superadmin Genesis"
-          }
-        ]);
+        setSchools([]);
       }
     } catch (e) {
       console.warn("Failed to fetch schools from API:", e);
+      setSchools([]);
     } finally {
       setLoading(false);
     }

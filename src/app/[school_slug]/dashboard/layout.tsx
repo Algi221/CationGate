@@ -656,7 +656,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                       <span className="text-xs font-semibold">Pengaturan</span>
                     </Link>
                     <Link
-                      href="/"
+                      href={schoolSlug ? `/${schoolSlug}` : "/"}
                       target="_blank"
                       onClick={() => setShowUserDropdown(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"

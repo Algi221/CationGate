@@ -394,9 +394,9 @@ export default function DashboardOverview() {
        };
     }
     
-    // Fallback dummy for other views if RPC doesn't support them yet
+    // Fallback: return empty data when RPC doesn't have data yet
     const baseLabels = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-    const baseCounts = [8, 14, 11, 23, 19, 32, statsData.total || 5];
+    const baseCounts = [0, 0, 0, 0, 0, 0, 0];
     return { labels: baseLabels, counts: baseCounts };
   };
 

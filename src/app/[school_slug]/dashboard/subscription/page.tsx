@@ -161,65 +161,8 @@ export default function SubscriptionManagementPage() {
         </div>
       </div>
 
-      {/* Grid: 2 Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {/* Card 1: Toggle Resmi Buka/Tutup SPMB */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-6"
-        >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Power className="w-4 h-4 text-blue-500" /> Kontrol Pendaftaran Publik
-              </span>
-              <span className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider ${
-                isSpmbOpen
-                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900"
-                  : "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900"
-              }`}>
-                {isSpmbOpen ? "DIBUKA (OPEN)" : "DITUTUP (CLOSED)"}
-              </span>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                Status Resmi Pendaftaran SPMB
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                {isSpmbOpen
-                  ? "Pendaftaran calon siswa baru saat ini aktif. Pengunjung landing page dapat mengisi formulir pendaftaran secara langsung."
-                  : "Pendaftaran publik saat ini non-aktif. Landing page akan menampilkan pemberitahuan bahwa SPMB telah resmi ditutup."}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                {isSpmbOpen ? "Matikan Pendaftaran" : "Buka Pendaftaran"}
-              </p>
-              <p className="text-[11px] text-slate-400">
-                Ubah akses formulir publik instansi
-              </p>
-            </div>
-
-            <button
-              onClick={handleToggleSpmbStatus}
-              disabled={isUpdatingSpmb}
-              className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md flex items-center gap-2 shrink-0 ${
-                isSpmbOpen
-                  ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/20"
-                  : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20"
-              }`}
-            >
-              <Power className="w-4 h-4" />
-              {isSpmbOpen ? "Tutup SPMB" : "Buka SPMB"}
-            </button>
-          </div>
-        </motion.div>
+      {/* Subscription Card */}
+      <div className="grid grid-cols-1 gap-6">
 
         {/* Card 2: Status Paket Langganan CationGate SaaS */}
         <motion.div

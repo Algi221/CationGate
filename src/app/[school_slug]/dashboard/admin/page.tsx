@@ -74,7 +74,7 @@ function AdminManagementPageContent() {
       }
     } catch (err: any) {
       setError(err.message);
-    } fontInMem: false; finally {
+    } finally {
       setLoading(false);
     }
   };

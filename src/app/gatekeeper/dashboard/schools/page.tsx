@@ -69,13 +69,13 @@ export default function GatekeeperSchoolManagementPage() {
   // Action Handlers
   const handleApproveVerification = (school: SchoolTenant) => {
     Swal.fire({
-      title: `Approve Legalitas ${school.name}?`,
-      text: `Sekolah ini akan diverifikasi secara resmi (Status: FULL_VERIFIED). Akses dashboard tenant & fitur SPMB akan langsung TERBUKA.`,
+      title: "Setujui Verifikasi Sekolah?",
+      text: `Apakah Anda yakin ingin menyetujui verifikasi legalitas ${school.name}?`,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#10B981",
       cancelButtonColor: "#64748B",
-      confirmButtonText: "Ya, Verifikasi & Unlock",
+      confirmButtonText: "Ya, Setujui",
       cancelButtonText: "Batal",
       customClass: {
         popup: "rounded-2xl dark:bg-slate-900 dark:text-white border dark:border-slate-800"
@@ -96,8 +96,8 @@ export default function GatekeeperSchoolManagementPage() {
           setSelectedSchoolModal(prev => prev ? { ...prev, status: "FULL_VERIFIED", is_verified: true } : null);
         }
         Swal.fire({
-          title: "Verifikasi Disetujui!",
-          text: `Sekolah ${school.name} telah terverifikasi penuh (FULL_VERIFIED) dan fitur dashboard ter-unlocked.`,
+          title: "Verifikasi Disetujui",
+          text: `Sekolah ${school.name} berhasil diverifikasi.`,
           icon: "success",
           confirmButtonColor: "#2563EB",
           customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }

@@ -158,9 +158,15 @@ gatekeeperRouter.get('/schools', async (c) => {
 // 3. POST /api/gatekeeper/approve-school - Verify & move candidate school to 'schools' table
 gatekeeperRouter.post('/approve-school', async (c) => {
   try {
-    const { school_id } = await c.req.json();
+    const body = await c.req.json();
+    const school_id = body.school_id || body.slug || body.id;
+    if (!school_id) {
+      return c.json({ success: false, message: 'ID atau Slug sekolah wajib diisi' }, 400);
+    }
+
     const supabase = getSupabaseClient();
     const idOrSlug = String(school_id);
+    const isNumericId = !isNaN(Number(idOrSlug)) && Number(idOrSlug) > 0;
 
     // 1. Find school details in memory or DB
     let targetSchool: any = null;
@@ -172,14 +178,18 @@ gatekeeperRouter.post('/approve-school', async (c) => {
 
     if (!targetSchool) {
       try {
-        const { data: ps } = await supabase.from('prospective_schools').select('*').or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`).maybeSingle();
+        let psQuery = supabase.from('prospective_schools').select('*');
+        psQuery = isNumericId ? psQuery.eq('id', Number(idOrSlug)) : psQuery.eq('slug', idOrSlug);
+        const { data: ps } = await psQuery.maybeSingle();
         if (ps) targetSchool = ps;
       } catch (e) {}
     }
 
     if (!targetSchool) {
       try {
-        const { data: sc } = await supabase.from('schools').select('*').or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`).maybeSingle();
+        let scQuery = supabase.from('schools').select('*');
+        scQuery = isNumericId ? scQuery.eq('id', Number(idOrSlug)) : scQuery.eq('slug', idOrSlug);
+        const { data: sc } = await scQuery.maybeSingle();
         if (sc) targetSchool = sc;
       } catch (e) {}
     }
@@ -190,10 +200,9 @@ gatekeeperRouter.post('/approve-school', async (c) => {
 
     // 2. Update prospective_schools in Supabase
     try {
-      await supabase
-        .from('prospective_schools')
-        .update({ status: 'FULL_VERIFIED', is_verified: true })
-        .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+      let psUpdate = supabase.from('prospective_schools').update({ status: 'FULL_VERIFIED', is_verified: true });
+      psUpdate = isNumericId ? psUpdate.eq('id', Number(idOrSlug)) : psUpdate.eq('slug', sSlug);
+      await psUpdate;
     } catch (e) {}
 
     // 3. Upsert into 'schools' table in Supabase
@@ -240,7 +249,7 @@ gatekeeperRouter.post('/approve-school', async (c) => {
 
     return c.json({
       success: true,
-      message: `Sekolah '${sName}' resmi terverifikasi! Akses dashboard & pendaftaran SPMB terbuka (FULL_VERIFIED).`
+      message: `Verifikasi sekolah '${sName}' telah disetujui.`
     });
   } catch (err: any) {
     console.error('Approve school error:', err);

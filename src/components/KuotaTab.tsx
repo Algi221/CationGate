@@ -51,10 +51,44 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
         : '/api/kuota';
       const res = await fetch(url);
       const json = await res.json();
-      if (json.success) {
-        setData(json.data);
-        if (json.data.availablePeriodes && availablePeriodes.length === 0) {
-          setAvailablePeriodes(json.data.availablePeriodes);
+      if (json.success && json.data) {
+        const raw = json.data;
+        const pendaftarObj = raw.pendaftar;
+        const siswaAktifObj = raw.siswa_aktif || raw.siswaAktif;
+
+        const pendaftarItems: KuotaItem[] = Array.isArray(pendaftarObj)
+          ? pendaftarObj
+          : (Array.isArray(pendaftarObj?.items) ? pendaftarObj.items : []);
+
+        const siswaAktifItems: KuotaItem[] = Array.isArray(siswaAktifObj)
+          ? siswaAktifObj
+          : (Array.isArray(siswaAktifObj?.items) ? siswaAktifObj.items : []);
+
+        const totalPendaftarVal = typeof raw.totalPendaftar === 'number'
+          ? raw.totalPendaftar
+          : (pendaftarObj?.total?.jumlah ?? (pendaftarItems.reduce((acc: number, curr: any) => acc + (curr.jumlah || 0), 0)));
+
+        const totalSiswaAktifVal = typeof raw.totalSiswaAktif === 'number'
+          ? raw.totalSiswaAktif
+          : (siswaAktifObj?.total?.jumlah ?? (siswaAktifItems.reduce((acc: number, curr: any) => acc + (curr.jumlah || 0), 0)));
+
+        const totalTargetVal = typeof raw.totalTarget === 'number'
+          ? raw.totalTarget
+          : (pendaftarObj?.total?.target ?? (pendaftarItems.reduce((acc: number, curr: any) => acc + (curr.target || 0), 0)));
+
+        setData({
+          pendaftar: pendaftarItems,
+          siswaAktif: siswaAktifItems,
+          totalPendaftar: totalPendaftarVal,
+          totalSiswaAktif: totalSiswaAktifVal,
+          totalTarget: totalTargetVal,
+          availablePeriodes: raw.available_periodes || raw.availablePeriodes || [],
+          selectedPeriode: raw.selected_periode || raw.selectedPeriode || ''
+        });
+
+        const periodesList = raw.available_periodes || raw.availablePeriodes;
+        if (periodesList && availablePeriodes.length === 0) {
+          setAvailablePeriodes(periodesList);
         }
       } else {
         throw new Error(json.error || 'Gagal memuat data kuota');
@@ -274,7 +308,8 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
     ? `TAHUN AJARAN ${selectedPeriode.replace("-", "/")}`
     : "TAHUN AJARAN 2026/2027";
 
-  const renderTable = (title: string, items: KuotaItem[], totalJumlah: number) => {
+  const renderTable = (title: string, rawItems: KuotaItem[], totalJumlah: number) => {
+    const items = Array.isArray(rawItems) ? rawItems : ((rawItems as any)?.items || []);
     let totalTargetEditing = 0;
     if (editMode) {
       totalTargetEditing = Object.values(editingTargets).reduce((a, b) => a + b, 0);
@@ -337,9 +372,10 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
     );
   };
 
-  const renderDonut = (title: string, items: KuotaItem[], totalJumlah: number) => {
+  const renderDonut = (title: string, rawItems: KuotaItem[], totalJumlah: number) => {
+    const items = Array.isArray(rawItems) ? rawItems : ((rawItems as any)?.items || []);
     const colors = ["#ec4899", "#3b82f6", "#0ea5e9", "#8b5cf6", "#f59e0b", "#10b981", "#ef4444", "#14b8a6"];
-    const validItems = items.filter(i => i.jumlah > 0 && i.key !== "Belum Memilih");
+    const validItems = items.filter(i => i && i.jumlah > 0 && i.key !== "Belum Memilih");
     const totalValid = validItems.reduce((acc, curr) => acc + curr.jumlah, 0) || 1;
 
     let accumulatedPercent = 0;

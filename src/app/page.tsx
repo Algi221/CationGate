@@ -14,55 +14,66 @@ import { FaqSection } from "@/components/landing/FaqSection";
 import { CtaBanner } from "@/components/landing/CtaBanner";
 import { Footer } from "@/components/landing/Footer";
 import { VideoModal } from "@/components/landing/VideoModal";
+import { FloatingVideoWidget } from "@/components/landing/FloatingVideoWidget";
+
+// BIKIN KAMUS VIDEO DI SINI BIAR RAPI
+const VIDEO_COLLECTION = {
+  // Ini link yang BENAR untuk iframe (The Fragrant Flower Blooms With Dignity)
+  trailerAnime: "https://www.youtube-nocookie.com/embed/1FcVJxxPWh4",
+
+  // Nanti ganti ID ini dengan video presentasi aslimu
+  videoLama: "https://www.youtube-nocookie.com/embed/VIDEO_LAMA_ID_DISINI",
+
+  // Kalau sewaktu-waktu mau pasang jebakan Rickroll lagi
+  rickroll: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+};
 
 export default function LandingPage() {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
+  // Menyimpan URL video yang sedang aktif
+  const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white flex flex-col relative">
-      
-      {/* Top Header Bar */}
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white flex flex-col relative overflow-hidden">
       <Navbar />
 
-      {/* Main Ed-Tech SaaS Content Flow */}
       <main className="flex-1">
-        {/* 1. Hero Section & 4 Feature Offer Cards */}
-        <HeroSection onOpenVideo={() => setIsVideoOpen(true)} />
+        {/* UBAH DISINI: Ganti videoLama menjadi rickroll */}
+        <HeroSection
+          onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
+        />
 
-        {/* 2. Core Capabilities (Content Library, Assessments, Progress Dashboard) */}
         <PartnersSection />
-
-        {/* 3. Secondary Content Block (Unlock Peak Performance) & The CationGate Advantage */}
         <FeaturesShowcase />
-
-        {/* 4. Detailed Service List (3 Accordions) & Daily Workflow Schedule */}
         <SystemFlowSection />
-
-        {/* 5. Data & Insights Metric Cards */}
         <RegionalStatsSection />
 
-        {/* 6. Book A Call / Demo CTA Box */}
-        <SuccessStorySection onOpenVideo={() => setIsVideoOpen(true)} />
+        {/* UBAH DISINI JUGA JIKA INGIN RICKROLL: Ganti videoLama menjadi rickroll */}
+        <SuccessStorySection
+          onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
+        />
 
-        {/* 7. The Minds Behind the Technology (Team) & Verified Testimonials Grid */}
         <TestimonialsSection />
-
-        {/* 8. Transparent SaaS Pricing & Plans */}
         <PricingSection />
-
-        {/* 9. Ed-Tech Platform FAQ */}
         <FaqSection />
-
-        {/* 10. Insights & Ed-Tech Best Practices (Blog) & Bottom CTA Banner */}
         <CtaBanner />
       </main>
 
-      {/* Modern SaaS Footer */}
       <Footer />
 
-      {/* Video Demo Modal */}
-      <VideoModal isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />
+      {/* Widget memanggil video trailer anime */}
+      <FloatingVideoWidget
+        onClick={() => setActiveVideoUrl(VIDEO_COLLECTION.trailerAnime)}
+      />
 
+      {/* 
+        VideoModal menerima props `videoUrl`. 
+        isOpen = true jika activeVideoUrl tidak null
+      */}
+      <VideoModal
+        isOpen={activeVideoUrl !== null}
+        videoUrl={activeVideoUrl} // Kirim url-nya kesini
+        onClose={() => setActiveVideoUrl(null)}
+      />
     </div>
   );
 }

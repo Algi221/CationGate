@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '../db/supabase';
 import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
+import { broadcast } from '../ws/handler';
 
 const gatekeeperRouter = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET || 'cationgate_gatekeeper_secret_2026';
@@ -245,7 +246,7 @@ gatekeeperRouter.post('/approve-school', async (c) => {
       });
     }
 
-    broadcast({ event: 'SCHOOL_VERIFIED', slug: sSlug, status: 'FULL_VERIFIED' }, true);
+    broadcast({ event: 'SCHOOL_VERIFIED', data: { slug: sSlug, status: 'FULL_VERIFIED' } }, true);
 
     return c.json({
       success: true,

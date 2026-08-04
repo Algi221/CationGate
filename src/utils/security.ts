@@ -19,11 +19,11 @@ export function sanitizeUrl(url: string | undefined | null): string {
   }
 }
 
-export function sanitizeSrc(src: string | undefined | null): string {
-  if (!src) return "";
+export function sanitizeSrc(src: string | undefined | null): string | undefined {
+  if (!src) return undefined;
   let sanitized = sanitizeUrl(src);
   if (sanitized && sanitized.startsWith("/jurusan/")) {
     sanitized = sanitized.replace("/jurusan/", "/assets/jurusan/");
   }
-  return sanitized === "#" ? "" : sanitized;
+  return sanitized === "#" ? undefined : sanitized;
 }

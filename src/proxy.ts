@@ -6,7 +6,7 @@ const PROTECTED_DASHBOARD_PATTERN = /^\/([^/]+)\/dashboard/;
 // Routes that should be accessible regardless of verification status
 const ALWAYS_ALLOWED = ['/auth/', '/verify-account', '/daftar', '/api/', '/verify/'];
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip static assets, API routes, and always-allowed paths

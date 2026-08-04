@@ -21,7 +21,7 @@ export default function Error({ error, reset }: ErrorProps) {
         <div className="w-72 h-72 mx-auto">
           <Lottie animationData={animationData} loop={true} />
         </div>
-        
+
         <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight mt-6">
           Terjadi Kesalahan Sistem
         </h1>
@@ -43,7 +43,7 @@ export default function Error({ error, reset }: ErrorProps) {
             Coba Lagi
           </button>
           <button
-            onClick={() => window.location.href = "/"}
+            onClick={() => (window.location.href = "/")}
             className="px-6 py-3 bg-slate-200 hover:bg-slate-350 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
           >
             Kembali ke Beranda

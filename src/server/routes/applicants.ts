@@ -478,59 +478,10 @@ appRouter.post('/', rateLimiter({
   }
 });
 
+import { ApplicantController } from '../controllers/ApplicantController';
+
 // 2. PUBLIC: Fetch candidates with limited non-sensitive columns
-// Return candidates with status 'Pending', 'Approved', or 'Rejected'.
-// NISN is masked (only last 4 digits shown) to prevent sensitive data exposure.
-appRouter.get('/public', async (c: Context) => {
-  try {
-    await checkAndDisqualifyExpiredApplicants();
-    
-    const supabase = getSupabaseClient();
-    const schoolId = c.req.query('school_id'); // Wajib dikirim
-    
-    if (!schoolId) {
-      return c.json({ success: true, data: [] });
-    }
-
-    // Resolve to actual UUID
-    const { resolveSchoolUUID } = await import('../db/resolve-school');
-    const { fontInMemSchools } = await import('./saas');
-    const resolvedId = await resolveSchoolUUID(String(schoolId), fontInMemSchools);
-    
-    if (!resolvedId) {
-      return c.json({ success: true, data: [] });
-    }
-
-    const { data: rows, error } = await supabase.from('student_applicants')
-      .select('id, nama, nisn, sekolah_asal, jurusan_1, diterima_kelas, jenis_kelamin, status, tgl_daftar, alasan_ditolak')
-      .eq('school_id', resolvedId)
-      .in('status', ['Pending', 'Approved', 'Rejected'])
-      .is('deleted_at', null)
-      .order('tgl_daftar', { ascending: false });
-
-    if (error) {
-      console.warn('Fetch public applicants Supabase query warning:', error.message);
-      return c.json({ success: true, data: [] });
-    }
-
-    // Mask NISN: only show last 4 digits for privacy
-    const sanitizedRows = (rows || []).map((row) => ({
-      ...row,
-      nisn: row.nisn ? '******' + row.nisn.slice(-4) : null
-    }));
-
-    return c.json({
-      success: true,
-      data: sanitizedRows
-    });
-  } catch (err: any) {
-    console.warn('Fetch public applicants list exception:', err?.message);
-    return c.json({
-      success: true,
-      data: []
-    });
-  }
-});
+appRouter.get('/public', ApplicantController.getAll);
 
 // 3. ADMIN ONLY: Fetch all candidates with full columns (Protected)
 // Optimasi: Kecualikan kolom bukti_bayar dan berkas_foto dari data list untuk menghemat bandwidth (Base64)

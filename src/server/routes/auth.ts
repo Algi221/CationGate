@@ -2,13 +2,11 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '../db/supabase';
-import dotenv from 'dotenv';
 import { adminAuth } from '../middleware/auth';
 import { sendTelegramNotification } from '../utils/telegram';
 import { loginSchema, changePasswordSchema } from '../validations/auth';
 import { rateLimiter } from '../middleware/rate-limiter';
 
-dotenv.config();
 
 const authRouter = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET;

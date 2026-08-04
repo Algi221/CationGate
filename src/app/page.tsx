@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+// 1. TAMBAHAN BARU: Import komponen LoadingScreen
+// Pastikan path-nya sesuai dengan tempat kamu menyimpan file LoadingScreen.jsx/tsx
+import LoadingScreen from "@/components/landing/LoadingScreen";
+
 import { Navbar } from "@/components/landing/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
@@ -34,6 +38,9 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white flex flex-col relative overflow-hidden">
+      {/* 2. TAMBAHAN BARU: Pasang LoadingScreen di paling atas */}
+      <LoadingScreen />
+
       <Navbar />
 
       <main className="flex-1">

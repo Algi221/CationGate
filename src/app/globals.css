@@ -2188,3 +2188,17 @@ html.dark .footer-social-link.tiktok:hover {
 .animate-pulse-glow {
   animation: pulse-glow 3s ease-in-out infinite;
 }
+
+/* Animasi untuk gelombang air Memento Mori */
+@keyframes wave-flow {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-wave-flow-slow {
+  animation: wave-flow 8s linear infinite;
+}
+
+.animate-wave-flow-fast {
+  animation: wave-flow 5s linear infinite;
+}

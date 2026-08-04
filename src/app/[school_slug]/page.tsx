@@ -57,16 +57,16 @@ const ScrollFloat = dynamic(() => import("@/components/ScrollFloat"), {
 });
 import dompurify from "dompurify";
 import { usePPDB } from "@/context/PPDBContext";
+import { useParams } from "next/navigation";
+import SchoolNotFound from "@/components/SchoolNotFound";
 
 const sanitizeUrl = (url: string | undefined | null): string | null => {
   if (!url) return null;
-  try {
-    return dompurify.sanitize(url, {
-      ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-    }) || null;
-  } catch (e) {
-    return null;
+  if (/^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i.test(url)) {
+    if (url.toLowerCase().includes('javascript:')) return null;
+    return url;
   }
+  return null;
 };
 
 const sanitizeSrc = (src: string | undefined | null): string | null => {
@@ -134,7 +134,7 @@ interface FaqItem {
 const DEFAULT_FAQ: FaqItem[] = [
   {
     q: "Bagaimana cara melakukan pembayaran biaya pendaftaran?",
-    a: "Pembayaran administrasi pendaftaran dapat diselesaikan melalui Transfer Bank Manual ke rekening resmi yayasan sekolah. Setelah melakukan transfer, harap unggah bukti transfer di portal pendaftaran untuk divalidasi oleh panitia."
+    a: "Pembayaran administrasi pendaftaran dapat diselesaikan melalui Transfer Bank Manual ke rekening resmi sekolah. Setelah melakukan transfer, harap unggah bukti transfer di portal pendaftaran untuk divalidasi oleh panitia."
   },
   {
     q: "Apa saja berkas persyaratan fisik yang wajib dibawa ke sekolah?",
@@ -142,54 +142,62 @@ const DEFAULT_FAQ: FaqItem[] = [
   },
   {
     q: "Apakah ada batasan kuota pendaftaran untuk masing-masing jurusan?",
-    a: "Ya, setiap program kompetensi keahlian memiliki batas kuota tampung maksimal yang diselaraskan dengan ketersediaan fasilitas laboratorium praktikum (misal 100 siswa per jurusan). Pendaftaran untuk jurusan tertentu akan ditutup otomatis ketika kuota terpenuhi. Selesaikan pembayaran segera untuk mengamankan kuota Anda."
+    a: "Ya, setiap program kompetensi keahlian memiliki batas kuota tampung maksimal. Pendaftaran untuk jurusan tertentu akan ditutup otomatis ketika kuota terpenuhi. Selesaikan pembayaran segera untuk mengamankan kuota Anda."
   },
   {
-    q: "Apakah ada tes seleksi masuk di SMK Taruna Bhakti?",
+    q: "Apakah ada tes seleksi masuk?",
     a: "Ya, calon peserta didik baru akan mengikuti seleksi potensi akademik, tes minat bakat, serta wawancara kompetensi keahlian secara terjadwal setelah menyelesaikan pengisian formulir pendaftaran dan pembayaran biaya administrasi."
   }
 ];
 
 const DEFAULT_ALUR: AlurItem[] = [
-  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap." },
-  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000 via Transfer Bank." },
-  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis via WhatsApp" },
-  { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
-  { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
-  { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
+  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website resmi sekolah dan mengisi data diri lengkap." },
+  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran melalui metode yang tersedia." },
+  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Data pendaftaran akan diverifikasi oleh panitia PPDB sekolah." },
+  { id: 4, title: "Pemberkasan", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik." },
+  { id: 5, title: "Tes Seleksi", desc: "Mengikuti serangkaian tes seleksi yang ditentukan oleh sekolah." },
+  { id: 6, title: "Pengumuman Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru." }
 ];
 
 export default function Home() {
-  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
+  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle, isSchoolNotFound } = usePPDB();
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "sekolah";
+
+  if (isSchoolNotFound) {
+    return <SchoolNotFound slug={schoolSlug} />;
+  }
   
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
-  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
-  const [waAdmin, setWaAdmin] = useState("6281292244456");
+  const schoolDisplayName = ppdbTitle || schoolSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  const [waGroupUrl, setWaGroupUrl] = useState("");
+  const [waAdmin, setWaAdmin] = useState("");
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
   const [faqTitle, setFaqTitle] = useState("Pertanyaan yang Sering Diajukan");
-  const [faqSubtitle, setFaqSubtitle] = useState("Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.");
+  const [faqSubtitle, setFaqSubtitle] = useState("Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru.");
 
   const toggleFaq = (idx: number) => {
     setActiveFaq(activeFaq === idx ? null : idx);
   };
 
   const [heroTitle, setHeroTitle] = useState("Penerimaan Peserta Didik Baru");
-  const [heroTitleSub, setHeroTitleSub] = useState("SPMB SMK Taruna Bhakti");
-  const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
-  const [phone, setPhone] = useState("(021) 8740756");
-  const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
-  const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
-  const [mapTitle, setMapTitle] = useState("Kunjungi SMK Taruna Bhakti");
-  const [mapUrl, setMapUrl] = useState("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid");
+  const [heroTitleSub, setHeroTitleSub] = useState(`SPMB ${schoolDisplayName}`);
+  const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [mapTitle, setMapTitle] = useState(`Kunjungi ${schoolDisplayName}`);
+  const [mapUrl, setMapUrl] = useState("");
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [gelombangConfig, setGelombangConfig] = useState({
-    gelombang1: { start: "2026-06-03", end: "2026-07-24" },
-    gelombang2: { start: "2026-07-25", end: "2026-08-30" }
+    gelombang1: { start: "", end: "" },
+    gelombang2: { start: "", end: "" }
   });
 
   const getGelombangStatus = (startStr: string, endStr: string) => {
@@ -290,6 +298,8 @@ export default function Home() {
   };
 
   const [loadVideo, setLoadVideo] = useState(false);
+  const [heroMediaUrl, setHeroMediaUrl] = useState<string>("");
+  const [heroMediaType, setHeroMediaType] = useState<string>("none");
   const [currentVideo, setCurrentVideo] = useState(0);
   const videos = ["/assets/videos/vid1.webm", "/assets/videos/vid2.webm"];
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -368,6 +378,8 @@ export default function Home() {
           if (config.ppdb_hero_title) setHeroTitle(config.ppdb_hero_title);
           if (config.ppdb_hero_title_sub) setHeroTitleSub(config.ppdb_hero_title_sub);
           if (config.ppdb_hero_subtitle) setHeroSubtitle(config.ppdb_hero_subtitle);
+          if (config.ppdb_hero_media_url) setHeroMediaUrl(config.ppdb_hero_media_url);
+          if (config.ppdb_hero_media_type) setHeroMediaType(config.ppdb_hero_media_type);
           if (config.ppdb_phone) setPhone(config.ppdb_phone);
           if (config.ppdb_email) setEmail(config.ppdb_email);
           if (config.ppdb_address) setAddress(config.ppdb_address);
@@ -384,38 +396,8 @@ export default function Home() {
           if (config.ppdb_partners_config && Array.isArray(config.ppdb_partners_config)) {
             setPartnersList(config.ppdb_partners_config);
           } else {
-            // Load defaults if empty
-            const DEFAULT_PARTNERS = [
-              { id: 1, name: "TOA", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/PT-TOA.png", url: "https://toa.co.id/", h: "h-8" },
-              { id: 2, name: "Biznet", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/biznet_vertical_logo.png", url: "https://www.biznetnetworks.com/", h: "h-20" },
-              { id: 3, name: "Icon+", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/56e83c6db8cd5587e87161281dfba75b.webp", url: "https://plniconplus.co.id/", h: "h-14" },
-              { id: 4, name: "MD Animation", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo_md_animation.png", url: "https://mdentertainment.com/", h: "h-8" },
-              { id: 5, name: "Hompimpa Animworks", logo: "https://www.google.com/s2/favicons?domain=hompimpa.co.id&sz=256", url: "https://hompimpa.co.id/", h: "h-12" },
-              { id: 6, name: "Monsterdata", logo: "https://www.google.com/s2/favicons?domain=monsterdata.asia&sz=256", url: "https://monsterdata.asia/?utm_source=chatgpt.com", h: "h-12" },
-              { id: 7, name: "Ciptadrasoft", logo: "https://www.google.com/s2/favicons?domain=citcom.id&sz=256", url: "https://citcom.id/", h: "h-12" },
-              { id: 8, name: "Assemblr", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/6156e76e275fa19ed9a33fa3_Group-33959.png", url: "https://assemblrworld.com/", h: "h-20" },
-              { id: 9, name: "Daun Biru Engineering", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/E-Learning-5.png", url: "https://daunbiru.co.id/", h: "h-12" },
-              { id: 10, name: "Citra Film School", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/cropped-Logo-baru-citra.png", url: "https://citrafilmschool.net/", h: "h-20" },
-              { id: 11, name: "Prasimax", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Prasimax_Logo.png", url: "https://prasimax.com/", h: "h-10" },
-              { id: 12, name: "Panasonic", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/8225.png", url: "https://www.panasonic.com/id/", h: "h-8" },
-              { id: 13, name: "LUWES INOVASI MANDIRI", logo: "https://luwesinovasimandiri.com/_astro/logo.DBn-6O1s.webp", url: "https://luwesinovasimandiri.com/", h: "h-12" },
-              { id: 14, name: "PUDAK SCIENTIFIC", logo: "https://www.google.com/s2/favicons?domain=pudak-scientific.com&sz=256", url: "https://www.pudak-scientific.com/", h: "h-12" },
-              { id: 15, name: "Pupuk Kujang Cikampek", logo: "https://www.google.com/s2/favicons?domain=pupuk-kujang.co.id&sz=256", url: "https://www.pupuk-kujang.co.id/", h: "h-12" },
-              { id: 16, name: "Rasil AM 720", logo: "https://www.google.com/s2/favicons?domain=radiosilaturahim.com&sz=256", url: "https://www.radiosilaturahim.com/", h: "h-12" },
-              { id: 17, name: "Beyond Films", logo: "https://www.google.com/s2/favicons?domain=beyondfilms.co.id&sz=256", url: "http://www.beyondfilms.co.id", h: "h-12" },
-              { id: 18, name: "POSTPLAY", logo: "https://www.google.com/s2/favicons?domain=linktr.ee&sz=256", url: "https://linktr.ee/postplayindonesia?utm_source=chatgpt.com", h: "h-12" },
-              { id: 19, name: "VISI 8", logo: "https://www.google.com/s2/favicons?domain=visi8.com&sz=256", url: "https://visi8.com/", h: "h-12" },
-              { id: 20, name: "MEMENTO", logo: "https://www.google.com/s2/favicons?domain=mementoworks.id&sz=256", url: "https://mementoworks.id", h: "h-12" },
-              { id: 21, name: "SKYNET", logo: "https://www.google.com/s2/favicons?domain=sky.net.id&sz=256", url: "https://sky.net.id/?utm_source=chatgpt.com", h: "h-12" },
-              { id: 22, name: "Museum Nasional Indonesia", logo: "https://www.google.com/s2/favicons?domain=museumnasional.or.id&sz=256", url: "https://www.museumnasional.or.id/", h: "h-12" },
-              { id: 23, name: "ANIMO", logo: "https://www.google.com/s2/favicons?domain=fiverr.com&sz=256", url: "https://www.fiverr.com/animo_studio?utm_source=chatgpt.com", h: "h-12" },
-              { id: 24, name: "PIONICON", logo: "/partners/pionicon.jpg", url: "https://pionicon.com/", h: "h-12" },
-              { id: 25, name: "Circle Logo", logo: "https://www.google.com/s2/favicons?domain=seamolec.org&sz=256", url: "https://seamolec.org/", h: "h-12" },
-              { id: 26, name: "mvnet", logo: "https://www.google.com/s2/favicons?domain=mvnet.co.id&sz=256", url: "https://mvnet.co.id/", h: "h-12" },
-              { id: 27, name: "SADA TECHNOLOGY", logo: "https://www.google.com/s2/favicons?domain=sada.id&sz=256", url: "https://sada.id/", h: "h-12" },
-              { id: 28, name: "LIGHT CODE DIGITAL", logo: "https://www.google.com/s2/favicons?domain=lightcodedigital.com&sz=256", url: "https://lightcodedigital.com/", h: "h-12" },
-            ];
-            setPartnersList(DEFAULT_PARTNERS);
+            // No partners configured yet — leave empty for template
+            setPartnersList([]);
           }
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
             const iconMap: Record<string, any> = {
@@ -609,22 +591,25 @@ export default function Home() {
       {/* HERO SECTION WRAPPER */}
       <main className="flex-grow w-full">
         <div className="relative w-full overflow-hidden">
-          {/* Video Background - Full Width */}
+          {/* Media Background - Full Width */}
           <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-            {loadVideo && (
+            {heroMediaType === "video" && heroMediaUrl ? (
               <video
-                ref={videoRef}
-                src={videos[currentVideo]}
+                src={heroMediaUrl}
                 autoPlay
                 muted
+                loop
                 playsInline
-                preload="none"
-                onEnded={handleVideoEnded}
                 className="w-full h-full object-cover transition-opacity duration-1000"
-                aria-hidden="true"
-              >
-                <track kind="captions" label="No captions" default />
-              </video>
+              />
+            ) : heroMediaType === "image" && heroMediaUrl ? (
+              <img
+                src={heroMediaUrl}
+                alt="Hero Background"
+                className="w-full h-full object-cover transition-opacity duration-1000"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
             )}
             <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
           </div>
@@ -685,7 +670,7 @@ export default function Home() {
 
           {/* Hero Copy */}
           <div className="badge-wrapper relative z-10 flex flex-col items-center gap-3">
-            <span className="badge-pill">SMK TARUNA BHAKTI DEPOK</span>
+            <span className="badge-pill">{ppdbTitle.toUpperCase()}</span>
             <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-800/60 px-4 py-2 rounded-full backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
                <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
                <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>

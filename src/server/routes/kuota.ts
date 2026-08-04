@@ -4,45 +4,50 @@ import { getSupabaseClient } from '../db/supabase';
 const router = new Hono();
 
 const DEFAULT_TARGETS: Record<string, number> = {
-  "Teknik Jaringan Komputer & Telekomunikasi": 160,
-  "Rekayasa Perangkat Lunak": 200,
-  "Animasi": 80,
-  "Broadcasting & Perfilman": 120,
-  "Teknik Elektronika": 80,
-  "Desain Komunikasi Visual": 40,
+  "Desain Komunikasi Visual": 108,
+  "Teknik Komputer dan Jaringan": 144,
+  "Rekayasa Perangkat Lunak": 144,
+  "Broadcasting dan Perfilman": 108,
+  "Teknik Transmisi Telekomunikasi": 36,
   "Belum Memilih": 0
 };
 
 const DISPLAY_NAMES: Record<string, string> = {
-  "Teknik Jaringan Komputer & Telekomunikasi": "TKJ",
-  "Rekayasa Perangkat Lunak": "RPL",
-  "Animasi": "ANIMASI",
-  "Broadcasting & Perfilman": "PSPT",
-  "Teknik Elektronika": "TEI",
-  "Desain Komunikasi Visual": "DKV",
-  "Belum Memilih": "BELUM MEMILIH JURUSAN"
+  "Desain Komunikasi Visual": "Desain Komunikasi Visual (DKV)",
+  "Teknik Komputer dan Jaringan": "Teknik Komputer dan Jaringan (TKJ)",
+  "Rekayasa Perangkat Lunak": "Rekayasa Perangkat Lunak (RPL)",
+  "Broadcasting dan Perfilman": "Broadcasting dan Perfilman (BC)",
+  "Teknik Transmisi Telekomunikasi": "Teknik Transmisi Telekomunikasi (TJA)",
+  "Belum Memilih": "Belum Memilih Jurusan / Unassigned"
 };
 
 const ORDER = [
-  "Teknik Jaringan Komputer & Telekomunikasi",
-  "Rekayasa Perangkat Lunak",
-  "Animasi",
-  "Broadcasting & Perfilman",
-  "Teknik Elektronika",
   "Desain Komunikasi Visual",
+  "Teknik Komputer dan Jaringan",
+  "Rekayasa Perangkat Lunak",
+  "Broadcasting dan Perfilman",
+  "Teknik Transmisi Telekomunikasi",
   "Belum Memilih"
 ];
 
-const getTargets = async (supabase: any, schoolId: string | null) => {
-  let query = supabase.from('landing_page_config').select('config_value').eq('config_key', 'kuota_targets');
-  if (schoolId) query = query.eq('school_id', schoolId);
-  const { data, error } = await query.single();
-  
-  if (data && data.config_value) {
-    return { ...DEFAULT_TARGETS, ...(data.config_value as Record<string, number>) };
+async function getTargets(supabase: any, schoolId: string | null): Promise<Record<string, number>> {
+  if (!schoolId) return DEFAULT_TARGETS;
+  try {
+    const { data } = await supabase
+      .from('landing_page_config')
+      .select('config_value')
+      .eq('school_id', schoolId)
+      .eq('config_key', 'kuota_targets')
+      .maybeSingle();
+    
+    if (data && data.config_value) {
+      return typeof data.config_value === 'string' ? JSON.parse(data.config_value) : data.config_value;
+    }
+  } catch (e) {
+    console.warn('Gagal membaca kuota_targets dari DB, menggunakan default:', e);
   }
   return DEFAULT_TARGETS;
-};
+}
 
 router.get('/', async (c) => {
   try {
@@ -52,9 +57,8 @@ router.get('/', async (c) => {
 
     const TARGETS = await getTargets(supabase, schoolId);
 
-    // Fetch periods
-    let pQuery = supabase.from('calon_siswa').select('periode');
-    let sQuery = supabase.from('siswa_aktif').select('periode');
+    let pQuery = supabase.from('student_applicants').select('periode');
+    let sQuery = supabase.from('active_students').select('periode');
     if (schoolId) {
       pQuery = pQuery.eq('school_id', schoolId);
       sQuery = sQuery.eq('school_id', schoolId);
@@ -69,9 +73,8 @@ router.get('/', async (c) => {
     periodesSet.add('2026-2027');
     const availablePeriodes = Array.from(periodesSet).sort((a, b) => b.localeCompare(a));
 
-    // Fetch data for grouping
-    let pendaftarDataQuery = supabase.from('calon_siswa').select('jurusan_1');
-    let siswaAktifDataQuery = supabase.from('siswa_aktif').select('jurusan');
+    let pendaftarDataQuery = supabase.from('student_applicants').select('jurusan_1');
+    let siswaAktifDataQuery = supabase.from('active_students').select('jurusan');
     
     if (schoolId) {
       pendaftarDataQuery = pendaftarDataQuery.eq('school_id', schoolId);
@@ -119,24 +122,43 @@ router.get('/', async (c) => {
       });
     };
 
-    const pendaftarData = processGroups(groupRows(pendaftarRows || [], 'jurusan_1'), 'jurusan_1');
-    const siswaAktifData = processGroups(groupRows(siswaAktifRows || [], 'jurusan'), 'jurusan');
+    const pendaftarGroups = groupRows(pendaftarRows || [], 'jurusan_1');
+    const siswaAktifGroups = groupRows(siswaAktifRows || [], 'jurusan');
+
+    const dataPendaftar = processGroups(pendaftarGroups, 'jurusan_1');
+    const dataSiswaAktif = processGroups(siswaAktifGroups, 'jurusan');
+
+    const totalTarget = ORDER.reduce((acc, k) => acc + (TARGETS[k] || 0), 0);
+    const totalPendaftarJumlah = dataPendaftar.reduce((acc, item) => acc + item.jumlah, 0);
+    const totalSiswaAktifJumlah = dataSiswaAktif.reduce((acc, item) => acc + item.jumlah, 0);
 
     return c.json({
       success: true,
       data: {
-        pendaftar: pendaftarData,
-        siswaAktif: siswaAktifData,
-        totalPendaftar: pendaftarData.reduce((acc, curr) => acc + curr.jumlah, 0),
-        totalSiswaAktif: siswaAktifData.reduce((acc, curr) => acc + curr.jumlah, 0),
-        totalTarget: Object.values(TARGETS).reduce((acc, curr) => acc + Number(curr), 0),
-        availablePeriodes,
-        selectedPeriode: periodeParam || 'all'
+        available_periodes: availablePeriodes,
+        selected_periode: periodeParam || availablePeriodes[0] || '2026-2027',
+        targets: TARGETS,
+        pendaftar: {
+          items: dataPendaftar,
+          total: {
+            jumlah: totalPendaftarJumlah,
+            target: totalTarget,
+            presentase: totalTarget > 0 ? `${Math.round((totalPendaftarJumlah / totalTarget) * 100)}%` : "0%"
+          }
+        },
+        siswa_aktif: {
+          items: dataSiswaAktif,
+          total: {
+            jumlah: totalSiswaAktifJumlah,
+            target: totalTarget,
+            presentase: totalTarget > 0 ? `${Math.round((totalSiswaAktifJumlah / totalTarget) * 100)}%` : "0%"
+          }
+        }
       }
     });
   } catch (error: any) {
-    console.error('Error fetching kuota:', error);
-    return c.json({ success: false, error: error.message }, 500);
+    console.error('Error calculating kuota:', error);
+    return c.json({ success: false, message: 'Gagal mengambil data kuota jurusan: ' + error.message }, 500);
   }
 });
 
@@ -145,28 +167,31 @@ router.post('/targets', async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
     const body = await c.req.json();
-    const newTargets = body.targets;
-    
-    if (!newTargets || typeof newTargets !== 'object') {
-      return c.json({ success: false, message: 'Invalid targets data. Expected targets object.' }, 400);
+    const { targets } = body;
+
+    if (!targets || typeof targets !== 'object') {
+      return c.json({ success: false, message: 'Data targets tidak valid' }, 400);
     }
 
-    const payload: any = {
-      config_key: "kuota_targets",
-      config_value: newTargets
-    };
-    if (schoolId) payload.school_id = schoolId;
+    if (schoolId) {
+      await supabase
+        .from('landing_page_config')
+        .upsert({
+          school_id: schoolId,
+          config_key: 'kuota_targets',
+          config_value: JSON.stringify(targets),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'school_id,config_key' });
+    }
 
-    const { error } = await supabase
-      .from('landing_page_config')
-      .upsert(payload, { onConflict: 'config_key' });
-
-    if (error) throw error;
-
-    return c.json({ success: true, message: "Kuota targets updated successfully" });
+    return c.json({
+      success: true,
+      message: 'Target kuota jurusan berhasil diperbarui.',
+      data: targets
+    });
   } catch (error: any) {
-    console.error('Error updating kuota targets:', error);
-    return c.json({ success: false, error: error.message }, 500);
+    console.error('Error saving targets:', error);
+    return c.json({ success: false, message: 'Gagal menyimpan target kuota: ' + error.message }, 500);
   }
 });
 

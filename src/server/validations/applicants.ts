@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { base64FileSchema } from './helpers';
 
 export const registerApplicantSchema = z.object({
   nama: z.string().optional().or(z.literal('')),
@@ -124,9 +123,6 @@ export const registerApplicantSchema = z.object({
   janjiBelajar: z.union([z.boolean(), z.string()]).optional(),
   janjiNamaBaik: z.union([z.boolean(), z.string()]).optional(),
   periode: z.string().optional().default('2026-2027'),
-  berkasFotoBase64: base64FileSchema(2, ['image/jpeg', 'image/png', 'image/webp']).nullable(),
-  buktiBayar: base64FileSchema(3, ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']).nullable(),
-  metodePembayaran: z.string().optional().default('Bayar di Sekolah')
 });
 
 export const updateApplicantSchema = registerApplicantSchema.partial().passthrough();

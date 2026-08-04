@@ -8,81 +8,12 @@ const adminUsersRouter = new Hono();
 
 adminUsersRouter.use('/*', superAdminAuth);
 
-// Ambil data staff/guru dari API YSBMO
+// Legacy YSBMO Staff Route (Returns empty array for standalone admin management)
 adminUsersRouter.get('/ysbmo/staff', async (c) => {
-  try {
-    const manualToken = c.req.header('X-YSBMO-Token') || c.req.query('ysbmo_token');
-    const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
-
-    let ysbmoToken: string | null | undefined = manualToken;
-    if (!ysbmoToken) {
-      let query = supabase.from('admin_users').select('ysbmo_token').not('ysbmo_token', 'is', null).order('id', { ascending: false }).limit(1);
-      if (schoolId) query = query.eq('school_id', schoolId);
-      const { data } = await query.single();
-      ysbmoToken = data?.ysbmo_token;
-    }
-
-    if (!ysbmoToken) {
-      return c.json({
-        success: false,
-        code: 'NO_TOKEN',
-        message: 'Token YSBMO tidak ditemukan. Silakan masukkan token secara manual atau login ulang menggunakan akun YSBMO.'
-      }, 400);
-    }
-
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const xApiKey = `SARPRAS-STARBHAK${year}${month}`;
-
-    const headers: Record<string, string> = {
-      'x-api-key': xApiKey,
-      'Content-Type': 'application/json'
-    };
-
-    const cleanToken = ysbmoToken.replace(/^Basic\s+/i, '');
-    headers['Authorization'] = `Basic ${cleanToken}`;
-
-    const response = await fetch('https://be-skol.yayasansetyabhakti.org:5203/api/v1/masterdata/list-staff', {
-      method: 'GET',
-      headers: headers
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      return c.json({
-        success: false,
-        message: `Koneksi API YSBMO mengembalikan status ${response.status}: ${errText}`
-      }, 400);
-    }
-
-    const result = await response.json();
-    
-    if (manualToken) {
-      const currentAdmin = (c as any).get('admin');
-      if (currentAdmin && currentAdmin.id) {
-        try {
-          let updateQuery = supabase.from('admin_users').update({ ysbmo_token: cleanToken }).eq('id', currentAdmin.id);
-          if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
-          await updateQuery;
-        } catch (dbErr: any) {
-          console.warn('Gagal menyimpan token manual ke DB:', dbErr.message);
-        }
-      }
-    }
-
-    return c.json({
-      success: true,
-      data: result.data || result
-    });
-  } catch (error: any) {
-    console.error('[YSBMO API Route Error]', error);
-    return c.json({
-      success: false,
-      message: `Terjadi kesalahan saat mengambil data staff YSBMO: ${error.message}`
-    }, 500);
-  }
+  return c.json({
+    success: true,
+    data: []
+  });
 });
 
 // Ambil semua data admin yang aktif (tidak dihapus)

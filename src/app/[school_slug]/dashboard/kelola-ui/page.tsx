@@ -33,6 +33,7 @@ import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
 import DOMPurify from "dompurify";
 import Swal from 'sweetalert2';
+import { compressImage, compressVideo } from "@/utils/mediaCompressor";
 
 
 interface AlurItem {
@@ -425,16 +426,13 @@ export default function KelolaUserInterface() {
   const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
   const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB SMK Taruna Bhakti");
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.");
+  const [heroMediaUrl, setHeroMediaUrl] = useState("");
+  const [heroMediaType, setHeroMediaType] = useState<"video" | "image" | "none">("none");
+  const [compressing, setCompressing] = useState(false);
   const [phone, setPhone] = useState("(021) 8740756");
   const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
   const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
   const [mapTitle, setMapTitle] = useState("Kunjungi Kampus SMK Taruna Bhakti");
-  const [mapUrl, setMapUrl] = useState("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid");
-  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
-  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
-  const [waAdmin, setWaAdmin] = useState("6281292244456");
-  const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
-  const [formFee, setFormFee] = useState("250000");
   const [schoolLogo, setSchoolLogo] = useState("/logo_smktb.png");
   const [schoolTitle, setSchoolTitle] = useState("PPDB SMK TB");
 
@@ -492,6 +490,13 @@ export default function KelolaUserInterface() {
     ]
   });
 
+  const [mapUrl, setMapUrl] = useState("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid");
+  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
+  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
+  const [waAdmin, setWaAdmin] = useState("6281292244456");
+  const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
+  const [formFee, setFormFee] = useState("250000");
+
   useEffect(() => {
     setMounted(true);
     fetchCurrentConfig();
@@ -506,6 +511,8 @@ export default function KelolaUserInterface() {
       ppdb_hero_title: heroTitle,
       ppdb_hero_title_sub: heroTitleSub,
       ppdb_hero_subtitle: heroSubtitle,
+      ppdb_hero_media_url: heroMediaUrl,
+      ppdb_hero_media_type: heroMediaType,
       ppdb_phone: phone,
       ppdb_email: email,
       ppdb_address: address,
@@ -533,9 +540,13 @@ export default function KelolaUserInterface() {
     heroTitle,
     heroTitleSub,
     heroSubtitle,
+    heroMediaUrl,
+    heroMediaType,
     phone,
     email,
     address,
+    mapTitle,
+    mapUrl,
     schoolPeriod,
     waGroupUrl,
     waAdmin,
@@ -547,6 +558,8 @@ export default function KelolaUserInterface() {
     majorsList,
     faqList,
     partnersList,
+    schoolLogo,
+    schoolTitle,
   ]);
 
   const showToastMsg = (message: string, type: "success" | "error" | "info" = "success") => {
@@ -575,11 +588,12 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_hero_title) setHeroTitle(activeConfig.ppdb_hero_title);
       if (activeConfig.ppdb_hero_title_sub) setHeroTitleSub(activeConfig.ppdb_hero_title_sub);
       if (activeConfig.ppdb_hero_subtitle) setHeroSubtitle(activeConfig.ppdb_hero_subtitle);
+      if (activeConfig.ppdb_hero_media_url) setHeroMediaUrl(activeConfig.ppdb_hero_media_url);
+      if (activeConfig.ppdb_hero_media_type) setHeroMediaType(activeConfig.ppdb_hero_media_type);
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
       if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
         if (activeConfig.ppdb_map_title) setMapTitle(activeConfig.ppdb_map_title);
-        if (activeConfig.ppdb_map_url) setMapUrl(activeConfig.ppdb_map_url);
       if (activeConfig.ppdb_school_period) setSchoolPeriod(activeConfig.ppdb_school_period);
         if (activeConfig.ppdb_faq_title) setFaqTitle(activeConfig.ppdb_faq_title);
         if (activeConfig.ppdb_faq_subtitle) setFaqSubtitle(activeConfig.ppdb_faq_subtitle);
@@ -730,26 +744,6 @@ export default function KelolaUserInterface() {
     reader.readAsDataURL(file);
   };
 
-  const handleSchoolLogoChange = (file: File) => {
-    const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
-    const allowedImgExts = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'];
-    if (!file.type.startsWith("image/") && !allowedImgExts.includes(fileExt)) {
-      showToastMsg("Hanya file gambar (JPG/PNG/WEBP) yang diperbolehkan.", "error");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      showToastMsg("Ukuran file gambar maksimal adalah 2MB.", "error");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setSchoolLogo(base64);
-      showToastMsg("Logo sekolah berhasil dimuat. Klik Simpan Perubahan di pojok kanan atas.");
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleAddAlur = () => {
     const nextId = alurList.length > 0 ? Math.max(...alurList.map(a => a.id)) + 1 : 1;
     setAlurList([...alurList, { id: nextId, title: "Langkah Baru", desc: "Deskripsi langkah pendaftaran baru..." }]);
@@ -823,11 +817,13 @@ export default function KelolaUserInterface() {
         ppdb_hero_title: heroTitle,
         ppdb_hero_title_sub: heroTitleSub,
         ppdb_hero_subtitle: heroSubtitle,
+        ppdb_hero_media_url: heroMediaUrl,
+        ppdb_hero_media_type: heroMediaType,
         ppdb_phone: phone,
         ppdb_email: email,
         ppdb_address: address,
-      ppdb_map_title: mapTitle,
-      ppdb_map_url: mapUrl,
+        ppdb_map_title: mapTitle,
+        ppdb_map_url: mapUrl,
         ppdb_school_period: schoolPeriod,
         ppdb_wa_group_url: waGroupUrl,
         ppdb_wa_admin: waAdmin,
@@ -862,31 +858,25 @@ export default function KelolaUserInterface() {
         showToastMsg("Semua perubahan UI berhasil disimpan dan tercatat.");
         setChangeDescription("");
         localStorage.removeItem("ppdb_ui_editor_draft");
-        fetchConfigs().catch(console.error);
-        
+        fetchCurrentConfig().catch(console.error);
+
         try {
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
           localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));
           localStorage.setItem("ppdb_faq_config", JSON.stringify(faqList));
-            localStorage.setItem("ppdb_faq_title", faqTitle);
-            localStorage.setItem("ppdb_faq_subtitle", faqSubtitle);
+          localStorage.setItem("ppdb_faq_title", faqTitle);
+          localStorage.setItem("ppdb_faq_subtitle", faqSubtitle);
           localStorage.setItem("ppdb_partners_config", JSON.stringify(partnersList));
           localStorage.setItem("ppdb_reg_cost", formFee);
           localStorage.setItem("ppdb_school_period", schoolPeriod);
-            localStorage.setItem("ppdb_map_title", mapTitle);
-            localStorage.setItem("ppdb_map_url", mapUrl);
+          localStorage.setItem("ppdb_map_title", mapTitle);
+          localStorage.setItem("ppdb_map_url", mapUrl);
           localStorage.setItem("ppdb_wa_group_url", waGroupUrl);
           localStorage.setItem("ppdb_wa_admin", waAdmin);
           localStorage.setItem("ppdb_bank_config", JSON.stringify(bankConfigList));
           localStorage.setItem("ppdb_gelombang_config", JSON.stringify(gelombangConfig));
-          const existingClasses = localStorage.getItem("ppdb_classes_config");
-          if (!existingClasses) {
-            localStorage.setItem("ppdb_classes_config", JSON.stringify(
-              finalMajors.map(m => ({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 }))
-            ));
-          }
         } catch (storageErr) {
-          console.warn("Storage quota exceeded or unavailable. LocalStorage cache sync bypassed.", storageErr);
+          console.warn("Storage sync bypassed.", storageErr);
         }
 
         await fetchRevisions();
@@ -898,6 +888,41 @@ export default function KelolaUserInterface() {
       showToastMsg("Terjadi kesalahan server.", "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+
+  const handleSchoolLogoChange = async (file: File) => {
+    try {
+      setCompressing(true);
+      const result = await compressImage(file, 400, 400, 0.85);
+      setSchoolLogo(result.base64);
+      showToastMsg(`✨ Logo di-kompres otomatis! Ukuran berkas berkurang ${result.reductionPercentage}%`);
+    } catch (e) {
+      showToastMsg("Gagal mengompres logo.", "error");
+    } finally {
+      setCompressing(false);
+    }
+  };
+
+  const handleHeroMediaFileChange = async (file: File) => {
+    try {
+      setCompressing(true);
+      if (file.type.startsWith("video/")) {
+        const result = await compressVideo(file);
+        setHeroMediaUrl(result.base64);
+        setHeroMediaType("video");
+        showToastMsg("✨ Video Hero berhasil diproses dan disimpan!");
+      } else {
+        const result = await compressImage(file, 1600, 1000, 0.8);
+        setHeroMediaUrl(result.base64);
+        setHeroMediaType("image");
+        showToastMsg(`✨ Foto Hero di-kompres otomatis! Ukuran berkas berkurang ${result.reductionPercentage}%`);
+      }
+    } catch (e) {
+      showToastMsg("Gagal memproses media Hero.", "error");
+    } finally {
+      setCompressing(false);
     }
   };
 
@@ -1183,16 +1208,133 @@ export default function KelolaUserInterface() {
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-y"
                     />
                   </div>
+
+                  {/* Hero Background Media Editor (Video or Photo Upload with Auto-Compressor) */}
+                  <div className="space-y-3 md:col-span-2 bg-slate-50 dark:bg-slate-950/40 p-5 rounded-2xl border border-slate-200/60 dark:border-white/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Video size={16} className="text-blue-500" />
+                        <label className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-wider">Media Background Hero (Foto / Video)</label>
+                      </div>
+                      <span className="text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-900">
+                        ✨ Auto-Compress Enabled
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      Pilih tipe media background halaman utama. Berkas gambar/video yang diunggah akan otomatis di-kompres secara otomatis.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => { setHeroMediaType("none"); setHeroMediaUrl(""); }}
+                        className={`p-3 rounded-xl border text-xs font-bold transition-all ${
+                          heroMediaType === "none"
+                            ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                            : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                        }`}
+                      >
+                        Default Mesh Gradient
+                      </button>
+
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleHeroMediaFileChange(file);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className={`w-full p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                            heroMediaType === "image"
+                              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                          }`}
+                        >
+                          <ImageIcon size={14} />
+                          <span>Upload Foto Hero</span>
+                        </button>
+                      </div>
+
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleHeroMediaFileChange(file);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className={`w-full p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                            heroMediaType === "video"
+                              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                          }`}
+                        >
+                          <Video size={14} />
+                          <span>Upload Video Hero</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {heroMediaUrl && (
+                      <div className="mt-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 truncate max-w-xs">
+                          {heroMediaType === "video" ? <Video size={14} className="text-blue-500 shrink-0" /> : <ImageIcon size={14} className="text-emerald-500 shrink-0" />}
+                          <span className="truncate font-semibold text-slate-700 dark:text-slate-300">
+                            Media Aktif: {heroMediaType.toUpperCase()} ({heroMediaUrl.substring(0, 30)}...)
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setHeroMediaType("none"); setHeroMediaUrl(""); }}
+                          className="text-rose-500 hover:text-rose-700 text-[11px] font-bold underline"
+                        >
+                          Hapus Media
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="border-b border-slate-100 dark:border-white/5 pb-4 mt-8 mb-4">
                   <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
                     <Info size={16} className="text-blue-500" />
-                    <span>Informasi Sekolah &amp; Kontak</span>
+                    <span>Informasi Sekolah &amp; Google Maps</span>
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2 md:col-span-1">
+                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Judul Seksi Google Maps</label>
+                    <input
+                      type="text"
+                      value={mapTitle}
+                      onChange={(e) => setMapTitle(e.target.value)}
+                      placeholder="Contoh: Kunjungi Kampus Sekolah"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Google Maps Embed iFrame URL</label>
+                    <input
+                      type="text"
+                      value={mapUrl}
+                      onChange={(e) => setMapUrl(e.target.value)}
+                      placeholder="https://www.google.com/maps/embed?pb=..."
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 font-mono text-[11px]"
+                    />
+                  </div>
+                  
                   <div className="space-y-2">
                     <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nomor Telepon Sekolah</label>
                     <input

@@ -53,3 +53,5 @@ next-env.d.ts
 # Misc
 *.md
 !README.md
+hasil_export/
+opencode.json

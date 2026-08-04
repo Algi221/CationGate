@@ -1,7 +1,7 @@
-export default function Page() {
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">src\app\dashboard\superadmin</h1>
-    </div>
-  );
+"use client";
+
+import GatekeeperDashboardPage from "@/app/gatekeeper/dashboard/page";
+
+export default function SchoolGatekeeperPage() {
+  return <GatekeeperDashboardPage />;
 }

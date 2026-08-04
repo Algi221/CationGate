@@ -42,25 +42,12 @@ export async function initDb(): Promise<void> {
       const sql = fs.readFileSync(schemaPath, 'utf8');
       await client.query(sql);
 
-      // Migrasi otomatis: Pastikan kolom pembayaran, periode, dan dokumen ada di tabel yang sudah ada
+      // Migrasi otomatis: Tambah kolom baru sesuai skema terbaru
       await client.query(`
-        ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'Unpaid';
-        ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS periode VARCHAR(20) DEFAULT '2026-2027';
-        ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS gelombang VARCHAR(20) DEFAULT 'Gelombang 1';
-        ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS berkas_foto TEXT;
-        ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS bukti_bayar TEXT;
-        ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS metode_pembayaran VARCHAR(50) DEFAULT 'Payment Gateway';
-      `);
-
-      // Pastikan tabel ui_revisions sudah ada
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS ui_revisions (
-            id SERIAL PRIMARY KEY,
-            config_values JSONB NOT NULL,
-            changed_by VARCHAR(100) DEFAULT 'admin',
-            description TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+        ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS registration_no VARCHAR(50);
+        ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS physical_doc_verified BOOLEAN DEFAULT FALSE;
+        -- Status sekolah lama: VERIFIED → FULL_VERIFIED
+        UPDATE schools SET status = 'FULL_VERIFIED' WHERE status = 'VERIFIED' OR status = 'verified';
       `);
 
       console.log('PostgreSQL Database tables verified/initialized successfully.');

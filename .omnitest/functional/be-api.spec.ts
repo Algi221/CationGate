@@ -1,7 +1,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BE_URL || 'http://localhost:5000';
+const BASE_URL = process.env.BE_URL || 'http://localhost:3000/api';
 
 test.describe('Backend API Functional Endpoint Tests', () => {
 

@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
 import {
   Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
   Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, Menu, ChevronDown, UserCircle
+  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard
 } from "lucide-react";
+import SchoolNotFound from "@/components/SchoolNotFound";
 
 // ─── Breadcrumbs ──────────────────────────────────────────────────────────────
 function Breadcrumbs({ pathname }: { pathname: string }) {
@@ -65,10 +66,12 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
 
 // ─── Main Layout ──────────────────────────────────────────────────────────────
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
-  const { adminToken, adminUser, logoutAdmin, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
+  const { adminToken, adminUser, logoutAdmin, wsStatus, ppdbLogo, ppdbTitle, schoolStatus, isSchoolNotFound } = usePPDB();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const schoolSlug = params?.school_slug as string;
 
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -138,6 +141,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
+      if (schoolSlug === 'demo') return; // Bypass auth for demo
       const token = localStorage.getItem("ppdb_admin_token");
       const lastActive = localStorage.getItem("ppdb_admin_last_active");
       if (token && lastActive) {
@@ -145,16 +149,25 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
           logoutAdmin();
-          router.push("/auth/login?expired=true");
+          router.push(`/${schoolSlug}/auth/login?expired=true`);
           return;
         }
       }
       if (!adminToken) {
-        router.push("/auth/login");
+        router.push(`/${schoolSlug}/auth/login`);
+        return;
+      }
+      // Redirect unverified schools to verification onboarding in dashboard
+      const isVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified';
+      if (!isVerified && schoolSlug) {
+        const isVerifyingPath = pathname.includes('/dashboard/verification') || pathname.includes('/verify-account');
+        if (!isVerifyingPath) {
+          router.push(`/${schoolSlug}/dashboard/verification`);
+        }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminToken, mounted]);
+  }, [adminToken, mounted, schoolStatus, schoolSlug]);
 
   useEffect(() => {
     if (!adminToken) return;
@@ -206,7 +219,10 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   if (!mounted) return null;
-  if (!adminToken) {
+  if (isSchoolNotFound || schoolStatus === 'TAKEDOWN') {
+    return <SchoolNotFound slug={schoolSlug} isTakedown={schoolStatus === 'TAKEDOWN'} />;
+  }
+  if (!adminToken && schoolSlug !== 'demo') {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-white transition-colors duration-300">
         <div className="flex flex-col items-center gap-3">
@@ -223,16 +239,30 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
 
+  // ── Verification Check ───────────────────────────────────────────────────
+  const isSchoolVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || schoolSlug === 'demo';
+
   // ── Menu Configuration with Submenus ───────────────────────────────────────
   const menuStructure = [
+    ...(!isSchoolVerified
+      ? [
+          {
+            category: "Status Legalitas",
+            items: [
+              { href: "/dashboard/verification", icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
+            ]
+          }
+        ]
+      : []),
     {
       category: "Manajemen Siswa",
       items: [
-        { href: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true },
+        { href: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
         {
           href: "/dashboard/pendaftar",
           icon: <Users size={18} />,
           label: "Data Calon Siswa",
+          lockedIfUnverified: true,
           subItems: [
             { label: "Pendaftar Reguler", href: "/dashboard/pendaftar?tab=active" },
             { label: "Pendaftar Pindahan", href: "/dashboard/pendaftar?tab=transfer" },
@@ -240,18 +270,19 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             { label: "Tempat Sampah", href: "/dashboard/pendaftar?tab=trash" }
           ]
         },
-        { href: "/dashboard/pembagian-kelas", icon: <Layers size={18} />, label: "Pembagian Kelas" },
-        { href: "/dashboard/siswa-aktif", icon: <GraduationCap size={18} />, label: "Siswa Aktif" }
+        { href: "/dashboard/pembagian-kelas", icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
+        { href: "/dashboard/siswa-aktif", icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
       ]
     },
     {
       category: "Konten Portal",
       items: [
-        { href: "/dashboard/informasi", icon: <Megaphone size={18} />, label: "Kelola Informasi" },
+        { href: "/dashboard/informasi", icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
         {
           href: "/dashboard/kelola-ui",
           icon: <Palette size={18} />,
           label: "Kelola UI/Data",
+          lockedIfUnverified: true,
           subItems: [
             { label: "Hero & Kontak", href: "/dashboard/kelola-ui?tab=hero" },
             { label: "Program Keahlian", href: "/dashboard/kelola-ui?tab=majors" },
@@ -268,23 +299,46 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     {
       category: "Pengaturan Sistem",
       items: [
-        { href: "/dashboard/admin", icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true },
-        { href: "/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan" }
+        { href: "/dashboard/subscription", icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
+        { href: "/dashboard/admin", icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
+        { href: "/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan", lockedIfUnverified: true }
       ]
     }
   ];
 
   // ── Nav link helper with Submenu support ───────────────────────────────────
   const renderMenuItem = (item: any, delayIndex: number) => {
+    const prefix = schoolSlug ? `/${schoolSlug}` : '';
+    const fullHref = item.href.startsWith('/') ? `${prefix}${item.href}` : item.href;
     const hasSub = !!item.subItems;
     const isOpen = !!openDropdowns[item.href];
+    const isLocked = !isSchoolVerified && item.href !== "/dashboard/verification";
     const isActive = item.exact
-      ? pathname === item.href
-      : pathname === item.href || pathname.startsWith(item.href + "/");
+      ? pathname === fullHref || pathname === item.href
+      : pathname === fullHref || pathname === item.href || pathname.startsWith(fullHref + "/");
 
     const currentTab = searchParams ? searchParams.get("tab") : null;
 
     const handleItemClick = (e: React.MouseEvent) => {
+      if (isLocked) {
+        e.preventDefault();
+        Swal.fire({
+          title: "Fitur Terkunci 🔒",
+          text: "Sekolah Anda belum terverifikasi legalitasnya oleh Gatekeeper. Silakan selesaikan form Verifikasi Sekolah terlebih dahulu.",
+          icon: "warning",
+          confirmButtonColor: "#2563EB",
+          confirmButtonText: "Buka Form Verifikasi",
+          showCancelButton: true,
+          cancelButtonText: "Batal",
+          customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
+        }).then((res) => {
+          if (res.isConfirmed) {
+            router.push(`/${schoolSlug}/dashboard/verification`);
+          }
+        });
+        return;
+      }
+
       if (hasSub) {
         e.preventDefault();
         if (isCollapsed) {
@@ -306,16 +360,18 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         className="w-full flex flex-col"
       >
         <Link
-          href={item.href}
+          href={isLocked ? "#" : fullHref}
           onClick={handleItemClick}
           className={`flex items-center justify-between rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
             isCollapsed ? "justify-center p-3" : "px-4 py-3"
           } ${
-            isActive && (!hasSub || isCollapsed)
+            isLocked
+              ? "opacity-50 border-transparent text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 cursor-not-allowed"
+              : isActive && (!hasSub || isCollapsed)
               ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
               : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
           }`}
-          title={isCollapsed ? item.label : undefined}
+          title={isCollapsed ? (isLocked ? `${item.label} (Terkunci 🔒)` : item.label) : undefined}
         >
           <div className="flex items-center min-w-0">
             <span className="shrink-0">{item.icon}</span>
@@ -327,14 +383,16 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               {item.label}
             </span>
           </div>
-          {hasSub && !isCollapsed && (
+          {isLocked && !isCollapsed ? (
+            <Lock size={14} className="text-amber-500 shrink-0 ml-2" />
+          ) : hasSub && !isCollapsed ? (
             <ChevronDown
               size={14}
               className={`text-slate-400 dark:text-slate-500 transition-transform duration-300 shrink-0 ml-2 ${
                 isOpen ? "rotate-180 text-blue-500" : ""
               }`}
             />
-          )}
+          ) : null}
         </Link>
 
         {/* Render submenu items */}
@@ -350,17 +408,18 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   className="pl-8 pr-2 py-1.5 space-y-1"
                 >
                   {item.subItems.map((sub: any) => {
+                    const fullSubHref = sub.href.startsWith('/') ? `${prefix}${sub.href}` : sub.href;
                     const defaultTab = sub.href.includes("pendaftar") ? "active" : "hero";
                     const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");
                     const tabVal = urlParams.get("tab");
                     const isSubActive =
-                      pathname === sub.href.split("?")[0] &&
+                      (pathname === fullSubHref.split("?")[0] || pathname === sub.href.split("?")[0]) &&
                       tabVal === (currentTab || defaultTab);
 
                     return (
                       <Link
                         key={sub.href}
-                        href={sub.href}
+                        href={fullSubHref}
                         className={`flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-[10px] font-bold tracking-wide uppercase transition-all duration-200 border ${
                           isSubActive
                             ? "bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-slate-200/50 dark:border-slate-700/50 font-black"
@@ -567,8 +626,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{adminUser?.nama || "Admin TB"}</p>
                         <p className="text-[10px] text-slate-400 dark:text-slate-550 font-medium truncate">@{adminUser?.username || "admin"}</p>
-                        <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${adminUser?.role === "superadmin" ? "bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400" : "bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"}`}>
-                          {adminUser?.role || "admin"}
+                        <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                          isSchoolVerified
+                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900"
+                            : "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900"
+                        }`}>
+                          {isSchoolVerified ? "✓ Akun Official Sekolah" : "UNVERIFIED"}
                         </span>
                       </div>
                     </div>
@@ -593,7 +656,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                       <span className="text-xs font-semibold">Pengaturan</span>
                     </Link>
                     <Link
-                      href="/"
+                      href={schoolSlug ? `/${schoolSlug}` : "/"}
                       target="_blank"
                       onClick={() => setShowUserDropdown(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"

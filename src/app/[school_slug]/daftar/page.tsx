@@ -329,36 +329,29 @@ export default function DaftarPage() {
     deklarasi: false,
     periode: "2026-2027",
     berkasFotoOk: false,
-    berkasFotoFile: null,
+    berkasFotoFile: null as File | null,
     berkasFotoName: "",
     berkasFotoBase64: "",
     berkasPrestasiBase64: "",
   });
 
-  const [showPaymentGate, setShowPaymentGate] = useState(false);
-  const [submittedCandidate, setSubmittedCandidate] = useState(null);
-  const [manualReceiptBase64, setManualReceiptBase64] = useState("");
-  const [manualReceiptName, setManualReceiptName] = useState("");
+  const [submittedCandidate, setSubmittedCandidate] = useState<any>(null);
   const [copied, setCopied] = useState(false);
-  const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
   const [successData, setSuccessData] = useState<any>(null);
-  const [activePaymentMethod, setActivePaymentMethod] = useState("transfer");
-  const [bankConfigList, setBankConfigList] = useState<Array<{
-    bankName: string;
-    accountNumber: string;
-    accountHolder: string;
-  }>>([
-    {
-      bankName: "Bank Mandiri",
-      accountNumber: "157-00-0174092-2",
-      accountHolder: "Yayasan Taruna Bhakti"
-    }
-  ]);
 
   const [isDark, setIsDark] = useState(false);
+  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [regCost, setRegCost] = useState(250000);
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
-  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
+  const [bankConfigList, setBankConfigList] = useState<Array<{ bankName: string; accountNumber: string; accountHolder: string }>>([
+    { bankName: "Bank Mandiri", accountNumber: "157-00-0174092-2", accountHolder: "Yayasan Taruna Bhakti" }
+  ]);
+  const [showPaymentGate, setShowPaymentGate] = useState(false);
+  const [activePaymentMethod, setActivePaymentMethod] = useState<"gateway" | "manual" | "transfer" | "tu">("transfer");
+  const [manualReceiptBase64, setManualReceiptBase64] = useState("");
+  const [manualReceiptName, setManualReceiptName] = useState("");
+  const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
+
   const [majors, setMajors] = useState([
     { code: "RPL", title: "Rekayasa Perangkat Lunak" },
     { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
@@ -629,21 +622,17 @@ export default function DaftarPage() {
   }, [isSuccess, formData.nisn, submittedCandidate]);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !showPaymentGate && !isSuccess) {
+    if (typeof window !== "undefined" && !isSuccess) {
       const dataToSave = { ...formData };
-      
-      delete (dataToSave as any).berkasFotoFile;
-      delete (dataToSave as any).berkasFotoBase64;
-      
       localStorage.setItem('ppdb_registration_form_data', JSON.stringify(dataToSave));
     }
-  }, [formData, showPaymentGate, isSuccess]);
+  }, [formData, isSuccess]);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !showPaymentGate && !isSuccess) {
+    if (typeof window !== "undefined" && !isSuccess) {
       localStorage.setItem('ppdb_registration_wizard_step', wizardStep.toString());
     }
-  }, [wizardStep, showPaymentGate, isSuccess]);
+  }, [wizardStep, isSuccess]);
 
   const toggleDark = () => {
     const next = !isDark;
@@ -1765,6 +1754,17 @@ export default function DaftarPage() {
                 <li>Fotokopi Ijazah / Surat Keterangan Lulus (SKL) legalisir</li>
                 <li>Pas foto berwarna terbaru ukuran 3x4 (3 lembar)</li>
               </ul>
+            </div>
+
+            {/* Button Cetak Kartu Pendaftaran SPMB */}
+            <div className="mt-6 flex flex-col sm:flex-row gap-3 print:hidden">
+              <Link
+                href={`kartu-pendaftaran?nisn=${formData.nisn || successData?.nisn}`}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/20 transition-all"
+              >
+                <Printer className="w-4 h-4" />
+                Cetak Kartu Pendaftaran SPMB
+              </Link>
             </div>
 
           </div>

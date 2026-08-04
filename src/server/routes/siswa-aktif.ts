@@ -28,7 +28,7 @@ siswaAktifRouter.get('/', adminAuth, async (c: Context) => {
       "nipd", "created_at"
     ];
 
-    let query = supabase.from('siswa_aktif').select(siswaAktifFields.join(', ')).order('nama', { ascending: true });
+    let query = supabase.from('active_students').select(siswaAktifFields.join(', ')).order('nama', { ascending: true });
     if (schoolId) query = query.eq('school_id', schoolId);
 
     const { data: rows, error } = await query;
@@ -55,7 +55,7 @@ siswaAktifRouter.get('/:id', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
 
-    let query = supabase.from('siswa_aktif').select('*').eq('id', id);
+    let query = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
     
     const { data: record, error } = await query.single();
@@ -99,7 +99,7 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
 
-    let checkQuery = supabase.from('siswa_aktif').select('*').eq('id', id);
+    let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
     
     const { data: existingRecord } = await checkQuery.single();
@@ -231,7 +231,7 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
       jenis_beasiswa: f.jenisBeasiswa !== undefined ? f.jenisBeasiswa : (existingRecord as any).jenis_beasiswa,
     };
 
-    let updateQuery = supabase.from('siswa_aktif').update(fields).eq('id', id);
+    let updateQuery = supabase.from('active_students').update(fields).eq('id', id);
     if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
     
     const { data: updatedRecord, error } = await updateQuery.select().single();
@@ -258,7 +258,7 @@ siswaAktifRouter.delete('/:id', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
 
-    let checkQuery = supabase.from('siswa_aktif').select('*').eq('id', id);
+    let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
     
     const { data: student } = await checkQuery.single();
@@ -267,12 +267,12 @@ siswaAktifRouter.delete('/:id', adminAuth, async (c: Context) => {
       return c.json({ success: false, message: 'Siswa aktif tidak ditemukan.' }, 404);
     }
 
-    let delQuery = supabase.from('siswa_aktif').delete().eq('id', id);
+    let delQuery = supabase.from('active_students').delete().eq('id', id);
     if (schoolId) delQuery = delQuery.eq('school_id', schoolId);
     await delQuery;
 
     if (student.calon_siswa_id) {
-      let updateCSQuery = supabase.from('calon_siswa').update({
+      let updateCSQuery = supabase.from('student_applicants').update({
         status: 'Pending',
         diterima_kelas: null,
         diterima_tanggal: null,
@@ -327,7 +327,7 @@ siswaAktifRouter.post('/generate-nipd', adminAuth, async (c: Context) => {
       if (isNaN(currentSequence)) currentSequence = 1;
     }
 
-    let query = supabase.from('siswa_aktif').select('*');
+    let query = supabase.from('active_students').select('*');
     if (schoolId) query = query.eq('school_id', schoolId);
     const { data: students, error } = await query;
     if (error) throw error;
@@ -365,12 +365,12 @@ siswaAktifRouter.post('/generate-nipd', adminAuth, async (c: Context) => {
       const seqString = currentSequence.toString().padStart(5, '0');
       const nipd = `${defaultPrefix}${seqString}`;
       
-      let updateSA = supabase.from('siswa_aktif').update({ nipd }).eq('id', student.id);
+      let updateSA = supabase.from('active_students').update({ nipd }).eq('id', student.id);
       if (schoolId) updateSA = updateSA.eq('school_id', schoolId);
       await updateSA;
       
       if (student.calon_siswa_id) {
-        let updateCS = supabase.from('calon_siswa').update({ nipd }).eq('id', student.calon_siswa_id);
+        let updateCS = supabase.from('student_applicants').update({ nipd }).eq('id', student.calon_siswa_id);
         if (schoolId) updateCS = updateCS.eq('school_id', schoolId);
         await updateCS;
       }
@@ -404,7 +404,7 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
 
-    let checkQuery = supabase.from('siswa_aktif').select('*').eq('id', id);
+    let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
     
     const { data: student } = await checkQuery.single();
@@ -416,7 +416,7 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     const jurusanAsal = student.jurusan || "";
 
     // 1. Update SiswaAktif
-    let updateSA = supabase.from('siswa_aktif').update({
+    let updateSA = supabase.from('active_students').update({
       jurusan: jurusan_baru,
       diterima_kelas: diterima_kelas_baru || student.diterima_kelas,
       nipd: null
@@ -434,11 +434,11 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
       dilakukan_oleh: admin?.nama_lengkap || admin?.username || 'Admin'
     };
     if (schoolId) mutasiPayload.school_id = schoolId;
-    await supabase.from('mutasi_history').insert(mutasiPayload);
+    await supabase.from('student_transfers').insert(mutasiPayload);
 
     // 3. Update CalonSiswa if linked
     if (updatedSiswa.calon_siswa_id) {
-      let updateCS = supabase.from('calon_siswa').update({
+      let updateCS = supabase.from('student_applicants').update({
         jurusan_1: jurusan_baru,
         diterima_kelas: diterima_kelas_baru || student.diterima_kelas,
         nipd: null

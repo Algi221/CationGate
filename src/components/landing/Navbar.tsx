@@ -64,7 +64,16 @@ export function Navbar() {
               <a
                 key={link.label}
                 href={link.href}
-                className="group flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-300"
+                className="
+      group
+      flex items-center
+      gap-2
+      px-3
+      py-2
+      rounded-xl
+      transition-all
+      duration-300
+      "
               >
                 <span
                   className="w-2 h-2 opacity-0 group-hover:opacity-100 transition-all duration-300"
@@ -77,10 +86,23 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Action Buttons (Ukuran tetap normal) */}
-          <div className="hidden sm:flex items-center">
-            <Link href="/daftar">
-              <InteractiveHoverButton
+          {/* Action Buttons */}
+          <div className="hidden sm:flex items-center gap-3">
+            {/* <Link href="/demo/dashboard">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-[#FF2F8B] hover:bg-[#F9B8CF] border-xl text-white font-bold text-xs sm:text-sm rounded-xl gap-1.5"
+              >
+                <Sparkles className="w-4 h-4" />
+                Coba Demo Live
+              </Button>
+            </Link> */}
+
+            {/* <Link href="/login">
+              <Button
+                variant="ghost"
+                size="sm"
                 className="
                   h-10
                   rounded-full
@@ -99,8 +121,37 @@ export function Navbar() {
                   active:scale-95
                 "
               >
-                Get Started
-              </InteractiveHoverButton>
+                <LogIn className="w-4 h-4 mr-2" />
+                Log in
+              </Button>
+            </Link> */}
+
+            <Link href="/daftar">
+          <InteractiveHoverButton
+
+
+  className="
+    h-10
+    rounded-full
+    border-0
+    bg-[#FFD33B]
+    text-[#23191C]
+    font-semibold
+    text-sm
+    px-6
+    shadow-none
+
+    transition-all
+    duration-300
+    hover:bg-[#F3C625]
+    hover:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
+    hover:-translate-y-0.5
+
+    active:scale-95
+  "
+>
+  Get Started
+</InteractiveHoverButton>
             </Link>
           </div>
 

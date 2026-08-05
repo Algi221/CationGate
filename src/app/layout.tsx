@@ -18,15 +18,19 @@ export const metadata = {
   description: "SaaS Manajemen Penerimaan Siswa Baru Cerdas dan Terintegrasi.",
 };
 
+import { QueryProvider } from "@/components/providers/query-provider";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id" className={cn("h-full", "antialiased", plusJakarta.variable, "font-sans", geist.variable)} data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <PPDBProvider>
-            {children}
-          </PPDBProvider>
-        </ThemeProvider>
+      <body className="min-h-full flex flex-col bg-background text-foreground dark:bg-slate-950 dark:text-slate-100">
+        <QueryProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <PPDBProvider>
+              {children}
+            </PPDBProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

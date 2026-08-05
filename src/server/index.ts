@@ -1,8 +1,6 @@
-import 'dotenv/config';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import dotenv from 'dotenv';
 import authRouter from './routes/auth';
 import appRouter from './routes/applicants';
 import paymentRouter from './routes/payment';
@@ -15,8 +13,6 @@ import saasRouter from './routes/saas';
 import dashboardRouter from './routes/dashboard';
 import verifyRouter from './routes/verify';
 import { secureHeaders } from 'hono/secure-headers';
-
-dotenv.config();
 
 // Initialize Hono App
 const app = new Hono().basePath('/api');

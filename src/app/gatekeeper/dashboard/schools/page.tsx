@@ -23,6 +23,8 @@ interface SchoolTenant {
   status: "UNVERIFIED" | "PENDING_VERIFICATION" | "FULL_VERIFIED" | "SUSPENDED";
   created_at: string;
   legal_sk_number?: string;
+  sk_document_name?: string;
+  sk_document_url?: string;
   accreditation?: string;
   admin_name?: string;
 }
@@ -165,7 +167,7 @@ export default function GatekeeperSchoolManagementPage() {
         await fetchSchools();
 
         if (selectedSchoolModal?.id === school.id || selectedSchoolModal?.slug === school.slug) {
-          setSelectedSchoolModal(prev => prev ? { ...prev, status: "TAKEDOWN" } : null);
+          setSelectedSchoolModal(prev => prev ? { ...prev, status: "SUSPENDED" } : null);
         }
         Swal.fire({
           title: "Instansi Di-Takedown!",
@@ -193,8 +195,7 @@ export default function GatekeeperSchoolManagementPage() {
                           emailStr.includes(searchLower);
 
     const matchesStatus = statusFilter === "ALL" ||
-                          s.status === statusFilter ||
-                          (statusFilter === "UNVERIFIED" && (s.status === "BELUM_KIRIM_VERIFIKASI" || s.status === "UNVERIFIED"));
+                          s.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -350,7 +351,7 @@ export default function GatekeeperSchoolManagementPage() {
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900 text-xs font-bold animate-pulse">
                         <Clock className="w-3.5 h-3.5" /> MENUNGGU SK
                       </span>
-                    ) : sc.status === "TAKEDOWN" || sc.status === "SUSPENDED" ? (
+                    ) : sc.status === "SUSPENDED" ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-bold">
                         <XCircle className="w-3.5 h-3.5" /> DIBEKUKAN
                       </span>

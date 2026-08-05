@@ -1,6 +1,4 @@
-import dotenv from 'dotenv';
-
-dotenv.config();
+import https from 'https';
 
 let cachedChatId: string | null = process.env.TELEGRAM_CHAT_ID || null;
 

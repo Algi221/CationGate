@@ -753,7 +753,7 @@ export default function KelolaInformasi() {
                   
                   {fotoUrl ? (
                     <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-52 bg-slate-100 dark:bg-slate-950 group">
-                      <img src={fotoUrl && /^(https?:\/\/|\/(?!\/)|data:image\/)/i.test(fotoUrl) ? fotoUrl : ""} alt="Preview" className="w-full h-full object-cover" />
+                      <img src={fotoUrl && /^(https?:\/\/|\/(?!\/)|data:image\/)/i.test(fotoUrl) ? fotoUrl : undefined} alt="Preview" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-200">
                         <button
                           type="button"
@@ -803,7 +803,7 @@ export default function KelolaInformasi() {
                     
                     {videoUrl ? (
                       <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-36 bg-slate-950 group flex items-center justify-center">
-                        <video src={videoUrl && /^(https?:\/\/|\/(?!\/)|data:video\/)/i.test(videoUrl) ? videoUrl : ""} className="h-full w-full object-contain" />
+                        <video src={videoUrl && /^(https?:\/\/|\/(?!\/)|data:video\/)/i.test(videoUrl) ? videoUrl : undefined} className="h-full w-full object-contain" />
                         <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity duration-200">
                           <span className="text-[9px] text-white font-extrabold uppercase tracking-wider truncate max-w-[90%]">{videoName}</span>
                           <button

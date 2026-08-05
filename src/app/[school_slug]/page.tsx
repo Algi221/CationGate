@@ -1226,7 +1226,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
               
               <iframe
-                src={sanitizeUrl(mapUrl) || ""}
+                src={sanitizeUrl(mapUrl) || undefined}
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 

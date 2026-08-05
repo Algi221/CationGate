@@ -46,7 +46,7 @@ const Typewriter = ({
         setDisplayed(text.substring(0, i + 1));
         i++;
         if (i >= text.length) clearInterval(interval);
-      }, 20); // Kecepatan ngetik
+      }, 20); 
       return () => clearInterval(interval);
     }, delayStart * 1000);
 
@@ -83,7 +83,6 @@ export default function FloatingComment({
 
   return (
     <motion.div
-      // z-20 (dan z-10) memastikan komentar ini selalu di BELAKANG gambar mockup (z-30)
       className={`absolute pointer-events-none ${isBlurred ? "blur-[3px] z-10" : "z-20"}`}
       initial={{
         left: "50%",

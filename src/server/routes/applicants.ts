@@ -152,21 +152,21 @@ export const checkAndDisqualifyExpiredApplicants = async (): Promise<void> => {
 };
 
 // Jalankan pengecekan setiap 30 detik
-setInterval(() => {
-  checkAndDisqualifyExpiredApplicants().catch(err => {
-    console.error('Error in interval checkAndDisqualifyExpiredApplicants:', err);
-  });
-}, 30000);
+// setInterval(() => {
+//   checkAndDisqualifyExpiredApplicants().catch(err => {
+//     console.error('Error in interval checkAndDisqualifyExpiredApplicants:', err);
+//   });
+// }, 30000);
 
 // Pengecekan awal saat backend start
-setTimeout(() => {
-  checkAndDisqualifyExpiredApplicants().catch(err => {
-    console.error('Error in timeout checkAndDisqualifyExpiredApplicants:', err);
-  });
-  syncAllExistingApprovedApplicants().catch(err => {
-    console.error('Error in timeout syncAllExistingApprovedApplicants:', err);
-  });
-}, 2000);
+// setTimeout(() => {
+//   checkAndDisqualifyExpiredApplicants().catch(err => {
+//     console.error('Error in timeout checkAndDisqualifyExpiredApplicants:', err);
+//   });
+//   syncAllExistingApprovedApplicants().catch(err => {
+//     console.error('Error in timeout syncAllExistingApprovedApplicants:', err);
+//   });
+// }, 2000);
 
 // 1. PUBLIC: Register a student applicant (Calon Siswa)
 appRouter.post('/', rateLimiter({

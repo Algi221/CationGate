@@ -9,10 +9,13 @@ import { rateLimiter } from '../middleware/rate-limiter';
 
 
 const authRouter = new Hono();
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('FATAL: JWT_SECRET environment variable is not defined!');
-}
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('FATAL: JWT_SECRET environment variable is not defined!');
+  }
+  return secret;
+};
 
 authRouter.post('/login', rateLimiter({
   windowMs: 60 * 1000,
@@ -111,30 +114,7 @@ authRouter.post('/login', rateLimiter({
     }
 
     if (!adminUser) {
-      // Demo / fallback admin user for instant school admin access
-      const demoAdmin = {
-        id: 1,
-        username: username || '001',
-        nama_lengkap: username === '001' ? 'Panitia PPDB' : 'Superadmin CationGate',
-        role: 'superadmin',
-        school_id: schoolId || 1
-      };
-      const token = jwt.sign(
-        {
-          id: demoAdmin.id,
-          username: demoAdmin.username,
-          nama: demoAdmin.nama_lengkap,
-          role: demoAdmin.role,
-          school_id: demoAdmin.school_id
-        },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-      return c.json({
-        success: true,
-        token,
-        admin: demoAdmin
-      });
+      return c.json({ success: false, message: 'Username atau password salah.' }, 401);
     }
 
     if (!ysboAuthenticated) {
@@ -155,7 +135,7 @@ authRouter.post('/login', rateLimiter({
         role: adminUser.role,
         school_id: adminUser.school_id || schoolId
       },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '12h' }
     );
 

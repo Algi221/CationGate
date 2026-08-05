@@ -5,9 +5,15 @@ import { getSupabaseClient } from '../db/supabase';
 import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 import { broadcast } from '../ws/handler';
+import { gatekeeperAuth } from '../middleware/auth';
 
 const gatekeeperRouter = new Hono();
-const JWT_SECRET = process.env.JWT_SECRET || 'cationgate_gatekeeper_secret_2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+const GATEKEEPER_USERNAME = process.env.GATEKEEPER_USERNAME;
+const GATEKEEPER_PASSWORD = process.env.GATEKEEPER_PASSWORD;
+if (!JWT_SECRET || !GATEKEEPER_USERNAME || !GATEKEEPER_PASSWORD) {
+  throw new Error('JWT_SECRET, GATEKEEPER_USERNAME, and GATEKEEPER_PASSWORD are required.');
+}
 
 // 1. POST /api/gatekeeper/login - Gatekeeper Platform Auth
 gatekeeperRouter.post('/login', async (c) => {
@@ -17,14 +23,11 @@ gatekeeperRouter.post('/login', async (c) => {
       return c.json({ success: false, message: 'Harap isi username dan password Gatekeeper' }, 400);
     }
 
-    const envUsername = process.env.GATEKEEPER_USERNAME || 'uno';
-    const envPassword = process.env.GATEKEEPER_PASSWORD || 'reverse';
-
     // Env Credential Check
-    if (username === envUsername && password === envPassword) {
+    if (username === GATEKEEPER_USERNAME && password === GATEKEEPER_PASSWORD) {
       const defaultGatekeeper = {
         id: 1,
-        username: envUsername,
+        username: GATEKEEPER_USERNAME,
         nama_lengkap: 'Gatekeeper CationGate Platform',
         role: 'gatekeeper',
         email: 'uno@cationgate.id'
@@ -93,21 +96,12 @@ gatekeeperRouter.post('/login', async (c) => {
 
   } catch (err: any) {
     console.error('Gatekeeper login error:', err?.message);
-    const token = jwt.sign(
-      { id: 1, username: 'gatekeeper', role: 'gatekeeper', isGatekeeper: true },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-    return c.json({
-      success: true,
-      token,
-      gatekeeper: { id: 1, username: 'gatekeeper', nama_lengkap: 'Gatekeeper CationGate Platform', role: 'gatekeeper' }
-    });
+    return c.json({ success: false, message: 'Terjadi kesalahan server saat login.' }, 500);
   }
 });
 
 // 2. GET /api/gatekeeper/schools - Fetch all tenants for verification
-gatekeeperRouter.get('/schools', async (c) => {
+gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
   try {
     const supabase = getSupabaseClient();
     
@@ -157,7 +151,7 @@ gatekeeperRouter.get('/schools', async (c) => {
 });
 
 // 3. POST /api/gatekeeper/approve-school - Verify & move candidate school to 'schools' table
-gatekeeperRouter.post('/approve-school', async (c) => {
+gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
   try {
     const body = await c.req.json();
     const school_id = body.school_id || body.slug || body.id;
@@ -264,7 +258,7 @@ function candidateSchoolAdmin(targetSchool: any): string {
 }
 
 // 4. POST /api/gatekeeper/takedown-school - Suspend/Takedown unverified school tenant (>3 days)
-gatekeeperRouter.post('/takedown-school', async (c) => {
+gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
   try {
     const { school_id } = await c.req.json();
     const supabase = getSupabaseClient();

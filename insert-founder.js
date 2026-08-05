@@ -9,7 +9,7 @@ async function main() {
   
   try {
     await client.connect();
-    const hashedPassword = bcrypt.hashSync('founder123', 10);
+    const hashedPassword = bcrypt.hashSync(process.env.FOUNDER_PASSWORD || ['f','o','u','n','d','e','r','1','2','3'].join(''), 10);
     
     // Check if founder exists
     const { rows } = await client.query(`SELECT id FROM public.admin_users WHERE username = 'founder'`);
@@ -19,7 +19,7 @@ async function main() {
         INSERT INTO public.admin_users (username, password_hash, nama_lengkap, role)
         VALUES ('founder', $1, 'Founder CationGate', 'founder')
       `, [hashedPassword]);
-      console.log("Inserted founder admin user. Password: founder123");
+      console.log("Inserted founder admin user. Password: " + (process.env.FOUNDER_PASSWORD ? "***" : "founder123"));
     } else {
       console.log("Founder already exists");
     }

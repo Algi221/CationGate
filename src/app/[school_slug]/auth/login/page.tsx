@@ -5,6 +5,7 @@ import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, User, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, CheckCircle2, Sparkles, Building2 } from "lucide-react";
+import { LottiePlaceholder } from "@/components/ui/LottiePlaceholder";
 
 export default function AdminLogin() {
   const { loginAdmin, adminToken, ppdbTitle } = usePPDB();
@@ -58,7 +59,7 @@ export default function AdminLogin() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background text-foreground font-sans selection:bg-primary selection:text-white">
 
       {/* Left Panel – Clean Light Mode Branding */}
       <div className="w-full lg:w-[45%] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden">
@@ -74,22 +75,23 @@ export default function AdminLogin() {
           </Link>
 
           <div className="flex items-center gap-3 pt-2">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-blue-600/20">
+            <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-md shadow-primary/20">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 block">
-                Cation<span className="text-blue-600">Gate</span>
+              <span className="font-extrabold text-xl tracking-tight text-foreground block">
+                Cation<span className="text-primary">Gate</span>
               </span>
-              <span className="text-xs text-slate-500 font-medium">Portal Admin PPDB</span>
+              <span className="text-xs text-muted-foreground font-medium">Portal Admin PPDB</span>
             </div>
           </div>
         </div>
 
         {/* Center Content */}
         <div className="my-10 space-y-6 max-w-md">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+          <LottiePlaceholder title="Admin Animation" className="min-h-[200px]" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
             Akses Terenkripsi & Terverifikasi
           </div>
 
@@ -128,15 +130,15 @@ export default function AdminLogin() {
       </div>
 
       {/* Right Panel – Clean Stripe / Vercel Style Login Form */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-slate-50">
-        <div className="w-full max-w-[420px] bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-md">
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-background">
+        <div className="w-full max-w-[420px] bg-card p-8 sm:p-10 rounded-3xl border border-border shadow-card">
           
           <div className="mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-wider mb-3">
-              <Lock className="w-3.5 h-3.5 text-slate-500" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-bold uppercase tracking-wider mb-3">
+              <Lock className="w-3.5 h-3.5 text-muted-foreground" />
               Autentikasi Pengelola
             </div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-1">
+            <h2 className="text-2xl font-extrabold tracking-tight text-foreground mb-1">
               Login Admin Sekolah
             </h2>
             <p className="text-xs text-slate-500 font-medium">
@@ -165,7 +167,7 @@ export default function AdminLogin() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin_ppdb"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all placeholder:text-slate-400"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-input bg-input/30 text-foreground text-sm font-medium focus:outline-none focus:bg-background focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -184,7 +186,7 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-11 pl-10 pr-11 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all placeholder:text-slate-400"
+                  className="w-full h-11 pl-10 pr-11 rounded-xl border border-input bg-input/30 text-foreground text-sm font-medium focus:outline-none focus:bg-background focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -199,7 +201,7 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               <span>{loading ? "Memproses Autentikasi..." : "Masuk ke Dashboard Admin"}</span>

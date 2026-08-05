@@ -39,11 +39,11 @@ export const rateLimiter = (config: RateLimitConfig) => {
 };
 
 // Cleanup routine to prevent memory leak
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, data] of ipRequestCounts.entries()) {
-    if (now > data.resetTime) {
-      ipRequestCounts.delete(ip);
-    }
-  }
-}, 60000); // clean up every minute
+// setInterval(() => {
+//   const now = Date.now();
+//   for (const [ip, data] of ipRequestCounts.entries()) {
+//     if (now > data.resetTime) {
+//       ipRequestCounts.delete(ip);
+//     }
+//   }
+// }, 60000); // clean up every minute

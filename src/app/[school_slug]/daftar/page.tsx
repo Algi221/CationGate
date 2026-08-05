@@ -34,8 +34,8 @@ const getMajorDetails = (majorName: string) => {
       icon: <Code className="w-5 h-5 text-blue-500" />,
       logoText: "RPL",
       logoPath: "/assets/jurusan/pplg.png",
-      bg: "bg-blue-50 dark:bg-blue-950/45",
-      textColor: "text-blue-600 dark:text-sky-400"
+      bg: "bg-primary/5 dark:bg-blue-950/45",
+      textColor: "text-primary dark:text-sky-400"
     };
   }
   if (nameLower.includes("jaringan") || nameLower.includes("tjkt") || nameLower.includes("komputer")) {
@@ -87,8 +87,8 @@ const getMajorDetails = (majorName: string) => {
     icon: <Sparkles className="w-5 h-5 text-blue-500" />,
     logoText: "PPDB",
     logoPath: "",
-    bg: "bg-blue-50 dark:bg-blue-950/45",
-    textColor: "text-blue-600 dark:text-sky-400"
+    bg: "bg-primary/5 dark:bg-blue-950/45",
+    textColor: "text-primary dark:text-sky-400"
   };
 };
 
@@ -960,7 +960,7 @@ export default function DaftarPage() {
 
   if (portalStatus === "closed") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-6 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950 p-6 text-center">
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
           <div className="w-16 h-16 bg-red-50 dark:bg-red-950/40 rounded-2xl flex items-center justify-center text-red-500 border border-red-100 dark:border-red-900/40 mx-auto">
             <Clock size={32} />
@@ -974,7 +974,7 @@ export default function DaftarPage() {
           <div className="pt-2">
             <Link
               href="/"
-              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
+              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-primary hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
             >
               <Home size={14} />
               <span>Kembali Ke Beranda</span>
@@ -988,8 +988,8 @@ export default function DaftarPage() {
   if (isSuccess) {
     if (!successData) {
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950">
-          <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-4"></div>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950">
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent mb-4"></div>
           <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest animate-pulse">Memuat Invoice & Konfirmasi...</p>
         </div>
       );
@@ -1002,7 +1002,7 @@ export default function DaftarPage() {
     });
 
     return (
-      <div className="ppdb-print-container relative min-h-screen flex flex-col items-center justify-center p-4 lg:p-10 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 print:bg-white print:p-0">
+      <div className="ppdb-print-container relative min-h-screen flex flex-col items-center justify-center p-4 lg:p-10 bg-background dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 print:bg-white print:p-0">
         
         {/* CSS print override style block to hide headers/footers (localhost URL) and fix blank page */}
         <style dangerouslySetInnerHTML={{__html: `
@@ -1067,7 +1067,7 @@ export default function DaftarPage() {
             
             /* Keep specific colored text for status and rombel */
             .printable-invoice-sheet .text-blue-650,
-            .printable-invoice-sheet .text-blue-600 {
+            .printable-invoice-sheet .text-primary {
               color: #2563eb !important;
             }
             
@@ -1128,8 +1128,8 @@ export default function DaftarPage() {
             color: #64748b !important;
           }
 
-          html.dark .printable-invoice-sheet .bg-slate-50,
-          .printable-invoice-sheet .bg-slate-50 {
+          html.dark .printable-invoice-sheet .bg-background,
+          .printable-invoice-sheet .bg-background {
             background-color: #f8fafc !important;
           }
 
@@ -1157,8 +1157,8 @@ export default function DaftarPage() {
             border-color: #e2e8f0 !important;
           }
 
-          html.dark .printable-invoice-sheet .text-blue-600,
-          .printable-invoice-sheet .text-blue-600 {
+          html.dark .printable-invoice-sheet .text-primary,
+          .printable-invoice-sheet .text-primary {
             color: #2563eb !important;
           }
         `}} />
@@ -1180,7 +1180,7 @@ export default function DaftarPage() {
             Terima kasih, <strong>{successData.nama || "Calon Bintang"}</strong>.
             Data pendaftaran Anda telah berhasil direkam di sistem PPDB SMK Taruna Bhakti.
           </p>
-          <div className="bg-slate-50/70 dark:bg-slate-950/30 backdrop-blur-sm border border-slate-100 dark:border-slate-800 rounded-xl p-4 mb-6 text-left text-xs space-y-2">
+          <div className="bg-background/70 dark:bg-slate-950/30 backdrop-blur-sm border border-slate-100 dark:border-slate-800 rounded-xl p-4 mb-6 text-left text-xs space-y-2">
             <div className="flex justify-between py-1 border-b border-slate-200/50 dark:border-slate-850">
               <span className="text-slate-400 dark:text-slate-500">NISN:</span>
               <span className="font-bold text-slate-700 dark:text-slate-200">{successData.nisn}</span>
@@ -1191,7 +1191,7 @@ export default function DaftarPage() {
             </div>
             <div className="flex justify-between py-1">
               <span className="text-slate-400 dark:text-slate-500">Jurusan Utama:</span>
-              <span className="font-bold text-blue-600 dark:text-sky-400">{successData.jurusan_1 || successData.jurusan1 || "-"}</span>
+              <span className="font-bold text-primary dark:text-sky-400">{successData.jurusan_1 || successData.jurusan1 || "-"}</span>
             </div>
           </div>
 
@@ -1213,7 +1213,7 @@ export default function DaftarPage() {
 
           {/* Whatsapp join CTA */}
           {((successData && successData.payment_status === "Paid") || isSuccess) && (
-            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900 rounded-2xl p-4.5 mb-6 text-center text-xs">
+            <div className="bg-primary/5 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900 rounded-2xl p-4.5 mb-6 text-center text-xs">
               <p className="font-bold text-blue-800 dark:text-blue-300 mb-2.5">
                 Mari Bergabung ke Grup PPDB WhatsApp!
               </p>
@@ -1382,7 +1382,7 @@ export default function DaftarPage() {
                   });
                 }
               }}
-              className="w-full flex justify-center items-center gap-1.5 py-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/50 dark:border-blue-800/30"
+              className="w-full flex justify-center items-center gap-1.5 py-3 bg-primary/5 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-primary dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/50 dark:border-blue-800/30"
             >
               Daftar Calon Baru Lainnya
             </button>
@@ -1429,7 +1429,7 @@ export default function DaftarPage() {
 
             {/* WhatsApp Group card (Only show if payment_status === "Paid" or successfully completed) */}
             {((successData && successData.payment_status === "Paid") || isSuccess) && (
-              <div className="bg-blue-50/60 dark:bg-blue-950/15 border border-blue-200/55 dark:border-blue-900/45 rounded-3xl p-6 text-center space-y-3.5 shadow-sm">
+              <div className="bg-primary/5/60 dark:bg-blue-950/15 border border-blue-200/55 dark:border-blue-900/45 rounded-3xl p-6 text-center space-y-3.5 shadow-sm">
                 <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 rounded-full flex items-center justify-center mx-auto">
                   <Phone size={18} className="animate-pulse" />
                 </div>
@@ -1609,7 +1609,7 @@ export default function DaftarPage() {
                     });
                   }
                 }}
-                className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/55 dark:border-blue-800/45"
+                className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-primary/5 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-primary dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/55 dark:border-blue-800/45"
               >
                 Daftar Calon Baru Lainnya
               </button>
@@ -1677,7 +1677,7 @@ export default function DaftarPage() {
                 </div>
                 <div className="flex gap-2">
                   <span className="text-slate-400 w-24">Program Rombel:</span>
-                  <span className="text-blue-600 font-extrabold uppercase">{successData.jurusan_1 || successData.jurusan1 || "-"}</span>
+                  <span className="text-primary font-extrabold uppercase">{successData.jurusan_1 || successData.jurusan1 || "-"}</span>
                 </div>
               </div>
             </div>
@@ -1716,7 +1716,7 @@ export default function DaftarPage() {
                 </div>
                 <div className="flex justify-between text-slate-955 font-black text-xs py-2 border-t-2 border-slate-800">
                   <span>Total Tagihan:</span>
-                  <span className="text-blue-600 font-black text-sm">Rp {regCost.toLocaleString("id-ID")}</span>
+                  <span className="text-primary font-black text-sm">Rp {regCost.toLocaleString("id-ID")}</span>
                 </div>
               </div>
             </div>
@@ -1759,8 +1759,8 @@ export default function DaftarPage() {
             {/* Button Cetak Kartu Pendaftaran SPMB */}
             <div className="mt-6 flex flex-col sm:flex-row gap-3 print:hidden">
               <Link
-                href={`kartu-pendaftaran?nisn=${formData.nisn || successData?.nisn}`}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/20 transition-all"
+                href={`kartu-pendaftaran?nisn=${encodeURIComponent(formData.nisn || successData?.nisn || '')}`}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary hover:bg-primary hover:bg-primary/90 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/20 transition-all"
               >
                 <Printer className="w-4 h-4" />
                 Cetak Kartu Pendaftaran SPMB
@@ -1901,12 +1901,12 @@ export default function DaftarPage() {
           {/* Grid Layout: Left Side (Billing Summary), Right Side (Payment Options) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
                         {/* Left Side: Summary Panel (Col Span 4) */}
-            <div className="lg:col-span-4 flex flex-col justify-between bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-[2rem] p-6 relative overflow-hidden">
+            <div className="lg:col-span-4 flex flex-col justify-between bg-background/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-[2rem] p-6 relative overflow-hidden">
               <div className="space-y-6">
                 
                 {/* Profil Calon Siswa */}
                 <div className="flex flex-col items-center text-center pb-6 border-b border-slate-200/50 dark:border-slate-800">
-                  <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center text-white mb-3 shadow-lg ring-4 ring-blue-500/10">
+                  <div className="w-16 h-16 bg-primary dark:bg-blue-500 rounded-full flex items-center justify-center text-white mb-3 shadow-lg ring-4 ring-primary/10">
                     <User className="w-8 h-8" />
                   </div>
                   <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider leading-tight">{submittedCandidate?.nama}</h4>
@@ -1924,11 +1924,11 @@ export default function DaftarPage() {
                   </div>
 
                   {/* Langkah 2 */}
-                  <div className="flex items-center gap-3 p-1.5 -ml-1.5 rounded-2xl bg-blue-50 dark:bg-blue-950/45 border border-blue-100/50 dark:border-blue-900/40">
-                    <div className="w-8 h-8 rounded-xl bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                  <div className="flex items-center gap-3 p-1.5 -ml-1.5 rounded-2xl bg-primary/5 dark:bg-blue-950/45 border border-blue-100/50 dark:border-blue-900/40">
+                    <div className="w-8 h-8 rounded-xl bg-primary dark:bg-blue-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
                       <CreditCard size={14} />
                     </div>
-                    <span className="text-xs font-black text-blue-600 dark:text-sky-400">Metode Pembayaran</span>
+                    <span className="text-xs font-black text-primary dark:text-sky-400">Metode Pembayaran</span>
                   </div>
 
                   {/* Langkah 3 & Seterusnya secara Dinamis */}
@@ -1936,7 +1936,7 @@ export default function DaftarPage() {
                     <>
                       {/* Langkah 3 */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
                           <School size={14} />
                         </div>
                         <span className="text-xs font-bold text-slate-450 dark:text-slate-500">Datang ke Sekolah</span>
@@ -1944,7 +1944,7 @@ export default function DaftarPage() {
 
                       {/* Langkah 4 */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
                           <Clock size={14} />
                         </div>
                         <span className="text-xs font-bold text-slate-450 dark:text-slate-500">Menunggu Verifikasi</span>
@@ -1952,7 +1952,7 @@ export default function DaftarPage() {
 
                       {/* Langkah 5 */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
                           <CheckCircle2 size={14} />
                         </div>
                         <span className="text-xs font-bold text-slate-450 dark:text-slate-500">Selesai</span>
@@ -1965,7 +1965,7 @@ export default function DaftarPage() {
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center border shrink-0 ${
                           manualReceiptBase64 
                             ? "bg-emerald-100 dark:bg-emerald-950/60 border-emerald-200 text-emerald-500"
-                            : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500"
+                            : "bg-background dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500"
                         }`}>
                           {manualReceiptBase64 ? <Check size={14} className="stroke-[3]" /> : <Upload size={14} />}
                         </div>
@@ -1980,7 +1980,7 @@ export default function DaftarPage() {
 
                       {/* Langkah 4 */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
                           <Clock size={14} />
                         </div>
                         <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Selesai</span>
@@ -1990,8 +1990,8 @@ export default function DaftarPage() {
                 </div>
 
                 {/* Box Info Pendaftaran */}
-                <div className="mt-4 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/35 dark:border-blue-900/30">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-sky-400 block mb-3">
+                <div className="mt-4 p-4 rounded-2xl bg-primary/5/50 dark:bg-blue-950/20 border border-blue-100/35 dark:border-blue-900/30">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-sky-400 block mb-3">
                     Info Pendaftaran
                   </span>
                   <div className="flex items-center gap-3">
@@ -2025,7 +2025,7 @@ export default function DaftarPage() {
                   href="https://wa.me/6281234567890?text=Halo%20Panitia%20PPDB%20SMK%20Taruna%20Bhakti,%20saya%20butuh%20bantuan%20terkait%20pembayaran..."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-background dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
                 >
                   <HelpCircle size={14} />
                   <span>Bantuan Pembayaran</span>
@@ -2038,7 +2038,7 @@ export default function DaftarPage() {
               <div className="text-left space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
                 
                 {/* Pengantar Formal */}
-                <div className="space-y-1 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-950/10 p-4 rounded-2xl border-l-4 border-blue-600">
+                <div className="space-y-1 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-950/10 p-4 rounded-2xl border-l-4 border-primary">
                   <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">
                     Penyelesaian Pembayaran Formulir
                   </h4>
@@ -2050,17 +2050,17 @@ export default function DaftarPage() {
                 {/* Billing Summary Box */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 relative overflow-hidden shadow-sm">
                   <div className="absolute right-6 top-6 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
-                    <Sparkles size={120} className="text-blue-600" />
+                    <Sparkles size={120} className="text-primary" />
                   </div>
                   
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-4">
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-500">Jumlah Tagihan</span>
-                      <h3 className="text-2xl font-black text-blue-600 dark:text-sky-400 mt-0.5">
+                      <h3 className="text-2xl font-black text-primary dark:text-sky-400 mt-0.5">
                         Rp {regCost.toLocaleString("id-ID")}
                       </h3>
                     </div>
-                    <div className="flex items-center gap-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/35 dark:border-blue-900/30 px-4 py-2 rounded-2xl shrink-0">
+                    <div className="flex items-center gap-3 bg-primary/5/50 dark:bg-blue-950/20 border border-blue-100/35 dark:border-blue-900/30 px-4 py-2 rounded-2xl shrink-0">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).bg}`}>
                         {getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath ? (
                           <img 
@@ -2085,11 +2085,11 @@ export default function DaftarPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-350">
-                    <div className="flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
+                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500">Nama Lengkap:</span>
                       <span className="text-slate-850 dark:text-white uppercase truncate max-w-[150px]">{submittedCandidate?.nama}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
+                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500">NISN Pendaftar:</span>
                       <span className="text-slate-850 dark:text-white font-mono tracking-wider">{submittedCandidate?.nisn}</span>
                     </div>
@@ -2215,7 +2215,7 @@ export default function DaftarPage() {
                       
                       {/* File Upload Zone / Area */}
                       {!manualReceiptBase64 ? (
-                        <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-[1.5rem] py-10 px-6 text-center transition bg-slate-50/20 dark:bg-slate-950/5 relative group cursor-pointer">
+                        <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-[1.5rem] py-10 px-6 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
                           <input
                             type="file"
                             accept="image/*,application/pdf"
@@ -2236,7 +2236,7 @@ export default function DaftarPage() {
                         </div>
                       ) : (
                         
-                        <div className="bg-slate-50/80 dark:bg-slate-950/30 border border-slate-200/60 dark:border-slate-850 rounded-[1.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-background/80 dark:bg-slate-950/30 border border-slate-200/60 dark:border-slate-850 rounded-[1.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
                           <div className="flex items-center gap-4 w-full md:w-auto">
                             <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">
                               {manualReceiptBase64.startsWith("data:application/pdf") ? (
@@ -2292,7 +2292,7 @@ export default function DaftarPage() {
                     </div>
 
                     {/* Himbauan dan Checklist Dokumen */}
-                    <div className="bg-blue-50/60 dark:bg-blue-950/15 border border-blue-200/55 dark:border-blue-900/40 rounded-3xl p-6 text-left space-y-3.5 shadow-sm">
+                    <div className="bg-primary/5/60 dark:bg-blue-950/15 border border-blue-200/55 dark:border-blue-900/40 rounded-3xl p-6 text-left space-y-3.5 shadow-sm">
                       <div className="font-black text-xs uppercase tracking-wider text-blue-800 dark:text-sky-400 flex items-center gap-1.5 border-b border-blue-200/50 dark:border-blue-900/20 pb-2">
                         <FileText size={14} className="shrink-0" />
                         PENTING: BAWA BERKAS PERSYARATAN DI BAWAH INI!
@@ -2329,7 +2329,7 @@ export default function DaftarPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center py-16 px-4 md:px-6 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center py-16 px-4 md:px-6 bg-background dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 overflow-hidden">
       
       {/* Background Glowing Blobs */}
       <div className="bg-glow-container">
@@ -2342,7 +2342,7 @@ export default function DaftarPage() {
       <div className="fixed top-6 left-6 z-50">
         <Link 
           href="/" 
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -2352,7 +2352,7 @@ export default function DaftarPage() {
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
           title={isDark ? 'Mode Terang' : 'Mode Gelap'}
         >
           {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
@@ -2360,7 +2360,7 @@ export default function DaftarPage() {
       </div>
 
       <div className="mb-10 text-center mt-12 relative z-10 flex flex-col items-center">
-        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100/50 dark:border-blue-900/50 text-blue-600 dark:text-sky-400 text-xs font-bold shadow-sm shadow-blue-500/5">
+        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/5 dark:bg-blue-950/60 border border-blue-100/50 dark:border-blue-900/50 text-primary dark:text-sky-400 text-xs font-bold shadow-sm shadow-blue-500/5">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-sky-400 animate-pulse"></span>
           Tahap {wizardStep} dari 14
         </div>
@@ -2374,7 +2374,7 @@ export default function DaftarPage() {
         <div className="hidden md:flex justify-between items-center mb-12 relative px-4">
           <div className="absolute top-1/2 left-0 w-full h-[3px] bg-slate-100 dark:bg-slate-800/80 -translate-y-1/2 z-0 rounded-full"></div>
           <div
-            className="absolute top-1/2 left-0 h-[3px] bg-blue-600 dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
+            className="absolute top-1/2 left-0 h-[3px] bg-primary dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
             style={{ width: `${((wizardStep - 1) / 13) * 100}%` }}
           ></div>
 
@@ -2388,10 +2388,10 @@ export default function DaftarPage() {
                 title={`Tahap ${step}`}
                 className={`rounded-full z-10 transition-all duration-500 ease-out cursor-pointer select-none relative ${
                   isCurrent
-                    ? "w-7 h-7 bg-blue-600 dark:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.65)] scale-125 ring-[6px] ring-blue-500/20"
+                    ? "w-7 h-7 bg-primary dark:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.65)] scale-125 ring-[6px] ring-primary/20"
                     : isCompleted
-                      ? "w-4.5 h-4.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 ring-[4px] ring-blue-500/10"
-                      : "w-4 h-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-blue-500"
+                      ? "w-4.5 h-4.5 bg-primary dark:bg-blue-500 hover:bg-primary hover:bg-primary/90 ring-[4px] ring-primary/10"
+                      : "w-4 h-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-primary"
                 }`}
               >
                 {/* Clean indicator dot for active step to look premium */}
@@ -2404,9 +2404,9 @@ export default function DaftarPage() {
         </div>
 
         {/* Mobile Stepper (only visible on mobile, hidden on desktop) */}
-        <div className="block md:hidden mb-8 bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/40">
+        <div className="block md:hidden mb-8 bg-background dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/40">
           <div className="flex justify-between items-center mb-2.5">
-            <span className="text-xs font-black uppercase text-blue-600 dark:text-blue-500 tracking-wider">
+            <span className="text-xs font-black uppercase text-primary dark:text-blue-500 tracking-wider">
               Tahap {wizardStep} dari 14
             </span>
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -2415,7 +2415,7 @@ export default function DaftarPage() {
           </div>
           <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-600 dark:bg-blue-550 rounded-full transition-all duration-500 ease-out"
+              className="h-full bg-primary dark:bg-blue-550 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${(wizardStep / 14) * 100}%` }}
             ></div>
           </div>
@@ -2430,11 +2430,11 @@ export default function DaftarPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Nama Lengkap</label>
-                <input type="text" name="nama" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Sesuai Ijazah" value={formData.nama} onChange={handleInputChange} />
+                <input type="text" name="nama" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai Ijazah" value={formData.nama} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Jenis Kelamin</label>
-                <select name="jenisKelamin" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.jenisKelamin} onChange={handleInputChange}>
+                <select name="jenisKelamin" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.jenisKelamin} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="L">Laki-Laki</option>
                   <option value="P">Perempuan</option>
@@ -2445,26 +2445,26 @@ export default function DaftarPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">NISN (10 Digit)</label>
-                <input type="text" inputMode="numeric" pattern="[0-9]*" name="nisn" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Misal: 0081234567" value={formData.nisn} onChange={handleInputChange} />
+                <input type="text" inputMode="numeric" pattern="[0-9]*" name="nisn" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: 0081234567" value={formData.nisn} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">NIK (16 Digit)</label>
-                <input type="text" inputMode="numeric" pattern="[0-9]*" name="nik" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Sesuai KK" value={formData.nik} onChange={handleInputChange} />
+                <input type="text" inputMode="numeric" pattern="[0-9]*" name="nik" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KK" value={formData.nik} onChange={handleInputChange} />
               </div>
             </div>
 
             <div className="form-group mb-4">
               <label className="block text-xs font-bold text-slate-600 mb-1.5">Tempat & Tanggal Lahir</label>
               <div className="flex gap-2">
-                <input type="text" name="tempatLahir" className="w-1/2 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Tempat" value={formData.tempatLahir} onChange={handleInputChange} />
-                <input type="date" name="tglLahir" className="w-1/2 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.tglLahir} onChange={handleInputChange} />
+                <input type="text" name="tempatLahir" className="w-1/2 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Tempat" value={formData.tempatLahir} onChange={handleInputChange} />
+                <input type="date" name="tglLahir" className="w-1/2 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahir} onChange={handleInputChange} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Agama</label>
-                <select name="agama" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.agama} onChange={handleInputChange}>
+                <select name="agama" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agama} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Islam">Islam</option>
                   <option value="Kristen">Kristen</option>
@@ -2475,7 +2475,7 @@ export default function DaftarPage() {
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Kewarganegaraan</label>
-                <select name="kewarganegaraan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.kewarganegaraan} onChange={handleInputChange}>
+                <select name="kewarganegaraan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraan} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="WNI">Warga Negara Indonesia (WNI)</option>
                   <option value="WNA">Warga Negara Asing (WNA)</option>
@@ -2493,50 +2493,50 @@ export default function DaftarPage() {
 
             <div className="form-group mb-4">
               <label className="block text-xs font-bold text-slate-600 mb-1.5">Alamat Rumah (Jalan, No. Rumah)</label>
-              <textarea name="alamat" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" rows={2} placeholder="Contoh: Jl. Pekapuran No. 10" value={formData.alamat} onChange={handleInputChange}></textarea>
+              <textarea name="alamat" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" rows={2} placeholder="Contoh: Jl. Pekapuran No. 10" value={formData.alamat} onChange={handleInputChange}></textarea>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">RT / RW</label>
-                <input type="text" name="rtRw" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 002/005" value={formData.rtRw} onChange={handleInputChange} />
+                <input type="text" name="rtRw" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 002/005" value={formData.rtRw} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Kode Pos</label>
-                <input type="text" inputMode="numeric" pattern="[0-9]*" name="kodePos" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 16453" value={formData.kodePos} onChange={handleInputChange} />
+                <input type="text" inputMode="numeric" pattern="[0-9]*" name="kodePos" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 16453" value={formData.kodePos} onChange={handleInputChange} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Kelurahan</label>
-                <input type="text" name="kelurahan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: Curug" value={formData.kelurahan} onChange={handleInputChange} />
+                <input type="text" name="kelurahan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Curug" value={formData.kelurahan} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Kecamatan</label>
-                <input type="text" name="kecamatan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: Cimanggis" value={formData.kecamatan} onChange={handleInputChange} />
+                <input type="text" name="kecamatan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Cimanggis" value={formData.kecamatan} onChange={handleInputChange} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon / HP Siswa</label>
-                <input type="text" inputMode="tel" name="whatsapp" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 081234567890" value={formData.whatsapp} onChange={handleInputChange} />
+                <input type="text" inputMode="tel" name="whatsapp" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 081234567890" value={formData.whatsapp} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon Orang Tua (Ayah/Ibu/Wali)</label>
-                <input type="text" inputMode="tel" name="teleponOrtu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Nomor yang mudah dihubungi" value={formData.teleponOrtu} onChange={handleInputChange} />
+                <input type="text" inputMode="tel" name="teleponOrtu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Nomor yang mudah dihubungi" value={formData.teleponOrtu} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">E-mail Pribadi Siswa</label>
-                <input type="email" name="email" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="nama@email.com" value={formData.email} onChange={handleInputChange} />
+                <input type="email" name="email" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="nama@email.com" value={formData.email} onChange={handleInputChange} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Tinggal Bersama dengan</label>
-                <select name="tinggalDengan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.tinggalDengan} onChange={handleInputChange}>
+                <select name="tinggalDengan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.tinggalDengan} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Orang Tua">Orang Tua</option>
                   <option value="Saudara">Saudara</option>
@@ -2548,7 +2548,7 @@ export default function DaftarPage() {
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Moda Transportasi</label>
-                <select name="transportasi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.transportasi} onChange={handleInputChange}>
+                <select name="transportasi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.transportasi} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Jalan Kaki">Jalan Kaki</option>
                   <option value="Angkutan Umum">Angkutan Umum</option>
@@ -2575,14 +2575,14 @@ export default function DaftarPage() {
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Tinggi Badan (Cm)</label>
                 <div className="relative">
-                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="tinggiBadan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 165" value={formData.tinggiBadan} onChange={handleInputChange} />
+                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="tinggiBadan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 165" value={formData.tinggiBadan} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Cm</span>
                 </div>
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Berat Badan (Kg)</label>
                 <div className="relative">
-                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="beratBadan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 55" value={formData.beratBadan} onChange={handleInputChange} />
+                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="beratBadan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 55" value={formData.beratBadan} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Kg</span>
                 </div>
               </div>
@@ -2605,7 +2605,7 @@ export default function DaftarPage() {
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Sebutkan Jarak Tepatnya (Km)</label>
                 <div className="relative">
-                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="jarakKm" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 3" value={formData.jarakKm} onChange={handleInputChange} />
+                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="jarakKm" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 3" value={formData.jarakKm} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Km</span>
                 </div>
               </div>
@@ -2616,12 +2616,12 @@ export default function DaftarPage() {
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Waktu Tempuh ke Sekolah</label>
                 <div className="flex gap-2 items-center">
                   <div className="relative flex-1">
-                    <input type="text" inputMode="numeric" pattern="[0-9]*" name="waktuJam" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="0" value={formData.waktuJam} onChange={handleInputChange} />
+                    <input type="text" inputMode="numeric" pattern="[0-9]*" name="waktuJam" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="0" value={formData.waktuJam} onChange={handleInputChange} />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Jam</span>
                   </div>
                   <span className="text-slate-400 font-bold">:</span>
                   <div className="relative flex-1">
-                    <input type="text" inputMode="numeric" pattern="[0-9]*" name="waktuMenit" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-14 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="25" value={formData.waktuMenit} onChange={handleInputChange} />
+                    <input type="text" inputMode="numeric" pattern="[0-9]*" name="waktuMenit" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-14 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="25" value={formData.waktuMenit} onChange={handleInputChange} />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Menit</span>
                   </div>
                 </div>
@@ -2629,7 +2629,7 @@ export default function DaftarPage() {
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Jumlah Saudara Kandung</label>
                 <div className="relative">
-                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="jumlahSaudara" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-16 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 2" value={formData.jumlahSaudara} onChange={handleInputChange} />
+                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="jumlahSaudara" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-16 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2" value={formData.jumlahSaudara} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Orang</span>
                 </div>
               </div>
@@ -2646,7 +2646,7 @@ export default function DaftarPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Golongan Darah</label>
-                <select name="golonganDarah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.golonganDarah} onChange={handleInputChange}>
+                <select name="golonganDarah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.golonganDarah} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="A">A</option>
                   <option value="B">B</option>
@@ -2657,7 +2657,7 @@ export default function DaftarPage() {
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Penyakit Yang Pernah Diderita</label>
-                <input type="text" name="penyakitDiderita" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Misal: Asma, TBC, dll (kosongkan jika tidak ada)" value={formData.penyakitDiderita} onChange={handleInputChange} />
+                <input type="text" name="penyakitDiderita" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Asma, TBC, dll (kosongkan jika tidak ada)" value={formData.penyakitDiderita} onChange={handleInputChange} />
               </div>
             </div>
 
@@ -2688,15 +2688,15 @@ export default function DaftarPage() {
                     <label
                       key={option}
                       className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked
-                        ? "bg-blue-50 border-blue-300 text-blue-700 shadow-sm"
-                        : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 shadow-sm"
+                        ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
+                        : "bg-white border-slate-300 text-slate-700 hover:bg-background hover:border-slate-400 shadow-sm"
                         }`}
                     >
                       <input
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => handleCheckboxChange(option)}
-                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 accent-blue-600"
+                        className="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300 accent-blue-600"
                       />
                       <span className="text-xs font-bold">{option}</span>
                     </label>
@@ -2719,9 +2719,9 @@ export default function DaftarPage() {
                 {["Sains", "Seni", "Olahraga", "Lainnya"].map((option) => {
                   const isChecked = formData.jenisPrestasi?.includes(option) || false;
                   return (
-                    <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked ? "bg-blue-50 border-blue-300 text-blue-700 shadow-sm" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 shadow-sm"
+                    <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked ? "bg-primary/5 border-blue-300 text-primary shadow-sm" : "bg-white border-slate-300 text-slate-700 hover:bg-background hover:border-slate-400 shadow-sm"
                       }`}>
-                      <input type="checkbox" checked={isChecked} className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                      <input type="checkbox" checked={isChecked} className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
                         onChange={() => setFormData(prev => {
                           const cur = prev.jenisPrestasi || [];
                           return { ...prev, jenisPrestasi: cur.includes(option) ? cur.filter(i => i !== option) : [...cur, option] };
@@ -2740,9 +2740,9 @@ export default function DaftarPage() {
                 {["Sekolah", "Kecamatan", "Kab/Kota", "Propinsi", "Nasional", "Internasional", "Lainnya"].map((option) => {
                   const isChecked = formData.tingkatPrestasi?.includes(option) || false;
                   return (
-                    <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked ? "bg-blue-50 border-blue-300 text-blue-700 shadow-sm" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 shadow-sm"
+                    <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked ? "bg-primary/5 border-blue-300 text-primary shadow-sm" : "bg-white border-slate-300 text-slate-700 hover:bg-background hover:border-slate-400 shadow-sm"
                       }`}>
-                      <input type="checkbox" checked={isChecked} className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                      <input type="checkbox" checked={isChecked} className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
                         onChange={() => setFormData(prev => {
                           const cur = prev.tingkatPrestasi || [];
                           return { ...prev, tingkatPrestasi: cur.includes(option) ? cur.filter(i => i !== option) : [...cur, option] };
@@ -2758,17 +2758,17 @@ export default function DaftarPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Uraian Prestasi</label>
-                <input type="text" name="uraianPrestasi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Misal: Juara 1 Olimpiade Matematika" value={formData.uraianPrestasi} onChange={handleInputChange} />
+                <input type="text" name="uraianPrestasi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Juara 1 Olimpiade Matematika" value={formData.uraianPrestasi} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Tahun Prestasi</label>
-                <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunPrestasi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 2024" value={formData.tahunPrestasi} onChange={handleInputChange} />
+                <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunPrestasi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2024" value={formData.tahunPrestasi} onChange={handleInputChange} />
               </div>
             </div>
 
             <div className="form-group mb-4">
               <label className="block text-xs font-bold text-slate-600 mb-1.5">5. Penyelenggara</label>
-              <input type="text" name="penyelenggara" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Misal: Dinas Pendidikan Kota Depok" value={formData.penyelenggara} onChange={handleInputChange} />
+              <input type="text" name="penyelenggara" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Dinas Pendidikan Kota Depok" value={formData.penyelenggara} onChange={handleInputChange} />
             </div>
 
             <div className="form-group">
@@ -2802,9 +2802,9 @@ export default function DaftarPage() {
                 {["Prestasi", "Kemiskinan", "Pendidikan", "Unggulan", "Lainnya"].map((option) => {
                   const isChecked = formData.jenisBeasiswa?.includes(option) || false;
                   return (
-                    <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked ? "bg-blue-50 border-blue-300 text-blue-700 shadow-sm" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 shadow-sm"
+                    <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked ? "bg-primary/5 border-blue-300 text-primary shadow-sm" : "bg-white border-slate-300 text-slate-700 hover:bg-background hover:border-slate-400 shadow-sm"
                       }`}>
-                      <input type="checkbox" checked={isChecked} className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                      <input type="checkbox" checked={isChecked} className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
                         onChange={() => setFormData(prev => {
                           const cur = prev.jenisBeasiswa || [];
                           return { ...prev, jenisBeasiswa: cur.includes(option) ? cur.filter(i => i !== option) : [...cur, option] };
@@ -2819,17 +2819,17 @@ export default function DaftarPage() {
 
             <div className="form-group mb-4">
               <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Uraian Beasiswa</label>
-              <input type="text" name="uraianBeasiswa" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Misal: Beasiswa Prestasi dari Pemkot Depok" value={formData.uraianBeasiswa} onChange={handleInputChange} />
+              <input type="text" name="uraianBeasiswa" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Beasiswa Prestasi dari Pemkot Depok" value={formData.uraianBeasiswa} onChange={handleInputChange} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Tahun Mulai Menerima Beasiswa</label>
-                <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunMulaiBeasiswa" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 2022" value={formData.tahunMulaiBeasiswa} onChange={handleInputChange} />
+                <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunMulaiBeasiswa" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2022" value={formData.tahunMulaiBeasiswa} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Tahun Selesai Menerima Beasiswa</label>
-                <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunSelesaiBeasiswa" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 2024" value={formData.tahunSelesaiBeasiswa} onChange={handleInputChange} />
+                <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunSelesaiBeasiswa" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2024" value={formData.tahunSelesaiBeasiswa} onChange={handleInputChange} />
               </div>
             </div>
           </div>
@@ -2843,34 +2843,34 @@ export default function DaftarPage() {
 
             <div className="mb-6 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
               <h4 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
-                <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">G</span>
+                <span className="bg-blue-100 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs">G</span>
                 1. Pendidikan Sebelumnya
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">a. Lulusan dari SMP/MTs</label>
-                  <input type="text" name="sekolahAsal" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Nama sekolah asal" value={formData.sekolahAsal} onChange={handleInputChange} />
+                  <input type="text" name="sekolahAsal" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Nama sekolah asal" value={formData.sekolahAsal} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">b. Tanggal Lulus dari SMP/MTs</label>
-                  <input type="date" name="tglLulus" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.tglLulus} onChange={handleInputChange} />
+                  <input type="date" name="tglLulus" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLulus} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">c. Nomor Seri Ijazah SMP/MTs</label>
-                  <input type="text" name="noIjazah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noIjazah} onChange={handleInputChange} />
+                  <input type="text" name="noIjazah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noIjazah} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">d. Nomor Seri SKHUN SMP/MTs</label>
-                  <input type="text" name="noSKHUN" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noSKHUN} onChange={handleInputChange} />
+                  <input type="text" name="noSKHUN" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noSKHUN} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">e. Nomor Peserta UN SMP/MTs</label>
-                  <input type="text" name="noPesertaUN" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noPesertaUN} onChange={handleInputChange} />
+                  <input type="text" name="noPesertaUN" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noPesertaUN} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">f. Lama Belajar (Tahun)</label>
                   <div className="flex items-center gap-3">
-                    <input type="number" name="lamaBelajar" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 3" value={formData.lamaBelajar} onChange={handleInputChange} />
+                    <input type="number" name="lamaBelajar" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 3" value={formData.lamaBelajar} onChange={handleInputChange} />
                     <span className="text-sm font-bold text-slate-500">Tahun</span>
                   </div>
                 </div>
@@ -2879,31 +2879,31 @@ export default function DaftarPage() {
 
             <div className="mb-6 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
               <h4 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
-                <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                <span className="bg-blue-100 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
                 Pindahan (Hanya Untuk Murid Pindahan)
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">a. Dari SMP/MTs</label>
-                  <input type="text" name="pindahanDari" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Kosongkan jika bukan pindahan" value={formData.pindahanDari} onChange={handleInputChange} />
+                  <input type="text" name="pindahanDari" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika bukan pindahan" value={formData.pindahanDari} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">b. Alasan Pindah Sekolah</label>
-                  <input type="text" name="alasanPindah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Opsional" value={formData.alasanPindah} onChange={handleInputChange} />
+                  <input type="text" name="alasanPindah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Opsional" value={formData.alasanPindah} onChange={handleInputChange} />
                 </div>
               </div>
             </div>
 
             <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
               <h4 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
-                <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
+                <span className="bg-blue-100 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
                 Diterima di Sekolah Ini
               </h4>
               <div className="mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-3">a. Di Tingkat/Kelas</label>
                 <div className="flex flex-wrap gap-3">
                   {["X (Sepuluh)", "XI (Sebelas)", "XII (Dua Belas)"].map((option) => (
-                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.diterimaKelas === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.diterimaKelas === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600 hover:bg-slate-100"
                       }`}>
                       <input
                         type="radio"
@@ -2911,7 +2911,7 @@ export default function DaftarPage() {
                         value={option}
                         checked={formData.diterimaKelas === option}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500"
+                        className="w-4 h-4 text-primary border-slate-300 focus:ring-primary"
                       />
                       <span className="text-sm font-medium">{option}</span>
                     </label>
@@ -2940,7 +2940,7 @@ export default function DaftarPage() {
                           ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed grayscale'
                           : formData.jurusan1 === option
                           ? `${majorDetails.bg} border-current ${majorDetails.textColor} shadow-md cursor-pointer ring-2 ring-current/20`
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-background hover:border-slate-300 cursor-pointer'
                       }`}>
                         <input
                           type="radio"
@@ -2951,7 +2951,7 @@ export default function DaftarPage() {
                             if (!isFull) handleInputChange(e);
                           }}
                           disabled={isFull}
-                          className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500 disabled:opacity-50 shrink-0"
+                          className="w-4 h-4 text-primary border-slate-300 focus:ring-primary disabled:opacity-50 shrink-0"
                         />
                         {/* Logo jurusan */}
                         {majorDetails.logoPath ? (
@@ -2991,30 +2991,30 @@ export default function DaftarPage() {
 
             <div className="mb-6 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
               <h4 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
-                <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">H</span>
+                <span className="bg-blue-100 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs">H</span>
                 Data Ayah Kandung
               </h4>
 
               <div className="form-group mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">1. Nama Lengkap</label>
-                <input type="text" name="namaAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Sesuai KTP/KK" value={formData.namaAyah} onChange={handleInputChange} />
+                <input type="text" name="namaAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KTP/KK" value={formData.namaAyah} onChange={handleInputChange} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Tempat Lahir</label>
-                  <input type="text" name="tempatLahirAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.tempatLahirAyah} onChange={handleInputChange} />
+                  <input type="text" name="tempatLahirAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirAyah} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Tanggal Lahir</label>
-                  <input type="date" name="tglLahirAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.tglLahirAyah} onChange={handleInputChange} />
+                  <input type="date" name="tglLahirAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirAyah} onChange={handleInputChange} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Agama</label>
-                  <select name="agamaAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.agamaAyah} onChange={handleInputChange}>
+                  <select name="agamaAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaAyah} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
                     <option value="Kristen">Kristen Protestan</option>
@@ -3026,7 +3026,7 @@ export default function DaftarPage() {
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Kewarganegaraan</label>
-                  <select name="kewarganegaraanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.kewarganegaraanAyah} onChange={handleInputChange}>
+                  <select name="kewarganegaraanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanAyah} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
@@ -3036,15 +3036,15 @@ export default function DaftarPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">5. Pendidikan Terakhir</label>
-                  <input type="text" name="pendidikanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanAyah} onChange={handleInputChange} />
+                  <input type="text" name="pendidikanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanAyah} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">6. Pekerjaan</label>
-                  <input type="text" name="pekerjaanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Pekerjaan" value={formData.pekerjaanAyah} onChange={handleInputChange} />
+                  <input type="text" name="pekerjaanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanAyah} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">7. Penghasilan Per Bulan</label>
-                  <select name="penghasilanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.penghasilanAyah} onChange={handleInputChange}>
+                  <select name="penghasilanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanAyah} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
                     <option value="Rp 1.000.000 - Rp 3.000.000">Rp 1.000.000 - Rp 3.000.000</option>
@@ -3056,30 +3056,30 @@ export default function DaftarPage() {
 
               <div className="form-group mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">8. Alamat Rumah</label>
-                <input type="text" name="alamatAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatAyah} onChange={handleInputChange} />
+                <input type="text" name="alamatAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatAyah} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">RT/RW</label>
-                    <input type="text" name="rtrwAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.rtrwAyah} onChange={handleInputChange} />
+                    <input type="text" name="rtrwAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.rtrwAyah} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kelurahan</label>
-                    <input type="text" name="kelurahanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kelurahanAyah} onChange={handleInputChange} />
+                    <input type="text" name="kelurahanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kelurahanAyah} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kecamatan</label>
-                    <input type="text" name="kecamatanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kecamatanAyah} onChange={handleInputChange} />
+                    <input type="text" name="kecamatanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kecamatanAyah} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kode Pos</label>
-                    <input type="text" name="kodePosAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kodePosAyah} onChange={handleInputChange} />
+                    <input type="text" name="kodePosAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kodePosAyah} onChange={handleInputChange} />
                   </div>
                 </div>
               </div>
 
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
-                <select name="statusAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.statusAyah} onChange={handleInputChange}>
+                <select name="statusAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusAyah} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
@@ -3102,24 +3102,24 @@ export default function DaftarPage() {
 
               <div className="form-group mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">1. Nama Lengkap</label>
-                <input type="text" name="namaIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Sesuai KTP/KK" value={formData.namaIbu} onChange={handleInputChange} />
+                <input type="text" name="namaIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KTP/KK" value={formData.namaIbu} onChange={handleInputChange} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Tempat Lahir</label>
-                  <input type="text" name="tempatLahirIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.tempatLahirIbu} onChange={handleInputChange} />
+                  <input type="text" name="tempatLahirIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirIbu} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Tanggal Lahir</label>
-                  <input type="date" name="tglLahirIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.tglLahirIbu} onChange={handleInputChange} />
+                  <input type="date" name="tglLahirIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirIbu} onChange={handleInputChange} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Agama</label>
-                  <select name="agamaIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.agamaIbu} onChange={handleInputChange}>
+                  <select name="agamaIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaIbu} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
                     <option value="Kristen">Kristen Protestan</option>
@@ -3131,7 +3131,7 @@ export default function DaftarPage() {
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Kewarganegaraan</label>
-                  <select name="kewarganegaraanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.kewarganegaraanIbu} onChange={handleInputChange}>
+                  <select name="kewarganegaraanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanIbu} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
@@ -3141,15 +3141,15 @@ export default function DaftarPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">5. Pendidikan Terakhir</label>
-                  <input type="text" name="pendidikanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanIbu} onChange={handleInputChange} />
+                  <input type="text" name="pendidikanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanIbu} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">6. Pekerjaan</label>
-                  <input type="text" name="pekerjaanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Pekerjaan" value={formData.pekerjaanIbu} onChange={handleInputChange} />
+                  <input type="text" name="pekerjaanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanIbu} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">7. Penghasilan Per Bulan</label>
-                  <select name="penghasilanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.penghasilanIbu} onChange={handleInputChange}>
+                  <select name="penghasilanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanIbu} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
                     <option value="Rp 1.000.000 - Rp 3.000.000">Rp 1.000.000 - Rp 3.000.000</option>
@@ -3161,30 +3161,30 @@ export default function DaftarPage() {
 
               <div className="form-group mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">8. Alamat Rumah</label>
-                <input type="text" name="alamatIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatIbu} onChange={handleInputChange} />
+                <input type="text" name="alamatIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatIbu} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">RT/RW</label>
-                    <input type="text" name="rtrwIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.rtrwIbu} onChange={handleInputChange} />
+                    <input type="text" name="rtrwIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.rtrwIbu} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kelurahan</label>
-                    <input type="text" name="kelurahanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kelurahanIbu} onChange={handleInputChange} />
+                    <input type="text" name="kelurahanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kelurahanIbu} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kecamatan</label>
-                    <input type="text" name="kecamatanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kecamatanIbu} onChange={handleInputChange} />
+                    <input type="text" name="kecamatanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kecamatanIbu} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kode Pos</label>
-                    <input type="text" name="kodePosIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kodePosIbu} onChange={handleInputChange} />
+                    <input type="text" name="kodePosIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kodePosIbu} onChange={handleInputChange} />
                   </div>
                 </div>
               </div>
 
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
-                <select name="statusIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.statusIbu} onChange={handleInputChange}>
+                <select name="statusIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusIbu} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
@@ -3207,24 +3207,24 @@ export default function DaftarPage() {
 
               <div className="form-group mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">1. Nama Lengkap</label>
-                <input type="text" name="namaWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Kosongkan jika tidak ada wali" value={formData.namaWali} onChange={handleInputChange} />
+                <input type="text" name="namaWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada wali" value={formData.namaWali} onChange={handleInputChange} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Tempat Lahir</label>
-                  <input type="text" name="tempatLahirWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.tempatLahirWali} onChange={handleInputChange} />
+                  <input type="text" name="tempatLahirWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirWali} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Tanggal Lahir</label>
-                  <input type="date" name="tglLahirWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.tglLahirWali} onChange={handleInputChange} />
+                  <input type="date" name="tglLahirWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirWali} onChange={handleInputChange} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Agama</label>
-                  <select name="agamaWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.agamaWali} onChange={handleInputChange}>
+                  <select name="agamaWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaWali} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
                     <option value="Kristen">Kristen Protestan</option>
@@ -3236,7 +3236,7 @@ export default function DaftarPage() {
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Kewarganegaraan</label>
-                  <select name="kewarganegaraanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.kewarganegaraanWali} onChange={handleInputChange}>
+                  <select name="kewarganegaraanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanWali} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
@@ -3246,15 +3246,15 @@ export default function DaftarPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">5. Pendidikan Terakhir</label>
-                  <input type="text" name="pendidikanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanWali} onChange={handleInputChange} />
+                  <input type="text" name="pendidikanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanWali} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">6. Pekerjaan</label>
-                  <input type="text" name="pekerjaanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Pekerjaan" value={formData.pekerjaanWali} onChange={handleInputChange} />
+                  <input type="text" name="pekerjaanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanWali} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">7. Penghasilan Per Bulan</label>
-                  <select name="penghasilanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.penghasilanWali} onChange={handleInputChange}>
+                  <select name="penghasilanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanWali} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
                     <option value="Rp 1.000.000 - Rp 3.000.000">Rp 1.000.000 - Rp 3.000.000</option>
@@ -3266,30 +3266,30 @@ export default function DaftarPage() {
 
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">8. Alamat Rumah</label>
-                <input type="text" name="alamatWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatWali} onChange={handleInputChange} />
+                <input type="text" name="alamatWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatWali} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">RT/RW</label>
-                    <input type="text" name="rtrwWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.rtrwWali} onChange={handleInputChange} />
+                    <input type="text" name="rtrwWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.rtrwWali} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kelurahan</label>
-                    <input type="text" name="kelurahanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kelurahanWali} onChange={handleInputChange} />
+                    <input type="text" name="kelurahanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kelurahanWali} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kecamatan</label>
-                    <input type="text" name="kecamatanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kecamatanWali} onChange={handleInputChange} />
+                    <input type="text" name="kecamatanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kecamatanWali} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="block text-xs font-bold text-slate-500 mb-1">Kode Pos</label>
-                    <input type="text" name="kodePosWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.kodePosWali} onChange={handleInputChange} />
+                    <input type="text" name="kodePosWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.kodePosWali} onChange={handleInputChange} />
                   </div>
                 </div>
               </div>
 
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
-                <select name="statusWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.statusWali} onChange={handleInputChange}>
+                <select name="statusWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusWali} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
@@ -3315,9 +3315,9 @@ export default function DaftarPage() {
                   {["Olahraga", "Kesenian", "Membaca", "Menulis", "Travelling", "Lainnya"].map((option) => {
                     const isChecked = formData.hobi?.includes(option) || false;
                     return (
-                      <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked ? "bg-blue-50 border-blue-400 text-blue-700 shadow-sm" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                      <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isChecked ? "bg-primary/5 border-blue-400 text-primary shadow-sm" : "bg-background border-slate-200 text-slate-600 hover:bg-slate-100"
                         }`}>
-                        <input type="checkbox" checked={isChecked} className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                        <input type="checkbox" checked={isChecked} className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
                           onChange={() => setFormData(prev => {
                             const cur = prev.hobi || [];
                             return { ...prev, hobi: cur.includes(option) ? cur.filter(i => i !== option) : [...cur, option] };
@@ -3331,7 +3331,7 @@ export default function DaftarPage() {
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-3">2. Cita-cita</label>
-                <select name="citaCita" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.citaCita} onChange={handleInputChange}>
+                <select name="citaCita" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.citaCita} onChange={handleInputChange}>
                   <option value="">-- Pilih Cita-cita --</option>
                   <option value="PNS">PNS</option>
                   <option value="TNI/POLRI">TNI/POLRI</option>
@@ -3353,24 +3353,24 @@ export default function DaftarPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">1. Nilai US (Teori)</label>
-                  <input type="number" name="nilaiUSTeori" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.nilaiUSTeori} onChange={handleInputChange} />
+                  <input type="number" name="nilaiUSTeori" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiUSTeori} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Nilai US (Praktik)</label>
-                  <input type="number" name="nilaiUSPraktik" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.nilaiUSPraktik} onChange={handleInputChange} />
+                  <input type="number" name="nilaiUSPraktik" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiUSPraktik} onChange={handleInputChange} />
                 </div>
               </div>
               <div className="form-group mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Nilai Muatan Lokal</label>
-                <input type="number" name="nilaiMuatanLokal" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={formData.nilaiMuatanLokal} onChange={handleInputChange} />
+                <input type="number" name="nilaiMuatanLokal" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiMuatanLokal} onChange={handleInputChange} />
               </div>
               <div className="form-group mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Memilih SMK Taruna Bhakti Karena</label>
                 <div className="flex gap-4">
                   {["Diri Sendiri", "Orang Tua/Wali"].map((option) => (
-                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.alasanMemilih === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.alasanMemilih === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                       }`}>
-                      <input type="radio" name="alasanMemilih" value={option} checked={formData.alasanMemilih === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                      <input type="radio" name="alasanMemilih" value={option} checked={formData.alasanMemilih === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                       <span className="text-sm font-medium">{option}</span>
                     </label>
                   ))}
@@ -3378,21 +3378,21 @@ export default function DaftarPage() {
               </div>
               <div className="form-group mb-4">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Cita-cita Setelah Lulus SMK</label>
-                <input type="text" name="citaCitaSetelahLulus" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: Kuliah / Bekerja di Industri" value={formData.citaCitaSetelahLulus} onChange={handleInputChange} />
+                <input type="text" name="citaCitaSetelahLulus" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Kuliah / Bekerja di Industri" value={formData.citaCitaSetelahLulus} onChange={handleInputChange} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">5. Pelajaran Yg Disenangi di SMP/MTs</label>
-                  <input type="text" name="pelajaranDisenangi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: Matematika" value={formData.pelajaranDisenangi} onChange={handleInputChange} />
+                  <input type="text" name="pelajaranDisenangi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Matematika" value={formData.pelajaranDisenangi} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">Alasan Disenangi</label>
-                  <input type="text" name="alasanDisenangi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Alasan" value={formData.alasanDisenangi} onChange={handleInputChange} />
+                  <input type="text" name="alasanDisenangi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Alasan" value={formData.alasanDisenangi} onChange={handleInputChange} />
                 </div>
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">6. Kesulitan Belajar di SMP/MTs</label>
-                <input type="text" name="kesulitanBelajar" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Ada hambatan/kesulitan apa?" value={formData.kesulitanBelajar} onChange={handleInputChange} />
+                <input type="text" name="kesulitanBelajar" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Ada hambatan/kesulitan apa?" value={formData.kesulitanBelajar} onChange={handleInputChange} />
               </div>
             </div>
           </div>
@@ -3414,16 +3414,16 @@ export default function DaftarPage() {
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">1. Perkelahian antar Pelajar</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
-                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.perkelahian === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.perkelahian === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                       }`}>
-                      <input type="radio" name="perkelahian" value={option} checked={formData.perkelahian === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                      <input type="radio" name="perkelahian" value={option} checked={formData.perkelahian === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                       <span className="text-sm font-medium">{option}</span>
                     </label>
                   ))}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-xs font-semibold text-slate-500">Kalau Pernah Dimana dan Kapan :</span>
-                  <input type="text" name="ketPerkelahian" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50 disabled:bg-slate-100" value={formData.ketPerkelahian} onChange={handleInputChange} disabled={formData.perkelahian !== "Pernah"} />
+                  <input type="text" name="ketPerkelahian" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100" value={formData.ketPerkelahian} onChange={handleInputChange} disabled={formData.perkelahian !== "Pernah"} />
                 </div>
               </div>
 
@@ -3431,16 +3431,16 @@ export default function DaftarPage() {
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">2. Obat Terlarang, Minuman Keras, Narkotika</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
-                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.narkoba === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.narkoba === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                       }`}>
-                      <input type="radio" name="narkoba" value={option} checked={formData.narkoba === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                      <input type="radio" name="narkoba" value={option} checked={formData.narkoba === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                       <span className="text-sm font-medium">{option}</span>
                     </label>
                   ))}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-xs font-semibold text-slate-500">Kalau Pernah atau Masih, Berikan Alasannya :</span>
-                  <input type="text" name="ketNarkoba" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50 disabled:bg-slate-100" value={formData.ketNarkoba} onChange={handleInputChange} disabled={formData.narkoba !== "Pernah"} />
+                  <input type="text" name="ketNarkoba" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100" value={formData.ketNarkoba} onChange={handleInputChange} disabled={formData.narkoba !== "Pernah"} />
                 </div>
               </div>
 
@@ -3448,16 +3448,16 @@ export default function DaftarPage() {
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Pelanggaran Tingkah Laku Sosial</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
-                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.pelanggaranLain === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                    <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.pelanggaranLain === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                       }`}>
-                      <input type="radio" name="pelanggaranLain" value={option} checked={formData.pelanggaranLain === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                      <input type="radio" name="pelanggaranLain" value={option} checked={formData.pelanggaranLain === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                       <span className="text-sm font-medium">{option}</span>
                     </label>
                   ))}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-xs font-semibold text-slate-500">Bentuk Pelanggaran :</span>
-                  <input type="text" name="ketPelanggaranLain" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50 disabled:bg-slate-100" value={formData.ketPelanggaranLain} onChange={handleInputChange} disabled={formData.pelanggaranLain !== "Pernah"} />
+                  <input type="text" name="ketPelanggaranLain" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100" value={formData.ketPelanggaranLain} onChange={handleInputChange} disabled={formData.pelanggaranLain !== "Pernah"} />
                 </div>
               </div>
 
@@ -3466,9 +3466,9 @@ export default function DaftarPage() {
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Apakah anda sanggup mentaati tata tertib yang berlaku di SMK Taruna Bhakti Depok ?</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
-                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiTaat === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiTaat === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                         }`}>
-                        <input type="radio" name="janjiTaat" value={option} checked={formData.janjiTaat === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                        <input type="radio" name="janjiTaat" value={option} checked={formData.janjiTaat === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">{option}</span>
                       </label>
                     ))}
@@ -3479,9 +3479,9 @@ export default function DaftarPage() {
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">5. Apakah anda sanggup dikenakan sangsi apabila melanggar tata tertib peraturan sekolah ?</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
-                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiSanksi === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiSanksi === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                         }`}>
-                        <input type="radio" name="janjiSanksi" value={option} checked={formData.janjiSanksi === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                        <input type="radio" name="janjiSanksi" value={option} checked={formData.janjiSanksi === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">{option}</span>
                       </label>
                     ))}
@@ -3492,9 +3492,9 @@ export default function DaftarPage() {
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">6. Apakah Anda Sanggup Untuk Menjalin Keakraban dengan Sesama Rekan di Sekolah ?</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
-                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiAkrab === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiAkrab === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                         }`}>
-                        <input type="radio" name="janjiAkrab" value={option} checked={formData.janjiAkrab === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                        <input type="radio" name="janjiAkrab" value={option} checked={formData.janjiAkrab === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">{option}</span>
                       </label>
                     ))}
@@ -3505,9 +3505,9 @@ export default function DaftarPage() {
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">7. Apakah anda sanggup belajar sungguh-sungguh ?</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
-                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiBelajar === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiBelajar === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                         }`}>
-                        <input type="radio" name="janjiBelajar" value={option} checked={formData.janjiBelajar === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                        <input type="radio" name="janjiBelajar" value={option} checked={formData.janjiBelajar === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">{option}</span>
                       </label>
                     ))}
@@ -3518,9 +3518,9 @@ export default function DaftarPage() {
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">8. Apakah anda sanggup menjaga nama baik sekolah baik didalam maupun diluar sekolah ?</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
-                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiNamaBaik === option ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-slate-50 border-slate-200 text-slate-600"
+                      <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiNamaBaik === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 text-slate-600"
                         }`}>
-                        <input type="radio" name="janjiNamaBaik" value={option} checked={formData.janjiNamaBaik === option} onChange={handleInputChange} className="w-4 h-4 text-blue-600" />
+                        <input type="radio" name="janjiNamaBaik" value={option} checked={formData.janjiNamaBaik === option} onChange={handleInputChange} className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">{option}</span>
                       </label>
                     ))}
@@ -3547,7 +3547,7 @@ export default function DaftarPage() {
                         <div className="flex gap-4 ml-2">
                           {["Ya", "Tidak"].map((option) => (
                             <label key={option} className="flex items-center gap-1.5 cursor-pointer">
-                              <input type="radio" name="punyaKPS" value={option} checked={formData.punyaKPS === option} onChange={handleInputChange} className="w-3.5 h-3.5 text-blue-600" />
+                              <input type="radio" name="punyaKPS" value={option} checked={formData.punyaKPS === option} onChange={handleInputChange} className="w-3.5 h-3.5 text-primary" />
                               <span className="font-medium">{option}</span>
                             </label>
                           ))}
@@ -3563,7 +3563,7 @@ export default function DaftarPage() {
                     <span>:</span>
                     <div className="flex items-center gap-2 ml-2 flex-1">
                       <span>Nomor :</span>
-                      <input type="text" name="noKPS" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all" value={formData.noKPS} onChange={handleInputChange} />
+                      <input type="text" name="noKPS" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all" value={formData.noKPS} onChange={handleInputChange} />
                     </div>
                   </div>
                 </div>
@@ -3579,7 +3579,7 @@ export default function DaftarPage() {
                         <div className="flex gap-4 ml-2">
                           {["Ya", "Tidak"].map((option) => (
                             <label key={option} className="flex items-center gap-1.5 cursor-pointer">
-                              <input type="radio" name="punyaKIP" value={option} checked={formData.punyaKIP === option} onChange={handleInputChange} className="w-3.5 h-3.5 text-blue-600" />
+                              <input type="radio" name="punyaKIP" value={option} checked={formData.punyaKIP === option} onChange={handleInputChange} className="w-3.5 h-3.5 text-primary" />
                               <span className="font-medium">{option}</span>
                             </label>
                           ))}
@@ -3595,7 +3595,7 @@ export default function DaftarPage() {
                     <span>:</span>
                     <div className="flex items-center gap-2 ml-2 flex-1">
                       <span>No :</span>
-                      <input type="text" name="noKIP" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all" value={formData.noKIP} onChange={handleInputChange} />
+                      <input type="text" name="noKIP" className="flex-1 bg-white border border-slate-300 shadow-sm rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all" value={formData.noKIP} onChange={handleInputChange} />
                     </div>
                   </div>
                 </div>
@@ -3623,7 +3623,7 @@ export default function DaftarPage() {
                     <User size={16} className="text-blue-500" />
                     Identitas Diri
                   </h4>
-                  <button type="button" onClick={() => goToStep(1)} className="text-xs font-bold text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
+                  <button type="button" onClick={() => goToStep(1)} className="text-xs font-bold text-primary dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
                     <Pencil size={12} />
                     <span>Ubah Data</span>
                   </button>
@@ -3645,7 +3645,7 @@ export default function DaftarPage() {
                     <Home size={16} className="text-blue-500" />
                     Alamat &amp; Kontak
                   </h4>
-                  <button type="button" onClick={() => goToStep(2)} className="text-xs font-bold text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
+                  <button type="button" onClick={() => goToStep(2)} className="text-xs font-bold text-primary dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
                     <Pencil size={12} />
                     <span>Ubah Data</span>
                   </button>
@@ -3667,14 +3667,14 @@ export default function DaftarPage() {
                     <School size={16} className="text-blue-500" />
                     Pendidikan &amp; Jurusan
                   </h4>
-                  <button type="button" onClick={() => goToStep(7)} className="text-xs font-bold text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
+                  <button type="button" onClick={() => goToStep(7)} className="text-xs font-bold text-primary dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
                     <Pencil size={12} />
                     <span>Ubah Data</span>
                   </button>
                 </div>
                 <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
                   <div className="flex justify-between"><span className="text-slate-400">Sekolah Asal:</span><span className="uppercase">{formData.sekolahAsal || "-"}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">Jurusan Utama:</span><span className="text-blue-600 dark:text-sky-450 uppercase">{formData.jurusan1 || "-"}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">Jurusan Utama:</span><span className="text-primary dark:text-sky-450 uppercase">{formData.jurusan1 || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Tanggal Lulus:</span><span>{formData.tglLulus || "-"}</span></div>
                 </div>
               </div>
@@ -3686,7 +3686,7 @@ export default function DaftarPage() {
                     <Users size={16} className="text-blue-500" />
                     Keluarga &amp; Orang Tua
                   </h4>
-                  <button type="button" onClick={() => goToStep(8)} className="text-xs font-bold text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
+                  <button type="button" onClick={() => goToStep(8)} className="text-xs font-bold text-primary dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
                     <Pencil size={12} />
                     <span>Ubah Data</span>
                   </button>
@@ -3706,7 +3706,7 @@ export default function DaftarPage() {
                     <FileText size={16} className="text-blue-500" />
                     Nilai &amp; Akademik
                   </h4>
-                  <button type="button" onClick={() => goToStep(11)} className="text-xs font-bold text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
+                  <button type="button" onClick={() => goToStep(11)} className="text-xs font-bold text-primary dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
                     <Pencil size={12} />
                     <span>Ubah Data</span>
                   </button>
@@ -3726,7 +3726,7 @@ export default function DaftarPage() {
                     <AlertCircle size={16} className="text-blue-500" />
                     Kedisiplinan &amp; Keuangan
                   </h4>
-                  <button type="button" onClick={() => goToStep(12)} className="text-xs font-bold text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
+                  <button type="button" onClick={() => goToStep(12)} className="text-xs font-bold text-primary dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer">
                     <Pencil size={12} />
                     <span>Ubah Data</span>
                   </button>
@@ -3791,7 +3791,7 @@ export default function DaftarPage() {
 
             {/* Declaration Checkbox */}
             <div className="form-group">
-              <label className="flex items-start gap-3.5 cursor-pointer p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 transition-all hover:bg-slate-100/60 dark:hover:bg-slate-900/40">
+              <label className="flex items-start gap-3.5 cursor-pointer p-5 rounded-2xl bg-background dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 transition-all hover:bg-slate-100/60 dark:hover:bg-slate-900/40">
                 <input
                   type="checkbox"
                   className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-350 dark:border-slate-700 shrink-0 cursor-pointer"

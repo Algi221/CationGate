@@ -49,13 +49,15 @@ export function Navbar() {
           {/* Logo Section */}
           {/* Logo Section */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-slate-900 group-hover:scale-110 transition-transform">
-              <DoorOpen className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-bold shadow-xs group-hover:bg-primary hover:bg-primary/90 transition-colors">
+              <Layers className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              {/* Ubah text-white menjadi text-slate-900 */}
-              <span className="font-semibold text-lg tracking-wide text-[#1A1A1A]">
-                CationGate
+              <span className="font-extrabold text-xl tracking-tight text-slate-900">
+                Cation<span className="text-primary">Gate</span>
+              </span>
+              <span className="text-[10px] text-slate-500 font-semibold tracking-wider -mt-1 uppercase">
+                AI Ed-Tech SaaS
               </span>
             </div>
           </Link>
@@ -65,16 +67,7 @@ export function Navbar() {
               <a
                 key={link.label}
                 href={link.href}
-                className="
-      group
-      flex items-center
-      gap-2
-      px-3
-      py-2
-      rounded-xl
-      transition-all
-      duration-300
-      "
+                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-primary transition-colors"
               >
                 <span
                   className="w-2 h-2 opacity-0 group-hover:opacity-100 transition-all duration-300"
@@ -90,16 +83,16 @@ export function Navbar() {
 
           {/* Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
-            {/* <Link href="/demo/dashboard">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-[#FF2F8B] hover:bg-[#F9B8CF] border-xl text-white font-bold text-xs sm:text-sm rounded-xl gap-1.5"
+            <Link href="/demo/dashboard">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-blue-200 text-primary hover:bg-primary/5 font-bold text-xs sm:text-sm rounded-xl gap-1.5"
               >
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-primary" />
                 Coba Demo Live
               </Button>
-            </Link> */}
+            </Link> 
 
             {/* <Link href="/login">
               <Button
@@ -122,31 +115,24 @@ export function Navbar() {
             </Link> */}
 
             <Link href="/daftar">
-          <InteractiveHoverButton
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-slate-700 hover:text-primary font-semibold text-xs sm:text-sm rounded-xl"
+              >
+                <LogIn className="w-4 h-4 mr-1.5 text-primary" />
+                Login
+              </Button>
+            </Link>
 
-
-  className="
-    h-10
-    rounded-full
-    border-0
-    bg-[#FFD33B]
-    text-[#23191C]
-    font-semibold
-    text-sm
-    px-6
-    shadow-none
-
-    transition-all
-    duration-300
-    hover:bg-[#F3C625]
-    hover:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
-    hover:-translate-y-0.5
-
-    active:scale-95
-  "
->
-  Get Started
-</InteractiveHoverButton>
+            <Link href="/daftar">
+              <Button 
+                size="sm" 
+                className="bg-primary hover:bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm gap-1.5 rounded-xl px-4 shadow-xs transition-all"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="w-4 h-4" />
+              </Button>
             </Link>
           </div>
 
@@ -175,16 +161,28 @@ export function Navbar() {
                 key={idx}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+                className="px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-background hover:text-primary"
               >
                 {link.label}
               </a>
             ))}
           </div>
-          <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <Link href="/demo/dashboard" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="outline" className="w-full justify-center text-primary border-blue-200 hover:bg-primary/5 text-xs font-bold rounded-xl">
+                <Sparkles className="w-4 h-4 text-primary mr-1.5" />
+                Coba Demo Live
+              </Button>
+            </Link>
             <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full justify-center bg-white text-black hover:bg-slate-200 font-semibold text-sm rounded-xl h-10">
-                Sign up
+              <Button variant="outline" className="w-full justify-center text-xs font-semibold rounded-xl border-slate-200">
+                Login to Console
+              </Button>
+            </Link>
+            <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
+              <Button className="w-full justify-center bg-primary text-white font-semibold text-xs rounded-xl">
+                Get Started Free <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
           </div>

@@ -55,7 +55,7 @@ export function FeaturesShowcase() {
   ];
 
   return (
-    <section id="features" className="py-20 bg-slate-50 border-b border-slate-200/80 relative">
+    <section id="features" className="py-20 bg-background border-b border-slate-200/80 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
         
         {/* Secondary Content Block: Unlock Peak Academic Performance */}
@@ -63,8 +63,8 @@ export function FeaturesShowcase() {
           
           {/* Left Column Text */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
-              <Cpu className="w-3.5 h-3.5 text-blue-600" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-bold border border-blue-200">
+              <Cpu className="w-3.5 h-3.5 text-primary" />
               Empowering Modern Institutions
             </div>
 
@@ -78,8 +78,8 @@ export function FeaturesShowcase() {
 
             {/* Sub-points specified in PRD */}
             <div className="space-y-4 pt-2">
-              <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+              <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-background border border-slate-200/80">
+                <div className="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
                   1
                 </div>
                 <div>
@@ -88,7 +88,7 @@ export function FeaturesShowcase() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-background border border-slate-200/80">
                 <div className="w-6 h-6 rounded-lg bg-teal-600 text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
                   2
                 </div>
@@ -101,7 +101,7 @@ export function FeaturesShowcase() {
 
             <div className="pt-2 flex items-center gap-4">
               <Link href="#pricing">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl px-6 py-5 text-xs shadow-xs gap-2">
+                <Button className="bg-primary hover:bg-primary hover:bg-primary/90 text-white font-bold rounded-xl px-6 py-5 text-xs shadow-xs gap-2">
                   <span>Deploy CationGate Platform</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -165,7 +165,7 @@ export function FeaturesShowcase() {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold border border-blue-100">
+                      <div className="w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center font-bold border border-blue-100">
                         <Icon className="w-5 h-5" />
                       </div>
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
@@ -177,7 +177,7 @@ export function FeaturesShowcase() {
                       {adv.title}
                     </h3>
 
-                    <p className="text-xs font-bold text-blue-600 mb-2">
+                    <p className="text-xs font-bold text-primary mb-2">
                       {adv.subtitle}
                     </p>
 

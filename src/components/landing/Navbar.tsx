@@ -46,12 +46,12 @@ export function Navbar() {
           
           {/* CationGate Ed-Tech SaaS Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs group-hover:bg-blue-700 transition-colors">
+            <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-bold shadow-xs group-hover:bg-primary hover:bg-primary/90 transition-colors">
               <Layers className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-xl tracking-tight text-slate-900">
-                Cation<span className="text-blue-600">Gate</span>
+                Cation<span className="text-primary">Gate</span>
               </span>
               <span className="text-[10px] text-slate-500 font-semibold tracking-wider -mt-1 uppercase">
                 AI Ed-Tech SaaS
@@ -65,7 +65,7 @@ export function Navbar() {
               <a
                 key={idx}
                 href={link.href}
-                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
+                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-primary transition-colors"
               >
                 {link.label}
               </a>
@@ -78,9 +78,9 @@ export function Navbar() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="border-blue-200 text-blue-600 hover:bg-blue-50 font-bold text-xs sm:text-sm rounded-xl gap-1.5"
+                className="border-blue-200 text-primary hover:bg-primary/5 font-bold text-xs sm:text-sm rounded-xl gap-1.5"
               >
-                <Sparkles className="w-4 h-4 text-blue-600" />
+                <Sparkles className="w-4 h-4 text-primary" />
                 Coba Demo Live
               </Button>
             </Link>
@@ -89,9 +89,9 @@ export function Navbar() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-slate-700 hover:text-blue-600 font-semibold text-xs sm:text-sm rounded-xl"
+                className="text-slate-700 hover:text-primary font-semibold text-xs sm:text-sm rounded-xl"
               >
-                <LogIn className="w-4 h-4 mr-1.5 text-blue-600" />
+                <LogIn className="w-4 h-4 mr-1.5 text-primary" />
                 Login
               </Button>
             </Link>
@@ -99,7 +99,7 @@ export function Navbar() {
             <Link href="/daftar">
               <Button 
                 size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm gap-1.5 rounded-xl px-4 shadow-xs transition-all"
+                className="bg-primary hover:bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm gap-1.5 rounded-xl px-4 shadow-xs transition-all"
               >
                 <span>Get Started</span>
                 <ArrowRight className="w-4 h-4" />
@@ -129,7 +129,7 @@ export function Navbar() {
                 key={idx}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-blue-600"
+                className="px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-background hover:text-primary"
               >
                 {link.label}
               </a>
@@ -138,8 +138,8 @@ export function Navbar() {
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
             <Link href="/demo/dashboard" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" className="w-full justify-center text-blue-600 border-blue-200 hover:bg-blue-50 text-xs font-bold rounded-xl">
-                <Sparkles className="w-4 h-4 text-blue-600 mr-1.5" />
+              <Button variant="outline" className="w-full justify-center text-primary border-blue-200 hover:bg-primary/5 text-xs font-bold rounded-xl">
+                <Sparkles className="w-4 h-4 text-primary mr-1.5" />
                 Coba Demo Live
               </Button>
             </Link>
@@ -149,7 +149,7 @@ export function Navbar() {
               </Button>
             </Link>
             <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full justify-center bg-blue-600 text-white font-semibold text-xs rounded-xl">
+              <Button className="w-full justify-center bg-primary text-white font-semibold text-xs rounded-xl">
                 Get Started Free <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>

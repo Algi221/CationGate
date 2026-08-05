@@ -268,7 +268,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const url = schoolId ? `${BACKEND_URL}/applicants/public?school_id=${schoolId}` : `${BACKEND_URL}/applicants/public`;
+      const url = slug ? `${BACKEND_URL}/applicants/public?school_slug=${slug}` : `${BACKEND_URL}/applicants/public`;
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
@@ -281,7 +281,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       ];
       setPublicApplicants(localSeed);
     }
-  }, [isDemoMode, schoolId]);
+  }, [isDemoMode, slug]);
 
   const logoutAdmin = useCallback(() => {
     setAdminToken(null);

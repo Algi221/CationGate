@@ -595,7 +595,7 @@ export default function Home() {
           <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
             {heroMediaType === "video" && heroMediaUrl ? (
               <video
-                src={heroMediaUrl}
+                src={sanitizeUrl(heroMediaUrl) || undefined}
                 autoPlay
                 muted
                 loop
@@ -604,7 +604,7 @@ export default function Home() {
               />
             ) : heroMediaType === "image" && heroMediaUrl ? (
               <img
-                src={heroMediaUrl}
+                src={sanitizeUrl(heroMediaUrl) || undefined}
                 alt="Hero Background"
                 className="w-full h-full object-cover transition-opacity duration-1000"
               />

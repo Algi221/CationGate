@@ -306,7 +306,7 @@ export default function DaftarSaaS() {
                 <strong>Langkah Selanjutnya:</strong> Login dengan username & password admin yang baru saja Anda buat untuk menyelesaikan konfigurasi jalur & kuota PPDB.
               </div>
 
-              <Link href={`/${successData.slug}/auth/login`} className="w-full block">
+              <Link href={`/${encodeURIComponent(successData.slug)}/auth/login`} className="w-full block">
                 <Button className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-12 transition-all font-bold text-sm shadow-md">
                   Masuk ke Dashboard Sekolah <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>

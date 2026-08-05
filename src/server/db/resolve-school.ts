@@ -74,15 +74,18 @@ export async function resolveSchoolUUID(
   // Case 5: Fallback for in-memory schools or special slugs (e.g., 'demo', 'smktarunabhakti', or newly registered numeric IDs)
   if (inMemSchools) {
     if (inMemSchools.has(strVal)) {
-      return String(inMemSchools.get(strVal).id || strVal);
+      const id = String(inMemSchools.get(strVal).id || strVal);
+      if (isValidUUID(id)) return id;
     }
     for (const [slug, school] of inMemSchools) {
       if (String(school.id) === strVal) {
-        return String(school.id);
+        const id = String(school.id);
+        if (isValidUUID(id)) return id;
       }
     }
   }
 
-  // Return strVal if not empty so caller can query or fallback
-  return strVal || null;
+  // Never return a non-UUID as the resolved ID. 
+  // If we reach here and strVal is not a valid UUID, return null.
+  return null;
 }

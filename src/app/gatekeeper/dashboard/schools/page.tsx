@@ -316,7 +316,7 @@ export default function GatekeeperSchoolManagementPage() {
                       </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{sc.name}</h4>
-                        <a href={`/${sc.slug}`} target="_blank" rel="noreferrer" className="text-xs text-blue-600 dark:text-blue-400 font-mono hover:underline">
+                        <a href={`/${encodeURIComponent(sc.slug)}`} target="_blank" rel="noreferrer" className="text-xs text-blue-600 dark:text-blue-400 font-mono hover:underline">
                           /{sc.slug}
                         </a>
                       </div>
@@ -397,7 +397,7 @@ export default function GatekeeperSchoolManagementPage() {
 
                       {/* Direct Links */}
                       <a
-                        href={`/${sc.slug}`}
+                        href={`/${encodeURIComponent(sc.slug)}`}
                         target="_blank"
                         rel="noreferrer"
                         className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -407,7 +407,7 @@ export default function GatekeeperSchoolManagementPage() {
                       </a>
 
                       <a
-                        href={`/${sc.slug}/dashboard`}
+                        href={`/${encodeURIComponent(sc.slug)}/dashboard`}
                         target="_blank"
                         rel="noreferrer"
                         className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors"
@@ -517,7 +517,7 @@ export default function GatekeeperSchoolManagementPage() {
 
                   {selectedSchoolModal.sk_document_url ? (
                     <a
-                      href={selectedSchoolModal.sk_document_url}
+                      href={selectedSchoolModal.sk_document_url && selectedSchoolModal.sk_document_url.startsWith('http') ? selectedSchoolModal.sk_document_url : '#'}
                       target="_blank"
                       rel="noreferrer"
                       className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0"

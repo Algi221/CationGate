@@ -14,6 +14,15 @@ import dashboardRouter from './routes/dashboard';
 import verifyRouter from './routes/verify';
 import { secureHeaders } from 'hono/secure-headers';
 
+process.on('uncaughtException', (err) => {
+  console.error('FATAL UNCAUGHT EXCEPTION:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('FATAL UNHANDLED REJECTION at:', promise, 'reason:', reason);
+});
+
+
 // Initialize Hono App
 const app = new Hono().basePath('/api');
 

@@ -37,16 +37,16 @@ export function Navbar() {
 
   return (
     <header className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 transition-all duration-500">
-      {/* Lebar container mengecil jadi max-w-4xl saat scroll, tapi ukuran isi di dalamnya tetap normal */}
+      {/* Lebar container berubah: max-w-7xl saat di atas, menyusut ke max-w-5xl saat di-scroll */}
       <div
-        className={`transition-all duration-500 rounded-2xl border shadow-2xl px-6 sm:px-8 ${
+        className={`transition-all duration-500 rounded-2xl border shadow-2xl px-5 sm:px-6 ${
           scrolled
-            ? "w-full max-w-4xl bg-[#FFFFFF]/90 text-[#1A1A1A] border-rose-200/50 backdrop-blur-md py-2 shadow-lg"
+            ? "w-full max-w-5xl bg-[#FFFFFF]/90 text-[#1A1A1A] border-rose-200/50 backdrop-blur-md py-2 shadow-lg"
             : "w-full max-w-7xl bg-[#FFFFFF] text-[#1A1A1A] border-white/10 py-3"
         }`}
       >
         <div className="flex items-center justify-between h-14">
-          {/* Logo Section (Ukuran tetap) */}
+          {/* Logo Section (Ukuran Tetap Normal) */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-slate-900 group-hover:scale-110 transition-transform">
               <DoorOpen className="w-5 h-5" />
@@ -58,22 +58,13 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Navigation (Ukuran teks & gap dikembalikan normal agar muat secara pas) */}
-          <nav className="hidden md:flex items-center gap-1.5">
+          {/* Desktop Navigation (Ukuran teks & gap tetap seperti semula) */}
+          <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
-                className="
-      group
-      flex items-center
-      gap-2
-      px-3
-      py-2
-      rounded-xl
-      transition-all
-      duration-300
-      "
+                className="group flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all duration-300"
               >
                 <span
                   className="w-2 h-2 opacity-0 group-hover:opacity-100 transition-all duration-300"
@@ -86,23 +77,10 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Action Buttons */}
+          {/* Action Buttons (Ukuran Tetap Normal) */}
           <div className="hidden sm:flex items-center gap-3">
-            {/* <Link href="/demo/dashboard">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-[#FF2F8B] hover:bg-[#F9B8CF] border-xl text-white font-bold text-xs sm:text-sm rounded-xl gap-1.5"
-              >
-                <Sparkles className="w-4 h-4" />
-                Coba Demo Live
-              </Button>
-            </Link> */}
-
-            {/* <Link href="/login">
-              <Button
-                variant="ghost"
-                size="sm"
+            <Link href="/daftar">
+              <InteractiveHoverButton
                 className="
                   h-10
                   rounded-full
@@ -121,37 +99,8 @@ export function Navbar() {
                   active:scale-95
                 "
               >
-                <LogIn className="w-4 h-4 mr-2" />
-                Log in
-              </Button>
-            </Link> */}
-
-            <Link href="/daftar">
-          <InteractiveHoverButton
-
-
-  className="
-    h-10
-    rounded-full
-    border-0
-    bg-[#FFD33B]
-    text-[#23191C]
-    font-semibold
-    text-sm
-    px-6
-    shadow-none
-
-    transition-all
-    duration-300
-    hover:bg-[#F3C625]
-    hover:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
-    hover:-translate-y-0.5
-
-    active:scale-95
-  "
->
-  Get Started
-</InteractiveHoverButton>
+                Get Started
+              </InteractiveHoverButton>
             </Link>
           </div>
 

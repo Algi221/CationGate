@@ -79,15 +79,15 @@ export default function LoadingScreen() {
             className="relative z-10 text-center select-none mb-[10vh]"
           >
             {/* Ditambah dark:text-white agar otomatis jadi putih di mode gelap */}
-            <h1 className="mb-3 font-serif text-3xl md:text-4xl text-[#1a2b4c] dark:text-white tracking-widest">
-              Memento Mori
+            <h1 className="mb-3 font-serif text-3xl md:text-6xl text-[#1a2b4c] dark:text-white tracking-widest">
+              Cation Gate
             </h1>
             {/* Ditambah dark:text-slate-300 agar otomatis jadi abu terang di mode gelap */}
-            <div className="flex flex-col gap-1 text-[10px] md:text-xs text-slate-500 dark:text-slate-300 font-sans tracking-widest uppercase">
+            {/* <div className="flex flex-col gap-1 text-[10px] md:text-xs text-slate-500 dark:text-slate-300 font-sans tracking-widest uppercase">
               <p>Remember, You Will Die.</p>
               <p>Time never waits.</p>
               <p>It delivers all equally to the same end.</p>
-            </div>
+            </div> */}
           </motion.div>
 
           {/* TIRAI BIRU */}
@@ -107,7 +107,7 @@ export default function LoadingScreen() {
                   preserveAspectRatio="none"
                 >
                   <path
-                    fill="#57c2ff"
+                    fill="#F3C625"
                     fillOpacity="0.6"
                     d="M0,160L48,149.3C96,139,192,117,288,128C384,139,480,181,576,197.3C672,213,768,203,864,181.3C960,160,1056,128,1152,117.3C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                   ></path>
@@ -123,7 +123,7 @@ export default function LoadingScreen() {
                   preserveAspectRatio="none"
                 >
                   <path
-                    fill="#00a2ff"
+                    fill="#F3C625"
                     fillOpacity="1"
                     d="M0,192L48,181.3C96,171,192,149,288,160C384,171,480,213,576,213.3C672,213,768,171,864,149.3C960,128,1056,128,1152,144C1248,160,1344,192,1392,208L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                   ></path>
@@ -132,7 +132,7 @@ export default function LoadingScreen() {
             </div>
 
             {/* Kotak Biru Solid */}
-            <div className="flex-1 bg-[#00a2ff] w-full -mt-[1px]"></div>
+            <div className="flex-1 bg-[#FFD33B] w-full -mt-[1px]"></div>
           </motion.div>
         </motion.div>
       )}

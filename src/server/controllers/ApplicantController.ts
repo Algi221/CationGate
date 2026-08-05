@@ -1,5 +1,7 @@
 import { Context } from "hono";
 import { getSupabaseClient } from "../db/supabase";
+import { resolveSchoolUUID } from '../db/resolve-school';
+import { fontInMemSchools } from '../routes/saas';
 
 export class ApplicantController {
   /**
@@ -9,16 +11,14 @@ export class ApplicantController {
   static async getAll(c: Context) {
     try {
       const supabase = getSupabaseClient(c.req.header("Authorization"));
-      const schoolId = c.req.query("school_id");
+      const schoolIdOrSlug = c.req.query("school_slug") || c.req.query("school_id");
 
-      if (!schoolId) {
+      if (!schoolIdOrSlug) {
         return c.json({ success: true, data: [] });
       }
 
       // Resolve to actual UUID
-      const { resolveSchoolUUID } = await import('../db/resolve-school');
-      const { fontInMemSchools } = await import('../routes/saas');
-      const resolvedId = await resolveSchoolUUID(String(schoolId), fontInMemSchools);
+      const resolvedId = await resolveSchoolUUID(String(schoolIdOrSlug), fontInMemSchools);
       
       if (!resolvedId) {
         return c.json({ success: true, data: [] });

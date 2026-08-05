@@ -2,10 +2,13 @@ import { createMiddleware } from 'hono/factory';
 import { Context, Next } from 'hono';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('FATAL: JWT_SECRET environment variable is not defined!');
-}
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('FATAL: JWT_SECRET environment variable is not defined!');
+  }
+  return secret;
+};
 
 export const adminAuth = createMiddleware(async (c, next) => {
   const authHeader = c.req.header('Authorization');
@@ -22,7 +25,7 @@ export const adminAuth = createMiddleware(async (c, next) => {
 
   
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret());
     c.set('admin', decoded);
     return await next();
   } catch (error) {
@@ -51,5 +54,23 @@ export const superAdminAuth = createMiddleware(async (c, next) => {
       success: false,
       message: 'Akses ditolak: Hanya superadmin yang dapat melakukan aksi ini.'
     }, 403);
+  }
+});
+
+export const gatekeeperAuth = createMiddleware(async (c, next) => {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return c.json({ success: false, message: 'Akses ditolak: Token otentikasi tidak ditemukan.' }, 401);
+  }
+
+  try {
+    const decoded = jwt.verify(authHeader.slice(7), getJwtSecret()) as any;
+    if (decoded.isGatekeeper !== true || decoded.role !== 'gatekeeper') {
+      return c.json({ success: false, message: 'Akses ditolak: Token bukan gatekeeper.' }, 403);
+    }
+    c.set('gatekeeper', decoded);
+    return await next();
+  } catch {
+    return c.json({ success: false, message: 'Akses ditolak: Session kedaluwarsa atau token tidak valid.' }, 401);
   }
 });

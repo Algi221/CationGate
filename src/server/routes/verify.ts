@@ -3,6 +3,7 @@ import { getSupabaseClient } from '../db/supabase';
 import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 import crypto from 'crypto';
+import { gatekeeperAuth } from '../middleware/auth';
 
 const verifyRouter = new Hono();
 
@@ -121,7 +122,7 @@ verifyRouter.post('/submit-data', async (c) => {
           .from('verification_otps')
           .insert({
             school_id: resolvedId,
-            email: official_email || 'admin@school.sch.id',
+            email: official_email || `admin@${resolvedId}.sch.id`,
             otp_code: otpCode,
             expires_at: expiresAt.toISOString(),
             is_used: false
@@ -316,7 +317,7 @@ verifyRouter.post('/check-otp', async (c) => {
 });
 
 // Admin CationGate: Approve or Reject school verification
-verifyRouter.post('/admin-approve', async (c) => {
+verifyRouter.post('/admin-approve', gatekeeperAuth, async (c) => {
   try {
     const body = await c.req.json();
     const { school_id, action } = body; // action: 'approve' or 'reject'

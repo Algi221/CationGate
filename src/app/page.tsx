@@ -37,7 +37,7 @@ export default function LandingPage() {
   const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-background text-slate-900 font-sans selection:bg-primary selection:text-white flex flex-col relative overflow-hidden">
       {/* 2. TAMBAHAN BARU: Pasang LoadingScreen di paling atas */}
       <LoadingScreen />
 

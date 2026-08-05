@@ -8,7 +8,7 @@
 }
 
 :root {
-  --primary: #8b5cf6; /* Vibrant Purple */
+  --primary: #2A1B1D;; /* Vibrant Purple */
   --primary-glow: rgba(139, 92, 246, 0.15);
   --primary-glow-strong: rgba(139, 92, 246, 0.4);
   --secondary: #1e293b;
@@ -27,7 +27,7 @@
   --input-text: #0f172a;
   --card-bg: #ffffff;
   --section-bg: #fdfdfc;
-  --background: #f9f8f6;
+  /* --background: #f9f8f6; */
   --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;

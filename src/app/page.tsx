@@ -50,9 +50,9 @@ export default function LandingPage() {
         />
 
         <PartnersSection />
-        <FeaturesShowcase />
-        <SystemFlowSection />
-        <RegionalStatsSection />
+        {/* <FeaturesShowcase /> */}
+        {/* <SystemFlowSection /> */}
+        {/* <RegionalStatsSection /> */}
 
         {/* UBAH DISINI JUGA JIKA INGIN RICKROLL: Ganti videoLama menjadi rickroll */}
         <SuccessStorySection

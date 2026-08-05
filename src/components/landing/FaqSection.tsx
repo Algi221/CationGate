@@ -14,10 +14,6 @@ export function FaqSection() {
       a: "CationGate employs end-to-end AES-256 encryption at rest and in transit. Our infrastructure complies fully with ISO 27001 data protection standards and Kemendikbudristek Dapodik security guidelines.",
     },
     {
-      q: "Is CationGate compatible with existing Learning Management Systems (LMS)?",
-      a: "Yes. CationGate features native API integrations for ASIA LMS, Canvas, Moodle, and Google Classroom, allowing seamless single sign-on (SSO) and automatic gradebook sync.",
-    },
-    {
       q: "How accurate is the AI-Powered Lesson & Assessment Generation?",
       a: "Our AI model is fine-tuned specifically on accredited national K-12 and higher-ed curricula. Every generated lesson plan and quiz undergoes automated validation checks against grade-level learning benchmarks.",
     },
@@ -52,7 +48,10 @@ export function FaqSection() {
         </div>
 
         {/* FAQ Accordion List */}
-        <div className="space-y-3 mb-10">
+        <div>
+
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 items-start">
           {faqs.map((faq, idx) => {
             const isOpen = openIdx === idx;
             return (

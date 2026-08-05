@@ -69,19 +69,18 @@ export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
   ];
 
   return (
-    <section id="hero" className="relative pt-8 overflow-hidden bg-[#f4f7ff] dark:bg-slate-950 transition-colors duration-300">
+    <section id="hero" className="relative pt-12 overflow-hidden bg-[#FAF8F2] transition-colors duration-300">
       
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-100/50 dark:to-blue-900/20 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent to-blue-100/50 dark:to-blue-900/20 pointer-events-none" />
 
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#3b82f615_1px,transparent_1px),linear-gradient(to_bottom,#3b82f615_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-      <div className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-full aspect-square rounded-b-full bg-linear-to-t from-blue-500 via-blue-400/40 to-transparent blur-[20px] dark:from-blue-900 dark:via-blue-800/40 opacity-70 pointer-events-none" />
+      {/* <div className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-full aspect-square rounded-b-full bg-linear-to-t from-blue-500 via-blue-400/40 to-transparent blur-[20px] dark:from-blue-900 dark:via-blue-800/40 opacity-70 pointer-events-none" />
       <div className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-full max-w-7xl aspect-square rounded-b-full bg-linear-to-t from-blue-500 via-blue-400/40 to-transparent blur-[20px] dark:from-blue-900 dark:via-blue-800/40 opacity-70 pointer-events-none" />
-      <div className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-full max-w-5xl aspect-square rounded-b-full bg-linear-to-t from-blue-400 via-blue-200 to-white/10 dark:from-blue-800 dark:via-blue-900/50 dark:to-transparent opacity-90 shadow-[0_-20px_60px_-15px_rgba(59,130,246,0.3)] pointer-events-none" />
+      <div className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-full max-w-5xl aspect-square rounded-b-full bg-linear-to-t from-blue-400 via-blue-200 to-white/10 dark:from-blue-800 dark:via-blue-900/50 dark:to-transparent opacity-90 shadow-[0_-20px_60px_-15px_rgba(59,130,246,0.3)] pointer-events-none" /> */}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center py-16">
         
-        <div className="flex justify-center mb-8 ">
+        <div className="flex justify-center mb-8">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 text-xs font-semibold shadow-sm transition-colors">
             <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             <span>Next-Generation Ed-Tech SaaS Platform</span>
@@ -91,11 +90,10 @@ export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
           </div>
         </div>
 
-        {/* Headlines & CTAs */}
         <div className="text-center max-w-4xl mx-auto space-y-6">
           <h1 className="text-3xl sm:text-5xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.12] transition-colors">
             CationGate: {""}
-            <span className="text-blue-600 dark:text-blue-500 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+            <span className="text-blue-600 dark:text-blue-500 bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               Accelerating Learning
             </span>{" "}
             Through Personalized AI.
@@ -105,7 +103,6 @@ export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
             Harness the power of tailored educational experiences, real-time analytics, and content-rich resources designed for modern K-12 schools, academies, and universities.
           </p>
 
-          {/* CTA Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <Link href="/demo/dashboard" className="w-full sm:w-auto">
               <Button 

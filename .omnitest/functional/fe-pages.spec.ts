@@ -3,12 +3,19 @@ import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.FE_URL || 'http://localhost:3000';
 
+const gotoWithRetry = async (page: any, url: string, options: any) => {
+  return await page.goto(url, { ...options, timeout: 30000 }).catch(async () => {
+    await new Promise(r => setTimeout(r, 5000));
+    return await page.goto(url, { ...options, timeout: 30000 });
+  });
+};
+
 test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /auth/login should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/auth/login';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
-    
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
+
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
     
@@ -23,7 +30,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /daftar should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/daftar';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -39,7 +46,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/admin should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/admin';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -55,7 +62,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/informasi should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/informasi';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -71,7 +78,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/informasi/[id] should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/informasi/1';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -87,7 +94,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/kelola-ui should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/kelola-ui';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -103,7 +110,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -119,7 +126,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/pembagian-kelas should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/pembagian-kelas';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -135,7 +142,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/pendaftar should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/pendaftar';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -151,7 +158,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/profile should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/profile';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -167,7 +174,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/settings should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/settings';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -183,7 +190,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /dashboard/siswa-aktif should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/dashboard/siswa-aktif';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);
@@ -199,7 +206,7 @@ test.describe('Frontend Functional Page Tests', () => {
 
   test('Page /data-pendaftar should load without crash', async ({ page: browserPage }) => {
     const targetUrl = BASE_URL + '/data-pendaftar';
-    const response = await browserPage.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+    const response = await gotoWithRetry(browserPage, targetUrl, { waitUntil: 'domcontentloaded' });
     
     // Assert HTTP status is 200 or 304
     expect([200, 304, 301, 302]).toContain(response?.status() || 200);

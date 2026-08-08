@@ -48,11 +48,11 @@ export function Navbar() {
         <div className="flex items-center justify-between h-14">
           {/* Logo Section (Ukuran Tetap Normal) */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-slate-900 group-hover:scale-110 transition-transform">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#2A1B1D] group-hover:scale-110 transition-transform">
               <DoorOpen className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-lg tracking-wide text-[#1A1A1A]">
+              <span className="font-semibold text-lg tracking-wide text-[#23191C]">
                 CationGate
               </span>
             </div>
@@ -108,7 +108,7 @@ export function Navbar() {
           <div className="flex md:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-lg text-slate-700 hover:bg-black/5 transition-colors"
+              className="p-1.5 rounded-lg text-[#2A1B1D] hover:bg-black/5 transition-colors"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -122,14 +122,14 @@ export function Navbar() {
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="absolute top-20 left-4 right-4 md:hidden border border-white/10 bg-[#0b0b1f]/95 rounded-2xl p-4 space-y-4 shadow-2xl">
+        <div className="absolute top-20 left-4 right-4 md:hidden border border-border bg-[#2A1B1D]/95 rounded-2xl p-4 space-y-4 shadow-2xl">
           <div className="flex flex-col space-y-1">
             {navLinks.map((link, idx) => (
               <a
                 key={idx}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+                className="px-3 py-2.5 rounded-xl text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors"
               >
                 {link.label}
               </a>
@@ -137,7 +137,7 @@ export function Navbar() {
           </div>
           <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
             <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full justify-center bg-white text-black hover:bg-slate-200 font-semibold text-sm rounded-xl h-10">
+              <Button className="w-full justify-center bg-[#FFD33B] text-[#2A1B1D] hover:bg-[#F3C625] font-semibold text-sm rounded-xl h-10">
                 Sign up
               </Button>
             </Link>

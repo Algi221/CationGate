@@ -46,7 +46,7 @@ const Typewriter = ({
         setDisplayed(text.substring(0, i + 1));
         i++;
         if (i >= text.length) clearInterval(interval);
-      }, 20); 
+      }, 20);
       return () => clearInterval(interval);
     }, delayStart * 1000);
 
@@ -71,13 +71,13 @@ export default function FloatingComment({
   const getTagColor = (color: TagColor) => {
     switch (color) {
       case "green":
-        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-400";
+        return "bg-[#45C06B]/15 text-[#317C45] border border-[#45C06B]/30";
       case "purple":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-400";
+        return "bg-[#E86BC6]/15 text-[#B85A9F] border border-[#E86BC6]/30";
       case "blue":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400";
+        return "bg-[#8EC9F6]/20 text-[#2A1B1D] border border-[#8EC9F6]/40";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+        return "bg-[#F2EAD7] text-[#2A1B1D] border border-[#F3C625]/40";
     }
   };
 
@@ -111,9 +111,9 @@ export default function FloatingComment({
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="relative flex items-start gap-3 bg-white dark:bg-[#111827] rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800/80 p-3.5 w-[260px] md:w-[280px]"
+        className="relative flex items-start gap-3 bg-[#FFFDF8] rounded-2xl shadow-xl border border-[#D9C9BD] p-3.5 w-[260px] md:w-[280px]"
       >
-        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-slate-800 mt-1 border border-gray-200 dark:border-slate-700">
+        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-[#F7EFD8] mt-1 border border-[#D9C9BD]">
           <img
             src={avatarUrl}
             alt="Avatar"
@@ -122,10 +122,10 @@ export default function FloatingComment({
         </div>
 
         <div className="flex flex-col min-w-0 pt-0.5">
-          <span className="text-[10.5px] font-bold text-gray-900 dark:text-gray-200 mb-1 tracking-wide">
+          <span className="text-[10.5px] font-bold text-[#2A1B1D] mb-1 tracking-wide">
             {name}
           </span>
-          <p className="text-[12px] text-gray-700 dark:text-slate-300 leading-relaxed font-medium min-h-[50px]">
+          <p className="text-[12px] text-[#43413A] leading-relaxed font-medium min-h-[50px]">
             <Typewriter text={text} phase={phase} delayStart={delay + 0.3} />
           </p>
 

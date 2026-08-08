@@ -6,7 +6,9 @@ import { Check, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function PricingSection() {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
+    "yearly",
+  );
 
   const plans = [
     {
@@ -54,7 +56,8 @@ export function PricingSection() {
       priceMonthly: "Custom Tiers",
       priceYearly: "Custom Tiers",
       period: "",
-      subtitle: "For school networks, foundation boards & education departments",
+      subtitle:
+        "For school networks, foundation boards & education departments",
       badge: "Enterprise",
       popular: false,
       features: [
@@ -71,44 +74,54 @@ export function PricingSection() {
   ];
 
   return (
-    <section id="pricing" className="py-20 bg-white border-b border-slate-200/80 relative">
+    <section
+      id="pricing"
+      className="py-20 bg-background border-b border-border relative"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#8EC9F6]/20 text-[#2A1B1D] text-xs font-bold border border-border">
+            <Sparkles className="w-3.5 h-3.5 text-[#2A1B1D]" />
             Transparent Ed-Tech SaaS Pricing
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
             Flexible Plans Built For Growth
           </h2>
 
-          <p className="text-slate-600 text-base font-medium">
+          <p className="text-body text-base font-medium">
             30-day risk-free trial. No credit card required to start.
           </p>
 
           {/* Billing Switcher */}
           <div className="pt-4 flex items-center justify-center gap-3">
-            <span className={`text-xs font-bold ${billingCycle === "monthly" ? "text-slate-900" : "text-slate-500"}`}>
+            <span
+              className={`text-xs font-bold ${billingCycle === "monthly" ? "text-heading" : "text-body"}`}
+            >
               Billed Monthly
             </span>
 
             <button
-              onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
-              className="w-14 h-8 rounded-full bg-blue-600 p-1 relative transition-colors duration-200 focus:outline-none cursor-pointer"
+              onClick={() =>
+                setBillingCycle(
+                  billingCycle === "monthly" ? "yearly" : "monthly",
+                )
+              }
+              className="w-14 h-8 rounded-full bg-primary p-1 relative transition-colors duration-200 focus:outline-none cursor-pointer"
             >
               <div
-                className={`w-6 h-6 rounded-full bg-white transition-transform duration-200 ${
+                className={`w-6 h-6 rounded-full bg-surface transition-transform duration-200 ${
                   billingCycle === "yearly" ? "translate-x-6" : "translate-x-0"
                 }`}
               />
             </button>
 
-            <span className={`text-xs font-bold flex items-center gap-1.5 ${billingCycle === "yearly" ? "text-slate-900" : "text-slate-500"}`}>
+            <span
+              className={`text-xs font-bold flex items-center gap-1.5 ${billingCycle === "yearly" ? "text-heading" : "text-body"}`}
+            >
               <span>Billed Annually</span>
-              <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-200">
+              <span className="bg-[#45C06B]/20 text-[#45C06B] text-[10px] font-bold px-2 py-0.5 rounded border border-border">
                 Save 20%
               </span>
             </span>
@@ -122,48 +135,71 @@ export function PricingSection() {
               key={idx}
               className={`rounded-2xl p-8 relative flex flex-col justify-between transition-all duration-200 ${
                 plan.popular
-                  ? "bg-slate-900 text-white border-2 border-blue-600 shadow-xl"
-                  : "bg-white border border-slate-200 text-slate-900 shadow-2xs"
+                  ? "bg-[#2A1B1D] text-white border-2 border-[#8EC9F6] shadow-xl"
+                  : "bg-surface border border-border text-heading shadow-2xs"
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-md ${
-                    plan.popular
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-700 border border-slate-200"
-                  }`}>
+                  <span
+                    className={`text-xs font-bold px-3 py-1 rounded-md ${
+                      plan.popular
+                        ? "bg-[#8EC9F6] text-[#2A1B1D]"
+                        : "bg-background text-heading border border-border"
+                    }`}
+                  >
                     {plan.badge}
                   </span>
                 </div>
 
-                <h3 className="text-xl font-extrabold mb-1.5">
-                  {plan.name}
-                </h3>
+                <h3 className="text-xl font-extrabold mb-1.5">{plan.name}</h3>
 
-                <p className={`text-xs mb-6 font-medium ${plan.popular ? "text-slate-300" : "text-slate-500"}`}>
+                <p
+                  className={`text-xs mb-6 font-medium ${plan.popular ? "text-white/80" : "text-body"}`}
+                >
                   {plan.subtitle}
                 </p>
 
-                <div className={`mb-6 pb-6 border-b ${plan.popular ? "border-slate-800" : "border-slate-100"}`}>
+                <div
+                  className={`mb-6 pb-6 border-b ${plan.popular ? "border-white/20" : "border-border"}`}
+                >
                   <div className="flex items-baseline gap-1">
                     <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                      {billingCycle === "yearly" ? plan.priceYearly : plan.priceMonthly}
+                      {billingCycle === "yearly"
+                        ? plan.priceYearly
+                        : plan.priceMonthly}
                     </span>
-                    <span className={`text-xs font-semibold ${plan.popular ? "text-slate-400" : "text-slate-500"}`}>{plan.period}</span>
+                    <span
+                      className={`text-xs font-semibold ${plan.popular ? "text-white/70" : "text-body"}`}
+                    >
+                      {plan.period}
+                    </span>
                   </div>
                 </div>
 
                 <div className="space-y-3 mb-8">
-                  <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${plan.popular ? "text-slate-400" : "text-slate-500"}`}>
+                  <div
+                    className={`text-xs font-bold uppercase tracking-wider mb-2 ${plan.popular ? "text-white/70" : "text-body"}`}
+                  >
                     Included Capabilities:
                   </div>
                   {plan.features.map((feat, fIdx) => (
-                    <div key={fIdx} className="flex items-start gap-2.5 text-xs font-semibold">
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${plan.popular ? "bg-blue-900 text-blue-300" : "bg-emerald-50 text-emerald-600"}`}>
+                    <div
+                      key={fIdx}
+                      className="flex items-start gap-2.5 text-xs font-semibold"
+                    >
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${plan.popular ? "bg-[#8EC9F6] text-[#2A1B1D]" : "bg-[#45C06B]/20 text-[#45C06B]"}`}
+                      >
                         <Check className="w-3 h-3 font-bold" />
                       </div>
-                      <span className={plan.popular ? "text-slate-200" : "text-slate-700"}>{feat}</span>
+                      <span
+                        className={
+                          plan.popular ? "text-white/90" : "text-heading"
+                        }
+                      >
+                        {feat}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -174,19 +210,17 @@ export function PricingSection() {
                   size="lg"
                   className={`w-full font-bold text-xs rounded-xl py-5 ${
                     plan.popular
-                      ? "bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
-                      : "border-slate-200 hover:bg-slate-50 text-slate-900"
+                      ? "bg-[#FFD33B] hover:bg-[#F3C625] text-[#2A1B1D] shadow-xs"
+                      : "border-border hover:bg-background text-heading"
                   }`}
                   variant={plan.variant}
                 >
                   {plan.cta} <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
-
             </div>
           ))}
         </div>
-
       </div>
     </section>
   );

@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Check, 
-  Zap, 
-  Sliders, 
-  TrendingUp, 
-  Globe, 
+import {
+  Check,
+  Zap,
+  Sliders,
+  TrendingUp,
+  Globe,
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  Cpu
+  Cpu,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -55,46 +55,62 @@ export function FeaturesShowcase() {
   ];
 
   return (
-    <section id="features" className="py-20 bg-background border-b border-slate-200/80 relative">
+    <section
+      id="features"
+      className="py-20 bg-background border-b border-border relative"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
-        
         {/* Secondary Content Block: Unlock Peak Academic Performance */}
-        <div id="about" className="grid lg:grid-cols-12 gap-12 items-center bg-white border border-slate-200 p-8 sm:p-12 rounded-2xl shadow-xs">
-          
+        <div
+          id="about"
+          className="grid lg:grid-cols-12 gap-12 items-center bg-surface border border-border p-8 sm:p-12 rounded-2xl shadow-xs"
+        >
           {/* Left Column Text */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-bold border border-blue-200">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-bold border border-border">
               <Cpu className="w-3.5 h-3.5 text-primary" />
               Empowering Modern Institutions
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight leading-tight">
               Unlock Peak Academic Performance
             </h2>
 
-            <p className="text-slate-600 text-base leading-relaxed font-medium">
-              Combine cutting-edge artificial intelligence with proven pedagogical strategies to elevate outcomes across your entire student body.
+            <p className="text-body text-base leading-relaxed font-medium">
+              Combine cutting-edge artificial intelligence with proven
+              pedagogical strategies to elevate outcomes across your entire
+              student body.
             </p>
 
             {/* Sub-points specified in PRD */}
             <div className="space-y-4 pt-2">
-              <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-background border border-slate-200/80">
+              <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-background border border-border">
                 <div className="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
                   1
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">Personalized Pathways</h4>
-                  <p className="text-xs text-slate-600 font-medium">Tailored learning maps engineered specifically for each student's strengths and areas of growth.</p>
+                  <h4 className="text-sm font-bold text-heading">
+                    Personalized Pathways
+                  </h4>
+                  <p className="text-xs text-body font-medium">
+                    Tailored learning maps engineered specifically for each
+                    student's strengths and areas of growth.
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-background border border-slate-200/80">
-                <div className="w-6 h-6 rounded-lg bg-teal-600 text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+              <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-background border border-border">
+                <div className="w-6 h-6 rounded-lg bg-[#45C06B] text-white flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
                   2
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">Engaging, Tech-Driven Lessons</h4>
-                  <p className="text-xs text-slate-600 font-medium">Interactive simulations, instant AI feedback, and gamified mastery benchmarks.</p>
+                  <h4 className="text-sm font-bold text-heading">
+                    Engaging, Tech-Driven Lessons
+                  </h4>
+                  <p className="text-xs text-body font-medium">
+                    Interactive simulations, instant AI feedback, and gamified
+                    mastery benchmarks.
+                  </p>
                 </div>
               </div>
             </div>
@@ -111,46 +127,58 @@ export function FeaturesShowcase() {
 
           {/* Right Column: Visualization Card */}
           <div className="lg:col-span-6 relative">
-            <div className="rounded-xl bg-slate-900 text-white p-6 shadow-md space-y-4 font-mono text-xs border border-slate-800">
-              
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-slate-400">
+            <div className="rounded-xl bg-[#2A1B1D] text-white p-6 shadow-md space-y-4 font-mono text-xs border border-[#6F5041]">
+              <div className="flex items-center justify-between pb-3 border-b border-white/20 text-white/75">
                 <span>// CationGate Learning Engine Pipeline</span>
-                <span className="text-emerald-400 font-bold">STATUS: 200 OK</span>
+                <span className="text-[#45C06B] font-bold">STATUS: 200 OK</span>
               </div>
 
               <div className="space-y-2">
-                <div className="text-blue-400 font-bold">[STEP 1] Ingesting Student Baseline Telemetry...</div>
-                <div className="text-slate-300 pl-3">↳ StudentID: #CG-8921 | Mastery Level: 92% | Speed: 1.4x</div>
-                <div className="text-teal-400 font-bold">[STEP 2] Generating Adaptive Lesson Module...</div>
-                <div className="text-slate-300 pl-3">↳ Subject: STEM Calculus II | Topic: Multivariable Derivatives</div>
-                <div className="text-emerald-400 font-bold">[STEP 3] Optimizing Evaluation Quiz...</div>
-                <div className="text-slate-300 pl-3">↳ Difficulty Matrix: Scaled +15% | Proctoring Guard: ACTIVE</div>
+                <div className="text-[#8EC9F6] font-bold">
+                  [STEP 1] Ingesting Student Baseline Telemetry...
+                </div>
+                <div className="text-white/80 pl-3">
+                  ↳ StudentID: #CG-8921 | Mastery Level: 92% | Speed: 1.4x
+                </div>
+                <div className="text-[#FFD33B] font-bold">
+                  [STEP 2] Generating Adaptive Lesson Module...
+                </div>
+                <div className="text-white/80 pl-3">
+                  ↳ Subject: STEM Calculus II | Topic: Multivariable Derivatives
+                </div>
+                <div className="text-[#45C06B] font-bold">
+                  [STEP 3] Optimizing Evaluation Quiz...
+                </div>
+                <div className="text-white/80 pl-3">
+                  ↳ Difficulty Matrix: Scaled +15% | Proctoring Guard: ACTIVE
+                </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-slate-400">
+              <div className="pt-3 border-t border-white/20 flex items-center justify-between text-white/75">
                 <span>Latency: 14ms</span>
-                <span className="text-blue-400 font-bold">AES-256 Encrypted</span>
+                <span className="text-[#8EC9F6] font-bold">
+                  AES-256 Encrypted
+                </span>
               </div>
-
             </div>
           </div>
-
         </div>
 
         {/* Section: The CationGate Advantage */}
         <div>
           <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-bold border border-teal-200">
-              <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#8EC9F6]/20 text-[#2A1B1D] text-xs font-bold border border-border">
+              <Sparkles className="w-3.5 h-3.5 text-[#2A1B1D]" />
               Core Benefits
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
               The CationGate Advantage
             </h2>
 
-            <p className="text-slate-600 text-base leading-relaxed font-medium">
-              Why leading educational institutions trust CationGate to power their AI learning infrastructure.
+            <p className="text-body text-base leading-relaxed font-medium">
+              Why leading educational institutions trust CationGate to power
+              their AI learning infrastructure.
             </p>
           </div>
 
@@ -161,19 +189,19 @@ export function FeaturesShowcase() {
               return (
                 <div
                   key={idx}
-                  className="p-6 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                  className="p-6 rounded-2xl bg-surface border border-border shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center font-bold border border-blue-100">
+                      <div className="w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center font-bold border border-border">
                         <Icon className="w-5 h-5" />
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                      <span className="text-[10px] font-bold text-[#45C06B] bg-[#45C06B]/10 px-2.5 py-0.5 rounded-md border border-border">
                         {adv.metric}
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-extrabold text-slate-900 mb-1">
+                    <h3 className="text-lg font-extrabold text-heading mb-1">
                       {adv.title}
                     </h3>
 
@@ -181,7 +209,7 @@ export function FeaturesShowcase() {
                       {adv.subtitle}
                     </p>
 
-                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                    <p className="text-xs text-body leading-relaxed font-medium">
                       {adv.desc}
                     </p>
                   </div>
@@ -190,7 +218,6 @@ export function FeaturesShowcase() {
             })}
           </div>
         </div>
-
       </div>
     </section>
   );

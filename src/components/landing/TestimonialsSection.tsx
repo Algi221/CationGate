@@ -1,34 +1,44 @@
 "use client";
 
 import React from "react";
-import { Star, CheckCircle2, Code2, Cpu, GraduationCap, Building2 } from "lucide-react";
+import {
+  Star,
+  CheckCircle2,
+  Code2,
+  Cpu,
+  GraduationCap,
+  Building2,
+} from "lucide-react";
 
 export function TestimonialsSection() {
   // Testimonials specified in PRD
   const testimonials = [
     {
-      quote: "The real-time dashboards are incredible. We identified reading comprehension bottlenecks across Grade 9 in week 1 and adjusted our curriculum instantly.",
+      quote:
+        "The real-time dashboards are incredible. We identified reading comprehension bottlenecks across Grade 9 in week 1 and adjusted our curriculum instantly.",
       author: "Dr. Aris Setiawan, M.Ed.",
       role: "Academic Director, SMA Global Mandiri",
       badge: "School Administrator",
       avatar: "A",
-      color: "bg-blue-600",
+      color: "bg-[#8EC9F6]",
     },
     {
-      quote: "CationGate's AI lesson generation saved me over 10 hours a week. The adaptive quizzes keep students engaged without manual grading queues.",
+      quote:
+        "CationGate's AI lesson generation saved me over 10 hours a week. The adaptive quizzes keep students engaged without manual grading queues.",
       author: "Dewi Lestari, S.Pd.",
       role: "Senior STEM Educator, Telkom Academy",
       badge: "Master Educator",
       avatar: "D",
-      color: "bg-teal-600",
+      color: "bg-[#45C06B]",
     },
     {
-      quote: "The personalized learning pathway adapted to my pace in Advanced Physics. I scored in the top 1% on national university entrance exams.",
+      quote:
+        "The personalized learning pathway adapted to my pace in Advanced Physics. I scored in the top 1% on national university entrance exams.",
       author: "Fajar Pratama",
       role: "Student, Grade 12 STEM Scholar",
       badge: "Student Success",
       avatar: "F",
-      color: "bg-indigo-600",
+      color: "bg-[#E86BC6]",
     },
   ];
 
@@ -55,23 +65,23 @@ export function TestimonialsSection() {
   ];
 
   return (
-    <section className="py-20 bg-slate-50 border-b border-slate-200/80 relative">
+    <section className="py-20 bg-background border-b border-border relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
-        
         {/* Section 1: The Minds Behind the Technology (Team) */}
         <div>
           <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
-              <Cpu className="w-3.5 h-3.5 text-blue-600" />
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#8EC9F6]/20 text-[#2A1B1D] text-xs font-bold border border-border">
+              <Cpu className="w-3.5 h-3.5 text-[#2A1B1D]" />
               Ed-Tech Leadership
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
               The Minds Behind the Technology
             </h2>
 
-            <p className="text-slate-600 text-base leading-relaxed font-medium">
-              Engineers, researchers, and master educators building the future of adaptive learning.
+            <p className="text-body text-base leading-relaxed font-medium">
+              Engineers, researchers, and master educators building the future
+              of adaptive learning.
             </p>
           </div>
 
@@ -81,18 +91,22 @@ export function TestimonialsSection() {
               return (
                 <div
                   key={idx}
-                  className="p-6 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:shadow-md transition-all duration-200"
+                  className="p-6 rounded-2xl bg-surface border border-border shadow-2xs hover:shadow-md transition-all duration-200"
                 >
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold border border-blue-100 shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-[#FFD33B]/20 text-[#2A1B1D] flex items-center justify-center font-bold border border-border shrink-0">
                       <Icon className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900">{member.name}</h3>
-                      <div className="text-xs font-bold text-blue-600">{member.role}</div>
+                      <h3 className="text-base font-extrabold text-heading">
+                        {member.name}
+                      </h3>
+                      <div className="text-xs font-bold text-primary">
+                        {member.role}
+                      </div>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                  <p className="text-xs text-body leading-relaxed font-medium">
                     {member.bio}
                   </p>
                 </div>
@@ -104,17 +118,18 @@ export function TestimonialsSection() {
         {/* Section 2: Testimonial Grid */}
         <div id="testimoni">
           <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-bold border border-teal-200">
-              <Star className="w-3.5 h-3.5 fill-current text-teal-600" />
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#45C06B]/20 text-[#45C06B] text-xs font-bold border border-border">
+              <Star className="w-3.5 h-3.5 fill-current text-[#45C06B]" />
               Verified Feedback
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
               Trusted By Administrators, Teachers & Students
             </h2>
 
-            <p className="text-slate-600 text-base leading-relaxed font-medium">
-              Read how CationGate delivers real impact in classrooms across Indonesia.
+            <p className="text-body text-base leading-relaxed font-medium">
+              Read how CationGate delivers real impact in classrooms across
+              Indonesia.
             </p>
           </div>
 
@@ -122,35 +137,37 @@ export function TestimonialsSection() {
             {testimonials.map((t, idx) => (
               <div
                 key={idx}
-                className="p-7 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                className="p-7 rounded-2xl bg-surface border border-border shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-1 text-amber-400">
+                    <div className="flex items-center gap-1 text-[#FFD33B]">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-current" />
                       ))}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">
+                    <span className="text-[10px] font-bold text-heading bg-background px-2.5 py-0.5 rounded-md border border-border">
                       {t.badge}
                     </span>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic mb-6 font-medium">
+                  <p className="text-xs sm:text-sm text-body leading-relaxed italic mb-6 font-medium">
                     "{t.quote}"
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl ${t.color} text-white font-black flex items-center justify-center text-sm shrink-0 shadow-2xs`}>
+                <div className="pt-4 border-t border-border flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl ${t.color} text-white font-black flex items-center justify-center text-sm shrink-0 shadow-2xs`}
+                  >
                     {t.avatar}
                   </div>
                   <div>
-                    <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1">
+                    <div className="font-extrabold text-xs text-heading flex items-center gap-1">
                       <span>{t.author}</span>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#45C06B] shrink-0" />
                     </div>
-                    <div className="text-[11px] text-slate-500 font-medium">
+                    <div className="text-[11px] text-body font-medium">
                       {t.role}
                     </div>
                   </div>
@@ -159,7 +176,6 @@ export function TestimonialsSection() {
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );

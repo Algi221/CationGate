@@ -4,11 +4,10 @@ import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { Lock, User, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, CheckCircle2, Sparkles, Building2 } from "lucide-react";
-import { LottiePlaceholder } from "@/components/ui/LottiePlaceholder";
+import { Lock, User, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck } from "lucide-react";
 
 export default function AdminLogin() {
-  const { loginAdmin, adminToken, ppdbTitle } = usePPDB();
+  const { loginAdmin, adminToken, ppdbTitle, ppdbLogo, isSchoolNotFound } = usePPDB();
   const router = useRouter();
   const params = useParams();
   const schoolSlug = params?.school_slug as string;
@@ -22,7 +21,7 @@ export default function AdminLogin() {
   useEffect(() => {
     setMounted(true);
     if (adminToken && schoolSlug) router.push(`/${schoolSlug}/dashboard`);
-  }, [adminToken, router]);
+  }, [adminToken, router, schoolSlug]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -58,142 +57,153 @@ export default function AdminLogin() {
 
   if (!mounted) return null;
 
+  if (isSchoolNotFound) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-6">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="w-16 h-16 mx-auto bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+            <ShieldCheck className="w-8 h-8 text-slate-500" />
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Sekolah Tidak Ditemukan</h1>
+          <p className="text-slate-600 dark:text-slate-400">
+            Tautan (slug) sekolah yang Anda tuju (<span className="font-semibold text-blue-600">{schoolSlug}</span>) tidak terdaftar di sistem CationGate. Pastikan URL sudah benar.
+          </p>
+          <div className="pt-6">
+            <Link 
+              href="/"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Kembali ke Beranda CationGate
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background text-foreground font-sans selection:bg-primary selection:text-white">
-
-      {/* Left Panel – Clean Light Mode Branding */}
-      <div className="w-full lg:w-[45%] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden">
+    <div className="min-h-screen w-full flex bg-slate-50 dark:bg-slate-950">
+      
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-12 flex-col justify-between relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]" />
         
-        {/* Top Link & Logo */}
-        <div className="space-y-6">
+        <div className="relative z-10">
           <Link 
-            href="../" 
-            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+            href={`/${schoolSlug}`}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-white transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Kembali ke Landing Page Sekolah</span>
+            <ArrowLeft className="w-4 h-4" />
+            Kembali ke Halaman Utama
           </Link>
+        </div>
 
-          <div className="flex items-center gap-3 pt-2">
-            <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-md shadow-primary/20">
-              <ShieldCheck className="w-6 h-6" />
+        <div className="relative z-10 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
+              {ppdbLogo ? (
+                <img src={ppdbLogo} alt="Logo" className="w-10 h-10 object-contain" />
+              ) : (
+                <ShieldCheck className="w-8 h-8 text-white" />
+              )}
             </div>
             <div>
-              <span className="font-extrabold text-xl tracking-tight text-foreground block">
-                Cation<span className="text-primary">Gate</span>
-              </span>
-              <span className="text-xs text-muted-foreground font-medium">Portal Admin PPDB</span>
+              <h2 className="text-2xl font-bold text-white">
+                {ppdbTitle || "Portal PPDB"}
+              </h2>
+              <p className="text-sm text-white/70">Admin Dashboard</p>
             </div>
+          </div>
+
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold text-white leading-tight">
+              Portal Admin<br />PPDB Online
+            </h1>
+            <p className="text-lg text-white/80 leading-relaxed">
+              Kelola pendaftaran siswa baru, verifikasi dokumen, dan monitoring data secara real-time.
+            </p>
           </div>
         </div>
 
-        {/* Center Content */}
-        <div className="my-10 space-y-6 max-w-md">
-          <LottiePlaceholder title="Admin Animation" className="min-h-[200px]" />
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            Akses Terenkripsi & Terverifikasi
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-[1.2]">
-            Selamat Datang di Portal Pengelola PPDB
-          </h1>
-
-          <p className="text-slate-600 text-sm leading-relaxed font-normal">
-            Kelola pendaftaran calon peserta didik baru, lakukan verifikasi dokumen AI/manual, dan pantau kuota secara real-time.
-          </p>
-
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Verifikasi Berkas Otomatis & AI OCR</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Sistem Pembayaran Auto-Sync Midtrans</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Ekspor Data Format Kemendikbud (Dapodik)</span>
-            </div>
-          </div>
+        <div className="relative z-10 flex items-center gap-4 text-sm text-white/60">
+          <span>Powered by CationGate</span>
+          <span>•</span>
+          <span>Secure & Encrypted</span>
         </div>
-
-        {/* Bottom Security Info */}
-        <div className="text-xs text-slate-500 font-medium flex items-center justify-between border-t border-slate-100 pt-6">
-          <span>Protected by AES-256 Encryption</span>
-          <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
-            SLA Uptime 99.99%
-          </span>
-        </div>
-
       </div>
 
-      {/* Right Panel – Clean Stripe / Vercel Style Login Form */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-background">
-        <div className="w-full max-w-[420px] bg-card p-8 sm:p-10 rounded-3xl border border-border shadow-card">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md space-y-8">
           
-          <div className="mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-bold uppercase tracking-wider mb-3">
-              <Lock className="w-3.5 h-3.5 text-muted-foreground" />
-              Autentikasi Pengelola
+          <div className="lg:hidden text-center">
+            <div className="inline-flex items-center gap-2 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                {ppdbLogo ? (
+                  <img src={ppdbLogo} alt="Logo" className="w-7 h-7 object-contain" />
+                ) : (
+                  <ShieldCheck className="w-6 h-6 text-white" />
+                )}
+              </div>
+              <span className="text-xl font-bold text-slate-900 dark:text-white">
+                {ppdbTitle || "Portal PPDB"}
+              </span>
             </div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-foreground mb-1">
-              Login Admin Sekolah
+          </div>
+
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              Login Admin
             </h2>
-            <p className="text-xs text-slate-500 font-medium">
-              Masukkan kredensial username dan password akun panitia PPDB Anda.
+            <p className="text-slate-600 dark:text-slate-400">
+              Masuk menggunakan akun admin atau panitia PPDB
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-semibold flex items-start gap-2.5">
-              <Lock className="w-4 h-4 mt-0.5 shrink-0 text-red-600" />
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-sm text-red-700 dark:text-red-400 flex items-start gap-3">
+              <Lock className="w-5 h-5 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             
-            <div className="space-y-1.5">
-              <label htmlFor="username" className="text-xs font-bold text-slate-700">
-                Username Admin
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Username
               </label>
               <div className="relative">
-                <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <User className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin_ppdb"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-input bg-input/30 text-foreground text-sm font-medium focus:outline-none focus:bg-background focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-slate-400"
+                  placeholder="Masukkan username"
+                  className="w-full h-12 pl-11 pr-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-xs font-bold text-slate-700">
-                  Password Access
-                </label>
-              </div>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Password
+              </label>
               <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full h-11 pl-10 pr-11 rounded-xl border border-input bg-input/30 text-foreground text-sm font-medium focus:outline-none focus:bg-background focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-slate-400"
+                  placeholder="Masukkan password"
+                  className="w-full h-12 pl-11 pr-12 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -201,16 +211,20 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold text-sm shadow-md transition-all flex items-center justify-center gap-2"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>{loading ? "Memproses Autentikasi..." : "Masuk ke Dashboard Admin"}</span>
+              {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+              <span>{loading ? "Memproses..." : "Masuk Dashboard"}</span>
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center text-xs text-slate-500 font-medium space-y-1">
-            <p>Kendala login atau lupa password?</p>
-            <p className="text-slate-700 font-semibold">Hubungi Superadmin CationGate via WhatsApp Support</p>
+          <div className="pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Lupa password atau kendala akses?
+            </p>
+            <p className="text-sm text-slate-900 dark:text-white font-semibold mt-1">
+              Hubungi Superadmin Sekolah
+            </p>
           </div>
 
         </div>

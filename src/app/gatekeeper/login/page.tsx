@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { LottiePlaceholder } from "@/components/ui/LottiePlaceholder";
 
 export default function GatekeeperLogin() {
-  const { loginAdmin, adminToken } = usePPDB();
+  const { loginGatekeeper, adminToken } = usePPDB();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +32,7 @@ export default function GatekeeperLogin() {
     setLoading(true);
     setError("");
     try {
-      const res = await loginAdmin(username, password);
+      const res = await loginGatekeeper(username, password);
       if (res.success) {
         router.push("/gatekeeper/dashboard");
       } else {

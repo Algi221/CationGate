@@ -41,7 +41,7 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
     // 1. Check verified 'schools' table first
     const { data: verifiedData } = await supabase
       .from('schools')
-      .select('id, name, slug, logo_url, status, is_verified, subscription_plan, subscription_end_date, npsn, dapodik_code, official_email, legal_sk_number, accreditation, admin_name, social_media, created_at')
+      .select('*')
       .eq('slug', slug)
       .maybeSingle();
       
@@ -73,6 +73,11 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
 
     if (candidateData) {
       checkThreeDayTakedown(candidateData);
+      // Enrich with school_uuid from in-memory map (generated during registration)
+      const memSchool = fontInMemSchools.get(slug);
+      if (memSchool && memSchool.school_uuid) {
+        candidateData.school_uuid = memSchool.school_uuid;
+      }
       return c.json({ success: true, data: candidateData });
     }
 
@@ -146,31 +151,33 @@ saasRouter.post('/register', async (c) => {
     const supabase = getSupabaseClient();
     
     // Check if slug exists in Supabase (schools or prospective_schools) or Memory
-    const { data: existingVerified } = await supabase.from('schools').select('id, status, is_verified').eq('slug', slug).maybeSingle();
-    const existingInMem = fontInMemSchools.get(slug);
+    const { data: existingVerifiedSlug } = await supabase.from('schools').select('id').eq('slug', slug).maybeSingle();
+    const { data: existingCandidateSlug } = await supabase.from('prospective_schools').select('id').eq('slug', slug).maybeSingle();
+    
+    // Check if name exists in Supabase
+    const { data: existingVerifiedName } = await supabase.from('schools').select('id').ilike('name', school_name).maybeSingle();
+    const { data: existingCandidateName } = await supabase.from('prospective_schools').select('id').ilike('name', school_name).maybeSingle();
 
-    if (existingVerified || existingInMem) {
-      const targetId = existingVerified?.id || existingInMem?.id || Math.floor(Date.now() / 1000);
-      const existingObj = {
-        id: targetId,
-        name: school_name,
-        slug,
-        official_email: email,
-        status: existingVerified?.status || existingInMem?.status || 'BELUM_KIRIM_VERIFIKASI',
-        is_verified: existingVerified?.is_verified ?? existingInMem?.is_verified ?? false,
-        plan_type: isTrial ? 'TRIAL' : 'YEARLY',
-        admin_name: admin_name || admin_username,
-        created_at: existingInMem?.created_at || new Date().toISOString(),
-        logo_url: '/assets/logo_sekolah/logo_smktb.png'
-      };
-      fontInMemSchools.set(slug, existingObj);
+    let slugExists = !!(existingVerifiedSlug || existingCandidateSlug || fontInMemSchools.has(slug));
+    let nameExists = !!(existingVerifiedName || existingCandidateName);
 
+    // Also check in-memory map for duplicate name
+    if (!nameExists) {
+      for (const val of fontInMemSchools.values()) {
+        if (val.name?.toLowerCase() === school_name.toLowerCase()) {
+          nameExists = true;
+          break;
+        }
+      }
+    }
+
+    if (slugExists || nameExists) {
       return c.json({
-        success: true,
-        school_id: targetId,
-        slug: slug,
-        message: 'Sekolah terdaftar! Mengarahkan ke dashboard instansi...'
-      });
+        success: false,
+        message: slugExists 
+          ? 'Subdomain URL sudah digunakan. Silakan pilih URL lain.' 
+          : 'Nama sekolah sudah terdaftar. Hubungi kami jika ini adalah sekolah Anda.'
+      }, 400);
     }
     
     const fallbackId = Math.floor(Date.now() / 1000);
@@ -191,6 +198,12 @@ saasRouter.post('/register', async (c) => {
     
     // 1. Insert into Supabase 'prospective_schools' table
     let insertedSchoolId: any = null;
+
+    // Generate a UUID for admin_users.school_id (since admin_users.school_id is UUID type)
+    // This UUID will be used as the "virtual" school_id until the school is fully verified
+    // and migrated to the 'schools' table.
+    const { randomUUID } = await import('crypto');
+    const generatedSchoolUUID = randomUUID();
 
     try {
       const { data: psData, error: psErr } = await supabase
@@ -232,10 +245,36 @@ saasRouter.post('/register', async (c) => {
       } catch (pgErr: any) {}
     }
 
+    // Store the generated UUID in the school object for login resolution
+    newSchoolObj.school_uuid = generatedSchoolUUID;
+
     // Store in memory map as well for instant routing & persistence across refreshes
     fontInMemSchools.set(slug, newSchoolObj);
     
-    // 2. Insert admin user into 'admin_users' table
+    // 2. Insert into 'schools' table first to satisfy foreign key constraint for admin_users
+    try {
+      await supabase.from('schools').insert({
+        id: generatedSchoolUUID,
+        name: school_name,
+        slug: slug,
+        email: email || '',
+        status: 'unverified',
+        subscription_plan: 'free'
+      });
+    } catch (schoolsErr: any) {
+      try {
+        await pool.query(
+          `INSERT INTO schools (id, name, slug, email, status, subscription_plan, created_at)
+           VALUES ($1::uuid, $2, $3, $4, 'unverified', 'free', NOW())
+           ON CONFLICT (id) DO NOTHING`,
+          [generatedSchoolUUID, school_name, slug, email || '']
+        );
+      } catch (e) {}
+    }
+
+    // 3. Insert admin user into 'admin_users' table
+    // IMPORTANT: Use the generated UUID for school_id (NOT the integer prospective_schools.id)
+    // because admin_users.school_id column is UUID type.
     const hashedPassword = bcrypt.hashSync(admin_password, 10);
     try {
       await supabase.from('admin_users').insert({
@@ -243,18 +282,19 @@ saasRouter.post('/register', async (c) => {
         password_hash: hashedPassword,
         nama_lengkap: admin_name || admin_username,
         role: 'superadmin',
-        school_id: newSchoolObj.id
+        school_id: generatedSchoolUUID
       });
     } catch (adminErr: any) {
       try {
         await pool.query(
           `INSERT INTO admin_users (username, password_hash, nama_lengkap, role, school_id)
-           VALUES ($1, $2, $3, 'superadmin', $4)
+           VALUES ($1, $2, $3, 'superadmin', $4::uuid)
            ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
-          [admin_username, hashedPassword, admin_name || admin_username, newSchoolObj.id]
+          [admin_username, hashedPassword, admin_name || admin_username, generatedSchoolUUID]
         );
       } catch (e) {}
     }
+
 
     return c.json({ 
       success: true, 

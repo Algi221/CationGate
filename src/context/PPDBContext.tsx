@@ -37,6 +37,7 @@ interface PPDBContextType {
   updateActiveStudent: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
   deleteActiveStudent: (id: number) => Promise<void>;
   loginAdmin: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  loginGatekeeper: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logoutAdmin: () => void;
   fetchPublicApplicants: () => Promise<void>;
   fetchAdminApplicants: () => Promise<void>;
@@ -148,7 +149,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
             setIsSchoolNotFound(true);
           } else if (data && data.success && data.data) {
             setIsSchoolNotFound(false);
-            setSchoolId(data.data.id);
+            // Prefer school_uuid (generated during registration for prospective schools)
+            // over the integer id, since admin_users.school_id is UUID type
+            setSchoolId(data.data.school_uuid || data.data.id);
             if (data.data.status) setSchoolStatus(data.data.status);
             if (data.data.logo_url) setPpdbLogo(data.data.logo_url);
             if (data.data.name) setPpdbTitle(data.data.name);
@@ -574,38 +577,60 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
       });
-      const data = await res.json().catch(() => null);
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ success: false, message: "Login gagal" }));
+        return { success: false, message: errorData.message || "Username atau password salah" };
+      }
+
+      const data = await res.json();
       if (data && data.success) {
         setAdminToken(data.token);
         setAdminUser(data.admin);
         localStorage.setItem("ppdb_admin_token", data.token);
         localStorage.setItem("ppdb_admin_user", JSON.stringify(data.admin));
         localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
-        addToast("Login Berhasil", `Selamat datang kembali, ${data.admin?.nama || username}!`, "success");
+        addToast("Login Berhasil", `Selamat datang, ${data.admin?.nama || username}!`, "success");
         return { success: true };
       } else {
-        // Fallback demo admin login for seamless access
-        const demoToken = "demo-admin-token-" + Date.now();
-        const demoUser = { id: 1, username: username || "001", nama: "Panitia PPDB", role: "superadmin" };
-        setAdminToken(demoToken);
-        setAdminUser(demoUser);
-        localStorage.setItem("ppdb_admin_token", demoToken);
-        localStorage.setItem("ppdb_admin_user", JSON.stringify(demoUser));
-        addToast("Login Berhasil", `Selamat datang kembali, ${username}!`, "success");
-        return { success: true };
+        return { success: false, message: data.message || "Username atau password salah" };
       }
     } catch (err: any) {
-      console.warn("API login notice (using demo login):", err.message);
-      const demoToken = "demo-admin-token-" + Date.now();
-      const demoUser = { id: 1, username: username || "001", nama: "Panitia PPDB", role: "superadmin" };
-      setAdminToken(demoToken);
-      setAdminUser(demoUser);
-      localStorage.setItem("ppdb_admin_token", demoToken);
-      localStorage.setItem("ppdb_admin_user", JSON.stringify(demoUser));
-      addToast("Login Berhasil", `Selamat datang kembali, ${username}!`, "success");
-      return { success: true };
+      console.error("Login error:", err.message);
+      return { success: false, message: "Terjadi kesalahan koneksi. Silakan coba lagi." };
     }
   }, [addToast, schoolId]);
+
+  const loginGatekeeper = useCallback(async (username: string, password: string) => {
+    try {
+      const res = await fetch(`/api/gatekeeper/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ success: false, message: "Login gatekeeper gagal" }));
+        return { success: false, message: errorData.message || "Username atau password salah" };
+      }
+
+      const data = await res.json();
+      if (data && data.success) {
+        setAdminToken(data.token);
+        setAdminUser(data.gatekeeper);
+        localStorage.setItem("ppdb_admin_token", data.token);
+        localStorage.setItem("ppdb_admin_user", JSON.stringify(data.gatekeeper));
+        localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
+        addToast("Login Gatekeeper Berhasil", `Selamat datang, ${data.gatekeeper?.nama_lengkap || username}!`, "success");
+        return { success: true };
+      } else {
+        return { success: false, message: data.message || "Username atau password salah" };
+      }
+    } catch (err: any) {
+      console.error("Login Gatekeeper error:", err.message);
+      return { success: false, message: "Terjadi kesalahan koneksi. Silakan coba lagi." };
+    }
+  }, [addToast]);
 
   const connectWs = useCallback(() => {
     // Replace WebSocket with Light Real-Time HTTP Polling Engine
@@ -737,6 +762,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         updateActiveStudent,
         deleteActiveStudent,
         loginAdmin,
+        loginGatekeeper,
         logoutAdmin,
         fetchPublicApplicants,
         fetchAdminApplicants,

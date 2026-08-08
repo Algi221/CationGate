@@ -3,9 +3,10 @@
 import { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Shield, Plus, Trash2, Edit3, User, KeyRound, Eye, EyeOff, Save, RotateCcw } from "lucide-react";
+import { Shield, Plus, Trash2, Edit3, User, KeyRound, Eye, EyeOff, Save, RotateCcw, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
+import Link from "next/link";
 
 function AdminManagementPageContent() {
   const { adminUser, adminToken } = usePPDB();
@@ -27,6 +28,16 @@ function AdminManagementPageContent() {
 
   const [trashedAdmins, setTrashedAdmins] = useState<any[]>([]);
   const [trashLoading, setTrashLoading] = useState(false);
+
+  const [currentPlan, setCurrentPlan] = useState("FREE_PLAN");
+  useEffect(() => {
+    const stored = localStorage.getItem("ppdb_school_plan");
+    if (stored) {
+      setCurrentPlan(stored);
+    }
+  }, []);
+
+  const isPro = currentPlan !== "FREE_PLAN";
 
   const handleTabChange = (tab: "admin" | "trash") => {
     setError("");
@@ -312,6 +323,21 @@ function AdminManagementPageContent() {
         )}
       </div>
 
+      {!isPro ? (
+        <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl mt-6 shadow-sm">
+          <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-4">
+             <Lock size={32} />
+          </div>
+          <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Fitur Terkunci (Hanya untuk Paket Berbayar)</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md text-center mb-6 leading-relaxed">
+            Menambah dan mengelola banyak admin panitia secara spesifik hanya tersedia untuk paket Pro dan Pro Max. Silakan berlangganan untuk membuka fitur ini.
+          </p>
+          <Link href="./subscription" className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-blue-500/20 inline-flex items-center gap-2">
+             <Shield size={16} /> Buka Halaman Subscription
+          </Link>
+        </div>
+      ) : (
+      <>
       {/* Tab Navigation */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
         <button
@@ -577,6 +603,8 @@ function AdminManagementPageContent() {
             </div>
           )}
         </div>
+      )}
+      </>
       )}
     </div>
   );

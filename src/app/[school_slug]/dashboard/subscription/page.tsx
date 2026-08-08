@@ -7,25 +7,32 @@ import { motion } from "framer-motion";
 import Swal from "sweetalert2";
 import {
   CreditCard, ShieldCheck, CheckCircle2, AlertCircle, Clock,
-  Sparkles, Power, ArrowUpRight, Zap, Building2, Users, FileText
+  Sparkles, Power, ArrowUpRight, Zap, Building2, Users, FileText, Check, Lock
 } from "lucide-react";
+import Link from "next/link";
 
 export default function SubscriptionManagementPage() {
-  const { schoolStatus, ppdbTitle, isDemoMode } = usePPDB();
+  const { adminUser, schoolStatus, ppdbTitle, isDemoMode, schoolId } = usePPDB();
+
+  // Role Guard
+  const isSuperadmin = adminUser?.role === 'superadmin_sekolah' || adminUser?.role === 'superadmin' || adminUser?.roleLabel === 'Superadmin';
 
   // SPMB Status State (Resmi Buka / Tutup)
   const [isSpmbOpen, setIsSpmbOpen] = useState(true);
   const [isUpdatingSpmb, setIsUpdatingSpmb] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
 
-  // Subscription Details State
-  const [subData, setSubData] = useState({
-    plan_name: "PRO ENTERPRISE TRIAL",
-    status: "ACTIVE",
-    start_date: "01 Juli 2026",
-    end_date: "31 Juli 2026 (Sisa 28 Hari)",
-    applicant_quota: "1.000 Pendaftar",
-    used_quota: "24 Pendaftar",
-  });
+  // Default to Free Plan for demo
+  const [currentPlan, setCurrentPlan] = useState("FREE_PLAN");
+
+  // In a real scenario, fetch subscription from API
+  useEffect(() => {
+    // Simulated fetch
+    const stored = localStorage.getItem("ppdb_school_plan");
+    if (stored) {
+      setCurrentPlan(stored);
+    }
+  }, []);
 
   const isVerified = schoolStatus === "FULL_VERIFIED" || schoolStatus === "VERIFIED" || schoolStatus === "verified" || isDemoMode;
 
@@ -66,10 +73,7 @@ export default function SubscriptionManagementPage() {
     });
   };
 
-  const { schoolId } = usePPDB();
-  const [isPaying, setIsPaying] = useState(false);
-
-  const handleUpgradePlan = async () => {
+  const handleUpgradePlan = async (planId: string, amount: number, planName: string) => {
     setIsPaying(true);
     try {
       const res = await fetch("/api/saas/create-payment-token", {
@@ -77,7 +81,7 @@ export default function SubscriptionManagementPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           school_name: ppdbTitle || "Admin Sekolah",
-          amount: 750000
+          amount: amount
         }),
       });
       const data = await res.json();
@@ -87,14 +91,12 @@ export default function SubscriptionManagementPage() {
         if ((window as any).snap) {
           (window as any).snap.pay(data.token, {
             onSuccess: async function () {
-              await fetch("/api/saas/activate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ school_id: schoolId }),
-              });
+              // Simpan ke local storage / database
+              localStorage.setItem("ppdb_school_plan", planId);
+              setCurrentPlan(planId);
               Swal.fire({
                 title: "Pembayaran Berhasil!",
-                text: "Paket CationGate Pro (Rp 750.000 / Tahun) telah diaktifkan.",
+                text: `Paket ${planName} telah berhasil diaktifkan.`,
                 icon: "success",
                 confirmButtonColor: "#2563EB",
               });
@@ -109,9 +111,12 @@ export default function SubscriptionManagementPage() {
         } else {
           Swal.fire({
             title: "Sistem Midtrans Siap",
-            text: "Order ID: " + (data.order_id || "CG-PRO-750K") + ". Pembayaran Pro Rp 750.000 / Tahun terkonfirmasi.",
+            text: "Order ID: " + (data.order_id || "CG-PRO") + `. Pembayaran ${planName} terkonfirmasi (Simulasi).`,
             icon: "success",
             confirmButtonColor: "#2563EB"
+          }).then(() => {
+            localStorage.setItem("ppdb_school_plan", planId);
+            setCurrentPlan(planId);
           });
         }
       }
@@ -121,8 +126,75 @@ export default function SubscriptionManagementPage() {
     }
   };
 
+  if (!isSuperadmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
+        <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-2">
+          <Lock size={32} />
+        </div>
+        <h2 className="text-2xl font-black text-slate-800">Akses Ditolak</h2>
+        <p className="text-slate-500 max-w-md">
+          Halaman ini khusus untuk <strong>Superadmin Sekolah</strong>. Anda tidak memiliki izin untuk mengelola status SPMB dan lisensi langganan.
+        </p>
+        <Link href="./" className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors">
+          Kembali ke Dashboard
+        </Link>
+      </div>
+    );
+  }
+
+  const packages = [
+    {
+      id: "FREE_PLAN",
+      name: "Basic (Free)",
+      price: "Rp 0",
+      period: "Selamanya",
+      desc: "Cocok untuk sekolah yang baru mencoba sistem PPDB.",
+      benefits: [
+        "Fitur PPDB Basic",
+        "1 Admin Utama (Superadmin)",
+        "Landing Page Pendaftaran",
+        "Tanpa Ekspor Data Excel",
+        "Tanpa Dukungan Support"
+      ],
+      isPopular: false
+    },
+    {
+      id: "PRO_PLAN",
+      name: "Pro",
+      price: "Rp 750.000",
+      amount: 750000,
+      period: "per Tahun",
+      desc: "Standar operasional untuk mengelola PPDB secara efektif.",
+      benefits: [
+        "Semua fitur Basic",
+        "Multi-Admin (Bisa Tambah Admin)",
+        "Ekspor Data Pendaftar (Excel)",
+        "Laporan Statistik Lengkap",
+        "Dukungan Support via Email"
+      ],
+      isPopular: true
+    },
+    {
+      id: "PROMAX_PLAN",
+      name: "Pro Max",
+      price: "Rp 1.000.000",
+      amount: 1000000,
+      period: "per Tahun",
+      desc: "Solusi eksklusif dengan prioritas penuh dan kustomisasi.",
+      benefits: [
+        "Semua fitur Pro",
+        "Custom Domain (sekolah.sch.id)",
+        "Prioritas Server & Performa Cepat",
+        "Dukungan WhatsApp 24/7",
+        "Pelatihan Sistem Online"
+      ],
+      isPopular: false
+    }
+  ];
+
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-12 font-sans">
+    <div className="max-w-6xl mx-auto space-y-8 pb-12 font-sans animate-in fade-in zoom-in-95 duration-300">
       <Script 
         src="https://app.sandbox.midtrans.com/snap/snap.js" 
         data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
@@ -136,10 +208,10 @@ export default function SubscriptionManagementPage() {
             <CreditCard className="w-4 h-4" /> Pengaturan Lisensi & Kontrol SPMB
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            Kelola Subscription & Status SPMB
+            Kelola Subscription
           </h1>
           <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-            Atur status resmi buka/tutup pendaftaran SPMB publik sekolah Anda dan pantau kuota serta masa aktif paket langganan CationGate SaaS.
+            Atur status pendaftaran SPMB publik sekolah Anda, kelola tagihan, dan pilih paket berlangganan CationGate SaaS yang paling sesuai.
           </p>
         </div>
 
@@ -161,57 +233,102 @@ export default function SubscriptionManagementPage() {
         </div>
       </div>
 
-      {/* Subscription Card */}
-      <div className="grid grid-cols-1 gap-6">
-
-        {/* Card 2: Status Paket Langganan CationGate SaaS */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-6"
-        >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-amber-500" /> Lisensi Langganan Active
-              </span>
-              <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900">
-                {subData.status}
-              </span>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                {subData.plan_name} <Sparkles className="w-5 h-5 text-amber-500" />
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                Masa Aktif: <strong className="text-slate-700 dark:text-slate-200">{subData.end_date}</strong>
-              </p>
-            </div>
-
-            {/* Quota Progress */}
-            <div className="space-y-1.5 pt-1">
-              <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-                <span>Penggunaan Kuota Pendaftar</span>
-                <span className="text-blue-600 dark:text-blue-400">{subData.used_quota} / {subData.applicant_quota}</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                <div className="h-full bg-blue-600 rounded-full w-[5%]" />
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={handleUpgradePlan}
-            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2"
+      {/* Kontrol SPMB Section */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+         <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              Status Pendaftaran Publik (SPMB)
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              {isSpmbOpen
+                ? "Pendaftaran publik aktif. Pengunjung landing page dapat mendaftar."
+                : "Pendaftaran publik ditutup. Pengunjung tidak dapat mengisi formulir."}
+            </p>
+         </div>
+         <button
+            onClick={handleToggleSpmbStatus}
+            disabled={isUpdatingSpmb}
+            className={`px-5 py-3 rounded-xl font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto ${
+              isSpmbOpen
+                ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/10"
+                : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/10"
+            }`}
           >
-            <Sparkles className="w-4 h-4 text-amber-300" /> Perpanjang / Upgrade Paket SaaS <ArrowUpRight className="w-4 h-4" />
+            <Power className="w-4 h-4" />
+            {isSpmbOpen ? "Matikan Pendaftaran" : "Buka Pendaftaran"}
           </button>
-        </motion.div>
-
       </div>
 
+      {/* Subscription Pricing Grid */}
+      <div className="pt-4">
+        <div className="text-center mb-8">
+           <h2 className="text-2xl font-black text-slate-900 dark:text-white">Pilih Paket CationGate</h2>
+           <p className="text-sm text-slate-500 mt-2">Pilih paket langganan yang sesuai dengan kebutuhan operasional sekolah Anda.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {packages.map((pkg) => {
+            const isActive = currentPlan === pkg.id;
+            return (
+              <motion.div
+                key={pkg.id}
+                whileHover={{ y: -4 }}
+                className={`relative flex flex-col bg-white dark:bg-slate-900 border-2 rounded-3xl p-6 shadow-sm overflow-hidden ${
+                  isActive ? "border-blue-500 dark:border-blue-500" : pkg.isPopular ? "border-slate-300 dark:border-slate-700" : "border-slate-200 dark:border-slate-800"
+                }`}
+              >
+                {isActive && (
+                   <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-bl-xl">
+                      Paket Aktif
+                   </div>
+                )}
+                {pkg.isPopular && !isActive && (
+                   <div className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-bl-xl">
+                      Paling Populer
+                   </div>
+                )}
+                <div className="mb-6">
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white">{pkg.name}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 min-h-[32px]">{pkg.desc}</p>
+                </div>
+                <div className="mb-6 flex items-end gap-1">
+                  <span className="text-3xl font-black text-slate-900 dark:text-white leading-none">{pkg.price}</span>
+                  <span className="text-xs font-semibold text-slate-500 mb-1">{pkg.period}</span>
+                </div>
+                <div className="flex-1">
+                  <ul className="space-y-3">
+                    {pkg.benefits.map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-8">
+                  {isActive ? (
+                    <button disabled className="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200 dark:border-slate-700">
+                      <CheckCircle2 className="w-4 h-4" /> Sedang Digunakan
+                    </button>
+                  ) : pkg.price === "Rp 0" ? (
+                    <button onClick={() => { localStorage.setItem("ppdb_school_plan", pkg.id); setCurrentPlan(pkg.id); }} className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700">
+                      Gunakan Paket Free
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleUpgradePlan(pkg.id, pkg.amount as number, pkg.name)}
+                      disabled={isPaying}
+                      className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2"
+                    >
+                      {isPaying ? "Memproses..." : "Upgrade Sekarang"}
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

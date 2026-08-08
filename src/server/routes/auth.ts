@@ -6,6 +6,8 @@ import { adminAuth } from '../middleware/auth';
 import { sendTelegramNotification } from '../utils/telegram';
 import { loginSchema, changePasswordSchema } from '../validations/auth';
 import { rateLimiter } from '../middleware/rate-limiter';
+import { isValidUUID, resolveSchoolUUID } from '../db/resolve-school';
+import { fontInMemSchools } from './saas';
 
 
 const authRouter = new Hono();
@@ -33,7 +35,29 @@ authRouter.post('/login', rateLimiter({
       }, 400);
     }
     const { username, password } = result.data;
-    const schoolId = c.req.query('school_id') || null;
+    const rawSchoolId = c.req.query('school_id') || null;
+    
+    // Resolve the school_id to a UUID if it's not already one.
+    // For prospective schools (integer IDs), we look up the in-memory mapping
+    // to find the UUID that was generated during registration.
+    let schoolId: string | null = rawSchoolId;
+    if (rawSchoolId && !isValidUUID(rawSchoolId)) {
+      // Try to find UUID from in-memory schools map
+      let resolvedUUID: string | null = null;
+      for (const [, school] of fontInMemSchools) {
+        if (String(school.id) === rawSchoolId && school.school_uuid) {
+          resolvedUUID = school.school_uuid;
+          break;
+        }
+      }
+      // If not found in memory, try resolving from DB
+      if (!resolvedUUID) {
+        resolvedUUID = await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+      }
+      // If still not resolved, set to null so we do username-only lookup
+      // (this handles cases where the school was registered before the UUID fix)
+      schoolId = resolvedUUID;
+    }
 
     let adminUser: any = null;
     let ysboAuthenticated = false;
@@ -42,6 +66,7 @@ authRouter.post('/login', rateLimiter({
     
     // Default supabase client (Service Role since login needs to access auth tables directly)
     const supabase = getSupabaseClient();
+
 
     const YSBO_API_URL = process.env.YSBO_API_URL;
     if (YSBO_API_URL) {

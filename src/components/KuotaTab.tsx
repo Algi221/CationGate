@@ -29,7 +29,10 @@ interface KuotaTabProps {
   variant?: "default" | "minimal";
 }
 
+import { usePPDB } from '@/context/PPDBContext';
+
 export default function KuotaTab({ type = "pendaftar", variant = "default" }: KuotaTabProps) {
+  const { schoolId } = usePPDB();
   const [data, setData] = useState<KuotaData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +50,8 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
       setLoading(true);
       setError(null);
       const url = periode
-        ? `/api/kuota?periode=${encodeURIComponent(periode)}`
-        : '/api/kuota';
+        ? `/api/kuota?periode=${encodeURIComponent(periode)}${schoolId ? '&school_id=' + schoolId : ''}`
+        : `/api/kuota${schoolId ? '?school_id=' + schoolId : ''}`;
       const res = await fetch(url);
       const json = await res.json();
       if (json.success && json.data) {
@@ -101,8 +104,10 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
   };
 
   useEffect(() => {
-    fetchKuota();
-  }, []);
+    if (schoolId !== undefined) {
+      fetchKuota();
+    }
+  }, [schoolId]);
 
   const handlePeriodeChange = (newPeriode: string) => {
     setSelectedPeriode(newPeriode);
@@ -144,7 +149,8 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
   const saveTargets = async () => {
     try {
       setIsSavingTargets(true);
-      const res = await fetch('/api/kuota/targets', {
+      const url = `/api/kuota/targets${schoolId ? '?school_id=' + schoolId : ''}`;
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targets: editingTargets })
@@ -427,7 +433,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
 
   const renderOverallDonut = () => {
     if (!data) return null;
-    const target = data.totalTarget || 400;
+    const target = data.totalTarget || 0;
     const aktif = data.totalSiswaAktif || 0;
     const pendaftar = data.totalPendaftar || 0;
     const proses = Math.max(0, pendaftar - aktif);
@@ -441,7 +447,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
 
     let accumulatedPercent = 0;
     const donutData = overallData.map((item) => {
-      const percent = Math.round((item.jumlah / target) * 100);
+      const percent = target > 0 ? Math.round((item.jumlah / target) * 100) : 0;
       const startPercent = accumulatedPercent;
       accumulatedPercent += percent;
       return { ...item, percent, startPercent };
@@ -466,6 +472,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest mt-1">Kapasitas</span>
             <span className="text-3xl font-black text-slate-800 dark:text-white leading-none tracking-tighter">{target}</span>
+            {target === 0 && <span className="text-[9px] font-bold text-amber-500 mt-1">Belum disetting</span>}
           </div>
         </div>
         <div className="mt-8 flex flex-col gap-3 w-full max-w-xs px-4 mx-auto">

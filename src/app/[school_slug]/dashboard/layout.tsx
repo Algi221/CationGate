@@ -79,6 +79,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
 
   // ── Close user dropdown on outside click ─────────────────────────────────
@@ -359,18 +360,33 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         transition={{ delay: delayIndex * 0.05 + 0.1, duration: 0.35 }}
         className="w-full flex flex-col"
       >
-        <Link
-          href={isLocked ? "#" : fullHref}
-          onClick={handleItemClick}
-          className={`flex items-center justify-between rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
-            isCollapsed ? "justify-center p-3" : "px-4 py-3"
-          } ${
-            isLocked
-              ? "opacity-50 border-transparent text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 cursor-not-allowed"
-              : isActive && (!hasSub || isCollapsed)
-              ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-          }`}
+        <div
+          className="relative w-full"
+          onMouseEnter={() => setHoveredItem(item.href)}
+          onMouseLeave={() => setHoveredItem(null)}
+        >
+          {hoveredItem === item.href && !isLocked && !(isActive && (!hasSub || isCollapsed)) && (
+            <motion.div
+              layoutId="sidebar-hover"
+              className="absolute inset-0 bg-slate-200/70 dark:bg-slate-800/70 rounded-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 35 }}
+            />
+          )}
+          <Link
+            href={isLocked ? "#" : fullHref}
+            onClick={handleItemClick}
+            className={`relative z-10 flex items-center justify-between rounded-2xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 border ${
+              isCollapsed ? "justify-center p-3" : "px-4 py-3"
+            } ${
+              isLocked
+                ? "opacity-50 border-transparent text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 cursor-not-allowed"
+                : isActive && (!hasSub || isCollapsed)
+                ? "bg-blue-600 dark:bg-blue-600 border-blue-600 text-white font-extrabold shadow-sm shadow-blue-500/20"
+                : "border-transparent text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white"
+            }`}
           title={isCollapsed ? (isLocked ? `${item.label} (Terkunci 🔒)` : item.label) : undefined}
         >
           <div className="flex items-center min-w-0">
@@ -393,7 +409,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               }`}
             />
           ) : null}
-        </Link>
+          </Link>
+        </div>
 
         {/* Render submenu items */}
         {hasSub && (
@@ -405,7 +422,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.25, ease: "easeInOut" }}
-                  className="pl-8 pr-2 py-1.5 space-y-1"
+                  className="pl-4 ml-6 pr-2 py-1.5 space-y-1 border-l-2 border-slate-200 dark:border-slate-800"
                 >
                   {item.subItems.map((sub: any) => {
                     const fullSubHref = sub.href.startsWith('/') ? `${prefix}${sub.href}` : sub.href;
@@ -417,22 +434,33 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                       tabVal === (currentTab || defaultTab);
 
                     return (
-                      <Link
+                      <div
                         key={sub.href}
-                        href={fullSubHref}
-                        className={`flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-[10px] font-bold tracking-wide uppercase transition-all duration-200 border ${
-                          isSubActive
-                            ? "bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-slate-200/50 dark:border-slate-700/50 font-black"
-                            : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                        }`}
+                        className="relative"
+                        onMouseEnter={() => setHoveredItem(sub.href)}
+                        onMouseLeave={() => setHoveredItem(null)}
                       >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            isSubActive ? "bg-blue-500" : "bg-slate-350 dark:bg-slate-650"
+                        {hoveredItem === sub.href && !isSubActive && (
+                          <motion.div
+                            layoutId="sidebar-hover"
+                            className="absolute inset-0 bg-slate-200/70 dark:bg-slate-800/70 rounded-xl"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 35 }}
+                          />
+                        )}
+                        <Link
+                          href={fullSubHref}
+                          className={`relative z-10 group flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-[10px] font-bold tracking-wide uppercase transition-colors duration-200 border ${
+                            isSubActive
+                              ? "bg-blue-600 dark:bg-blue-600 text-white border-blue-600 font-black shadow-sm shadow-blue-500/20"
+                              : "border-transparent text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                           }`}
-                        />
-                        <span className="truncate">{sub.label}</span>
-                      </Link>
+                        >
+                          <span className="truncate">{sub.label}</span>
+                        </Link>
+                      </div>
                     );
                   })}
                 </motion.div>

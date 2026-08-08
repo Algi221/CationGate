@@ -29,7 +29,9 @@ interface SchoolTenant {
   admin_name?: string;
 }
 
-export default function GatekeeperSchoolManagementPage() {
+import { Suspense } from "react";
+
+function GatekeeperSchoolManagementContent() {
   const searchParams = useSearchParams();
   const initialFilter = searchParams?.get("filter") || "ALL";
   const initialSearch = searchParams?.get("search") || "";
@@ -574,5 +576,13 @@ export default function GatekeeperSchoolManagementPage() {
       )}
 
     </div>
+  );
+}
+
+export default function GatekeeperSchoolManagementPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GatekeeperSchoolManagementContent />
+    </Suspense>
   );
 }

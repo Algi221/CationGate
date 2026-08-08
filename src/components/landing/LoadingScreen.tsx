@@ -53,7 +53,7 @@ export default function LoadingScreen() {
           key="loading-screen"
           animate={{ opacity: phase === "exit" ? 0 : 1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed inset-0 z-[9999] w-screen h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden"
+          className="fixed inset-0 z-[9999] w-screen h-screen flex flex-col items-center justify-center bg-background overflow-hidden"
         >
           {/* SUNTIKAN CSS LANGSUNG */}
           <style>{`
@@ -78,16 +78,9 @@ export default function LoadingScreen() {
             animate={phase === "exit" ? "hidden" : "visible"}
             className="relative z-10 text-center select-none mb-[10vh]"
           >
-            {/* Ditambah dark:text-white agar otomatis jadi putih di mode gelap */}
-            <h1 className="mb-3 font-serif text-3xl md:text-6xl text-[#1a2b4c] dark:text-white tracking-widest">
+            <h1 className="mb-3 font-serif text-3xl md:text-6xl text-[#2A1B1D] tracking-widest">
               Cation Gate
             </h1>
-            {/* Ditambah dark:text-slate-300 agar otomatis jadi abu terang di mode gelap */}
-            {/* <div className="flex flex-col gap-1 text-[10px] md:text-xs text-slate-500 dark:text-slate-300 font-sans tracking-widest uppercase">
-              <p>Remember, You Will Die.</p>
-              <p>Time never waits.</p>
-              <p>It delivers all equally to the same end.</p>
-            </div> */}
           </motion.div>
 
           {/* TIRAI BIRU */}

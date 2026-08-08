@@ -29,22 +29,22 @@ export function CtaBanner() {
   ];
 
   return (
-    <div className="bg-white border-b border-slate-200/80">
-      
+    <div className="bg-surface border-b border-border">
       {/* Blog / Resource Section specified in PRD */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-slate-200/60">
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-border">
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
-            <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#8EC9F6]/20 text-[#2A1B1D] text-xs font-bold border border-border">
+            <BookOpen className="w-3.5 h-3.5 text-[#2A1B1D]" />
             Knowledge Base
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
             Insights and Ed-Tech Best Practices
           </h2>
 
-          <p className="text-slate-600 text-base font-medium">
-            Explore articles and whitepapers written by top educational researchers and AI architects.
+          <p className="text-body text-base font-medium">
+            Explore articles and whitepapers written by top educational
+            researchers and AI architects.
           </p>
         </div>
 
@@ -52,26 +52,26 @@ export function CtaBanner() {
           {blogArticles.map((article, idx) => (
             <div
               key={idx}
-              className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+              className="p-6 rounded-2xl bg-background border border-border shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center justify-between text-xs mb-3 text-slate-500 font-medium">
-                  <span className="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-100">
+                <div className="flex items-center justify-between text-xs mb-3 text-body font-medium">
+                  <span className="font-bold text-[#2A1B1D] bg-[#FFD33B]/30 px-2.5 py-0.5 rounded-md border border-border">
                     {article.category}
                   </span>
                   <span>{article.date}</span>
                 </div>
 
-                <h3 className="text-base font-extrabold text-slate-900 mb-2 leading-snug hover:text-blue-600 transition-colors cursor-pointer">
+                <h3 className="text-base font-extrabold text-heading mb-2 leading-snug hover:text-primary transition-colors cursor-pointer">
                   {article.title}
                 </h3>
 
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                <p className="text-xs text-body leading-relaxed font-medium">
                   {article.desc}
                 </p>
               </div>
 
-              <div className="pt-4 mt-4 border-t border-slate-200/60 flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer">
+              <div className="pt-4 mt-4 border-t border-border flex items-center gap-1 text-xs font-bold text-primary hover:text-[#F3C625] cursor-pointer">
                 <span>Read Full Article</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
@@ -82,11 +82,10 @@ export function CtaBanner() {
 
       {/* Bottom CTA Banner specified in PRD */}
       <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-blue-600 text-white p-8 sm:p-12 lg:p-14 shadow-lg relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
-          
+        <div className="rounded-2xl bg-[#2A1B1D] text-white p-8 sm:p-12 lg:p-14 shadow-lg relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="space-y-4 max-w-xl text-center lg:text-left z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 text-white text-xs font-bold uppercase tracking-wider border border-blue-400/40">
-              <Sparkles className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFD33B]/30 text-white text-xs font-bold uppercase tracking-wider border border-border">
+              <Sparkles className="w-4 h-4 text-[#FFD33B]" />
               Deploy In Minutes
             </div>
 
@@ -94,17 +93,18 @@ export function CtaBanner() {
               Join the Future of Education with CationGate.
             </h2>
 
-            <p className="text-blue-100 text-sm sm:text-base leading-relaxed font-medium">
-              Empower your teachers, engage your students, and transform learning outcomes with personalized AI.
+            <p className="text-white/80 text-sm sm:text-base leading-relaxed font-medium">
+              Empower your teachers, engage your students, and transform
+              learning outcomes with personalized AI.
             </p>
 
-            <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-blue-100">
+            <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-white/80">
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                <CheckCircle2 className="w-4 h-4 text-[#45C06B]" />
                 <span>30-Day Free Trial</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                <CheckCircle2 className="w-4 h-4 text-[#45C06B]" />
                 <span>No Credit Card Required</span>
               </div>
             </div>
@@ -114,17 +114,15 @@ export function CtaBanner() {
             <Link href="/daftar" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-white hover:bg-slate-100 text-blue-600 font-bold text-sm rounded-xl py-6 px-8 shadow-xs gap-2"
+                className="w-full sm:w-auto bg-[#FFD33B] hover:bg-[#F3C625] text-[#2A1B1D] font-bold text-sm rounded-xl py-6 px-8 shadow-xs gap-2"
               >
                 <span>Start Your Free Trial</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
-
         </div>
       </section>
-
     </div>
   );
 }

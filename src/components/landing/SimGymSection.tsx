@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FloatingComment, { TagColor } from "./FloatingComment";
 
-// Data Komentar Disesuaikan dengan Tema Template SPMB SMK
+
 const COMMENTS_DATA = [
   {
     id: 1,
@@ -75,7 +75,7 @@ const COMMENTS_DATA = [
     delay: 1.4,
     emoji: "👍",
   },
-  // Komentar Blurred di belakang
+
   {
     id: 6,
     name: "Chris L.",
@@ -129,9 +129,7 @@ export default function SimGymSection() {
   }, []);
 
   return (
-    // DIUBAH KE h-[100vh] AGAR PAS SATU LAYAR DAN TIDAK MELUBER (OVERFLOW HIDDEN)
     <section className="relative w-full h-[100vh] min-h-[700px] bg-[#e6e5dd] dark:bg-[#0b1121] flex transition-colors duration-500 overflow-hidden">
-      {/* SISI KIRI (40%): KHUSUS UNTUK TEKS (TIDAK BERTABRAKAN DENGAN KOMENTAR) */}
       <div className="w-[40%] h-full relative z-40 flex flex-col justify-center pl-10 md:pl-20">
         <h2 className="text-4xl md:text-5xl font-serif text-gray-900 dark:text-white tracking-tight leading-tight mb-4 transition-colors">
           Template SPMB SMK
@@ -146,12 +144,12 @@ export default function SimGymSection() {
         </button>
       </div>
 
-      {/* SISI KANAN (60%): AREA KHUSUS ANIMASI MOCKUP & KOMENTAR */}
+   
       <div className="w-[60%] h-full relative flex items-center justify-center">
         {/* Mockup Tengah (z-30 AGAR SELALU DI DEPAN KOMENTAR) */}
         <motion.div
           animate={{
-            // Skala diperbesar (0.75) agar tidak sekecil sebelumnya
+        
             scale: phase === "large" ? 1.1 : 0.75,
           }}
           transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
@@ -181,22 +179,21 @@ export default function SimGymSection() {
             <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
               <img
                 src="/assets/landing/imageLanding1.png"
-                alt="Admin Dashboard"
+                alt="Landing Page Interaktif"
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="px-2">
               <p className="text-[14px] font-bold text-gray-900 dark:text-white">
-                Admin Dashboard
+                Landing Page Interaktif
               </p>
               <p className="text-[11px] text-gray-500 mt-0.5">
-                Realtime Analytics
+                Modern Design
               </p>
             </div>
           </div>
         </motion.div>
-
-        {/* Render Komentar Melayang (Z-index nya 20, pasti di belakang mockup) */}
+        {/* Komentar Floating */}
         {COMMENTS_DATA.map((comment) => (
           <FloatingComment
             key={comment.id}

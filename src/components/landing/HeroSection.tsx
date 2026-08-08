@@ -3,101 +3,163 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AvatarGroup } from "@/components/ui/avatar-group";
 
-// Dummy avatars for the Notion-like demo
-const avatars = [
-  { id: "1", name: "Alice", image: "https://i.pravatar.cc/150?u=1" },
-  { id: "2", name: "Bob", image: "https://i.pravatar.cc/150?u=2" },
-  { id: "3", name: "Charlie", image: "https://i.pravatar.cc/150?u=3" },
-  { id: "4", name: "Diana", image: "https://i.pravatar.cc/150?u=4" },
-  { id: "5", name: "Eve", image: "https://i.pravatar.cc/150?u=5" },
+// Radix Icons untuk MagicUI Bento
+import {
+  StarIcon,
+  LockClosedIcon,
+  LightningBoltIcon,
+  MagicWandIcon,
+  PersonIcon,
+} from "@radix-ui/react-icons";
+
+import { BentoCard, BentoGrid } from "@/components/ui/bento-grid";
+
+// --- MAGIC UI FEATURES DATA ---
+const features = [
+  {
+    Icon: PersonIcon,
+    name: "500K+ Sekolah",
+    description: "Pilihan utama manajemen instansi pendidikan dengan sistem otomatis.",
+    href: "/",
+    cta: "Lihat Detail",
+    background: (
+      <img
+        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop"
+        className="absolute inset-0 h-full w-full object-cover opacity-20 transition-all duration-300 group-hover:scale-105 group-hover:opacity-30"
+        alt="Students dummy"
+      />
+    ),
+    className: "lg:col-start-1 lg:col-end-2 lg:row-start-1 lg:row-end-3",
+  },
+  {
+    Icon: StarIcon,
+    name: "95% Diskon",
+    description: "Diskon langganan khusus untuk pengguna baru.",
+    href: "/",
+    cta: "Klaim Promo",
+    background: (
+      <div className="absolute inset-0 bg-gradient-to-br from-[#8EC9F6]/30 to-transparent" />
+    ),
+    className: "lg:col-start-2 lg:col-end-3 lg:row-start-1 lg:row-end-2",
+  },
+  {
+    Icon: LockClosedIcon,
+    name: "CationGate Secure",
+    description: "Data dan dana dienkripsi aman. Terhubung langsung Dapodik.",
+    href: "/",
+    cta: "Pelajari Keamanan",
+    background: (
+      <img
+        src="https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=800&auto=format&fit=crop"
+        className="absolute -right-10 -top-10 h-[150%] w-[150%] object-cover opacity-10 transition-all duration-300 group-hover:opacity-20"
+        alt="Security dummy"
+      />
+    ),
+    className: "lg:col-start-3 lg:col-end-5 lg:row-start-1 lg:row-end-2",
+  },
+  {
+    Icon: MagicWandIcon,
+    name: "Fitur Pintar Web",
+    description: "Ubah data mentah jadi laporan berharga untuk kesehatan operasional dengan AI.",
+    href: "/",
+    cta: "Coba Fitur",
+    background: (
+      <img
+        src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop"
+        className="absolute -bottom-10 -right-10 h-full w-full object-cover opacity-15 transition-all duration-300 group-hover:scale-110"
+        alt="Dashboard dummy"
+      />
+    ),
+    className: "lg:col-start-2 lg:col-end-4 lg:row-start-2 lg:row-end-3",
+  },
+  {
+    Icon: LightningBoltIcon,
+    name: "Rp 45rb",
+    description: "Paket operasional termurah per bulan.",
+    href: "/",
+    cta: "Langganan",
+    background: (
+      <div className="absolute inset-0 bg-gradient-to-tr from-[#FFD33B]/20 to-[#FF9D67]/10" />
+    ),
+    className: "lg:col-start-4 lg:col-end-5 lg:row-start-2 lg:row-end-3",
+  },
 ];
 
+// --- MAIN HERO COMPONENT ---
 export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
   return (
-    <section id="hero" className="relative pt-20 pb-32 overflow-hidden bg-background transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
+    <section
+      id="hero"
+      className="relative min-h-screen overflow-hidden bg-[#FAF8F2] text-[#23191C] pb-32"
+    >
+      {/* Warm Glow Effect */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-[#FFD33B]/10 blur-[140px]" />
+
+      {/* Main Content - Diperlebar menggunakan max-w-[1400px] */}
+      <div className="relative z-10 mx-auto flex max-w-[1400px] flex-col items-center px-5 pt-28 sm:px-6 lg:px-8">
         
-        {/* Subtle pill at the top */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
+        {/* ================= BAGIAN ATAS (TEKS & TOMBOL) ================= */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-center mb-6"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex w-full max-w-5xl flex-col items-center text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium shadow-sm transition-colors">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span>Meet your 24/7 AI team</span>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-[#23191C] whitespace-nowrap">
+            The intelligent platform for{" "}
+            <span className="relative inline-block">
+              <span className="relative z-10">modern schools</span>
+              <span className="absolute bottom-[4px] left-0 z-0 h-[30%] w-full rounded-[3px] bg-[#FFD33B]" />
+            </span>
+          </h1>
+
+          {/* Description - Single Line */}
+          <p className="mt-6 max-w-4xl text-base sm:text-lg font-medium leading-relaxed text-[#58504E]">
+            One platform to manage learning, monitor progress, and empower teachers with intelligent tools.
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="mt-10 flex w-full flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link href="/demo/dashboard" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                className="group h-12 w-full rounded-lg border-0 bg-[#23191C] px-8 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#3D3235] hover:shadow-xl active:scale-95 sm:w-auto"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
+              </Button>
+            </Link>
+
+            <button
+              type="button"
+              onClick={onOpenVideo}
+              className="group flex h-12 w-full items-center justify-center gap-2.5 rounded-lg border border-[#E7E1D6] bg-white px-7 text-sm font-semibold text-[#23191C] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#D9D3C7] hover:bg-[#F7F4ED] hover:shadow-md sm:w-auto"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#23191C] text-white transition-transform duration-300 group-hover:scale-110">
+                <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
+              </span>
+              Watch Demo
+            </button>
           </div>
         </motion.div>
 
-        {/* Headline */}
-        <div className="text-center max-w-4xl mx-auto space-y-8">
-          <motion.h1 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight leading-[1.1]"
-          >
-            Where teams and agents{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10 px-4 py-1 bg-slate-100 rounded-full border border-slate-200 shadow-sm inline-flex items-center">
-                Build
-              </span>
-            </span>{" "}
-            together.
-          </motion.h1>
-
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-slate-600 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed font-normal"
-          >
-            CationGate is the connected workspace where better, faster work happens. Now with custom AI agents that work for you.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-          >
-            <Link href="/demo/dashboard">
-              <Button 
-                size="lg" 
-                className="w-full sm:w-auto bg-[#2563EB] hover:bg-blue-700 text-white font-medium text-base px-6 py-6 rounded-lg transition-all"
-              >
-                Get CationGate free
-              </Button>
-            </Link>
-            
-            <button 
-              onClick={onOpenVideo}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-base transition-all cursor-pointer"
-            >
-              Request a demo
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </button>
-          </motion.div>
-        </div>
-
-        {/* Central Visual: Avatar Group animated */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="mt-20 w-full max-w-5xl mx-auto relative flex justify-center"
+        {/* ================= BAGIAN BAWAH (MAGIC UI BENTO GRID) ================= */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
+          className="mt-16 w-full"
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-transparent blur-3xl opacity-50 -z-10 h-64" />
-          <div className="relative p-12 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center gap-6">
-            <p className="text-slate-500 font-medium">Collaborate seamlessly with AI agents</p>
-            <AvatarGroup avatars={avatars} max={5} className="scale-125" />
-          </div>
+          {/* Rahasianya di lg:auto-rows-[320px] dan gap-6 biar gede dan longgar */}
+          <BentoGrid className="w-full max-w-7xl justify-center h-160 lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-[320px] gap-4 sm:gap-6">
+            {features.map((feature) => (
+              <BentoCard key={feature.name} {...feature} />
+            ))}
+          </BentoGrid>
         </motion.div>
       </div>
     </section>

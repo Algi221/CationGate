@@ -11,9 +11,7 @@ const configRouter = new Hono();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const targetDir = path.join(process.cwd(), 'public', 'assets', 'jurusan', 'uploads');
-
-function saveBase64File(base64Str: string, prefix: string): string {
+function saveBase64File(base64Str: string, prefix: string, subfolder: string = 'jurusan'): string {
   if (typeof base64Str !== 'string' || !base64Str.startsWith('data:')) {
     return base64Str;
   }
@@ -51,13 +49,15 @@ function saveBase64File(base64Str: string, prefix: string): string {
     else if (contentType.includes('quicktime') || contentType.includes('mov')) ext = 'mov';
     
     const filename = `${prefix}_${Date.now()}.${ext}`;
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
+    const dynamicTargetDir = path.join(process.cwd(), 'public', 'assets', subfolder, 'uploads');
+    
+    if (!fs.existsSync(dynamicTargetDir)) {
+      fs.mkdirSync(dynamicTargetDir, { recursive: true });
     }
-    const targetPath = path.join(targetDir, filename);
+    const targetPath = path.join(dynamicTargetDir, filename);
     fs.writeFileSync(targetPath, dataBuffer);
     
-    return `/assets/jurusan/uploads/${filename}`;
+    return `/assets/${subfolder}/uploads/${filename}`;
   } catch (err) {
     console.error(`Failed to save base64 for ${prefix}:`, err);
     return base64Str;
@@ -145,7 +145,7 @@ configRouter.post('/', adminAuth, async (c) => {
     if (key === 'ppdb_majors_config') {
       processedValue = processMajorsConfig(value);
     } else if (key === 'ppdb_logo_url') {
-      processedValue = saveBase64File(value, 'school_logo');
+      processedValue = saveBase64File(value, 'school_logo', 'sekolah');
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
@@ -230,7 +230,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       processedConfigs.ppdb_majors_config = processMajorsConfig(processedConfigs.ppdb_majors_config);
     }
     if (processedConfigs.ppdb_logo_url) {
-      processedConfigs.ppdb_logo_url = saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo');
+      processedConfigs.ppdb_logo_url = saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
     }
 
     for (const [key, value] of Object.entries(processedConfigs)) {

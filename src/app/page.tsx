@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import LoadingScreen from "@/components/landing/LoadingScreen";
 import { Navbar } from "@/components/landing/Navbar";
-import { HeroSection } from "@/components/landing/HeroSection";
+import ScrollExpandSection  from "@/components/landing/ScrollExpandSection";
+import HeroSection from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
 import { SystemFlowSection } from "@/components/landing/SystemFlowSection";
@@ -37,23 +38,24 @@ export default function LandingPage() {
       <Navbar />
 
       <main className="flex-1">
-        <HeroSection
+        <ScrollExpandSection/>
+        <HeroSection/>
+        {/* <HeroSection
           onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
-        />
-        <PartnersSection />
+        /> */}
+        {/* <PartnersSection /> */}
         {/* <FeaturesShowcase /> */}
         {/* <SystemFlowSection /> */}
         {/* <RegionalStatsSection /> */}
 
         {/* UBAH DISINI JUGA JIKA INGIN RICKROLL: Ganti videoLama menjadi rickroll */}
-        <FeaturesShowcase />
+        {/* <FeaturesShowcase /> */}
         <SystemFlowSection />
         <SimGymSection /> {/* PANGGIL KOMPONEN SIMGYM DI SINI */}
-        <RegionalStatsSection />
+        {/* <RegionalStatsSection /> */}
         <SuccessStorySection
           onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
         />
-        <TestimonialsSection />
         <PricingSection />
         <FaqSection />
         <CtaBanner />

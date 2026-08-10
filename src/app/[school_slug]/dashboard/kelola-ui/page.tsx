@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import { 
   Palette, 
@@ -348,10 +348,13 @@ const DEFAULT_MAJORS: MajorItem[] = [
 ];
 
 export default function KelolaUserInterface() {
-  const { adminToken, fetchConfigs } = usePPDB();
+  const { adminToken, fetchConfigs, ppdbTitle } = usePPDB();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
   const searchParams = useSearchParams();
+  const params = useParams();
+  const slug = params?.school_slug as string || "";
+  const draftKey = `ppdb_ui_editor_draft_${slug}`;
   const router = useRouter();
 
   useEffect(() => {
@@ -424,17 +427,17 @@ export default function KelolaUserInterface() {
   const [changeDescription, setChangeDescription] = useState("");
 
   const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
-  const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB SMK Taruna Bhakti");
+  const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB Online");
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.");
   const [heroMediaUrl, setHeroMediaUrl] = useState("");
   const [heroMediaType, setHeroMediaType] = useState<"video" | "image" | "none">("none");
   const [compressing, setCompressing] = useState(false);
-  const [phone, setPhone] = useState("(021) 8740756");
-  const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
-  const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
-  const [mapTitle, setMapTitle] = useState("Kunjungi Kampus SMK Taruna Bhakti");
-  const [schoolLogo, setSchoolLogo] = useState("/logo_smktb.png");
-  const [schoolTitle, setSchoolTitle] = useState("PPDB SMK TB");
+  const [phone, setPhone] = useState("-");
+  const [email, setEmail] = useState("info@sekolah.sch.id");
+  const [address, setAddress] = useState("Alamat Lengkap Sekolah");
+  const [mapTitle, setMapTitle] = useState("Kunjungi Kampus Kami");
+  const [schoolLogo, setSchoolLogo] = useState("");
+  const [schoolTitle, setSchoolTitle] = useState("Portal PPDB");
 
   const [gelombangConfig, setGelombangConfig] = useState({
     gelombang1: { start: "2026-06-03", end: "2026-07-24" },
@@ -460,7 +463,7 @@ export default function KelolaUserInterface() {
   const [partnersList, setPartnersList] = useState<PartnerItem[]>(DEFAULT_PARTNERS);
   const [revisions, setRevisions] = useState<RevisionLog[]>([]);
   const [faqTitle, setFaqTitle] = useState("Pertanyaan yang Sering Diajukan");
-  const [faqSubtitle, setFaqSubtitle] = useState("Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.");
+  const [faqSubtitle, setFaqSubtitle] = useState("Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru.");
   const [faqList, setFaqList] = useState<FaqItem[]>([]);
 
   const [editingMajor, setEditingMajor] = useState<MajorItem | null>(null);
@@ -533,7 +536,7 @@ export default function KelolaUserInterface() {
       ppdb_title: schoolTitle,
     };
 
-    localStorage.setItem("ppdb_ui_editor_draft", JSON.stringify(draft));
+    localStorage.setItem(draftKey, JSON.stringify(draft));
   }, [
     mounted,
     loading,
@@ -575,7 +578,7 @@ export default function KelolaUserInterface() {
       const config = (json.success && json.data) ? json.data : {};
 
       // Load draft from localStorage if present
-      const savedDraft = localStorage.getItem("ppdb_ui_editor_draft");
+      const savedDraft = localStorage.getItem(draftKey);
       let draft: any = null;
       if (savedDraft) {
         try {
@@ -587,22 +590,26 @@ export default function KelolaUserInterface() {
 
       if (activeConfig.ppdb_hero_title) setHeroTitle(activeConfig.ppdb_hero_title);
       if (activeConfig.ppdb_hero_title_sub) setHeroTitleSub(activeConfig.ppdb_hero_title_sub);
+      else if (!draft) setHeroTitleSub(`Portal PPDB ${ppdbTitle || 'Online'}`);
+      
       if (activeConfig.ppdb_hero_subtitle) setHeroSubtitle(activeConfig.ppdb_hero_subtitle);
       if (activeConfig.ppdb_hero_media_url) setHeroMediaUrl(activeConfig.ppdb_hero_media_url);
       if (activeConfig.ppdb_hero_media_type) setHeroMediaType(activeConfig.ppdb_hero_media_type);
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
       if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
-        if (activeConfig.ppdb_map_title) setMapTitle(activeConfig.ppdb_map_title);
+      if (activeConfig.ppdb_map_title) setMapTitle(activeConfig.ppdb_map_title);
       if (activeConfig.ppdb_school_period) setSchoolPeriod(activeConfig.ppdb_school_period);
-        if (activeConfig.ppdb_faq_title) setFaqTitle(activeConfig.ppdb_faq_title);
-        if (activeConfig.ppdb_faq_subtitle) setFaqSubtitle(activeConfig.ppdb_faq_subtitle);
+      if (activeConfig.ppdb_faq_title) setFaqTitle(activeConfig.ppdb_faq_title);
+      if (activeConfig.ppdb_faq_subtitle) setFaqSubtitle(activeConfig.ppdb_faq_subtitle);
       if (activeConfig.ppdb_wa_group_url) setWaGroupUrl(activeConfig.ppdb_wa_group_url);
       if (activeConfig.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(activeConfig.ppdb_wa_admin));
       if (activeConfig.ppdb_form_guideline) setFormGuideline(activeConfig.ppdb_form_guideline);
       if (activeConfig.ppdb_form_fee) setFormFee(activeConfig.ppdb_form_fee);
       if (activeConfig.ppdb_logo_url) setSchoolLogo(activeConfig.ppdb_logo_url);
+      
       if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
+      else if (!draft) setSchoolTitle(`PPDB ${ppdbTitle || 'Sekolah'}`);
       
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
         setAlurList(activeConfig.ppdb_alur_config);
@@ -670,6 +677,13 @@ export default function KelolaUserInterface() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (ppdbTitle && ppdbTitle !== "PPDB SMK TB") {
+      setSchoolTitle(prev => prev === "Portal PPDB" || prev.startsWith("PPDB PPDB") ? `PPDB ${ppdbTitle}` : prev);
+      setHeroTitleSub(prev => prev === "Portal PPDB Online" || prev.startsWith("Portal PPDB PPDB") ? `Portal PPDB ${ppdbTitle}` : prev);
+    }
+  }, [ppdbTitle]);
 
   async function fetchRevisions() {
     try {
@@ -1023,7 +1037,7 @@ export default function KelolaUserInterface() {
         </div>
         
         <div className="flex gap-2.5">
-          {mounted && typeof window !== "undefined" && localStorage.getItem("ppdb_ui_editor_draft") && (
+          {mounted && typeof window !== "undefined" && localStorage.getItem(draftKey) && (
             <button
               onClick={async () => {
                 const result = await Swal.fire({
@@ -1035,7 +1049,7 @@ export default function KelolaUserInterface() {
                   cancelButtonText: 'Batal'
                 });
                 if (result.isConfirmed) {
-                  localStorage.removeItem("ppdb_ui_editor_draft");
+                  localStorage.removeItem(draftKey);
                   fetchCurrentConfig();
                 }
               }}
@@ -1048,7 +1062,7 @@ export default function KelolaUserInterface() {
           
           <button
             onClick={() => setShowConfirmModal(true)}
-            className="px-6 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 cursor-pointer"
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer"
           >
             <Check size={14} />
             <span>Simpan Perubahan</span>
@@ -1056,8 +1070,8 @@ export default function KelolaUserInterface() {
         </div>
       </div>
 
-      {/* Navigation Tabs - Capsule Container & Asymmetric Dynamic Leaf-like Design */}
-      <div className="bg-slate-100/50 dark:bg-slate-950 p-1.5 rounded-[22px] border border-slate-200/70 dark:border-slate-800/40 flex flex-wrap gap-1 shadow-inner mb-6 transition-all duration-300">
+      {/* Navigation Tabs */}
+      <div className="bg-slate-100/50 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/70 dark:border-slate-800/40 flex flex-wrap gap-1 mb-6 transition-all duration-300">
         {[
           { id: "hero", label: "Hero, Kontak & Gelombang", icon: FileText },
           { id: "majors", label: "Program Keahlian (Jurusan)", icon: GraduationCap },
@@ -1077,12 +1091,12 @@ export default function KelolaUserInterface() {
                 setActiveTab(tab.id as any);
                 router.push(`?tab=${tab.id}`);
               }}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 border border-transparent ${
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-all duration-300 border border-transparent rounded-xl ${
                 editingMajor !== null && tab.id !== "majors" ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
               } ${
                 activeTab === tab.id
-                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/20 rounded-[16px_6px_16px_6px] scale-[1.02] -translate-y-[0.5px]"
-                  : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-900/80 rounded-xl hover:rounded-[16px_6px_16px_6px] hover:border-indigo-500/30"
+                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border-slate-200 dark:border-slate-700"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-900/80"
               }`}
             >
               <Icon size={14} />
@@ -1107,22 +1121,22 @@ export default function KelolaUserInterface() {
             {/* TAB 1: Hero & Kontak */}
             {activeTab === "hero" && (
               <div className="space-y-6">
-                <div className="border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
-                    <Building size={16} className="text-blue-500" />
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-6">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Building size={18} className="text-blue-600 dark:text-blue-500" />
                     <span>Logo &amp; Nama Instansi (Header Website)</span>
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-50 dark:bg-slate-950/40 p-6 rounded-3xl border border-slate-200/60 dark:border-white/5">
+                <div className="flex flex-col md:flex-row gap-8 items-start bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                   {/* Logo Drag & Drop */}
-                  <div className="md:col-span-1 flex flex-col items-center gap-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Logo Instansi (Header)</label>
+                  <div className="flex flex-col items-start gap-3 shrink-0">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Logo Instansi (Header)</label>
                     <div
-                      className={`w-24 h-24 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-300 ${
+                      className={`w-full md:w-56 h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-300 ${
                         dragActiveStates["school_logo"]
-                          ? "border-blue-500 bg-blue-500/5"
-                          : "border-slate-200 dark:border-white/10 hover:border-slate-350 dark:hover:border-white/20 bg-white dark:bg-slate-900"
+                          ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800/50"
                       }`}
                       onDragEnter={(e) => handleDragState(e, "school_logo", true)}
                       onDragOver={(e) => handleDragState(e, "school_logo", true)}
@@ -1134,11 +1148,11 @@ export default function KelolaUserInterface() {
                       }}
                     >
                       {schoolLogo ? (
-                        <img src={DOMPurify.sanitize(schoolLogo)} alt="Logo Sekolah" className="w-full h-full object-contain rounded-2xl" />
+                        <img src={schoolLogo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain rounded-lg" />
                       ) : (
-                        <div className="text-center text-slate-400">
-                          <Upload size={20} className="mx-auto mb-1 text-slate-300" />
-                          <span className="text-[9px] font-bold">Upload Logo</span>
+                        <div className="text-center text-slate-500 dark:text-slate-400">
+                          <Upload size={24} className="mx-auto mb-2 text-slate-400 dark:text-slate-500" />
+                          <span className="text-xs font-medium">Upload Logo</span>
                         </div>
                       )}
                       <input
@@ -1154,58 +1168,58 @@ export default function KelolaUserInterface() {
                   </div>
 
                   {/* Nama Sekolah / Title */}
-                  <div className="md:col-span-2 space-y-4 text-left">
+                  <div className="flex-1 space-y-4 text-left w-full">
                     <div className="space-y-2">
-                      <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Instansi / Singkatan (Header)</label>
+                      <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nama Instansi / Singkatan (Header)</label>
                       <input
                         type="text"
                         value={schoolTitle}
                         onChange={(e) => setSchoolTitle(e.target.value)}
                         placeholder="Contoh: PPDB SMK TB"
-                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="border-b border-slate-100 dark:border-white/5 pb-4 mt-8 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
-                    <FileText size={16} className="text-blue-500" />
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mt-8 mb-6">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <FileText size={18} className="text-blue-600 dark:text-blue-500" />
                     <span>Hero Section &amp; Header Utama</span>
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Hero Title (Judul Utama)</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Hero Title (Judul Utama)</label>
                     <input
                       type="text"
                       value={heroTitle}
                       onChange={(e) => setHeroTitle(e.target.value)}
                       placeholder="Contoh: Penerimaan Siswa Baru"
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Hero Sub-Title (Judul Pelengkap)</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Hero Sub-Title (Judul Pelengkap)</label>
                     <input
                       type="text"
                       value={heroTitleSub}
                       onChange={(e) => setHeroTitleSub(e.target.value)}
                       placeholder="Contoh: Portal PPDB SMK Taruna Bhakti"
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Hero Subtitle (Deskripsi Paragraf)</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Hero Subtitle (Deskripsi Paragraf)</label>
                     <textarea
                       value={heroSubtitle}
                       onChange={(e) => setHeroSubtitle(e.target.value)}
                       rows={3}
                       placeholder="Tuliskan deskripsi singkat mengenai portal pendaftaran di halaman utama..."
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-y"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors resize-y"
                     />
                   </div>
 
@@ -1305,110 +1319,110 @@ export default function KelolaUserInterface() {
                   </div>
                 </div>
 
-                <div className="border-b border-slate-100 dark:border-white/5 pb-4 mt-8 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
-                    <Info size={16} className="text-blue-500" />
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mt-8 mb-6">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Info size={18} className="text-blue-600 dark:text-blue-500" />
                     <span>Informasi Sekolah &amp; Google Maps</span>
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2 md:col-span-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Judul Seksi Google Maps</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Judul Seksi Google Maps</label>
                     <input
                       type="text"
                       value={mapTitle}
                       onChange={(e) => setMapTitle(e.target.value)}
                       placeholder="Contoh: Kunjungi Kampus Sekolah"
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Google Maps Embed iFrame URL</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Google Maps Embed iFrame URL</label>
                     <input
                       type="text"
                       value={mapUrl}
                       onChange={(e) => setMapUrl(e.target.value)}
                       placeholder="https://www.google.com/maps/embed?pb=..."
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 font-mono text-[11px]"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nomor Telepon Sekolah</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nomor Telepon Sekolah</label>
                     <input
                       type="text"
                       value={phone}
                       onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
                       placeholder="Contoh: +62218740756"
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Email Resmi Sekolah</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Resmi Sekolah</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Contoh: info@smktarunabhakti.sch.id"
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Tahun Pelajaran Terbit (Periode)</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tahun Pelajaran Terbit (Periode)</label>
                     <input
                       type="text"
                       value={schoolPeriod}
                       onChange={(e) => setSchoolPeriod(e.target.value)}
                       placeholder="Contoh: 2026-2027"
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2 md:col-span-3">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Alamat Fisik Sekolah</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Alamat Fisik Sekolah</label>
                     <input
                       type="text"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="Alamat lengkap sekolah..."
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Link Grup WhatsApp PPDB Calon Siswa</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Link Grup WhatsApp PPDB Calon Siswa</label>
                     <input
                       type="text"
                       value={waGroupUrl}
                       onChange={(e) => setWaGroupUrl(e.target.value)}
                       placeholder="Contoh: https://chat.whatsapp.com/..."
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2 md:col-span-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nomor WhatsApp Tim PPDB (Konsultasi)</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nomor WhatsApp Tim PPDB (Konsultasi)</label>
                     <input
                       type="text"
                       value={waAdmin}
                       onChange={(e) => setWaAdmin(formatPhoneNumber(e.target.value))}
                       placeholder="Contoh: +6281292244456"
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* CONSOLDATION: Gelombang Pendaftaran Section inside Hero & Kontak */}
-                <div className="border-t border-slate-100 dark:border-white/5 pt-8 mt-8 pb-4 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
-                    <Calendar size={16} className="text-indigo-500" />
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8 pb-4 mb-4">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Calendar size={18} className="text-indigo-600 dark:text-indigo-500" />
                     <span>Rentang Tanggal Gelombang Pendaftaran</span>
                   </h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Konfigurasikan masa aktif Gelombang 1 dan Gelombang 2 untuk portal pendaftaran</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Konfigurasikan masa aktif Gelombang 1 dan Gelombang 2 untuk portal pendaftaran.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

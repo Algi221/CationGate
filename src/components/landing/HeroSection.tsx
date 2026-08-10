@@ -124,7 +124,7 @@ export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
 
           {/* CTA Buttons */}
           <div className="mt-10 flex w-full flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/demo/dashboard" className="w-full sm:w-auto">
+            <Link href="/daftar" className="w-full sm:w-auto">
               <Button
                 size="lg"
                 className="group h-12 w-full rounded-lg border-0 bg-[#23191C] px-8 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#3D3235] hover:shadow-xl active:scale-95 sm:w-auto"

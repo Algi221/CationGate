@@ -11,7 +11,7 @@ const configRouter = new Hono();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const targetDir = path.join(__dirname, '../../../frontend/public/assets/jurusan/uploads');
+const targetDir = path.join(process.cwd(), 'public', 'assets', 'jurusan', 'uploads');
 
 function saveBase64File(base64Str: string, prefix: string): string {
   if (typeof base64Str !== 'string' || !base64Str.startsWith('data:')) {

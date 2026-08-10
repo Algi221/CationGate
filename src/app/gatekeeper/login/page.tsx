@@ -48,138 +48,132 @@ export default function GatekeeperLogin() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background text-foreground font-sans selection:bg-primary selection:text-white">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row font-sans selection:bg-blue-600 selection:text-white">
 
-      {/* Left Panel – Clean Light Mode Branding */}
-      <div className="w-full lg:w-[45%] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden">
+      {/* Left Panel - Dark Mode Design matching Image 2 */}
+      <div className="w-full lg:w-[45%] bg-[#0b1121] relative flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">
         
+        {/* Dotted Pattern */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.2) 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
+
         {/* Top Link & Logo */}
-        <div className="space-y-6">
+        <div className="space-y-6 relative z-10">
           <Link 
             href="/" 
-            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-4 h-4" />
             <span>Kembali ke Landing Page CationGate</span>
           </Link>
 
           <div className="flex items-center gap-3 pt-2">
-            <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-md">
-              <KeyRound className="w-6 h-6 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="font-extrabold text-xl tracking-tight text-foreground block">
-                Cation<span className="text-primary">Gate</span>
+              <span className="font-bold text-xl tracking-tight text-white block">
+                CationGate
               </span>
-              <span className="text-xs text-slate-500 font-medium">Gatekeeper Platform Console</span>
             </div>
           </div>
         </div>
 
         {/* Center Content */}
-        <div className="my-10 space-y-6 max-w-md">
-          <LottiePlaceholder title="Login Animation" className="min-h-[200px]" />
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            Platform Superadmin Console
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-[1.2]">
-            Selamat Datang, Gatekeeper CationGate
+        <div className="my-10 space-y-8 max-w-md relative z-10">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+            Selamat Datang, Gatekeeper CationGate.
           </h1>
 
-          <p className="text-slate-600 text-sm leading-relaxed font-normal">
-            Verifikasi pendaftaran sekolah baru, atur lisensi multi-tenant, dan pantau kesehatan node platform CationGate.
+          <p className="text-slate-400 text-base leading-relaxed">
+            Verifikasi pendaftaran sekolah baru, atur lisensi multi-tenant, dan pantau kesehatan node platform CationGate secara mudah dan terpusat.
           </p>
 
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <div className="space-y-4 pt-4">
+            <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              </div>
               <span>Verifikasi & Unlock Akun Sekolah Tenant</span>
             </div>
-            <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              </div>
               <span>Manajemen Feedback & Laporan Bug Platform</span>
             </div>
-            <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              </div>
               <span>Audit Log Multitenant & Billing SLA</span>
             </div>
           </div>
         </div>
 
         {/* Bottom Security Info */}
-        <div className="text-xs text-slate-500 font-medium flex items-center justify-between border-t border-slate-100 pt-6">
-          <span>Protected by AES-256 Gatekeeper Security</span>
-          <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
-            SLA Uptime 99.99%
-          </span>
+        <div className="text-sm text-slate-500 flex items-center justify-between pt-6 relative z-10">
+          <span>© 2026 CationGate. • ISO 27001 Certified</span>
         </div>
 
       </div>
 
       {/* Right Panel – Gatekeeper Login Form */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-background">
-        <div className="w-full max-w-[420px] bg-card p-8 sm:p-10 rounded-3xl border border-border shadow-card">
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-white">
+        {/* Floating Card like in Image 2 */}
+        <div className="w-full max-w-[440px] bg-[#f8fafc] border border-slate-200 p-8 sm:p-10 rounded-3xl shadow-sm">
           
           <div className="mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-3">
-              <Lock className="w-3.5 h-3.5 text-primary" />
-              Autentikasi Gatekeeper
-            </div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-1">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Login Gatekeeper
             </h2>
-            <p className="text-xs text-slate-500 font-medium">
-              Masukkan username & password Gatekeeper CationGate Anda.
+            <p className="text-sm text-slate-500">
+              Lengkapi informasi kredensial admin Anda.
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-semibold flex items-start gap-2.5">
-              <Lock className="w-4 h-4 mt-0.5 shrink-0 text-red-600" />
+            <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 flex items-center gap-2">
+              <Lock className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-slate-700 block">
                 Username / Email Gatekeeper
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="gatekeeper / admin_cationgate"
+                  placeholder="Contoh: admin_cationgate"
                   required
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-input text-xs text-foreground bg-input/30 focus:bg-background focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-slate-700 block">
                 Password Access
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full h-11 pl-10 pr-10 rounded-xl border border-input text-xs text-foreground bg-input/30 focus:bg-background focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -187,23 +181,24 @@ export default function GatekeeperLogin() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold text-xs shadow-md tracking-wider uppercase transition-all duration-200 mt-2"
+              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all mt-6"
             >
               {loading ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Memverifikasi Sesi...</span>
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Memverifikasi...</span>
                 </div>
               ) : (
-                "Masuk Konsol Gatekeeper"
+                <div className="flex items-center justify-center gap-2">
+                  <span>Lanjutkan</span>
+                  <ArrowLeft className="w-4 h-4 rotate-180" />
+                </div>
               )}
             </Button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-            <p className="text-[11px] text-slate-500 font-medium">
-              Kendala autentikasi Gatekeeper? Contact Support Team.
-            </p>
+          <div className="mt-8 text-center text-xs text-slate-500">
+            Dengan mendaftar, Anda menyetujui <span className="text-blue-600 font-medium">Syarat & Ketentuan</span> serta <span className="text-blue-600 font-medium">Kebijakan Privasi</span> CationGate.
           </div>
 
         </div>

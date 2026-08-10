@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { Lock, User, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck } from "lucide-react";
+import { Lock, User, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export default function AdminLogin() {
   const { loginAdmin, adminToken, ppdbTitle, ppdbLogo, isSchoolNotFound } = usePPDB();
@@ -82,126 +82,131 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen w-full flex bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-white font-sans selection:bg-blue-600 selection:text-white">
       
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-12 flex-col justify-between relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]" />
+      {/* Left Panel - Dark Mode Design matching Image 2 */}
+      <div className="w-full lg:w-[45%] bg-[#0b1121] relative flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">
+        {/* Dotted Pattern */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.2) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         
-        <div className="relative z-10">
+        <div className="relative z-10 space-y-6">
           <Link 
             href={`/${schoolSlug}`}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Kembali ke Halaman Utama
+            <span>Kembali ke Halaman Utama</span>
           </Link>
-        </div>
 
-        <div className="relative z-10 space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
+          <div className="flex items-center gap-3 pt-2">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center overflow-hidden">
               {ppdbLogo ? (
-                <img src={ppdbLogo} alt="Logo" className="w-10 h-10 object-contain" />
+                <img src={ppdbLogo} alt="Logo" className="w-8 h-8 object-contain" />
               ) : (
-                <ShieldCheck className="w-8 h-8 text-white" />
+                <ShieldCheck className="w-6 h-6 text-white" />
               )}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">
+              <span className="font-bold text-xl tracking-tight text-white block">
                 {ppdbTitle || "Portal PPDB"}
-              </h2>
-              <p className="text-sm text-white/70">Admin Dashboard</p>
+              </span>
+              <span className="text-sm text-slate-400">Admin Dashboard</span>
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold text-white leading-tight">
-              Portal Admin<br />PPDB Online
-            </h1>
-            <p className="text-lg text-white/80 leading-relaxed">
-              Kelola pendaftaran siswa baru, verifikasi dokumen, dan monitoring data secara real-time.
-            </p>
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center gap-4 text-sm text-white/60">
+        {/* Center Content */}
+        <div className="my-10 space-y-8 max-w-md relative z-10">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+            Portal Admin<br />PPDB Online
+          </h1>
+          <p className="text-slate-400 text-base leading-relaxed">
+            Kelola pendaftaran siswa baru, verifikasi dokumen, dan monitoring data secara real-time dalam satu platform yang terintegrasi.
+          </p>
+
+          <div className="space-y-4 pt-4 hidden lg:block">
+            <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              </div>
+              <span>Manajemen Pendaftaran Siswa Baru</span>
+            </div>
+            <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              </div>
+              <span>Verifikasi Dokumen & Berkas Cepat</span>
+            </div>
+            <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              </div>
+              <span>Monitoring Pembayaran Otomatis</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-sm text-slate-500 flex items-center justify-between pt-6 relative z-10 border-t border-slate-800">
           <span>Powered by CationGate</span>
-          <span>•</span>
-          <span>Secure & Encrypted</span>
+          <span>• Secure & Encrypted</span>
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-8">
+      {/* Right Panel – Admin Login Form */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-white">
+        {/* Floating Card like in Image 2 */}
+        <div className="w-full max-w-[440px] bg-[#f8fafc] border border-slate-200 p-8 sm:p-10 rounded-3xl shadow-sm">
           
-          <div className="lg:hidden text-center">
-            <div className="inline-flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-                {ppdbLogo ? (
-                  <img src={ppdbLogo} alt="Logo" className="w-7 h-7 object-contain" />
-                ) : (
-                  <ShieldCheck className="w-6 h-6 text-white" />
-                )}
-              </div>
-              <span className="text-xl font-bold text-slate-900 dark:text-white">
-                {ppdbTitle || "Portal PPDB"}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Login Admin
             </h2>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-slate-500">
               Masuk menggunakan akun admin atau panitia PPDB
             </p>
           </div>
 
           {error && (
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-sm text-red-700 dark:text-red-400 flex items-start gap-3">
-              <Lock className="w-5 h-5 shrink-0 mt-0.5" />
+            <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 flex items-center gap-2">
+              <Lock className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            
-            <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <div className="space-y-2 text-left">
+              <label htmlFor="username" className="text-sm font-medium text-slate-700 block">
                 Username
               </label>
               <div className="relative">
-                <User className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Masukkan username"
-                  className="w-full h-12 pl-11 pr-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <div className="space-y-2 text-left">
+              <label htmlFor="password" className="text-sm font-medium text-slate-700 block">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
-                  className="w-full h-12 pl-11 pr-12 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                  className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -211,25 +216,33 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all mt-6 flex items-center justify-center gap-2"
             >
-              {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-              <span>{loading ? "Memproses..." : "Masuk Dashboard"}</span>
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Memproses...</span>
+                </>
+              ) : (
+                <>
+                  <span>Lanjutkan</span>
+                  <ArrowLeft className="w-4 h-4 rotate-180" />
+                </>
+              )}
             </button>
           </form>
 
-          <div className="pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+          <div className="pt-6 mt-8 border-t border-slate-200 text-center">
+            <p className="text-sm text-slate-500">
               Lupa password atau kendala akses?
             </p>
-            <p className="text-sm text-slate-900 dark:text-white font-semibold mt-1">
+            <p className="text-sm text-blue-600 font-semibold mt-1 cursor-pointer hover:underline">
               Hubungi Superadmin Sekolah
             </p>
           </div>
 
         </div>
       </div>
-
     </div>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import {
   Users, ShieldCheck, Clock, AlertTriangle, BarChart2,
-  Pencil, TrendingUp, TrendingDown, ArrowRight, Lock, ShieldAlert, Power
+  Pencil, ArrowRight, Lock, Power
 } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import KuotaTab from "@/components/KuotaTab";
 import Swal from "sweetalert2";
@@ -51,11 +52,11 @@ function StatCard({
   icon: React.ReactNode; delay?: number; trigger?: boolean;
 }) {
   const displayValue = useCountUp(value, 1300 + delay * 80, trigger);
-  const colorMap: Record<string, { text: string; iconBg: string; iconText: string; border: string }> = {
-    blue:    { text: "text-blue-600",    iconBg: "bg-blue-50 border border-blue-100",    iconText: "text-blue-600",    border: "border-slate-200 hover:border-blue-300" },
-    emerald: { text: "text-emerald-600", iconBg: "bg-emerald-50 border border-emerald-100", iconText: "text-emerald-600", border: "border-slate-200 hover:border-emerald-300" },
-    amber:   { text: "text-amber-600",   iconBg: "bg-amber-50 border border-amber-100",   iconText: "text-amber-600",   border: "border-slate-200 hover:border-amber-300" },
-    rose:    { text: "text-rose-600",    iconBg: "bg-rose-50 border border-rose-100",    iconText: "text-rose-600",    border: "border-slate-200 hover:border-rose-300" },
+  const colorMap: Record<string, { iconBg: string; iconText: string; }> = {
+    blue:    { iconBg: "bg-blue-50 dark:bg-blue-900/20",    iconText: "text-blue-600 dark:text-blue-400" },
+    emerald: { iconBg: "bg-emerald-50 dark:bg-emerald-900/20", iconText: "text-emerald-600 dark:text-emerald-400" },
+    amber:   { iconBg: "bg-amber-50 dark:bg-amber-900/20",   iconText: "text-amber-600 dark:text-amber-400" },
+    rose:    { iconBg: "bg-rose-50 dark:bg-rose-900/20",    iconText: "text-rose-600 dark:text-rose-400" },
   };
   const c = colorMap[color] ?? colorMap.blue;
 
@@ -64,14 +65,14 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: delay * 0.08 }}
-      className={`bg-white border ${c.border} rounded-2xl p-5 shadow-xs transition-all duration-200`}
+      className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-5 shadow-sm transition-all duration-200`}
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</span>
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.iconBg} ${c.iconText}`}>{icon}</div>
+        <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">{label}</span>
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${c.iconBg} ${c.iconText}`}>{icon}</div>
       </div>
-      <h3 className={`text-3xl font-extrabold leading-none mb-1 tabular-nums ${c.text}`}>{displayValue}</h3>
-      <span className="text-[11px] text-slate-500 font-semibold">{sub}</span>
+      <h3 className={`text-3xl font-bold leading-none mb-1 tabular-nums text-slate-900 dark:text-white`}>{displayValue}</h3>
+      <span className="text-xs text-slate-500 dark:text-slate-500 font-medium">{sub}</span>
     </motion.div>
   );
 }
@@ -82,7 +83,7 @@ function StatCard({
 function AreaChart({
   data,
   labels,
-  color = "#3b82f6",
+  color = "#2563eb",
 }: {
   data: number[];
   labels: string[];
@@ -306,50 +307,21 @@ function BarChart({
 // ─────────────────────────────────────────────────────────────────────────────
 export default function DashboardOverview() {
   const { applicants, schoolId, adminToken, schoolStatus, isDemoMode } = usePPDB();
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "";
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
   const [counterTrigger, setCounterTrigger] = useState(false);
 
   const isVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || isDemoMode;
 
-  // States from RPC
-  const [statsData, setStatsData] = useState({
-    total: 0,
-    approved: 0,
-    pending: 0,
-    rejected: 0,
-    majors: [] as { name: string, value: number }[],
-    trendHari: [] as { label: string, count: number }[]
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
   const [majorsList, setMajorsList] = useState<MajorItem[]>([
-    { name: "PPLG", dbName: "Rekayasa Perangkat Lunak", color: "#3b82f6" },
-    { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0ea5e9" },
-    { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#6366f1" },
-    { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#f59e0b" },
-    { name: "Elektronika", dbName: "Teknik Elektronika", color: "#10b981" },
-    { name: "Animasi", dbName: "Animasi", color: "#ec4899" },
+    { name: "PPLG", dbName: "Rekayasa Perangkat Lunak", color: "#2E7CF6" },
+    { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0BB0CE" },
+    { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#7957F5" },
+    { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#F7A325" },
+    { name: "Elektronika", dbName: "Teknik Elektronika", color: "#16C172" },
+    { name: "Animasi", dbName: "Animasi", color: "#EC4E9E" },
   ]);
-
-  useEffect(() => {
-    if (!schoolId || !adminToken) return;
-    setIsLoading(true);
-    fetch(`/api/dashboard/stats?school_id=${schoolId}`, {
-      headers: { "Authorization": `Bearer ${adminToken}` }
-    })
-      .then(r => r.json())
-      .then(json => {
-        if (json.success && json.data) {
-          setStatsData(json.data);
-        }
-        setIsLoading(false);
-        setTimeout(() => setCounterTrigger(true), 100);
-      })
-      .catch(err => {
-        console.error("Failed to fetch dashboard stats", err);
-        setIsLoading(false);
-      });
-  }, [schoolId, adminToken]);
 
   useEffect(() => {
     const saved = localStorage.getItem("ppdb_majors_config");
@@ -360,7 +332,7 @@ export default function DashboardOverview() {
           setMajorsList(parsed.map((m: any) => ({
             name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
             dbName: m.title,
-            color: m.color || "#3b82f6",
+            color: m.color || "#2E7CF6",
           })));
         }
       } catch { /* ignore */ }
@@ -374,7 +346,7 @@ export default function DashboardOverview() {
             const mapped = dbMajors.map((m: any) => ({
               name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
               dbName: m.title,
-              color: m.color || "#3b82f6",
+              color: m.color || "#2E7CF6",
             }));
             setMajorsList(mapped);
             localStorage.setItem("ppdb_majors_config", JSON.stringify(dbMajors));
@@ -384,33 +356,139 @@ export default function DashboardOverview() {
       .catch(() => {});
   }, []);
 
-  // ── Trend Data ──────────────────────────────────────────────────────────────
-  const getTrendData = () => {
-    // Gunakan data dari RPC untuk tren hari
-    if (trendView === "hari" && statsData.trendHari && statsData.trendHari.length > 0) {
-       return {
-         labels: statsData.trendHari.map((t: any) => t.label),
-         counts: statsData.trendHari.map((t: any) => t.count)
-       };
-    }
-    
-    // Fallback: return empty data when RPC doesn't have data yet
-    const baseLabels = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-    const baseCounts = [0, 0, 0, 0, 0, 0, 0];
-    return { labels: baseLabels, counts: baseCounts };
-  };
+  // ── Derived Stats (computed dari data pendaftar) ───────────────────────────
+  const computedStats = useMemo(() => {
+    const list = applicants || [];
+    const approved = list.filter((a: any) => a.status === "Approved").length;
+    const pending = list.filter((a: any) => a.status === "Pending").length;
+    const rejected = list.filter((a: any) => a.status === "Rejected").length;
+    return { total: list.length, approved, pending, rejected };
+  }, [applicants]);
 
+  useEffect(() => {
+    if (computedStats.total > 0) setCounterTrigger(true);
+  }, [computedStats.total]);
+
+  const majorsMap = useMemo(() => {
+    const counts: Record<string, number> = {};
+    (applicants || []).forEach((a: any) => {
+      const name = a.jurusan_1 || a.jurusan1 || "";
+      if (name) counts[name] = (counts[name] || 0) + 1;
+    });
+    return counts;
+  }, [applicants]);
+
+  const barData = useMemo(() => {
+    return Object.entries(majorsMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => {
+        const conf = majorsList.find((ml) => ml.dbName === name || ml.name === name);
+        return { label: conf?.name || name, color: conf?.color || "#2E7CF6", value };
+      });
+  }, [majorsMap, majorsList]);
+
+  const trend = useMemo(() => {
+    const now = new Date();
+    const dayMs = 86400000;
+    const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+    const registeredAt = (a: any) => {
+      const d = new Date(a.tgl_daftar || a.created_at || Date.now());
+      return isNaN(d.getTime()) ? Date.now() : d.getTime();
+    };
+
+    let buckets: { label: string; from: number; to: number }[] = [];
+
+    if (trendView === "hari") {
+      const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+      for (let i = 6; i >= 0; i--) {
+        const d = startOfDay(new Date(now.getTime() - i * dayMs));
+        buckets.push({ label: dayNames[d.getDay()], from: d.getTime(), to: d.getTime() + dayMs });
+      }
+    } else if (trendView === "minggu") {
+      const startOfWeek = (d: Date) => {
+        const x = startOfDay(d);
+        const diff = x.getDay() === 0 ? -6 : 1 - x.getDay();
+        return new Date(x.getTime() + diff * dayMs);
+      };
+      const weekStart = startOfWeek(now);
+      for (let i = 3; i >= 0; i--) {
+        const from = new Date(weekStart.getTime() - i * 7 * dayMs);
+        buckets.push({
+          label: `${from.getDate()}/${from.getMonth() + 1}`,
+          from: from.getTime(),
+          to: from.getTime() + 7 * dayMs,
+        });
+      }
+    } else if (trendView === "bulan") {
+      for (let i = 5; i >= 0; i--) {
+        const from = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const to = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        buckets.push({
+          label: from.toLocaleDateString("id-ID", { month: "short" }),
+          from: from.getTime(),
+          to: to.getTime(),
+        });
+      }
+    } else {
+      const months = new Map<string, { from: number; to: number }>();
+      (applicants || []).forEach((a: any) => {
+        const t = registeredAt(a);
+        const d = new Date(t);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        if (!months.has(key)) {
+          months.set(key, {
+            from: new Date(d.getFullYear(), d.getMonth(), 1).getTime(),
+            to: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(),
+          });
+        }
+      });
+      buckets = [...months.entries()]
+        .sort((a, b) => a[1].from - b[1].from)
+        .map(([, r]) => {
+          const d = new Date(r.from);
+          return {
+            label: d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
+            from: r.from,
+            to: r.to,
+          };
+        });
+    }
+
+    const counts = buckets.map((b) =>
+      (applicants || []).filter((a: any) => {
+        const t = registeredAt(a);
+        return t >= b.from && t < b.to;
+      }).length
+    );
+    return { labels: buckets.map((b) => b.label), counts };
+  }, [applicants, trendView]);
+
+  // ── Status SPMB (persisted via config key ppdb_portal_status) ──────────────
   const [isSpmbOpen, setIsSpmbOpen] = useState(true);
   const [isUpdatingSpmb, setIsUpdatingSpmb] = useState(false);
 
-  const handleToggleSpmbStatus = () => {
+  useEffect(() => {
+    if (!schoolId) return;
+    fetch(`/api/config?school_id=${schoolId}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          const status = json.data.ppdb_portal_status;
+          if (status === "closed") setIsSpmbOpen(false);
+          else if (status === "open") setIsSpmbOpen(true);
+        }
+      })
+      .catch(() => {});
+  }, [schoolId]);
+
+  const handleToggleSpmbStatus = async () => {
     const nextStatus = !isSpmbOpen;
     const statusText = nextStatus ? "DIBUKA" : "DITUTUP";
     const statusDesc = nextStatus
       ? "Formulir pendaftaran publik akan kembali menerima calon peserta didik baru."
       : "Formulir pendaftaran publik akan di-nonaktifkan dan pengunjung tidak dapat mendaftar.";
 
-    Swal.fire({
+    const { isConfirmed } = await Swal.fire({
       title: `Ubah Status SPMB ke ${statusText}?`,
       text: statusDesc,
       icon: nextStatus ? "question" : "warning",
@@ -422,42 +500,59 @@ export default function DashboardOverview() {
       customClass: {
         popup: "rounded-2xl dark:bg-slate-900 dark:text-white border dark:border-slate-800"
       }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setIsUpdatingSpmb(true);
-        setTimeout(() => {
-          setIsSpmbOpen(nextStatus);
-          setIsUpdatingSpmb(false);
-          Swal.fire({
-            title: `Status SPMB ${statusText}!`,
-            text: `Pendaftaran SPMB sekolah telah resmi di-${statusText.toLowerCase()}.`,
-            icon: "success",
-            confirmButtonColor: "#2563EB",
-            customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
-          });
-        }, 400);
-      }
     });
+    if (!isConfirmed) return;
+
+    setIsUpdatingSpmb(true);
+    try {
+      const res = await fetch(`/api/config?school_id=${schoolId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({
+          key: "ppdb_portal_status",
+          value: nextStatus ? "open" : "closed"
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsSpmbOpen(nextStatus);
+        Swal.fire({
+          title: `Status SPMB ${statusText}!`,
+          text: `Pendaftaran SPMB sekolah telah resmi di-${statusText.toLowerCase()}.`,
+          icon: "success",
+          confirmButtonColor: "#2563EB",
+          customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
+        });
+      } else {
+        Swal.fire({
+          title: "Gagal Menyimpan",
+          text: data.message || "Gagal mengubah status pendaftaran SPMB.",
+          icon: "error",
+          confirmButtonColor: "#2563EB",
+          customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
+        });
+      }
+    } catch {
+      Swal.fire({
+        title: "Kesalahan Koneksi",
+        text: "Terjadi kesalahan saat menghubungi server. Status belum berubah.",
+        icon: "error",
+        confirmButtonColor: "#2563EB",
+        customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
+      });
+    } finally {
+      setIsUpdatingSpmb(false);
+    }
   };
 
-  const trend = getTrendData();
-
-  // Combine RPC major stats with our major colors
-  const barData = statsData.majors ? statsData.majors.map((m: any) => {
-     // find color
-     const conf = majorsList.find(ml => ml.dbName === m.name || ml.name === m.name);
-     return {
-       label: conf?.name || m.name,
-       color: conf?.color || "#3b82f6",
-       value: m.value
-     };
-  }) : [];
-
   const stats = [
-    { label: "Total Pendaftar",   value: Number(statsData.total || (statsData as any).total_pendaftar || 0), sub: "Calon Siswa Baru",          color: "blue",    icon: <Users size={20} /> },
-    { label: "Terverifikasi",      value: Number(statsData.approved || 0), sub: "Berkas Lolos Validasi",      color: "emerald", icon: <ShieldCheck size={20} /> },
-    { label: "Menunggu",           value: Number(statsData.pending || 0),  sub: "Perlu Pemeriksaan",          color: "amber",   icon: <Clock size={20} /> },
-    { label: "Ditolak / Gugur",    value: Number(statsData.rejected || 0), sub: "Tidak Memenuhi Syarat",      color: "rose",    icon: <AlertTriangle size={20} /> },
+    { label: "Total Pendaftar",   value: computedStats.total,    sub: "Calon Siswa Baru",          color: "blue",    icon: <Users size={20} /> },
+    { label: "Terverifikasi",     value: computedStats.approved, sub: "Berkas Lolos Validasi",      color: "emerald", icon: <ShieldCheck size={20} /> },
+    { label: "Menunggu",          value: computedStats.pending,  sub: "Perlu Pemeriksaan",          color: "amber",   icon: <Clock size={20} /> },
+    { label: "Ditolak / Gugur",   value: computedStats.rejected, sub: "Tidak Memenuhi Syarat",      color: "rose",    icon: <AlertTriangle size={20} /> },
   ];
 
   return (
@@ -584,7 +679,7 @@ export default function DashboardOverview() {
               ))}
             </div>
           </div>
-          <AreaChart data={trend.counts} labels={trend.labels} color="#3b82f6" />
+          <AreaChart data={trend.counts} labels={trend.labels} color="#2563eb" />
         </div>
 
         {/* Kuota Panel */}
@@ -595,7 +690,7 @@ export default function DashboardOverview() {
               <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Status kuota seluruh jurusan</p>
             </div>
             <Link
-              href="/dashboard/pendaftar?tab=kuota"
+              href={`/${schoolSlug}/dashboard/pendaftar?tab=kuota`}
               className="p-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-xl transition-all"
               title="Edit Target Kuota"
             >
@@ -650,7 +745,7 @@ export default function DashboardOverview() {
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftar Terbaru</h3>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
             </div>
-            <Link href="/dashboard/pendaftar" className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
+            <Link href={`/${schoolSlug}/dashboard/pendaftar`} className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
               Lihat Semua <ArrowRight size={12} />
             </Link>
           </div>

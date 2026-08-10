@@ -57,7 +57,7 @@ interface PPDBContextType {
 
 const PPDBContext = createContext<PPDBContextType | null>(null);
 
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 const WS_PROTOCOL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -67,6 +67,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   const params = useParams();
   const slug = params?.school_slug as string || "";
   const isDemoMode = slug === 'demo';
+  const pathname = usePathname();
 
   const [schoolId, setSchoolId] = useState<string>("");
   const [schoolStatus, setSchoolStatus] = useState<string>("");
@@ -78,6 +79,14 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   const [adminToken, setAdminToken] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("ppdb_admin_token");
+      // Clear legacy fake tokens (e.g. "token_admin_<id>" from /daftar registration)
+      // which are NOT valid JWTs and would cause 401 on every admin API call.
+      if (token && !token.includes('.')) {
+        localStorage.removeItem("ppdb_admin_token");
+        localStorage.removeItem("ppdb_admin_user");
+        localStorage.removeItem("ppdb_admin_last_active");
+        return null;
+      }
       const lastActive = localStorage.getItem("ppdb_admin_last_active");
       if (token && lastActive) {
         const elapsed = Date.now() - parseInt(lastActive, 10);
@@ -110,7 +119,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
   const [simulationActive, setSimulationActive] = useState<boolean>(false);
-  const [ppdbLogo, setPpdbLogo] = useState<string>("/logo_smktb.png");
+  const [ppdbLogo, setPpdbLogo] = useState<string>("");
   const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB SMK TB");
 
   const fetchConfigs = useCallback(async () => {

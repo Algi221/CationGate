@@ -193,7 +193,7 @@ saasRouter.post('/register', async (c) => {
       plan_type: isTrial ? 'TRIAL' : 'YEARLY',
       admin_name: admin_name || admin_username,
       created_at: createdAtIso,
-      logo_url: '/assets/logo_sekolah/logo_smktb.png'
+      logo_url: ''
     };
     
     // 1. Insert into Supabase 'prospective_schools' table
@@ -326,28 +326,47 @@ saasRouter.post('/activate', async (c) => {
 
     // 1. Update Supabase 'prospective_schools'
     try {
-      await supabase
+      let psUpdate = supabase
         .from('prospective_schools')
         .update({
           status: 'FULL_VERIFIED',
           is_verified: true,
           plan_type: 'PRO'
-        })
-        .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
-    } catch (e) {}
+        });
+      
+      const isNumericId = !isNaN(Number(idOrSlug)) && Number(idOrSlug) > 0;
+      if (isNumericId) {
+        psUpdate = psUpdate.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+      } else {
+        psUpdate = psUpdate.eq('slug', idOrSlug);
+      }
+      
+      await psUpdate;
+    } catch (e) {
+      console.warn('Supabase prospective_schools update warning:', e);
+    }
 
     // 2. Update/Upsert Supabase 'schools'
+    // 2. Update/Upsert Supabase 'schools'
     try {
-      await supabase
+      let scUpdate = supabase
         .from('schools')
         .update({
           status: 'FULL_VERIFIED',
-          is_verified: true,
-          plan_type: 'PRO',
           subscription_plan: 'PRO_750K'
-        })
-        .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
-    } catch (e) {}
+        });
+
+      const isNumericId = !isNaN(Number(idOrSlug)) && Number(idOrSlug) > 0;
+      if (isNumericId) {
+        scUpdate = scUpdate.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+      } else {
+        scUpdate = scUpdate.eq('slug', idOrSlug);
+      }
+      
+      await scUpdate;
+    } catch (e) {
+      console.warn('Supabase schools update warning:', e);
+    }
 
     // 3. Update fontInMemSchools map
     fontInMemSchools.forEach((s, keySlug) => {

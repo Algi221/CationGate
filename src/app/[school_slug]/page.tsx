@@ -467,14 +467,14 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-x-hidden">
+    <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white dark:bg-[#111111] dark:text-[#f6f5f4]">
 
       {/* FLOATING NAVBAR */}
       <div className="navbar-wrapper">
         <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
           <div className="nav-left">
             <Link href="/" className="logo-container">
-              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={36} height={36} className="w-9 h-9 object-contain" />
+              {ppdbLogo && <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={36} height={36} className="w-9 h-9 object-contain" />}
               <span className="logo-text font-extrabold">{ppdbTitle}</span>
             </Link>
           </div>
@@ -529,7 +529,7 @@ export default function Home() {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
+              {ppdbLogo && <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />}
               <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
             </Link>
 
@@ -592,7 +592,7 @@ export default function Home() {
       <main className="flex-grow w-full">
         <div className="relative w-full overflow-hidden">
           {/* Media Background - Full Width */}
-          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-50 dark:bg-[#111111]">
             {heroMediaType === "video" && heroMediaUrl ? (
               <video
                 src={sanitizeUrl(heroMediaUrl) || undefined}
@@ -699,26 +699,35 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* APP MOCKUP WRAPPER */}
-          <div className="mockup-container relative z-10">
-            <div className="app-mockup">
-
-              {/* Mockup Browser Top bar */}
-              <div className="mockup-browser-bar">
-                <div className="browser-dots">
-                  <span className="dot-red"></span>
-                  <span className="dot-yellow"></span>
-                  <span className="dot-green"></span>
+          {/* MAC BROWSER MOCKUP WRAPPER */}
+          <div className="mockup-container relative z-10 max-w-5xl mx-auto mt-10">
+            {/* Outer Dark Frame (Thick Bezel) */}
+            <div className="relative rounded-[2rem] bg-[#0f172a] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-1 ring-slate-900/50">
+              
+              {/* Inner Mac Window */}
+              <div className="w-full h-full bg-[#0f172a] overflow-hidden rounded-[1.25rem] relative flex flex-col">
+                
+                {/* Mockup Browser Top bar */}
+                <div className="flex items-center px-4 py-3 bg-[#0f172a] relative z-20 border-b border-slate-800/80">
+                  <div className="flex gap-2 w-20">
+                    <span className="w-3 h-3 rounded-full bg-red-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                    <span className="w-3 h-3 rounded-full bg-yellow-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                    <span className="w-3 h-3 rounded-full bg-green-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                  </div>
+                  <div className="flex-1 flex justify-center">
+                    <div className="bg-slate-900/80 text-slate-400 text-[10px] font-medium px-6 py-1.5 rounded-md flex items-center justify-center min-w-[200px] shadow-inner border border-slate-800">
+                      ppdb.{schoolSlug}.sch.id/dashboard
+                    </div>
+                  </div>
+                  <div className="w-20"></div> {/* Spacer for perfect centering */}
                 </div>
-                <div className="browser-address">ppdb.smktarunabhakti.sch.id/dashboard</div>
-                <div className="w-4"></div>
-              </div>
 
-              {/* Data Pendaftar Table View */}
-              <div className="dashboard-view block w-full p-6 h-[600px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
-                <DataPendaftarTable />
-              </div>
+                {/* Data Pendaftar Table View */}
+                <div className="dashboard-view block w-full p-6 h-[600px] bg-slate-50 dark:bg-slate-900 relative z-10 transition-colors duration-300 overflow-y-auto">
+                  <DataPendaftarTable />
+                </div>
 
+              </div>
             </div>
           </div>
 

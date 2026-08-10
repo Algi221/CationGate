@@ -69,7 +69,7 @@ verifyRouter.post('/submit-data', async (c) => {
 
     // Update Supabase prospective_schools / schools table
     try {
-      await supabase
+      let psUpdate = supabase
         .from('prospective_schools')
         .update({
           npsn: npsn || undefined,
@@ -82,9 +82,19 @@ verifyRouter.post('/submit-data', async (c) => {
           sk_document_name: sk_document_name || undefined,
           sk_document_url: sk_document_url || undefined,
           status: 'PENDING_VERIFICATION'
-        })
-        .or(`id.eq.${targetSchoolId},slug.eq.${targetSchoolId}`);
-    } catch (err) {}
+        });
+
+      const isNumericId = !isNaN(Number(targetSchoolId)) && Number(targetSchoolId) > 0;
+      if (isNumericId) {
+        psUpdate = psUpdate.or(`id.eq.${targetSchoolId},slug.eq.${targetSchoolId}`);
+      } else {
+        psUpdate = psUpdate.eq('slug', targetSchoolId);
+      }
+      
+      await psUpdate;
+    } catch (err) {
+      console.warn('Supabase prospective_schools update warning:', err);
+    }
 
     if (resolvedId) {
       try {

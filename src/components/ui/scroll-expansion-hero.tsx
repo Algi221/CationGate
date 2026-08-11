@@ -284,7 +284,7 @@ const ScrollExpandMedia = ({
                     <Image
                       src={mediaSrc}
                       alt={title || 'Media content'}
-                      width={1280}
+                      width={1000}
                       height={720}
                       className='w-full h-full object-cover rounded-xl'
                     />
@@ -318,19 +318,18 @@ const ScrollExpandMedia = ({
                 </div>
               </div>
 
-              <div
-                className={`flex items-center justify-center text-center gap-4 w-full relative z-10 transition-none flex-col ${
-                  textBlend ? 'mix-blend-difference' : 'mix-blend-normal'
-                }`}
-              >
+                <div
+                  className="flex items-center justify-center text-center gap-4 w-full relative z-10 transition-none flex-col mix-blend-normal"
+                >
+
                 <motion.h2
-                  className='text-4xl md:text-5xl lg:text-5xl text-[#FAF8F2] transition-none'
+                  className='text-4xl md:text-5xl lg:text-5xl text-[#FFD33B] transition-none'
                   style={{ transform: `translateX(-${textTranslateX}vw)` }}
                 >
                   {firstWord}
                 </motion.h2>
                 <motion.h2
-                  className='text-4xl md:text-5xl lg:text-5xl text-center text-[#FAF8F2] transition-none'
+                  className='text-4xl md:text-5xl lg:text-5xl text-center text-[#FFD33B] transition-none'
                   style={{ transform: `translateX(${textTranslateX}vw)` }}
                 >
                   {restOfTitle}

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Check, ArrowRight, Sparkles } from "lucide-react";
+import { CheckCircle2, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function PricingSection() {
@@ -10,216 +10,206 @@ export function PricingSection() {
     "yearly",
   );
 
-  const plans = [
-    {
-      name: "Starter School Plan",
-      priceMonthly: "Rp 649.000",
-      priceYearly: "Rp 499.000",
-      period: "/ month",
-      subtitle: "For single institutions with up to 250 active learners",
-      badge: "Starter",
-      popular: false,
+  const plans = {
+    starter: {
+      name: "STARTER",
+      priceMonthly: "Rp 649k",
+      priceYearly: "Rp 499k",
+      period: "/Month",
       features: [
         "Subdomain (sekolah.cationgate.id)",
         "250 Active Learner Capacity",
         "AI Lesson Plan Generation (50/mo)",
-        "Standard Progress Telemetry",
-        "Dapodik & CSV Export",
         "Email Support",
       ],
-      cta: "Select Starter Plan",
-      variant: "outline" as const,
+      cta: "Get Started Now",
     },
-    {
-      name: "Pro Institution Plan",
-      priceMonthly: "Rp 1.299.000",
-      priceYearly: "Rp 999.000",
-      period: "/ month",
-      subtitle: "Complete AI learning & telemetry stack for leading academies",
-      badge: "Most Popular 🔥",
-      popular: true,
+    pro: {
+      name: "PRO INSTITUTION",
+      priceMonthly: "Rp 1.299k",
+      priceYearly: "Rp 999k",
+      period: "/Month",
+      badge: "Most Popular",
       features: [
         "All Starter Plan Features",
         "UNLIMITED Active Learners",
         "Custom Domain (sch.id / edu)",
-        "Unlimited AI Lesson & Assessment Synthesis",
+        "Unlimited AI Lesson & Assessment",
         "Real-Time Telemetry & Skill Heatmaps",
-        "Midtrans Payment Gateway (QRIS/VA)",
         "WhatsApp Broadcast API Integration",
-        "24/7 Priority Support & SLA Uptime",
       ],
-      cta: "Start 30-Day Free Trial",
-      variant: "default" as const,
+      cta: "Buy Now",
     },
-    {
-      name: "Enterprise Multi-Tenant",
-      priceMonthly: "Custom Tiers",
-      priceYearly: "Custom Tiers",
-      period: "",
-      subtitle:
-        "For school networks, foundation boards & education departments",
-      badge: "Enterprise",
-      popular: false,
-      features: [
-        "Multi-School Central Command Portal",
-        "Unlimited Tenant Subdomains",
-        "Dedicated Isolated Server Nodes (99.99% SLA)",
-        "Custom ERP & AXSI CBT API Integration",
-        "On-Site Staff Training & Workshop",
-        "Dedicated Technical Account Manager",
-      ],
-      cta: "Contact Enterprise Sales",
-      variant: "outline" as const,
-    },
-  ];
+  };
 
   return (
-    <section
-      id="pricing"
-      className="py-20 bg-background border-b border-border relative"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#8EC9F6]/20 text-[#2A1B1D] text-xs font-bold border border-border">
-            <Sparkles className="w-3.5 h-3.5 text-[#2A1B1D]" />
-            Transparent Ed-Tech SaaS Pricing
-          </div>
+    <section className="min-h-screen w-full py-20 bg-[#FAF8F2] font-sans">
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-6">
+        <div className="bg-[#FFFFFF] w-full rounded-3xl p-8 md:p-12 shadow-sm border border-[#E7E1D6]">
+          
+          <div className="text-center max-w-4xl mx-auto mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#23191C] mb-4 tracking-tight">
+              Flexible Plans Built For Growth
+            </h2>
+            <p className="text-[#58504E] text-base">
+              Get started free or upgrade to unlock complete AI learning & telemetry stack for your institution.
+            </p>
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
-            Flexible Plans Built For Growth
-          </h2>
-
-          <p className="text-body text-base font-medium">
-            30-day risk-free trial. No credit card required to start.
-          </p>
-
-          {/* Billing Switcher */}
-          <div className="pt-4 flex items-center justify-center gap-3">
-            <span
-              className={`text-xs font-bold ${billingCycle === "monthly" ? "text-heading" : "text-body"}`}
-            >
-              Billed Monthly
-            </span>
-
-            <button
-              onClick={() =>
-                setBillingCycle(
-                  billingCycle === "monthly" ? "yearly" : "monthly",
-                )
-              }
-              className="w-14 h-8 rounded-full bg-primary p-1 relative transition-colors duration-200 focus:outline-none cursor-pointer"
-            >
-              <div
-                className={`w-6 h-6 rounded-full bg-surface transition-transform duration-200 ${
-                  billingCycle === "yearly" ? "translate-x-6" : "translate-x-0"
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <span
+                className={`text-xs font-bold tracking-wider ${
+                  billingCycle === "monthly" ? "text-[#23191C]" : "text-[#58504E]"
                 }`}
-              />
-            </button>
-
-            <span
-              className={`text-xs font-bold flex items-center gap-1.5 ${billingCycle === "yearly" ? "text-heading" : "text-body"}`}
-            >
-              <span>Billed Annually</span>
-              <span className="bg-[#45C06B]/20 text-[#45C06B] text-[10px] font-bold px-2 py-0.5 rounded border border-border">
-                Save 20%
+              >
+                MONTHLY
               </span>
-            </span>
-          </div>
-        </div>
 
-        {/* Pricing Cards Grid */}
-        <div className="grid lg:grid-cols-3 gap-8 items-stretch">
-          {plans.map((plan, idx) => (
-            <div
-              key={idx}
-              className={`rounded-2xl p-8 relative flex flex-col justify-between transition-all duration-200 ${
-                plan.popular
-                  ? "bg-[#2A1B1D] text-white border-2 border-[#8EC9F6] shadow-xl"
-                  : "bg-surface border border-border text-heading shadow-2xs"
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span
-                    className={`text-xs font-bold px-3 py-1 rounded-md ${
-                      plan.popular
-                        ? "bg-[#8EC9F6] text-[#2A1B1D]"
-                        : "bg-background text-heading border border-border"
-                    }`}
-                  >
-                    {plan.badge}
-                  </span>
-                </div>
-
-                <h3 className="text-xl font-extrabold mb-1.5">{plan.name}</h3>
-
-                <p
-                  className={`text-xs mb-6 font-medium ${plan.popular ? "text-white/80" : "text-body"}`}
-                >
-                  {plan.subtitle}
-                </p>
-
+              <button
+                onClick={() =>
+                  setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")
+                }
+                className="w-12 h-6 rounded-full bg-[#45C06B] relative transition-colors duration-200 focus:outline-none cursor-pointer flex items-center px-1"
+                aria-label="Toggle billing cycle"
+              >
                 <div
-                  className={`mb-6 pb-6 border-b ${plan.popular ? "border-white/20" : "border-border"}`}
-                >
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                      {billingCycle === "yearly"
-                        ? plan.priceYearly
-                        : plan.priceMonthly}
-                    </span>
-                    <span
-                      className={`text-xs font-semibold ${plan.popular ? "text-white/70" : "text-body"}`}
-                    >
-                      {plan.period}
-                    </span>
-                  </div>
-                </div>
+                  className={`w-4 h-4 rounded-full bg-[#FFFFFF] transition-transform duration-200 ${
+                    billingCycle === "yearly" ? "translate-x-6" : "translate-x-0"
+                  }`}
+                />
+              </button>
 
-                <div className="space-y-3 mb-8">
-                  <div
-                    className={`text-xs font-bold uppercase tracking-wider mb-2 ${plan.popular ? "text-white/70" : "text-body"}`}
-                  >
-                    Included Capabilities:
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xs font-bold tracking-wider ${
+                    billingCycle === "yearly" ? "text-[#23191C]" : "text-[#58504E]"
+                  }`}
+                >
+                  ANNUAL
+                </span>
+                <span className="bg-[#8EC9F6]/10 text-[#8EC9F6] text-[10px] font-bold px-2 py-0.5 rounded-sm">
+                  SAVE 20%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+            <div className="flex-1 rounded-2xl bg-[#FAFAFA] border border-[#E7E1D6] flex flex-col overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+              <div className="flex flex-col md:flex-row p-8 border-b border-[#E7E1D6] gap-8">
+                <div className="w-full md:w-48 shrink-0 flex flex-col items-start gap-4">
+                  <span className="px-3 py-1 bg-[#FFFFFF] border border-[#E7E1D6] rounded text-xs font-bold text-[#58504E] uppercase tracking-wider">
+                    {plans.starter.name}
+                  </span>
+                  <div className="flex items-baseline gap-1 mt-2">
+                    <span className="text-4xl font-extrabold text-[#23191C] tracking-tighter">
+                      {billingCycle === "yearly" ? plans.starter.priceYearly : plans.starter.priceMonthly}
+                    </span>
+                    <span className="text-[#58504E] text-sm font-medium">
+                      {plans.starter.period}
+                    </span>
                   </div>
-                  {plan.features.map((feat, fIdx) => (
-                    <div
-                      key={fIdx}
-                      className="flex items-start gap-2.5 text-xs font-semibold"
-                    >
-                      <div
-                        className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${plan.popular ? "bg-[#8EC9F6] text-[#2A1B1D]" : "bg-[#45C06B]/20 text-[#45C06B]"}`}
-                      >
-                        <Check className="w-3 h-3 font-bold" />
-                      </div>
-                      <span
-                        className={
-                          plan.popular ? "text-white/90" : "text-heading"
-                        }
-                      >
-                        {feat}
-                      </span>
+                  <Link href="/daftar" className="w-full mt-2">
+                    <Button className="w-full bg-[#8EC9F6] hover:bg-[#7DB8E5] text-[#2A1B1D] font-bold py-5 rounded-lg shadow-sm">
+                      {plans.starter.cta}
+                    </Button>
+                  </Link>
+                </div>
+                <div className="flex-1 flex flex-col justify-center space-y-3 pt-2">
+                  {plans.starter.features.map((feat, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-[#2A1B1D] shrink-0" strokeWidth={2.5} />
+                      <span className="text-sm font-medium text-[#23191C]">{feat}</span>
                     </div>
                   ))}
                 </div>
               </div>
+              <div className="flex flex-col md:flex-row p-8 gap-8 relative bg-[#FFFFFF]">
+                <div className="absolute top-6 right-6 hidden md:block">
+                  <span className="px-3 py-1 border border-[#8EC9F6] text-[#8EC9F6] rounded text-xs font-bold bg-[#8EC9F6]/5">
+                    {plans.pro.badge}
+                  </span>
+                </div>
 
-              <Link href="/daftar" className="w-full">
-                <Button
-                  size="lg"
-                  className={`w-full font-bold text-xs rounded-xl py-5 ${
-                    plan.popular
-                      ? "bg-[#FFD33B] hover:bg-[#F3C625] text-[#2A1B1D] shadow-xs"
-                      : "border-border hover:bg-background text-heading"
-                  }`}
-                  variant={plan.variant}
-                >
-                  {plan.cta} <ArrowRight className="w-4 h-4 ml-1" />
+                <div className="w-full md:w-48 shrink-0 flex flex-col items-start gap-4">
+                  <div className="flex items-center justify-between w-full md:hidden">
+                    <span className="px-3 py-1 bg-[#FFFFFF] border border-[#E7E1D6] rounded text-xs font-bold text-[#58504E] uppercase tracking-wider">
+                      {plans.pro.name}
+                    </span>
+                    <span className="px-2 py-1 border border-[#8EC9F6] text-[#8EC9F6] rounded text-[10px] font-bold">
+                      {plans.pro.badge}
+                    </span>
+                  </div>
+                  <span className="hidden md:inline-block px-3 py-1 bg-[#FFFFFF] border border-[#E7E1D6] rounded text-xs font-bold text-[#58504E] uppercase tracking-wider">
+                    {plans.pro.name}
+                  </span>
+
+                  <div className="flex items-baseline gap-1 mt-2">
+                    <span className="text-4xl font-extrabold text-[#23191C] tracking-tighter">
+                      {billingCycle === "yearly" ? plans.pro.priceYearly : plans.pro.priceMonthly}
+                    </span>
+                    <span className="text-[#58504E] text-sm font-medium">
+                      {plans.pro.period}
+                    </span>
+                  </div>
+                  <Link href="/daftar" className="w-full mt-2">
+                    <Button className="w-full bg-[#8EC9F6] hover:bg-[#7DB8E5] text-[#2A1B1D] font-bold py-5 rounded-lg shadow-sm">
+                      {plans.pro.cta}
+                    </Button>
+                  </Link>
+                </div>
+                {/* Features */}
+                <div className="flex-1 flex flex-col justify-center space-y-3 pt-2">
+                  <div className="grid sm:grid-cols-1 gap-3">
+                    {plans.pro.features.map((feat, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-[#8EC9F6] shrink-0" strokeWidth={2.5} />
+                        <span className="text-sm font-medium text-[#23191C]">{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Custom Pricing / Enterprise Card */}
+            <div className="w-full lg:w-[320px] shrink-0 bg-[#2A1B1D] rounded-2xl p-8 flex flex-col text-[#FFFFFF] shadow-lg">
+              <div className="w-12 h-12 bg-[#FFFFFF] rounded-xl mb-6 flex items-center justify-center">
+                <PhoneCall className="w-6 h-6 text-[#2A1B1D]" />
+              </div>
+              
+              <h3 className="text-2xl font-bold mb-2">Enterprise</h3>
+              <div className="text-[#FFD33B] text-sm font-bold mb-4">Custom Tiers</div>
+              
+              <p className="text-[#FFFFFF]/80 text-sm leading-relaxed mb-6 flex-1">
+                For school networks, foundation boards & education departments requiring dedicated infrastructure.
+              </p>
+              
+              <Link href="/contact" className="w-full">
+                <Button className="w-full bg-[#FFFFFF] hover:bg-[#FAF8F2] text-[#2A1B1D] font-bold py-6 rounded-lg mb-6 shadow-sm">
+                  Contact Sales
                 </Button>
               </Link>
+              
+              <div className="space-y-2 mt-auto">
+                <p className="text-[11px] font-bold text-[#FFFFFF]/60 uppercase tracking-wider mb-3">Enterprise Features:</p>
+                <ul className="text-xs text-[#FFFFFF]/80 space-y-2.5 pl-4 list-disc marker:text-[#8EC9F6]">
+                  <li>Multi-School Central Command Portal</li>
+                  <li>Dedicated Isolated Server Nodes (99.99% SLA)</li>
+                  <li>Custom ERP & AXSI CBT API Integration</li>
+                  <li>On-Site Staff Training & Workshop</li>
+                  <li>Dedicated Technical Account Manager</li>
+                </ul>
+              </div>
             </div>
-          ))}
+
+          </div>
+
+          {/* Footer Note */}
+          <div className="text-center mt-10 text-sm font-medium text-[#58504E]">
+            All plans feature basic dapodik export, standard telemetry, and email support.
+          </div>
+
         </div>
       </div>
     </section>

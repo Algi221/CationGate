@@ -2603,10 +2603,23 @@ export default function DaftarPage() {
                 </div>
               </div>
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 mb-1.5">Sebutkan Jarak Tepatnya (Km)</label>
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">
+                  {formData.jarakSekolah === "Kurang dari 1 km" ? "Sebutkan Jarak Tepatnya (Meter)" : "Sebutkan Jarak Tepatnya (Km)"}
+                </label>
                 <div className="relative">
-                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="jarakKm" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 3" value={formData.jarakKm} onChange={handleInputChange} />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Km</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    name="jarakKm"
+                    className="w-full bg-white border border-slate-300 shadow-sm rounded-xl pl-4 pr-16 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    placeholder={formData.jarakSekolah === "Kurang dari 1 km" ? "Contoh: 500" : "Contoh: 3"}
+                    value={formData.jarakKm}
+                    onChange={handleInputChange}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                    {formData.jarakSekolah === "Kurang dari 1 km" ? "Meter" : "Km"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -3834,7 +3847,7 @@ export default function DaftarPage() {
               </button>
             )}
             <button
-              className="btn-primary-pill px-8 py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl px-7 py-3.5 shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               onClick={nextStep}
               disabled={
                 isSubmitting ||
@@ -3852,7 +3865,7 @@ export default function DaftarPage() {
               ) : (
                 "Selanjutnya"
               )}
-              {!isSubmitting && <ArrowRight size={16} />}
+              {!isSubmitting && <ArrowRight size={18} />}
             </button>
           </div>
         </div>

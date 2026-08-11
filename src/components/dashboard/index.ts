@@ -1,0 +1,1 @@
+export { AdminApplicantsTable } from "./AdminApplicantsTable";

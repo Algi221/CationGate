@@ -1,255 +1,208 @@
-// "use client";
-
-// import React, { useState, useEffect } from "react";
-// import Link from "next/link";
-// import {
-//   Sparkles,
-//   Menu,
-//   X,
-//   ArrowRight,
-//   LogIn,
-//   DoorOpen,
-//   Layers,
-// } from "lucide-react";
-// import { Button } from "@/components/ui/button";
-// import { InteractiveHoverButton } from "../ui/interactive-hover-button";
-
-// export function Navbar() {
-//   const [scrolled, setScrolled] = useState(false);
-//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-//   useEffect(() => {
-//     const handleScroll = () => {
-//       setScrolled(window.scrollY > 20);
-//     };
-//     window.addEventListener("scroll", handleScroll);
-//     return () => window.removeEventListener("scroll", handleScroll);
-//   }, []);
-
-//   const navLinks = [
-//     { label: "Home", href: "#hero", color: "#45C06B" },
-//     { label: "About", href: "#about", color: "#FF9D67" },
-//     { label: "Features", href: "#features", color: "#8EC9F6" },
-//     { label: "Capabilities", href: "#capabilities", color: "#E86BC6" },
-//     { label: "Pricing", href: "#pricing", color: "#FFD33B" },
-//     { label: "FAQ", href: "#faq", color: "#B8B8B8" },
-//   ];
-
-//   return (
-//     <header className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 transition-all duration-500">
-//       {/* Lebar container berubah: max-w-7xl saat di atas, menyusut ke max-w-5xl saat di-scroll */}
-//       <div
-//         className={`transition-all duration-500 rounded-2xl border shadow-2xl px-5 sm:px-6 ${
-//           scrolled
-//             ? "w-full max-w-5xl bg-[#FFFFFF]/90 text-[#1A1A1A] border-rose-200/50 backdrop-blur-md py-2 shadow-lg"
-//             : "w-full max-w-7xl bg-[#FFFFFF] text-[#1A1A1A] border-white/10 py-3"
-//         }`}
-//       >
-//         <div className="flex items-center justify-between h-14">
-//           {/* Logo Section (Ukuran Tetap Normal) */}
-//           <Link href="/" className="flex items-center gap-2.5 group">
-//             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#2A1B1D] group-hover:scale-110 transition-transform">
-//               <DoorOpen className="w-5 h-5" />
-//             </div>
-//             <div className="flex flex-col">
-//               <span className="font-semibold text-lg tracking-wide text-[#23191C]">
-//                 CationGate
-//               </span>
-//             </div>
-//           </Link>
-
-//           {/* Desktop Navigation (Ukuran teks & gap tetap seperti semula) */}
-//           <nav className="hidden md:flex items-center gap-1">
-//             {navLinks.map((link) => (
-//               <a
-//                 key={link.label}
-//                 href={link.href}
-//                 className="group flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all duration-300"
-//               >
-//                 <span
-//                   className="w-2 h-2 opacity-0 group-hover:opacity-100 transition-all duration-300"
-//                   style={{ backgroundColor: link.color }}
-//                 />
-//                 <span className="text-sm font-medium text-[#23191C]">
-//                   {link.label}
-//                 </span>
-//               </a>
-//             ))}
-//           </nav>
-
-//           {/* Action Buttons (Ukuran Tetap Normal) */}
-//           <div className="hidden sm:flex items-center gap-3">
-//             <Link href="/daftar">
-//               <InteractiveHoverButton
-//                 className="
-//                   h-10
-//                   rounded-full
-//                   border-0
-//                   bg-[#FFD33B]
-//                   text-[#23191C]
-//                   font-semibold
-//                   text-sm
-//                   px-6
-//                   shadow-none
-//                   transition-all
-//                   duration-300
-//                   hover:bg-[#F3C625]
-//                   hover:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
-//                   hover:-translate-y-0.5
-//                   active:scale-95
-//                 "
-//               >
-//                 Get Started
-//               </InteractiveHoverButton>
-//             </Link>
-//           </div>
-
-//           {/* Mobile Menu Toggle */}
-//           <div className="flex md:hidden items-center">
-//             <button
-//               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-//               className="p-1.5 rounded-lg text-[#2A1B1D] hover:bg-black/5 transition-colors"
-//             >
-//               {mobileMenuOpen ? (
-//                 <X className="w-6 h-6" />
-//               ) : (
-//                 <Menu className="w-6 h-6" />
-//               )}
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Mobile Navigation Drawer */}
-//       {mobileMenuOpen && (
-//         <div className="absolute top-20 left-4 right-4 md:hidden border border-border bg-[#2A1B1D]/95 rounded-2xl p-4 space-y-4 shadow-2xl">
-//           <div className="flex flex-col space-y-1">
-//             {navLinks.map((link, idx) => (
-//               <a
-//                 key={idx}
-//                 href={link.href}
-//                 onClick={() => setMobileMenuOpen(false)}
-//                 className="px-3 py-2.5 rounded-xl text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors"
-//               >
-//                 {link.label}
-//               </a>
-//             ))}
-//           </div>
-//           <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
-//             <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
-//               <Button className="w-full justify-center bg-[#FFD33B] text-[#2A1B1D] hover:bg-[#F3C625] font-semibold text-sm rounded-xl h-10">
-//                 Sign up
-//               </Button>
-//             </Link>
-//           </div>
-//         </div>
-//       )}
-//     </header>
-//   );
-// }
-
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import {
+  Menu,
+  X,
+  DoorOpen,
+  ChevronDown,
+  Sparkles,
+  Users,
+  Target,
+  BookOpen,
+  FileCheck,
+  BarChart3,
+  Cpu,
+  PhoneCall,
+} from "lucide-react";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.nav-dropdown-container')) {
+        setActiveDropdown(null);
+      }
+    };
     window.addEventListener("scroll", handleScroll);
-
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  const navLinks = [
-    { label: "Home", href: "#hero", color: "#45C06B" },
-    { label: "About", href: "#about", color: "#FF9D67" },
-    { label: "Features", href: "#features", color: "#8EC9F6" },
-    { label: "Capabilities", href: "#capabilities", color: "#E86BC6" },
-    { label: "Pricing", href: "#pricing", color: "#FFD33B" },
-    { label: "FAQ", href: "#faq", color: "#B8B8B8" },
+  const navItems = [
+    { label: "Beranda", href: "/", color: "#45C06B" },
+    {
+      label: "Tentang Kami",
+      href: "/tentang",
+      color: "#FF9D67",
+      dropdown: [
+        {
+          title: "Visi & Misi",
+          desc: "Komitmen kami dalam modernisasi pendidikan digital Indonesia.",
+          href: "/tentang#visi-misi",
+          icon: Target,
+        },
+        {
+          title: "Tim & Leadership",
+          desc: "Pendidik dan teknolog hebat di balik sistem CationGate.",
+          href: "/tentang#tim",
+          icon: Users,
+        },
+        {
+          title: "Kisah CationGate",
+          desc: "Perjalanan inovasi platform dari sekolah pertama hingga nasional.",
+          href: "/tentang#kisah",
+          icon: BookOpen,
+        },
+      ],
+    },
+    {
+      label: "Fitur Unggulan",
+      href: "/fitur",
+      color: "#8EC9F6",
+      dropdown: [
+        {
+          title: "Sistem PPDB Online",
+          desc: "Pendaftaran, pengunggahan berkas, dan verifikasi otomatis.",
+          href: "/fitur#ppdb",
+          icon: Sparkles,
+        },
+        {
+          title: "Asesmen & Ujian CBT",
+          desc: "Ujian berbasis komputer bebas kecurangan dengan nilai instan.",
+          href: "/fitur#cbt",
+          icon: FileCheck,
+        },
+        {
+          title: "Manajemen Siswa",
+          desc: "Kelola data akademik, pembagian kelas, dan profil murid.",
+          href: "/fitur#manajemen",
+          icon: Cpu,
+        },
+        {
+          title: "Dashboard Analitik",
+          desc: "Visualisasi data pendaftar dan statistik real-time sekolah.",
+          href: "/fitur#analitik",
+          icon: BarChart3,
+        },
+      ],
+    },
+    { label: "Paket & Biaya", href: "/harga", color: "#FFD33B" },
+    { label: "Hubungi Kami", href: "/kontak", color: "#E86BC6" },
   ];
 
   return (
-    <header
-      className={`
-        fixed top-0 left-0 right-0 z-50
-        transition-all duration-500
-        ${
-          scrolled
-            ? "bg-white/90 backdrop-blur-md border-b border-[#E7E1D6]/70 shadow-sm"
-            : "bg-transparent text-white border-b border-transparent"
-        }
-      `}
-    >
+    <header className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 transition-all duration-500">
       <div
-        className={`
-          w-full
-          px-5 sm:px-8 lg:px-10
-          transition-all duration-500
-          ${scrolled ? "py-2.5" : "py-4"}
-        `}
+        className={`transition-all duration-500 rounded-2xl border shadow-2xl px-5 sm:px-6 ${
+          scrolled
+            ? "w-full max-w-5xl bg-[#FFFFFF]/90 text-[#1A1A1A] border-rose-200/50 backdrop-blur-md py-2 shadow-lg"
+            : "w-full max-w-7xl bg-[#FFFFFF] text-[#1A1A1A] border-white/10 py-3"
+        }`}
       >
-        <div className="w-full flex items-center justify-between">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 shrink-0"
-          >
-            <span className="text-xl font-bold tracking-tight text-[#23191C]">
-              CationGate
-            </span>
+        <div className="flex items-center justify-between h-14">
+          {/* Logo Section */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#2A1B1D] group-hover:scale-110 transition-transform">
+              <DoorOpen className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-semibold text-lg tracking-wide text-[#23191C]">
+                CationGate
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="
-                  group
-                  flex items-center gap-2
-                  px-3.5 py-2
-                  rounded-xl
-                  transition-all duration-300
-                "
-              >
-                <span
-                  className="
-                    w-1.5 h-1.5
-                    opacity-0
-                    group-hover:opacity-100
-                    transition-all duration-300
-                  "
-                  style={{
-                    backgroundColor: link.color,
-                  }}
-                />
+            {navItems.map((item) => {
+              const hasDropdown = Boolean(item.dropdown);
 
-                <span
-                  className="
-                    text-sm
-                    font-medium
-                    // text-[#23191C]
-                    transition-colors duration-300
-                  "
+              if (hasDropdown) {
+                return (
+                  <div
+                    key={item.label}
+                    className="relative nav-dropdown-container"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setActiveDropdown(activeDropdown === item.label ? null : item.label)}
+                      className="group flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all duration-300 cursor-pointer"
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-sm font-medium text-[#23191C]">{item.label}</span>
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-300 opacity-60 text-[#23191C] ${
+                          activeDropdown === item.label ? "rotate-180 opacity-100" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {/* Mega-Menu Dropdown Card */}
+                    {activeDropdown === item.label && item.dropdown && (
+                      <div className="absolute left-0 top-full pt-2 w-72 sm:w-80 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-2 space-y-1">
+                          {item.dropdown.map((sub) => {
+                            const SubIcon = sub.icon;
+                            return (
+                              <Link
+                                key={sub.title}
+                                href={sub.href}
+                                onClick={() => setActiveDropdown(null)}
+                                className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group/sub"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover/sub:bg-blue-600 group-hover/sub:text-white transition-colors mt-0.5">
+                                  <SubIcon className="w-4 h-4" />
+                                </div>
+                                <div>
+                                  <div className="text-xs font-bold text-slate-900 group-hover/sub:text-blue-600 transition-colors">
+                                    {sub.title}
+                                  </div>
+                                  <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                    {sub.desc}
+                                  </div>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="group flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all duration-300"
                 >
-                  {link.label}
-                </span>
-              </a>
-            ))}
+                  <span
+                    className="w-2.5 h-2.5 rounded-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-sm font-medium text-[#23191C]">{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Action Button */}
@@ -274,23 +227,16 @@ export function Navbar() {
                   active:scale-95
                 "
               >
-                Get Started
+                Daftar Sekolah
               </InteractiveHoverButton>
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Toggle */}
           <div className="flex md:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="
-                p-2
-                rounded-lg
-                text-[#2A1B1D]
-                hover:bg-black/5
-                transition-colors
-              "
-              aria-label="Toggle menu"
+              className="p-1.5 rounded-lg text-[#2A1B1D] hover:bg-black/5 transition-colors"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -302,68 +248,41 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div
-          className="
-            md:hidden
-            border-t border-[#E7E1D6]
-            bg-white/95
-            backdrop-blur-xl
-            px-5
-            py-4
-            shadow-lg
-          "
-        >
-          <div className="flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="
-                  flex items-center gap-3
-                  px-3 py-3
-                  rounded-xl
-                  text-sm
-                  font-medium
-                  text-[#23191C]
-                  hover:bg-[#FAF8F2]
-                  transition-colors
-                "
-              >
-                <span
-                  className="w-2 h-2 rounded-full"
-                  style={{
-                    backgroundColor: link.color,
-                  }}
-                />
-
-                {link.label}
-              </a>
+        <div className="absolute top-20 left-4 right-4 md:hidden border border-border bg-[#2A1B1D] rounded-2xl p-4 space-y-4 shadow-2xl">
+          <div className="flex flex-col space-y-1">
+            {navItems.map((item) => (
+              <React.Fragment key={item.label}>
+                <Link
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2.5 rounded-xl text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                >
+                  {item.label}
+                </Link>
+                {item.dropdown && (
+                  <div className="pl-4 space-y-1 border-l border-white/10 my-1">
+                    {item.dropdown.map((sub) => (
+                      <Link
+                        key={sub.title}
+                        href={sub.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-1.5 text-xs text-white/70 hover:text-white"
+                      >
+                        • {sub.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
-
-          <div className="pt-4 mt-3 border-t border-[#E7E1D6]">
-            <Link
-              href="/daftar"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Button
-                className="
-                  w-full
-                  justify-center
-                  bg-[#FFD33B]
-                  text-[#2A1B1D]
-                  hover:bg-[#F3C625]
-                  font-semibold
-                  text-sm
-                  rounded-xl
-                  h-10
-                "
-              >
-                Get Started
-              </Button>
+          <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+            <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
+              <InteractiveHoverButton className="w-full justify-center bg-[#FFD33B] text-[#2A1B1D] font-semibold text-sm rounded-xl h-10">
+                Daftar Sekolah
+              </InteractiveHoverButton>
             </Link>
           </div>
         </div>

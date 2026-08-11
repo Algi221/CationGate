@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FloatingComment, { TagColor } from "./FloatingComment";
 
-
 const COMMENTS_DATA = [
   {
     id: 1,
@@ -75,7 +74,6 @@ const COMMENTS_DATA = [
     delay: 1.4,
     emoji: "👍",
   },
-
   {
     id: 6,
     name: "Chris L.",
@@ -129,9 +127,10 @@ export default function SimGymSection() {
   }, []);
 
   return (
-    <section className="relative w-full h-[100vh] min-h-[700px] bg-[#e6e5dd] dark:bg-[#0b1121] flex transition-colors duration-500 overflow-hidden">
-      <div className="w-[40%] h-full relative z-40 flex flex-col justify-center pl-10 md:pl-20">
-        <h2 className="text-4xl md:text-5xl font-serif text-gray-900 dark:text-white tracking-tight leading-tight mb-4 transition-colors">
+    <section className="relative w-full min-h-screen bg-[#e6e5dd] dark:bg-[#0b1121] flex flex-col lg:flex-row transition-colors duration-500 overflow-hidden">
+      {/* 1. BAGIAN TEKS (z-40 agar berada di atas komentar jika overlap) */}
+      <div className="w-full lg:w-[40%] relative z-40 flex flex-col justify-center pt-24 pb-8 px-6 sm:px-12 md:px-20 lg:py-0 lg:pl-10 xl:pl-20 items-center lg:items-start text-center lg:text-left">
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-gray-900 dark:text-white tracking-tight leading-tight mb-4 transition-colors">
           Template SPMB SMK
         </h2>
         <p className="text-gray-700 dark:text-slate-400 text-base md:text-lg mb-8 max-w-md transition-colors font-medium leading-relaxed">
@@ -144,71 +143,77 @@ export default function SimGymSection() {
         </button>
       </div>
 
-   
-      <div className="w-[60%] h-full relative flex items-center justify-center">
-        {/* Mockup Tengah (z-30 AGAR SELALU DI DEPAN KOMENTAR) */}
-        <motion.div
-          animate={{
-        
-            scale: phase === "large" ? 1.1 : 0.75,
-          }}
-          transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-          className="relative flex gap-5 z-30 origin-center pointer-events-none"
-        >
-          {/* Mockup 1 (Kiri) */}
-          <div className="w-[320px] h-[220px] bg-white dark:bg-[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 dark:border-slate-700 transition-colors flex flex-col">
-            <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
-              <img
-                src="/assets/landing/imageLanding.png"
-                alt="Formulir Interaktif"
-                className="w-full h-full object-cover"
-              />
+      {/* 2. BAGIAN VISUAL */}
+      {/* PERUBAHAN: Menghapus 'overflow-hidden' di sini agar tidak memotong elemen di pinggir */}
+      {/* PERUBAHAN: Menetapkan tinggi pasti h-[450px] untuk mobile agar whitespace tidak terlalu lebar */}
+      <div className="w-full lg:w-[60%] h-[450px] sm:h-[550px] lg:h-screen relative flex items-center justify-center">
+        {/* SCALING CANVAS */}
+        {/* PERUBAHAN: Scale di mobile diperbesar menjadi 0.45 & 0.6 supaya pas dan tidak kekecilan */}
+        <div className="absolute flex items-center justify-center w-[1000px] h-[800px] origin-center scale-[0.48] sm:scale-[0.65] md:scale-[0.8] lg:scale-[0.9] xl:scale-100 pointer-events-none z-30">
+          {/* Mockup Tengah */}
+          <motion.div
+            animate={{
+              scale: phase === "large" ? 1.1 : 0.75,
+            }}
+            transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
+            className="relative flex gap-5 z-30 origin-center pointer-events-auto"
+          >
+            {/* Mockup 1 (Kiri) */}
+            <div className="w-[320px] h-[220px] bg-white dark:bg-[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 dark:border-slate-700 transition-colors flex flex-col">
+              <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
+                <img
+                  src="/assets/landing/imageLanding.png"
+                  alt="Formulir Interaktif"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="px-2">
+                <p className="text-[14px] font-bold text-gray-900 dark:text-white">
+                  Halaman Landing yang Keren
+                </p>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  Mobile First Design
+                </p>
+              </div>
             </div>
-            <div className="px-2">
-              <p className="text-[14px] font-bold text-gray-900 dark:text-white">
-                Halaman Landing yang Keren
-              </p>
-              <p className="text-[11px] text-gray-500 mt-0.5">
-                Mobile First Design
-              </p>
-            </div>
-          </div>
 
-          {/* Mockup 2 (Kanan) */}
-          <div className="w-[320px] h-[220px] bg-white dark:bg-[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 dark:border-slate-700 transition-colors flex flex-col">
-            <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
-              <img
-                src="/assets/landing/imageLanding1.png"
-                alt="Landing Page Interaktif"
-                className="w-full h-full object-cover"
-              />
+            {/* Mockup 2 (Kanan) */}
+            <div className="w-[320px] h-[220px] bg-white dark:bg-[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 dark:border-slate-700 transition-colors flex flex-col">
+              <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
+                <img
+                  src="/assets/landing/imageLanding1.png"
+                  alt="Landing Page Interaktif"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="px-2">
+                <p className="text-[14px] font-bold text-gray-900 dark:text-white">
+                  Landing Page Interaktif
+                </p>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  Modern Design
+                </p>
+              </div>
             </div>
-            <div className="px-2">
-              <p className="text-[14px] font-bold text-gray-900 dark:text-white">
-                Landing Page Interaktif
-              </p>
-              <p className="text-[11px] text-gray-500 mt-0.5">
-                Modern Design
-              </p>
-            </div>
-          </div>
-        </motion.div>
-        {/* Komentar Floating */}
-        {COMMENTS_DATA.map((comment) => (
-          <FloatingComment
-            key={comment.id}
-            phase={phase}
-            name={comment.name}
-            text={comment.text}
-            avatarUrl={comment.avatarUrl}
-            tags={comment.tags}
-            x={comment.x}
-            y={comment.y}
-            delay={comment.delay}
-            isBlurred={comment.isBlurred}
-            emoji={comment.emoji}
-          />
-        ))}
+          </motion.div>
+
+          {/* Komentar Floating */}
+          {COMMENTS_DATA.map((comment) => (
+            <FloatingComment
+              key={comment.id}
+              phase={phase}
+              name={comment.name}
+              text={comment.text}
+              avatarUrl={comment.avatarUrl}
+              tags={comment.tags}
+              x={comment.x}
+              y={comment.y}
+              delay={comment.delay}
+              isBlurred={comment.isBlurred}
+              emoji={comment.emoji}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

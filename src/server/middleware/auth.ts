@@ -25,7 +25,10 @@ export const adminAuth = createMiddleware(async (c, next) => {
 
   
   try {
-    const decoded = jwt.verify(token, getJwtSecret());
+    const decoded = jwt.verify(token, getJwtSecret()) as any;
+    if (!decoded.school_id) {
+      return c.json({ success: false, message: 'Akses ditolak: Data tenant tidak ditemukan dalam token.' }, 401);
+    }
     c.set('admin', decoded);
     return await next();
   } catch (error) {

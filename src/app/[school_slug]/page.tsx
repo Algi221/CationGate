@@ -571,7 +571,7 @@ export default function Home() {
 
             <div className="w-full flex flex-col gap-3 mt-8">
               <Link
-                href="/daftar"
+                href={`/${schoolSlug}/daftar`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98]"
               >
@@ -630,7 +630,7 @@ export default function Home() {
 
             // Map code to route link
             const routeCode = m.code.toLowerCase() === 'anm' ? 'an' : m.code.toLowerCase();
-            const routeLink = `/jurusan/${routeCode}`;
+            const routeLink = `/${schoolSlug}/jurusan/${routeCode}`;
 
             // Map standard code aliases for display
             const displayAlias = m.code === 'RPL' ? 'PPLG' : (m.code === 'ANM' ? 'Animasi' : (m.code === 'BC' ? 'Broadcasting' : m.code));
@@ -694,7 +694,7 @@ export default function Home() {
           </p>
 
           <div className="hero-action">
-            <Link href="/daftar" className="btn-hero-action">
+            <Link href={`/${schoolSlug}/daftar`} className="btn-hero-action">
               Daftar Sekarang <ArrowRight size={18} />
             </Link>
           </div>
@@ -943,7 +943,7 @@ export default function Home() {
           {majors.map((major, index) => {
             return (
               <Link
-                href={`/jurusan/${major.code.toLowerCase()}`}
+                href={`/${schoolSlug}/jurusan/${major.code.toLowerCase()}`}
                 key={major.code}
                 className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
                 style={{ transitionDelay: `${index * 150}ms` }}

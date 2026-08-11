@@ -18,7 +18,7 @@ import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { CtaBanner } from "@/components/landing/CtaBanner";
-import { Footer } from "@/components/landing/Footer";
+import { CinematicFooter } from "@/components/ui/motion-footer";
 import { VideoModal } from "@/components/landing/VideoModal";
 import { FloatingVideoWidget } from "@/components/landing/FloatingVideoWidget";
 
@@ -56,12 +56,13 @@ export default function LandingPage() {
         <SuccessStorySection
           onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
         />
+        <TestimonialsSection />
         <PricingSection />
         <FaqSection />
         <CtaBanner />
       </main>
 
-      <Footer />
+      <CinematicFooter />
 
       <FloatingVideoWidget
         onClick={() => setActiveVideoUrl(VIDEO_COLLECTION.trailerAnime)}

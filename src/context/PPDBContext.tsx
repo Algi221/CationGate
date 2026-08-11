@@ -60,6 +60,11 @@ const PPDBContext = createContext<PPDBContextType | null>(null);
 import { useParams } from "next/navigation";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+
+const DEFAULT_PUBLIC_SEED = [
+  { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() },
+  { id: 2, nama: "Putri Ayu Lestari", nisn: "0087654321", sekolah_asal: "SMPN 2 Depok", jurusan_1: "Desain Komunikasi Visual", status: "Pending", tgl_daftar: new Date().toISOString() }
+];
 const WS_PROTOCOL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const WS_URL = typeof window !== 'undefined' ? `${WS_PROTOCOL}//${window.location.host}/api/ws` : "ws://localhost:3000/api/ws";
 
@@ -106,7 +111,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
     return null;
   });
-  const [wsStatus, setWsStatus] = useState<string>("DISCONNECTED");
+  const [wsStatus, setWsStatus] = useState<string>("SYNCING (15s)");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
   const [simulationActive, setSimulationActive] = useState<boolean>(false);
@@ -263,11 +268,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       if (localStr) {
         try { setPublicApplicants(JSON.parse(localStr)); return; } catch (e) {}
       }
-      const localSeed = [
-        { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() },
-        { id: 2, nama: "Putri Ayu Lestari", nisn: "0087654321", sekolah_asal: "SMPN 2 Depok", jurusan_1: "Desain Komunikasi Visual", status: "Pending", tgl_daftar: new Date().toISOString() }
-      ];
-      setPublicApplicants(localSeed);
+      setPublicApplicants(prev => prev.length > 0 ? prev : DEFAULT_PUBLIC_SEED);
       return;
     }
     try {
@@ -275,14 +276,12 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
-      if (data.success) setPublicApplicants(data.data);
+      if (data && data.success && Array.isArray(data.data)) {
+        setPublicApplicants(data.data);
+      }
     } catch (err: any) {
       console.warn("Public API fetch error, using local fallback seed:", err.message);
-      const localSeed = [
-        { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() },
-        { id: 2, nama: "Putri Ayu Lestari", nisn: "0087654321", sekolah_asal: "SMPN 2 Depok", jurusan_1: "Desain Komunikasi Visual", status: "Pending", tgl_daftar: new Date().toISOString() }
-      ];
-      setPublicApplicants(localSeed);
+      setPublicApplicants(prev => prev.length > 0 ? prev : DEFAULT_PUBLIC_SEED);
     }
   }, [isDemoMode, slug]);
 

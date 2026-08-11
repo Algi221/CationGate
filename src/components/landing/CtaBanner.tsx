@@ -2,49 +2,46 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function CtaBanner() {
-  // Blog / Resource cards specified in PRD
   const blogArticles = [
     {
-      title: "How AI Personalization Boosts K-12 Student Retention",
-      category: "Ed-Tech Insights",
-      date: "July 28, 2026",
-      desc: "Discover empirical strategies for deploying adaptive learning algorithms to keep students engaged.",
+      title: "Cara Meningkatkan Efisiensi Pendaftaran PPDB Sekolah Up to 80%",
+      category: "Panduan PPDB",
+      date: "28 Juli 2026",
+      desc: "Strategi praktis mengotomatisasi formulir pendaftaran dan verifikasi dokumen calon siswa baru.",
     },
     {
-      title: "Streamlining Dapodik Compliance & School Telemetry",
-      category: "School Administration",
-      date: "July 24, 2026",
-      desc: "A comprehensive guide for IT directors on automating state reporting without manual errors.",
+      title: "Integrasi Sistem Sekolah dengan Format Laporan Resmi Dapodik",
+      category: "Administrasi Sekolah",
+      date: "24 Juli 2026",
+      desc: "Panduan lengkap bagi tim IT sekolah untuk mengekspor data murid dan nilai tanpa kesalahan manual.",
     },
     {
-      title: "The Future of AI Assessment & Academic Integrity",
-      category: "AI & Assessment",
-      date: "July 19, 2026",
-      desc: "Balancing dynamic difficulty generation with robust web proctoring and anti-cheating protocols.",
+      title: "Masa Depan Ujian Berbasis Komputer (CBT) Yang Bebas Kecurangan",
+      category: "Teknologi CBT",
+      date: "19 Juli 2026",
+      desc: "Menyeimbangkan kemudahan asesmen digital dengan sistem pengawasan ujian terenkripsi.",
     },
   ];
 
   return (
     <div className="bg-surface border-b border-border">
-      {/* Blog / Resource Section specified in PRD */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-border">
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#8EC9F6]/20 text-[#2A1B1D] text-xs font-bold border border-border">
             <BookOpen className="w-3.5 h-3.5 text-[#2A1B1D]" />
-            Knowledge Base
+            Pusat Informasi & Artikel
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
-            Insights and Ed-Tech Best Practices
+            Wawasan & Edukasi Manajemen Sekolah
           </h2>
 
           <p className="text-body text-base font-medium">
-            Explore articles and whitepapers written by top educational
-            researchers and AI architects.
+            Jelajahi artikel dan panduan praktis yang ditulis oleh praktisi teknologi pendidikan.
           </p>
         </div>
 
@@ -72,7 +69,7 @@ export function CtaBanner() {
               </div>
 
               <div className="pt-4 mt-4 border-t border-border flex items-center gap-1 text-xs font-bold text-primary hover:text-[#F3C625] cursor-pointer">
-                <span>Read Full Article</span>
+                <span>Baca Selengkapnya</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </div>
@@ -80,43 +77,30 @@ export function CtaBanner() {
         </div>
       </section>
 
-      {/* Bottom CTA Banner specified in PRD */}
       <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-2xl bg-[#2A1B1D] text-white p-8 sm:p-12 lg:p-14 shadow-lg relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="space-y-4 max-w-xl text-center lg:text-left z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFD33B]/30 text-white text-xs font-bold uppercase tracking-wider border border-border">
               <Sparkles className="w-4 h-4 text-[#FFD33B]" />
-              Deploy In Minutes
+              Implementasi Cepat
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
-              Join the Future of Education with CationGate.
+              Bergabunglah dengan Ekosistem Digital CationGate.
             </h2>
 
             <p className="text-white/80 text-sm sm:text-base leading-relaxed font-medium">
-              Empower your teachers, engage your students, and transform
-              learning outcomes with personalized AI.
+              Permudah panitia PPDB, permudah tata kelola sekolah, dan berikan pengalaman pendaftaran terbaik untuk calon siswa baru Anda.
             </p>
-
-            <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-white/80">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#45C06B]" />
-                <span>30-Day Free Trial</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#45C06B]" />
-                <span>No Credit Card Required</span>
-              </div>
-            </div>
           </div>
 
-          <div className="z-10 flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
-            <Link href="/daftar" className="w-full sm:w-auto">
+          <div className="z-10 shrink-0">
+            <Link href="/daftar">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-[#FFD33B] hover:bg-[#F3C625] text-[#2A1B1D] font-bold text-sm rounded-xl py-6 px-8 shadow-xs gap-2"
+                className="bg-[#FFD33B] hover:bg-[#F3C625] text-[#2A1B1D] font-bold text-sm rounded-xl py-6 px-8 gap-2 shadow-sm"
               >
-                <span>Start Your Free Trial</span>
+                <span>Daftar Sekolah Sekarang</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import dompurify from "dompurify";
 
 const sanitizeUrl = (url: string | undefined | null): string => {
@@ -238,10 +238,13 @@ function ApplicantsDirectoryContent() {
   const [trashError, setTrashError] = useState<string>("");
   const [trashSuccess, setTrashSuccess] = useState<string>("");
 
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || '';
+
   const handleTabChange = (tab: "active" | "transfer" | "trash" | "kuota") => {
     setTrashError("");
     setTrashSuccess("");
-    router.push(`/dashboard/pendaftar?tab=${tab}`);
+    router.push(`/${schoolSlug}/dashboard/pendaftar?tab=${tab}`);
   };
 
   const fetchTrashedApplicants = async () => {
@@ -504,21 +507,54 @@ function ApplicantsDirectoryContent() {
 
   const exportToExcel = async () => {
     try {
-      const token = localStorage.getItem("ppdb_token");
-      const res = await fetch("/api/applicants/export", {
+      const token = localStorage.getItem("ppdb_admin_token") || localStorage.getItem("ppdb_token");
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "/api";
+      const res = await fetch(`${backendUrl}/applicants/export`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      if (!res.ok) throw new Error("Gagal mengunduh file ekspor Excel");
-      const blob = await res.blob();
-      saveAs(blob, `Data_Calon_Siswa_${new Date().toISOString().split("T")[0]}.xlsx`);
+      if (res.ok) {
+        const blob = await res.blob();
+        saveAs(blob, `Data_Calon_Siswa_${new Date().toISOString().split("T")[0]}.xlsx`);
+        return;
+      }
+      throw new Error("Server export endpoint unavailable");
     } catch (err: any) {
-      Swal.fire({
-        icon: "error",
-        title: "Ekspor Gagal",
-        text: err.message
-      });
+      // Client-side ExcelJS fallback for production (cationgate.site)
+      try {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Data Calon Siswa");
+        worksheet.columns = [
+          { header: "ID", key: "id", width: 10 },
+          { header: "NISN", key: "nisn", width: 15 },
+          { header: "Nama Lengkap", key: "nama", width: 30 },
+          { header: "Sekolah Asal", key: "sekolah_asal", width: 25 },
+          { header: "Jurusan Pilihan", key: "jurusan_1", width: 25 },
+          { header: "Status", key: "status", width: 15 },
+          { header: "Tanggal Daftar", key: "tgl_daftar", width: 20 },
+        ];
+        applicants.forEach(app => {
+          worksheet.addRow({
+            id: app.id,
+            nisn: app.nisn || "-",
+            nama: app.nama || "-",
+            sekolah_asal: app.sekolah_asal || app.sekolahAsal || "-",
+            jurusan_1: app.jurusan_1 || app.jurusan1 || "-",
+            status: app.status || "Pending",
+            tgl_daftar: app.tgl_daftar ? new Date(app.tgl_daftar).toLocaleDateString("id-ID") : "-"
+          });
+        });
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        saveAs(blob, `Data_Calon_Siswa_${new Date().toISOString().split("T")[0]}.xlsx`);
+      } catch (clientErr: any) {
+        Swal.fire({
+          icon: "error",
+          title: "Ekspor Gagal",
+          text: clientErr.message
+        });
+      }
     }
   };
 
@@ -695,8 +731,8 @@ function ApplicantsDirectoryContent() {
                 }`}
               title="Tampilan Excel Sheet Mode"
             >
-              <FileSpreadsheet size={14} className="text-emerald-500" />
-              <span className="hidden sm:inline text-emerald-500">Excel Mode</span>
+              <FileSpreadsheet size={16} className="text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden sm:inline text-emerald-500 font-bold">Excel Preview</span>
             </button>
           </div>
 
@@ -900,7 +936,7 @@ function ApplicantsDirectoryContent() {
             <div className="bg-[#f8fafc] dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 p-2.5 text-[10px] font-bold font-mono tracking-widest flex items-center justify-between shrink-0">
               <span className="flex items-center gap-2">
                 <FileSpreadsheet size={13} className="text-emerald-500" />
-                <span>EXCEL MODE : PPDB_SMK_TARUNABHAKTI_2026.XLSX</span>
+                <span>EXCEL PREVIEW : PPDB_SMK_TARUNABHAKTI_2026.XLSX</span>
               </span>
               <span className="text-slate-400 dark:text-slate-655">Double-click baris untuk Verifikasi Dokumen</span>
             </div>

@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import {
   Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
   Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard
+  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User
 } from "lucide-react";
 import SchoolNotFound from "@/components/SchoolNotFound";
 
@@ -596,15 +596,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
           >
-            {/* WS Status */}
-            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/5 text-xs font-bold transition-colors duration-300">
-              <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-ping" : wsStatus === "CONNECTING" ? "bg-amber-500 animate-pulse" : "bg-rose-500"}`} />
-              <span className={`w-2 h-2 rounded-full absolute ${wsStatus === "CONNECTED" ? "bg-emerald-500" : wsStatus === "CONNECTING" ? "bg-amber-500" : "bg-rose-500"}`} />
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider pl-1.5">
-                Sync: Auto-sync (Polling 15d)
-              </span>
-            </div>
-
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
@@ -614,19 +605,17 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
-
-
             {/* ── User Avatar Dropdown ──────────────────────────────────── */}
             <div className="relative" ref={userDropdownRef}>
               <button
                 onClick={() => setShowUserDropdown((v) => !v)}
                 className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
               >
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-white text-sm shadow-sm overflow-hidden shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-sm shadow-sm overflow-hidden shrink-0">
                   {adminUser?.foto_profil ? (
                     <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
                   ) : (
-                    userInitial
+                    <User size={16} className="text-white" />
                   )}
                 </div>
                 <span className="hidden md:block text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
@@ -644,11 +633,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   {/* User info */}
                   <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-white text-base shadow-sm shrink-0 overflow-hidden">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-base shadow-sm shrink-0 overflow-hidden">
                         {adminUser?.foto_profil ? (
                           <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
                         ) : (
-                          userInitial
+                          <User size={18} className="text-white" />
                         )}
                       </div>
                       <div className="min-w-0">

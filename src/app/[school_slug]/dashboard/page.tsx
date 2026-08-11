@@ -53,10 +53,10 @@ function StatCard({
 }) {
   const displayValue = useCountUp(value, 1300 + delay * 80, trigger);
   const colorMap: Record<string, { text: string; iconBg: string; iconText: string; border: string }> = {
-    blue:    { text: "text-blue-600",    iconBg: "bg-blue-50 border border-blue-100",    iconText: "text-blue-600",    border: "border-slate-200 hover:border-blue-300" },
-    emerald: { text: "text-emerald-600", iconBg: "bg-emerald-50 border border-emerald-100", iconText: "text-emerald-600", border: "border-slate-200 hover:border-emerald-300" },
-    amber:   { text: "text-amber-600",   iconBg: "bg-amber-50 border border-amber-100",   iconText: "text-amber-600",   border: "border-slate-200 hover:border-amber-300" },
-    rose:    { text: "text-rose-600",    iconBg: "bg-rose-50 border border-rose-100",    iconText: "text-rose-600",    border: "border-slate-200 hover:border-rose-300" },
+    blue:    { text: "text-blue-600 dark:text-blue-400",    iconBg: "bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-900/40",    iconText: "text-blue-600 dark:text-blue-400",    border: "border-slate-200 dark:border-slate-800/80 hover:border-blue-300 dark:hover:border-blue-700" },
+    emerald: { text: "text-emerald-600 dark:text-emerald-400", iconBg: "bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/40", iconText: "text-emerald-600 dark:text-emerald-400", border: "border-slate-200 dark:border-slate-800/80 hover:border-emerald-300 dark:hover:border-emerald-700" },
+    amber:   { text: "text-amber-600 dark:text-amber-400",   iconBg: "bg-amber-50 dark:bg-amber-950/50 border border-amber-100 dark:border-amber-900/40",   iconText: "text-amber-600 dark:text-amber-400",   border: "border-slate-200 dark:border-slate-800/80 hover:border-amber-300 dark:hover:border-amber-700" },
+    rose:    { text: "text-rose-600 dark:text-rose-400",    iconBg: "bg-rose-50 dark:bg-rose-950/50 border border-rose-100 dark:border-rose-900/40",    iconText: "text-rose-600 dark:text-rose-400",    border: "border-slate-200 dark:border-slate-800/80 hover:border-rose-300 dark:hover:border-rose-700" },
   };
   const c = colorMap[color] ?? colorMap.blue;
 
@@ -65,14 +65,14 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: delay * 0.08 }}
-      className={`bg-white border ${c.border} rounded-2xl p-5 shadow-xs transition-all duration-200`}
+      className={`bg-white dark:bg-[#111827] border ${c.border} rounded-2xl p-5 shadow-xs transition-all duration-200`}
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</span>
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.iconBg} ${c.iconText}`}>{icon}</div>
       </div>
       <h3 className={`text-3xl font-extrabold leading-none mb-1 tabular-nums ${c.text}`}>{displayValue}</h3>
-      <span className="text-[11px] text-slate-500 font-semibold">{sub}</span>
+      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">{sub}</span>
     </motion.div>
   );
 }

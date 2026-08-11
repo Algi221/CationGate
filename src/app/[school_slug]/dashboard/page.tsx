@@ -7,6 +7,7 @@ import {
   Pencil, TrendingUp, TrendingDown, ArrowRight, Lock, ShieldAlert, Power
 } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import KuotaTab from "@/components/KuotaTab";
 import Swal from "sweetalert2";
@@ -595,7 +596,7 @@ export default function DashboardOverview() {
               <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Status kuota seluruh jurusan</p>
             </div>
             <Link
-              href="/dashboard/pendaftar?tab=kuota"
+              href={`/${(useParams() as any)?.school_slug || ''}/dashboard/pendaftar?tab=kuota`}
               className="p-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-xl transition-all"
               title="Edit Target Kuota"
             >
@@ -650,7 +651,7 @@ export default function DashboardOverview() {
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftar Terbaru</h3>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
             </div>
-            <Link href="/dashboard/pendaftar" className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
+            <Link href={`/${(useParams() as any)?.school_slug || ''}/dashboard/pendaftar`} className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
               Lihat Semua <ArrowRight size={12} />
             </Link>
           </div>

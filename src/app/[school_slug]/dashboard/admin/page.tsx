@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Shield, Plus, Trash2, Edit3, User, KeyRound, Eye, EyeOff, Save, RotateCcw, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
@@ -11,6 +11,8 @@ import Link from "next/link";
 function AdminManagementPageContent() {
   const { adminUser, adminToken } = usePPDB();
   const router = useRouter();
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || '';
   const searchParams = useSearchParams();
   const activeTabParam = searchParams.get("tab") || "admin";
   const activeTab = activeTabParam as "admin" | "trash";
@@ -42,7 +44,7 @@ function AdminManagementPageContent() {
   const handleTabChange = (tab: "admin" | "trash") => {
     setError("");
     setSuccessMsg("");
-    router.push(`/dashboard/admin?tab=${tab}`);
+    router.push(`/${schoolSlug}/dashboard/admin?tab=${tab}`);
   };
 
   const getBackendUrl = () => {
@@ -54,11 +56,11 @@ function AdminManagementPageContent() {
   useEffect(() => {
     if (!adminUser) return;
     if (adminUser.role !== 'superadmin') {
-      router.push('/dashboard');
+      router.push(`/${schoolSlug}/dashboard`);
       return;
     }
     fetchAdmins();
-  }, [adminUser, adminToken, router]);
+  }, [adminUser, adminToken, router, schoolSlug]);
 
   useEffect(() => {
     if (activeTab === "trash") {

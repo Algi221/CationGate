@@ -38,10 +38,10 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
     breadcrumbs.push({ label, href });
   });
 
-  if (pathname === "/dashboard/admin" && activeTab === "trash")
-    breadcrumbs.push({ label: "Sampah", href: "/dashboard/admin?tab=trash" });
-  else if (pathname === "/dashboard/pendaftar" && activeTab === "trash")
-    breadcrumbs.push({ label: "Sampah", href: "/dashboard/pendaftar?tab=trash" });
+  if (pathname.includes("/dashboard/admin") && activeTab === "trash")
+    breadcrumbs.push({ label: "Sampah", href: `${paths[0] ? '/' + paths[0] : ''}/dashboard/admin?tab=trash` });
+  else if (pathname.includes("/dashboard/pendaftar") && activeTab === "trash")
+    breadcrumbs.push({ label: "Sampah", href: `${paths[0] ? '/' + paths[0] : ''}/dashboard/pendaftar?tab=trash` });
 
   return (
     <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wide select-none">
@@ -378,14 +378,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           <Link
             href={isLocked ? "#" : fullHref}
             onClick={handleItemClick}
-            className={`relative z-10 flex items-center justify-between rounded-2xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 border ${
+            className={`relative z-10 flex items-center justify-between rounded-2xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 border-none outline-none ${
               isCollapsed ? "justify-center p-3" : "px-4 py-3"
             } ${
               isLocked
-                ? "opacity-50 border-transparent text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 cursor-not-allowed"
+                ? "opacity-50 text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 cursor-not-allowed"
                 : isActive && (!hasSub || isCollapsed)
-                ? "bg-blue-600 dark:bg-blue-600 border-blue-600 text-white font-extrabold shadow-sm shadow-blue-500/20"
-                : "border-transparent text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-blue-600 dark:bg-blue-600 text-white font-extrabold shadow-sm shadow-blue-500/20"
+                : "text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white"
             }`}
           title={isCollapsed ? (isLocked ? `${item.label} (Terkunci 🔒)` : item.label) : undefined}
         >
@@ -452,10 +452,10 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                         )}
                         <Link
                           href={fullSubHref}
-                          className={`relative z-10 group flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-[10px] font-bold tracking-wide uppercase transition-colors duration-200 border ${
+                          className={`relative z-10 group flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-[10px] font-bold tracking-wide uppercase transition-colors duration-200 border-none outline-none ${
                             isSubActive
-                              ? "bg-blue-600 dark:bg-blue-600 text-white border-blue-600 font-black shadow-sm shadow-blue-500/20"
-                              : "border-transparent text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                              ? "bg-blue-600 dark:bg-blue-600 text-white font-black shadow-sm shadow-blue-500/20"
+                              : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                           }`}
                         >
                           <span className="truncate">{sub.label}</span>
@@ -601,7 +601,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-ping" : wsStatus === "CONNECTING" ? "bg-amber-500 animate-pulse" : "bg-rose-500"}`} />
               <span className={`w-2 h-2 rounded-full absolute ${wsStatus === "CONNECTED" ? "bg-emerald-500" : wsStatus === "CONNECTING" ? "bg-amber-500" : "bg-rose-500"}`} />
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider pl-1.5">
-                WS Live: {wsStatus === "CONNECTED" ? "Terkoneksi" : wsStatus === "CONNECTING" ? "Menghubungkan..." : "Terputus"}
+                Sync: Auto-sync (Polling 15d)
               </span>
             </div>
 

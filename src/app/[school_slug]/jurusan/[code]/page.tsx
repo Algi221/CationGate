@@ -1121,7 +1121,7 @@ export default function MajorPage() {
                 <li><Link href="/#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Alur &amp; Prosedur</Link></li>
                 <li><Link href="/#majors" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Kompetensi</Link></li>
                 <li><Link href="/#kemitraan" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Kerjasama Industri</Link></li>
-                <li><Link href="/dashboard" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dashboard Seleksi Admin</Link></li>
+                <li><Link href={`/${(params as any)?.school_slug || ''}/dashboard`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dashboard Seleksi Admin</Link></li>
               </ul>
             </div>
 

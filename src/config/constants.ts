@@ -11,5 +11,5 @@ export const APP_CONFIG = {
 export const ROUTES = {
   HOME: "/",
   LOGIN: "/login",
-  DASHBOARD: "/dashboard",
+  DASHBOARD: (slug?: string) => (slug ? `/${slug}/dashboard` : "/dashboard"),
 };

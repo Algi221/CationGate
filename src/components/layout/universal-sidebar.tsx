@@ -50,6 +50,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useParams } from 'next/navigation';
 
 type NavItem = {
   title: string;
@@ -184,6 +185,16 @@ export const UniversalSidebar = ({
 }) => {
   const isMobile = useIsMobile();
   const pathname = usePathname();
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || '';
+
+  const formatTenantUrl = (url?: string) => {
+    if (!url) return '#';
+    if (role === 'admin_sekolah' && schoolSlug && url.startsWith('/dashboard')) {
+      return `/${schoolSlug}${url}`;
+    }
+    return url;
+  };
 
   const [hoveredId, setHoveredId] = React.useState<string | null>(null);
 
@@ -226,20 +237,19 @@ export const UniversalSidebar = ({
           </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent onMouseLeave={() => setHoveredId(null)}>
+        <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel className="text-muted-foreground">
-              Main Navigation
-            </SidebarGroupLabel>
             <SidebarMenu>
               {roleData.navMain.map((item) => {
+                const itemTargetUrl = formatTenantUrl(item.url);
                 const hasSubItems = item.items && item.items.length > 0;
-                const isGroupActive =
-                  item.isActive ||
-                  (hasSubItems &&
-                    item.items?.some((subItem) =>
-                      pathname.startsWith(subItem.url.split('?')[0])
-                    ));
+                const isGroupActive = Boolean(
+                  hasSubItems &&
+                    item.items?.some((subItem) => {
+                      const subUrl = formatTenantUrl(subItem.url);
+                      return pathname.startsWith(subUrl.split('?')[0]);
+                    })
+                );
 
                 if (!hasSubItems) {
                   const itemId = `main-${item.title}`;
@@ -260,12 +270,12 @@ export const UniversalSidebar = ({
                           asChild
                           tooltip={item.title}
                           className={`relative z-10 transition-colors text-[15px] h-10 px-3 ${
-                            pathname.startsWith(item.url || '')
+                            pathname.startsWith(itemTargetUrl)
                               ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-500/10 dark:bg-blue-400/15'
                               : 'text-slate-700 dark:text-slate-200 font-medium'
                           }`}
                         >
-                          <Link href={item.url || '#'}>
+                          <Link href={itemTargetUrl}>
                             {item.icon && <item.icon className="size-5" />}
                             <span className="font-medium">{item.title}</span>
                           </Link>
@@ -300,10 +310,11 @@ export const UniversalSidebar = ({
                       <CollapsibleContent>
                         <SidebarMenuSub className="border-l-2 border-slate-200 dark:border-slate-800 ml-4 pl-3 mt-1 space-y-1">
                           {item.items?.map((subItem) => {
+                            const subItemUrl = formatTenantUrl(subItem.url);
                             const subItemId = `sub-${subItem.title}`;
                             const isSubActive =
-                              pathname === subItem.url ||
-                              pathname.startsWith(subItem.url.split('?')[0]);
+                              pathname === subItemUrl ||
+                              pathname.startsWith(subItemUrl.split('?')[0]);
                             const SubIcon = subItem.icon;
                             return (
                               <SidebarMenuSubItem
@@ -326,7 +337,7 @@ export const UniversalSidebar = ({
                                       : 'text-slate-600 dark:text-slate-300 font-medium'
                                   }`}
                                 >
-                                  <Link href={subItem.url} className="flex items-center gap-2">
+                                  <Link href={subItemUrl} className="flex items-center gap-2">
                                     {SubIcon && <SubIcon className="size-4 text-blue-500" />}
                                     <span>{subItem.title}</span>
                                   </Link>

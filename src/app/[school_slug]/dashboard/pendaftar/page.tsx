@@ -224,7 +224,8 @@ function ApplicantsDirectoryContent() {
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [rejectingApplicantId, setRejectingApplicantId] = useState<number | null>(null);
-  const [rejectionReasonInput, setRejectionReasonInput] = useState<string>("");
+  const [rejectionPreset, setRejectionPreset] = useState<string>("");
+  const [rejectionNotes, setRejectionNotes] = useState<string>("");
   
   // Trash bin implementation
   const router = useRouter();
@@ -849,7 +850,8 @@ function ApplicantsDirectoryContent() {
                           <button
                             onClick={() => {
                                setRejectingApplicantId(a.id);
-                               setRejectionReasonInput("");    
+                               setRejectionPreset("");
+                               setRejectionNotes("");    
                             }}
                             className="p-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 rounded-xl transition-all border border-rose-250 dark:border-rose-500/20"
                             title="Tolak Pendaftaran"
@@ -1704,7 +1706,8 @@ function ApplicantsDirectoryContent() {
                   <button
                     onClick={() => {
                       setRejectingApplicantId(selectedApplicant.id);
-                      setRejectionReasonInput("");
+                      setRejectionPreset("");
+                      setRejectionNotes("");
                     }}
                     className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-[0_4px_12px_rgba(239,68,68,0.2)] flex items-center gap-1.5"
                   >
@@ -1898,16 +1901,39 @@ function ApplicantsDirectoryContent() {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="rejection-reason" className="text-[10px] font-black uppercase tracking-wider text-slate-450">Alasan Penolakan</label>
-              <textarea
-                id="rejection-reason"
-                rows={3}
-                value={rejectionReasonInput}
-                onChange={(e) => setRejectionReasonInput(e.target.value)}
-                placeholder="Contoh: Berkas NIK tidak valid, raport semester 1-5 buram..."
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 dark:focus:ring-rose-500/15 transition-all font-semibold resize-none"
-              />
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">
+                  Alasan Penolakan (Wajib Pilih)
+                </label>
+                <select
+                  value={rejectionPreset}
+                  onChange={(e) => setRejectionPreset(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-500"
+                >
+                  <option value="">-- Pilih Alasan Penolakan --</option>
+                  <option value="Dokumen atau berkas tidak lengkap">Dokumen atau berkas tidak lengkap</option>
+                  <option value="Dokumen atau data identitas tidak valid">Dokumen atau data identitas tidak valid</option>
+                  <option value="Nilai/hasil seleksi belum memenuhi syarat">Nilai/hasil seleksi belum memenuhi syarat</option>
+                  <option value="Kuota program keahlian sudah penuh">Kuota program keahlian sudah penuh</option>
+                  <option value="Tidak memenuhi ketentuan jalur pendaftaran">Tidak memenuhi ketentuan jalur pendaftaran</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="rejection-reason" className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">
+                  Catatan Tambahan (Opsional)
+                </label>
+                <textarea
+                  id="rejection-reason"
+                  rows={2}
+                  value={rejectionNotes}
+                  onChange={(e) => setRejectionNotes(e.target.value)}
+                  placeholder="Contoh: Scan rapor semester 4 belum diunggah..."
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 font-semibold resize-none"
+                />
+              </div>
             </div>
 
             <div className="flex w-full gap-3">
@@ -1915,7 +1941,8 @@ function ApplicantsDirectoryContent() {
                 type="button"
                 onClick={() => {
                   setRejectingApplicantId(null);
-                  setRejectionReasonInput("");
+                  setRejectionPreset("");
+                  setRejectionNotes("");
                 }}
                 className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 transition-all border border-slate-205 dark:border-slate-700 cursor-pointer text-center"
               >
@@ -1923,18 +1950,20 @@ function ApplicantsDirectoryContent() {
               </button>
               <button
                 type="button"
-                disabled={!rejectionReasonInput.trim()}
+                disabled={!rejectionPreset}
                 onClick={() => {
-                  if (rejectionReasonInput.trim()) {
-                    rejectApplicant(rejectingApplicantId, rejectionReasonInput.trim());
+                  if (rejectionPreset && rejectingApplicantId) {
+                    const formattedReason = rejectionPreset + (rejectionNotes.trim() ? `. Catatan admin: ${rejectionNotes.trim()}` : "");
+                    rejectApplicant(rejectingApplicantId, formattedReason);
                     if (selectedApplicant && selectedApplicant.id === rejectingApplicantId) {
                       setSelectedApplicant(null);
                     }
                     setRejectingApplicantId(null);
-                    setRejectionReasonInput("");
+                    setRejectionPreset("");
+                    setRejectionNotes("");
                   }
                 }}
-                className="flex-1 py-3.5 bg-gradient-to-tr from-rose-600 to-red-500 hover:brightness-110 disabled:opacity-50 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 transition-all cursor-pointer text-center animate-pulse"
+                className="flex-1 py-3.5 bg-gradient-to-tr from-rose-600 to-red-500 hover:brightness-110 disabled:opacity-50 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 transition-all cursor-pointer text-center"
               >
                 Tolak Siswa
               </button>

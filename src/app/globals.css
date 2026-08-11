@@ -110,251 +110,183 @@ body img {
   outline-offset: 3px;
 }
 
-.bg-background {
-  background-color: var(--background) !important;
+/* ================================================================
+   LANDING PAGE PALETTE — scoped to light-mode only (:not(.dark *))
+   The dashboard uses standard Tailwind slate + dark: variants.
+   These !important overrides must NOT leak into dark mode.
+   ================================================================ */
+:where(:not(.dark *)) {
+  .bg-background {
+    background-color: var(--background) !important;
+  }
+
+  .bg-surface,
+  .bg-white {
+    background-color: var(--surface) !important;
+  }
+
+  .text-foreground,
+  .text-heading {
+    color: var(--heading) !important;
+  }
+
+  .text-primary {
+    color: var(--primary) !important;
+  }
+
+  .bg-primary {
+    background-color: var(--primary) !important;
+  }
+
+  .bg-secondary,
+  .bg-yellow {
+    background-color: var(--yellow) !important;
+  }
+
+  .hover\:bg-primary:hover {
+    background-color: var(--dark-brown) !important;
+  }
+
+  .hover\:bg-secondary:hover,
+  .hover\:bg-yellow:hover {
+    background-color: var(--yellow-hover) !important;
+  }
 }
 
-.bg-surface,
-.bg-white {
-  background-color: var(--surface) !important;
+/* Landing page light-mode Tailwind palette overrides — NOT in dashboard dark mode */
+:where(:not(.dark *)):where(:not([data-dashboard] *)) {
+  .bg-slate-50,
+  .bg-slate-100,
+  .bg-slate-200 {
+    background-color: var(--surface) !important;
+  }
+
+  .bg-slate-900,
+  .bg-slate-800,
+  .bg-slate-950 {
+    background-color: var(--dark-brown) !important;
+  }
+
+  .text-slate-900,
+  .text-slate-950,
+  .text-slate-800 {
+    color: var(--heading) !important;
+  }
+
+  .text-slate-700,
+  .text-slate-600,
+  .text-slate-500 {
+    color: var(--body) !important;
+  }
+
+  .text-slate-400,
+  .text-slate-300 {
+    color: var(--text-muted) !important;
+  }
+
+  .text-slate-200,
+  .text-slate-100,
+  .text-slate-50 {
+    color: var(--surface) !important;
+  }
+
+  .border-slate-100,
+  .border-slate-200,
+  .border-slate-300,
+  .border-slate-700,
+  .border-slate-800 {
+    border-color: var(--border) !important;
+  }
+
+  .bg-blue-50 {
+    background-color: color-mix(in srgb, var(--blue) 20%, #FFFFFF) !important;
+  }
+
+  .bg-blue-600,
+  .bg-blue-500 {
+    background-color: var(--blue) !important;
+  }
+
+  .text-blue-600,
+  .text-blue-700,
+  .text-blue-500,
+  .text-blue-400 {
+    color: var(--blue) !important;
+  }
+
+  .border-blue-200,
+  .border-blue-100,
+  .border-blue-800,
+  .border-blue-700 {
+    border-color: var(--blue) !important;
+  }
+
+  .bg-emerald-50,
+  .bg-emerald-100 {
+    background-color: color-mix(in srgb, var(--green) 20%, #FFFFFF) !important;
+  }
+
+  .text-emerald-700,
+  .text-emerald-400,
+  .text-emerald-300 {
+    color: var(--green) !important;
+  }
+
+  .border-emerald-200,
+  .border-emerald-800 {
+    border-color: var(--green) !important;
+  }
+
+  .bg-teal-50 {
+    background-color: color-mix(in srgb, var(--green) 20%, #FFFFFF) !important;
+  }
+
+  .text-teal-600,
+  .text-teal-700,
+  .text-teal-400 {
+    color: var(--green) !important;
+  }
+
+  .border-teal-200,
+  .border-teal-800 {
+    border-color: var(--green) !important;
+  }
+
+  .bg-indigo-50 {
+    background-color: color-mix(in srgb, var(--purple) 20%, #FFFFFF) !important;
+  }
+
+  .text-indigo-700,
+  .text-indigo-400,
+  .text-indigo-600 {
+    color: var(--purple) !important;
+  }
+
+  .border-indigo-200,
+  .border-indigo-800 {
+    border-color: var(--purple) !important;
+  }
+
+  .bg-rose-400 {
+    background-color: var(--pink) !important;
+  }
+
+  .text-rose-400 {
+    color: var(--pink) !important;
+  }
+
+  .bg-amber-400 {
+    background-color: var(--yellow) !important;
+  }
+
+  .bg-emerald-400 {
+    background-color: var(--green) !important;
+  }
 }
 
-.text-foreground,
-.text-heading,
-.text-slate-900,
-.text-slate-950 {
-  color: var(--heading) !important;
-}
-
-.text-body,
-.text-slate-700,
-.text-slate-600,
-.text-slate-500,
-.text-slate-400 {
-  color: var(--body) !important;
-}
-
-.text-muted,
-.text-slate-300,
-.text-slate-400 {
-  color: var(--text-muted) !important;
-}
-
-.border-border,
-.border,
-.border-slate-200,
-.border-slate-100,
-.border-slate-300 {
-  border-color: var(--border) !important;
-}
-
-.text-primary {
-  color: var(--primary) !important;
-}
-
-.bg-primary {
-  background-color: var(--primary) !important;
-}
-
-.bg-secondary,
-.bg-yellow {
-  background-color: var(--yellow) !important;
-}
-
-.bg-slate-50,
-.bg-slate-100 {
-  background-color: var(--surface) !important;
-}
-
-.bg-slate-900 {
-  background-color: var(--dark-brown) !important;
-}
-
-.text-slate-800 {
-  color: var(--heading) !important;
-}
-
-.text-slate-900,
-.text-slate-950 {
-  color: var(--heading) !important;
-}
-
-.text-slate-600,
-.text-slate-500,
-.text-slate-700 {
-  color: var(--body) !important;
-}
-
-.text-slate-400 {
-  color: var(--text-muted) !important;
-}
-
-.hover\:bg-primary:hover {
-  background-color: var(--dark-brown) !important;
-}
-
-.hover\:bg-secondary:hover,
-.hover\:bg-yellow:hover {
-  background-color: var(--yellow-hover) !important;
-}
-
-/* The theme is intentionally forced to the one light visual token set. */
+/* html.dark landing-page override (NOT dashboard — dashboard uses Tailwind dark:) */
 html.dark,
 html.dark body {
   background: var(--background);
   color: var(--body);
-}
-
-/* Landing / legacy Tailwind class compatibility palette overrides */
-.bg-slate-50,
-.bg-slate-100,
-.bg-slate-200 {
-  background-color: var(--surface) !important;
-}
-
-.bg-white,
-.bg-slate-50,
-.bg-slate-100 {
-  background-color: var(--surface) !important;
-}
-
-.bg-surface,
-.bg-background {
-  background-color: var(--background) !important;
-}
-
-.bg-slate-900 {
-  background-color: var(--dark-brown) !important;
-}
-
-.bg-slate-800 {
-  background-color: var(--dark-brown) !important;
-}
-
-.text-slate-900,
-.text-slate-950 {
-  color: var(--heading) !important;
-}
-
-.text-slate-800,
-.text-slate-700,
-.text-slate-600,
-.text-slate-500,
-.text-slate-400,
-.text-slate-300 {
-  color: var(--body) !important;
-}
-
-.text-slate-200,
-.text-slate-100 {
-  color: var(--surface) !important;
-}
-
-.text-slate-100 {
-  color: var(--surface) !important;
-}
-
-.border-slate-100,
-.border-slate-200,
-.border-slate-300,
-.border-slate-800,
-.border-slate-700 {
-  border-color: var(--border) !important;
-}
-
-.bg-blue-50 {
-  background-color: color-mix(in srgb, var(--blue) 20%, #FFFFFF) !important;
-}
-
-.bg-blue-600,
-.bg-blue-500 {
-  background-color: var(--blue) !important;
-}
-
-.text-blue-600,
-.text-blue-700,
-.text-blue-500,
-.text-blue-400 {
-  color: var(--blue) !important;
-}
-
-.border-blue-200,
-.border-blue-100,
-.border-blue-800,
-.border-blue-700 {
-  border-color: var(--blue) !important;
-}
-
-.bg-emerald-50,
-.bg-emerald-100 {
-  background-color: color-mix(in srgb, var(--green) 20%, #FFFFFF) !important;
-}
-
-.text-emerald-700,
-.text-emerald-400,
-.text-emerald-300 {
-  color: var(--green) !important;
-}
-
-.border-emerald-200,
-.border-emerald-800 {
-  border-color: var(--green) !important;
-}
-
-.bg-teal-50 {
-  background-color: color-mix(in srgb, var(--green) 20%, #FFFFFF) !important;
-}
-
-.text-teal-600,
-.text-teal-700,
-.text-teal-400 {
-  color: var(--green) !important;
-}
-
-.border-teal-200,
-.border-teal-800 {
-  border-color: var(--green) !important;
-}
-
-.bg-indigo-50 {
-  background-color: color-mix(in srgb, var(--purple) 20%, #FFFFFF) !important;
-}
-
-.text-indigo-700,
-.text-indigo-400,
-.text-indigo-600 {
-  color: var(--purple) !important;
-}
-
-.border-indigo-200,
-.border-indigo-800 {
-  border-color: var(--purple) !important;
-}
-
-.bg-rose-400 {
-  background-color: var(--pink) !important;
-}
-
-.text-rose-400 {
-  color: var(--pink) !important;
-}
-
-.bg-amber-400 {
-  background-color: var(--yellow) !important;
-}
-
-.bg-emerald-400 {
-  background-color: var(--green) !important;
-}
-
-.bg-slate-950 {
-  background-color: var(--dark-brown) !important;
-}
-
-.text-slate-950 {
-  color: var(--heading) !important;
-}
-
-.text-slate-50 {
-  color: var(--surface) !important;
 }

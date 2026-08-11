@@ -435,7 +435,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="h-screen bg-slate-50 dark:bg-slate-950 flex font-sans overflow-hidden transition-colors duration-300">
+    <div data-dashboard className="h-screen bg-slate-50 dark:bg-slate-950 flex font-sans overflow-hidden transition-colors duration-300">
       
       {/* ─── SIDEBAR (DESKTOP) ──────────────────────────────────────────────── */}
       <aside

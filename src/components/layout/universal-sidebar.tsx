@@ -252,7 +252,7 @@ export const UniversalSidebar = ({
                         {hoveredId === itemId && (
                           <motion.div
                             layoutId="sidebar-hover-pill"
-                            className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/15 border border-blue-500/20 rounded-xl pointer-events-none -z-0"
+                            className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/15 rounded-xl pointer-events-none -z-0"
                             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                           />
                         )}
@@ -314,7 +314,7 @@ export const UniversalSidebar = ({
                                 {hoveredId === subItemId && (
                                   <motion.div
                                     layoutId="sidebar-hover-pill"
-                                    className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/15 border border-blue-500/20 rounded-xl pointer-events-none -z-0"
+                                    className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/15 rounded-xl pointer-events-none -z-0"
                                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                   />
                                 )}

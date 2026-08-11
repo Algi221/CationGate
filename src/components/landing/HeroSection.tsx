@@ -22,7 +22,8 @@ const features = [
   {
     Icon: PersonIcon,
     name: "500K+ Sekolah",
-    description: "Pilihan utama manajemen instansi pendidikan dengan sistem otomatis.",
+    description:
+      "Pilihan utama manajemen instansi pendidikan dengan sistem otomatis.",
     href: "/",
     cta: "Lihat Detail",
     background: (
@@ -63,7 +64,8 @@ const features = [
   {
     Icon: MagicWandIcon,
     name: "Fitur Pintar Web",
-    description: "Ubah data mentah jadi laporan berharga untuk kesehatan operasional dengan AI.",
+    description:
+      "Ubah data mentah jadi laporan berharga untuk kesehatan operasional dengan AI.",
     href: "/",
     cta: "Coba Fitur",
     background: (
@@ -88,80 +90,127 @@ const features = [
   },
 ];
 
-// --- MAIN HERO COMPONENT ---
-export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
+export default function HeroSection() {
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen overflow-hidden bg-[#FAF8F2] text-[#23191C] pb-32"
-    >
-      {/* Warm Glow Effect */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-[#FFD33B]/10 blur-[140px]" />
-
-      {/* Main Content - Diperlebar menggunakan max-w-[1400px] */}
-      <div className="relative z-10 mx-auto flex max-w-[1400px] flex-col items-center px-5 pt-28 sm:px-6 lg:px-8">
-        
-        {/* ================= BAGIAN ATAS (TEKS & TOMBOL) ================= */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="flex w-full max-w-5xl flex-col items-center text-center"
-        >
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-[#23191C] whitespace-nowrap">
-            The intelligent platform for{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10">modern schools</span>
-              <span className="absolute bottom-[4px] left-0 z-0 h-[30%] w-full rounded-[3px] bg-[#FFD33B]" />
-            </span>
-          </h1>
-
-          {/* Description - Single Line */}
-          <p className="mt-6 max-w-4xl text-base sm:text-lg font-medium leading-relaxed text-[#58504E]">
-            One platform to manage learning, monitor progress, and empower teachers with intelligent tools.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="mt-10 flex w-full flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/demo/dashboard" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="group h-12 w-full rounded-lg border-0 bg-[#23191C] px-8 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#3D3235] hover:shadow-xl active:scale-95 sm:w-auto"
+    <main>
+      <div className="flex min-h-screen items-center justify-center py-20 bg-white">
+        <div className="w-full text-center px-4">
+          {/* --- HEADER SECTION --- */}
+          <div className="relative inline-block mb-12 md:mb-16">
+            {/* Ornamen kuning */}
+            <div className="absolute -left-12 top-4 w-12 md:-left-20 md:w-16 hidden md:block">
+              <svg
+                viewBox="0 0 100 30"
+                fill="none"
+                stroke="#FDE047"
+                strokeWidth="6"
+                strokeLinecap="round"
               >
-                <span>Get Started</span>
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </Button>
-            </Link>
+                <path d="M5,15 Q15,0 25,15 T45,15 T65,15 T85,15" />
+              </svg>
+            </div>
 
-            <button
-              type="button"
-              onClick={onOpenVideo}
-              className="group flex h-12 w-full items-center justify-center gap-2.5 rounded-lg border border-[#E7E1D6] bg-white px-7 text-sm font-semibold text-[#23191C] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#D9D3C7] hover:bg-[#F7F4ED] hover:shadow-md sm:w-auto"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#23191C] text-white transition-transform duration-300 group-hover:scale-110">
-                <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
-              </span>
-              Watch Demo
-            </button>
+            {/* Ornamen hitam */}
+            <div className="absolute -right-8 -top-4 w-10 md:-right-16 md:w-12 hidden md:block">
+              <svg
+                viewBox="0 0 50 60"
+                fill="none"
+                stroke="#111827"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M10,10 L40,20 L10,30 L40,40 L10,50 L40,60" />
+              </svg>
+            </div>
+
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight leading-tight">
+              Build up your <br className="hidden md:block" /> business together
+            </h2>
           </div>
-        </motion.div>
 
-        {/* ================= BAGIAN BAWAH (MAGIC UI BENTO GRID) ================= */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
-          className="mt-16 w-full"
-        >
-          {/* Rahasianya di lg:auto-rows-[320px] dan gap-6 biar gede dan longgar */}
-          <BentoGrid className="w-full max-w-7xl justify-center h-160 lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-[320px] gap-4 sm:gap-6">
-            {features.map((feature) => (
-              <BentoCard key={feature.name} {...feature} />
-            ))}
-          </BentoGrid>
-        </motion.div>
+          {/* --- MAIN HERO BANNER --- */}
+          <div className="mx-auto w-full max-w-6xl">
+            <div className="flex flex-col md:flex-row items-stretch w-full">
+              {/* --- BAGIAN KIRI (GAMBAR) --- */}
+              <div
+                className="relative w-full md:w-1/2 min-h-[350px] md:min-h-[450px] overflow-hidden 
+                                rounded-t-[2.5rem] md:rounded-t-none 
+                                md:rounded-tl-[3rem] md:rounded-tr-none md:rounded-bl-none md:rounded-br-[8rem] z-10"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=800&auto=format&fit=crop"
+                  alt="Team collaboration"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
+
+              {/* --- BAGIAN KANAN (KOTAK BIRU) --- */}
+              {/* Perubahan di sini: md:rounded-br-none agar kanan bawah jadi siku/lancip */}
+              <div
+                className="relative flex w-full md:w-1/2 flex-col justify-center bg-[#CBEBFF] 
+                                p-10 md:p-14 lg:p-20 text-left 
+                                rounded-b-[2.5rem] md:rounded-b-none 
+                                md:rounded-tl-none md:rounded-tr-[3rem] md:rounded-bl-[8rem] rounded-br-none md:rounded-br-none z-0"
+              >
+                {/* Ornamen Gelombang Putih */}
+                <div className="absolute bottom-6 right-6 w-32 opacity-70">
+                  <svg
+                    viewBox="0 0 100 20"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  >
+                    <path d="M0,10 Q10,0 20,10 T40,10 T60,10 T80,10 T100,10" />
+                  </svg>
+                </div>
+
+                <div className="mb-8 grid grid-cols-2 gap-4 relative z-10">
+                  <div>
+                    <h3 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">
+                      5000+
+                    </h3>
+                    <p className="mt-2 text-sm font-semibold text-gray-800">
+                      satisfied clients
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">
+                      10-year
+                    </h3>
+                    <p className="mt-2 text-sm font-semibold text-gray-800">
+                      experience
+                    </p>
+                  </div>
+                </div>
+
+                <p className="mb-10 text-base md:text-lg font-medium leading-relaxed text-gray-800/80 max-w-sm relative z-10">
+                  A startup company is a newly formed business with particular
+                  momentum behind it based on perceived demand for its product.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-6 relative z-10">
+                  <button className="rounded-full bg-black px-8 py-3.5 text-base font-semibold text-white transition hover:bg-gray-800">
+                    Hire us
+                  </button>
+                  <button className="group flex items-center gap-3 rounded-full bg-transparent px-2 py-2 text-base font-semibold text-gray-900 transition hover:bg-white/30">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-105">
+                      <svg
+                        className="ml-1 h-4 w-4 fill-current"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </span>
+                    Show case
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+    </main>
   );
 }

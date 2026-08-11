@@ -52,7 +52,7 @@ export function Navbar() {
               <DoorOpen className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-lg tracking-wide text-[#23191C]">
+              <span className="font-semibold text-lg tracking-wide text-blue-600">
                 CationGate
               </span>
             </div>

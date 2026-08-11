@@ -3,13 +3,13 @@
 import React, { useState } from "react";
 import LoadingScreen from "@/components/landing/LoadingScreen";
 import { Navbar } from "@/components/landing/Navbar";
-import { HeroSection } from "@/components/landing/HeroSection";
+import HeroSection from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
 import { SystemFlowSection } from "@/components/landing/SystemFlowSection";
-
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
 // 1. TAMBAHAN BARU: Import komponen SimGymSection yang baru dibuat
-import SimGymSection from "@/components/landing/SimGymSection"; 
+import SimGymSection from "@/components/landing/SimGymSection";
 
 import { RegionalStatsSection } from "@/components/landing/RegionalStatsSection";
 import { SuccessStorySection } from "@/components/landing/SuccessStorySection";
@@ -31,7 +31,8 @@ export default function LandingPage() {
   const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white flex flex-col relative overflow-hidden">
+    // UBAH overflow-hidden MENJADI overflow-clip DI SINI 👇
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white flex flex-col relative overflow-clip">
       <LoadingScreen />
 
       <Navbar />
@@ -44,7 +45,6 @@ export default function LandingPage() {
         {/* <FeaturesShowcase /> */}
         {/* <SystemFlowSection /> */}
         {/* <RegionalStatsSection /> */}
-
         {/* UBAH DISINI JUGA JIKA INGIN RICKROLL: Ganti videoLama menjadi rickroll */}
         <FeaturesShowcase />
         <SystemFlowSection />
@@ -53,6 +53,7 @@ export default function LandingPage() {
         <SuccessStorySection
           onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
         />
+        <TestimonialsSection />
         <PricingSection />
         <FaqSection />
         <CtaBanner />

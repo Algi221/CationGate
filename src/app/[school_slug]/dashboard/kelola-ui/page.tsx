@@ -1048,7 +1048,7 @@ export default function KelolaUserInterface() {
           
           <button
             onClick={() => setShowConfirmModal(true)}
-            className="px-6 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 cursor-pointer"
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 cursor-pointer"
           >
             <Check size={14} />
             <span>Simpan Perubahan</span>
@@ -1081,8 +1081,8 @@ export default function KelolaUserInterface() {
                 editingMajor !== null && tab.id !== "majors" ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
               } ${
                 activeTab === tab.id
-                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/20 rounded-[16px_6px_16px_6px] scale-[1.02] -translate-y-[0.5px]"
-                  : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-900/80 rounded-xl hover:rounded-[16px_6px_16px_6px] hover:border-indigo-500/30"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20 rounded-[16px_6px_16px_6px] scale-[1.02] -translate-y-[0.5px]"
+                  : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-900/80 rounded-xl hover:rounded-[16px_6px_16px_6px] hover:border-blue-500/30"
               }`}
             >
               <Icon size={14} />

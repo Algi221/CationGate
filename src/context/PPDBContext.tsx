@@ -509,7 +509,7 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
       });
       const data = await res.json();
       if (data.success) {
-        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
         if (wsStatus !== "CONNECTED" && isAdminPath) {
           addToast("Applicant Rejected", `Calon siswa #${id} telah ditolak.`, "warning");
         }
@@ -517,7 +517,7 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
         await fetchPublicApplicants();
         await fetchActiveStudents();
       } else {
-        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
         if (isAdminPath) {
           addToast("Gagal Menolak", data.message || "Gagal memperbarui status pendaftar.", "danger");
         }
@@ -526,7 +526,7 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
       console.error("API status update error:", err.message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
-      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
       if (isAdminPath) {
         addToast("Applicant Rejected (Offline)", `Calon siswa #${id} ditolak.`, "warning");
       }

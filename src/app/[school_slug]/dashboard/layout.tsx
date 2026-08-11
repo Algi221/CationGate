@@ -522,7 +522,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         <div className={`py-4 flex items-center border-b border-slate-300 dark:border-slate-700 min-h-[73px] transition-all duration-300 ${
           isCollapsed ? "justify-center px-0" : "px-5"
         }`}>
-          <Link href="/dashboard" className="flex items-center group">
+          <Link href={`/${schoolSlug}/dashboard`} className="flex items-center group">
             <img
               src={ppdbLogo || "/logo_smktb.png"}
               alt="Logo Sekolah"
@@ -657,7 +657,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   {/* Menu items */}
                   <div className="py-1">
                     <Link
-                      href="/dashboard/profile"
+                      href={`/${schoolSlug}/dashboard/profile`}
                       onClick={() => setShowUserDropdown(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
                     >
@@ -665,7 +665,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                       <span className="text-xs font-semibold">Profil Saya</span>
                     </Link>
                     <Link
-                      href="/dashboard/settings"
+                      href={`/${schoolSlug}/dashboard/settings`}
                       onClick={() => setShowUserDropdown(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
                     >

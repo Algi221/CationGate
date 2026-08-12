@@ -48,6 +48,7 @@
     "react-easy-crop": "^6.2.2",
     "resend": "^6.19.0",
     "shadcn": "^4.16.2",
+    "sharp": "^0.35.3",
     "sonner": "^2.0.8",
     "sweetalert2": "^11.26.25",
     "tailwind-merge": "^3.6.0",

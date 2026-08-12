@@ -6,6 +6,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { configSaveSchema, singleConfigSchema } from '../validations/config';
 import { getCached, setCached, delCached } from '../db/redis';
+import sharp from 'sharp';
+import { exec } from 'child_process';
+import util from 'util';
+
+const execPromise = util.promisify(exec);
 
 const configRouter = new Hono();
 

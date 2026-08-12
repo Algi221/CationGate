@@ -5,13 +5,18 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { configSaveSchema, singleConfigSchema } from '../validations/config';
+import sharp from 'sharp';
+import { exec } from 'child_process';
+import util from 'util';
+
+const execPromise = util.promisify(exec);
 
 const configRouter = new Hono();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function saveBase64File(base64Str: string, prefix: string, subfolder: string = 'jurusan'): string {
+async function saveBase64File(base64Str: string, prefix: string, subfolder: string = 'jurusan'): Promise<string> {
   if (typeof base64Str !== 'string' || !base64Str.startsWith('data:')) {
     return base64Str;
   }
@@ -24,8 +29,13 @@ function saveBase64File(base64Str: string, prefix: string, subfolder: string = '
     const dataBuffer = Buffer.from(matches[2], 'base64');
 
     const sizeInBytes = dataBuffer.length;
-    if (sizeInBytes > 5 * 1024 * 1024) {
-      console.warn(`File upload rejected: ${prefix} melebihi batas 5MB (${(sizeInBytes/1024/1024).toFixed(2)}MB)`);
+    const isVideo = contentType.startsWith('video/');
+    
+    // Limits: Image 8MB, Video 100MB
+    const limitBytes = isVideo ? 100 * 1024 * 1024 : 8 * 1024 * 1024;
+    
+    if (sizeInBytes > limitBytes) {
+      console.warn(`File upload rejected: ${prefix} melebihi batas ${(limitBytes/1024/1024).toFixed(0)}MB`);
       return '';
     }
 
@@ -38,11 +48,47 @@ function saveBase64File(base64Str: string, prefix: string, subfolder: string = '
       return '';
     }
     
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    // IMAGE OPTIMIZATION (Sharp)
+    if (contentType.startsWith('image/') && !contentType.includes('svg') && !contentType.includes('gif')) {
+      const filename = `${prefix}_${Date.now()}.webp`;
+      const targetPath = path.join(targetDir, filename);
+      const optimizedBuffer = await sharp(dataBuffer).rotate().webp({ quality: 90, effort: 4 }).toBuffer();
+      fs.writeFileSync(targetPath, optimizedBuffer);
+      console.info("Image optimized", { prefix, from: contentType, to: 'webp', originalBytes: sizeInBytes, optimizedBytes: optimizedBuffer.length });
+      return `/assets/jurusan/uploads/${filename}`;
+    }
+    
+    // VIDEO OPTIMIZATION (FFmpeg)
+    if (isVideo) {
+      const tempExt = contentType.includes('mp4') ? 'mp4' : contentType.includes('webm') ? 'webm' : contentType.includes('ogg') ? 'ogg' : 'mov';
+      const tempFilename = `temp_${prefix}_${Date.now()}.${tempExt}`;
+      const tempPath = path.join(targetDir, tempFilename);
+      fs.writeFileSync(tempPath, dataBuffer);
+      
+      const filename = `${prefix}_${Date.now()}.mp4`;
+      const targetPath = path.join(targetDir, filename);
+      
+      try {
+        await execPromise(`ffmpeg -i "${tempPath}" -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k "${targetPath}"`);
+        fs.unlinkSync(tempPath); // delete temp
+        const stats = fs.statSync(targetPath);
+        console.info("Video optimized", { prefix, from: contentType, to: 'mp4', originalBytes: sizeInBytes, optimizedBytes: stats.size });
+        return `/assets/jurusan/uploads/${filename}`;
+      } catch (err) {
+        console.warn(`FFmpeg optimization failed for ${prefix}, falling back to original file`, err);
+        try { fs.unlinkSync(tempPath); } catch (e) {} // ignore error if temp file already removed
+      }
+    }
+    
+    // FALLBACK / OTHER FILES
     let ext = 'png';
-    if (contentType.includes('jpeg') || contentType.includes('jpg')) ext = 'jpg';
-    else if (contentType.includes('webp')) ext = 'webp';
-    else if (contentType.includes('svg')) ext = 'svg';
+    if (contentType.includes('svg')) ext = 'svg';
     else if (contentType.includes('gif')) ext = 'gif';
+    else if (contentType.includes('pdf')) ext = 'pdf';
     else if (contentType.includes('mp4')) ext = 'mp4';
     else if (contentType.includes('webm')) ext = 'webm';
     else if (contentType.includes('ogg')) ext = 'ogg';
@@ -64,32 +110,32 @@ function saveBase64File(base64Str: string, prefix: string, subfolder: string = '
   }
 }
 
-function processMajorsConfig(majors: any[]): any[] {
+async function processMajorsConfig(majors: any[]): Promise<any[]> {
   if (!Array.isArray(majors)) return majors;
-  return majors.map((major) => {
+  return Promise.all(majors.map(async (major) => {
     const updatedMajor = { ...major };
     if (updatedMajor.logo) {
-      updatedMajor.logo = saveBase64File(updatedMajor.logo, `${major.code}_logo`);
+      updatedMajor.logo = await saveBase64File(updatedMajor.logo, `${major.code}_logo`);
     }
     if (updatedMajor.banner) {
-      updatedMajor.banner = saveBase64File(updatedMajor.banner, `${major.code}_banner`);
+      updatedMajor.banner = await saveBase64File(updatedMajor.banner, `${major.code}_banner`);
     }
     if (updatedMajor.video) {
-      updatedMajor.video = saveBase64File(updatedMajor.video, `${major.code}_video`);
+      updatedMajor.video = await saveBase64File(updatedMajor.video, `${major.code}_video`);
     }
     if (updatedMajor.gallery && Array.isArray(updatedMajor.gallery)) {
-      updatedMajor.gallery = updatedMajor.gallery.map((item: any, idx: number) => {
+      updatedMajor.gallery = await Promise.all(updatedMajor.gallery.map(async (item: any, idx: number) => {
         if (item.url) {
           return {
             ...item,
-            url: saveBase64File(item.url, `${major.code}_gallery_${idx}`)
+            url: await saveBase64File(item.url, `${major.code}_gallery_${idx}`)
           };
         }
         return item;
-      });
+      }));
     }
     return updatedMajor;
-  });
+  }));
 }
 
 // GET /api/config - Get all configurations (Public)
@@ -143,9 +189,9 @@ configRouter.post('/', adminAuth, async (c) => {
 
     let processedValue = value;
     if (key === 'ppdb_majors_config') {
-      processedValue = processMajorsConfig(value);
+      processedValue = await processMajorsConfig(value);
     } else if (key === 'ppdb_logo_url') {
-      processedValue = saveBase64File(value, 'school_logo', 'sekolah');
+      processedValue = await saveBase64File(value, 'school_logo', 'sekolah');
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
@@ -227,10 +273,10 @@ configRouter.post('/save-all', adminAuth, async (c) => {
 
     let processedConfigs = { ...configs };
     if (processedConfigs.ppdb_majors_config) {
-      processedConfigs.ppdb_majors_config = processMajorsConfig(processedConfigs.ppdb_majors_config);
+      processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config);
     }
     if (processedConfigs.ppdb_logo_url) {
-      processedConfigs.ppdb_logo_url = saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
+      processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
     }
 
     for (const [key, value] of Object.entries(processedConfigs)) {

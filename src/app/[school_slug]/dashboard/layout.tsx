@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import {
   Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
   Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User, Paintbrush
+  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User, Paintbrush, Search
 } from "lucide-react";
 import SchoolNotFound from "@/components/SchoolNotFound";
 
@@ -179,7 +179,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
         logoutAdmin();
-        router.push("/auth/login?expired=true");
+        router.push(`/${schoolSlug}/auth/login?expired=true`);
       }, limit);
       const now = Date.now();
       if (now - lastStorageUpdate > 10000) {
@@ -250,7 +250,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           {
             category: "Status Legalitas",
             items: [
-              { href: "/dashboard/verification", icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
+              { href: `/${schoolSlug}/dashboard/verification`, icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
             ]
           }
         ]
@@ -258,41 +258,42 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     {
       category: "Manajemen Siswa",
       items: [
-        { href: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard`, icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
         {
-          href: "/dashboard/pendaftar",
+          href: `/${schoolSlug}/dashboard/pendaftar`,
           icon: <Users size={18} />,
           label: "Data Calon Siswa",
           lockedIfUnverified: true,
           subItems: [
-            { label: "Pendaftar Reguler", href: "/dashboard/pendaftar?tab=active" },
-            { label: "Pendaftar Pindahan", href: "/dashboard/pendaftar?tab=transfer" },
-            { label: "Kuota & Target", href: "/dashboard/pendaftar?tab=kuota" },
-            { label: "Tempat Sampah", href: "/dashboard/pendaftar?tab=trash" }
+            { label: "Pendaftar Reguler", href: `/${schoolSlug}/dashboard/pendaftar?tab=active` },
+            { label: "Pendaftar Pindahan", href: `/${schoolSlug}/dashboard/pendaftar?tab=transfer` },
+            { label: "Kuota & Target", href: `/${schoolSlug}/dashboard/pendaftar?tab=kuota` },
+            { label: "Tempat Sampah", href: `/${schoolSlug}/dashboard/pendaftar?tab=trash` }
           ]
         },
-        { href: "/dashboard/pembagian-kelas", icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
-        { href: "/dashboard/siswa-aktif", icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
+        { href: `/${schoolSlug}/dashboard/pembagian-kelas`, icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard/siswa-aktif`, icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
       ]
     },
     {
       category: "Konten Portal",
       items: [
-        { href: "/dashboard/informasi", icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard/informasi`, icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
         {
-          href: "/dashboard/kelola-ui",
+          href: `/${schoolSlug}/dashboard/kelola-ui`,
           icon: <Palette size={18} />,
           label: "Kelola UI/Data",
           lockedIfUnverified: true,
           subItems: [
-            { label: "Hero & Kontak", href: "/dashboard/kelola-ui?tab=hero" },
-            { label: "Program Keahlian", href: "/dashboard/kelola-ui?tab=majors" },
-            { label: "Alur Pendaftaran", href: "/dashboard/kelola-ui?tab=alur" },
-            { label: "Form & Panduan", href: "/dashboard/kelola-ui?tab=form" },
-            { label: "Bank Sekolah", href: "/dashboard/kelola-ui?tab=bank" },
-            { label: "Mitra Industri", href: "/dashboard/kelola-ui?tab=partners" },
-            { label: "FAQ", href: "/dashboard/kelola-ui?tab=faq" },
-            { label: "Riwayat Perubahan", href: "/dashboard/kelola-ui?tab=revisions" }
+            { label: "Profil Sekolah", href: `/${schoolSlug}/dashboard/profil-sekolah` },
+            { label: "Hero & Kontak", href: `/${schoolSlug}/dashboard/kelola-ui?tab=hero` },
+            { label: "Program Keahlian", href: `/${schoolSlug}/dashboard/kelola-ui?tab=majors` },
+            { label: "Alur Pendaftaran", href: `/${schoolSlug}/dashboard/kelola-ui?tab=alur` },
+            { label: "Form & Panduan", href: `/${schoolSlug}/dashboard/kelola-ui?tab=form` },
+            { label: "Bank Sekolah", href: `/${schoolSlug}/dashboard/kelola-ui?tab=bank` },
+            { label: "Mitra Industri", href: `/${schoolSlug}/dashboard/kelola-ui?tab=partners` },
+            { label: "FAQ", href: `/${schoolSlug}/dashboard/kelola-ui?tab=faq` },
+            { label: "Riwayat Perubahan", href: `/${schoolSlug}/dashboard/kelola-ui?tab=revisions` }
           ]
         },
         { href: "/dashboard/settings/appearance", icon: <Paintbrush size={18} />, label: "Tema & Tampilan", lockedIfUnverified: true }
@@ -301,20 +302,19 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     {
       category: "Pengaturan Sistem",
       items: [
-        { href: "/dashboard/subscription", icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
-        { href: "/dashboard/admin", icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
-        { href: "/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Utama", lockedIfUnverified: true }
+        { href: `/${schoolSlug}/dashboard/subscription`, icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard/admin`, icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard/settings`, icon: <Settings size={18} />, label: "Pengaturan Utama", lockedIfUnverified: true }
       ]
     }
   ];
 
   // ── Nav link helper with Submenu support ───────────────────────────────────
   const renderMenuItem = (item: any, delayIndex: number) => {
-    const prefix = schoolSlug ? `/${schoolSlug}` : '';
-    const fullHref = item.href.startsWith('/') ? `${prefix}${item.href}` : item.href;
+    const fullHref = item.href;
     const hasSub = !!item.subItems;
     const isOpen = !!openDropdowns[item.href];
-    const isLocked = !isSchoolVerified && item.href !== "/dashboard/verification";
+    const isLocked = !isSchoolVerified && item.href !== `/${schoolSlug}/dashboard/verification`;
     const isActive = item.exact
       ? pathname === fullHref || pathname === item.href
       : pathname === fullHref || pathname === item.href || pathname.startsWith(fullHref + "/");
@@ -426,7 +426,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   className="pl-4 ml-6 pr-2 py-1.5 space-y-1 border-l-2 border-slate-200 dark:border-slate-800"
                 >
                   {item.subItems.map((sub: any) => {
-                    const fullSubHref = sub.href.startsWith('/') ? `${prefix}${sub.href}` : sub.href;
+                    const fullSubHref = sub.href;
                     const defaultTab = sub.href.includes("pendaftar") ? "active" : "hero";
                     const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");
                     const tabVal = urlParams.get("tab");
@@ -599,10 +599,22 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
           >
+            {/* Global Search Bar */}
+            <div className="relative hidden md:flex items-center mr-2">
+              <div className="absolute left-3 text-slate-400">
+                <Search size={14} />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Cari menu (Ctrl+K)" 
+                className="w-48 lg:w-56 h-9 pl-9 pr-3 text-xs font-bold bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/20 text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              />
+            </div>
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow"
+              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow shrink-0"
               title={isDark ? "Beralih ke Terang" : "Beralih ke Gelap"}
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
@@ -614,11 +626,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                 onClick={() => setShowUserDropdown((v) => !v)}
                 className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
               >
-                <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-semibold text-slate-700 dark:text-slate-300 text-sm shadow-sm overflow-hidden shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-sm shadow-sm overflow-hidden shrink-0">
                   {adminUser?.foto_profil ? (
                     <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
                   ) : (
-                    <User size={16} className="text-white" />
+                    <User size={16} className="text-slate-500 dark:text-slate-400" />
                   )}
                 </div>
                 <span className="hidden md:block text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
@@ -636,11 +648,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   {/* User info */}
                   <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-semibold text-slate-700 dark:text-slate-300 text-base shadow-sm shrink-0 overflow-hidden">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-base shadow-sm shrink-0 overflow-hidden">
                         {adminUser?.foto_profil ? (
                           <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
                         ) : (
-                          <User size={18} className="text-white" />
+                          <User size={18} className="text-slate-500 dark:text-slate-400" />
                         )}
                       </div>
                       <div className="min-w-0">

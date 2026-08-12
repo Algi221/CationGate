@@ -18,6 +18,17 @@ import {
   PhoneCall,
 } from "lucide-react";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuPopup,
+  NavigationMenuPositioner,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "../ui/navigation-menu-1";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -128,82 +139,73 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const hasDropdown = Boolean(item.dropdown);
+          <div className="hidden lg:flex items-center gap-1">
+            <NavigationMenu>
+              <NavigationMenuList>
+                {navItems.map((item) => {
+                  const hasDropdown = Boolean(item.dropdown);
 
-              if (hasDropdown) {
-                return (
-                  <div
-                    key={item.label}
-                    className="relative nav-dropdown-container"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setActiveDropdown(activeDropdown === item.label ? null : item.label)}
-                      className="group flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all duration-300 cursor-pointer"
-                    >
-                      <span
-                        className="w-2.5 h-2.5 rounded-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 shrink-0"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="text-sm font-medium text-[#23191C]">{item.label}</span>
-                      <ChevronDown
-                        className={`w-3.5 h-3.5 transition-transform duration-300 opacity-60 text-[#23191C] ${
-                          activeDropdown === item.label ? "rotate-180 opacity-100" : ""
-                        }`}
-                      />
-                    </button>
+                  if (hasDropdown) {
+                    return (
+                      <NavigationMenuItem key={item.label}>
+                        <NavigationMenuTrigger className="bg-transparent hover:bg-slate-100/50 data-[popup-open]:bg-slate-100/50">
+                          <span
+                            className="w-2 h-2 rounded-[2px] shrink-0 mr-2"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="text-[#23191C]">{item.label}</span>
+                        </NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                          <ul className="grid w-[300px] gap-2">
+                            {item.dropdown?.map((sub) => {
+                              const SubIcon = sub.icon;
+                              return (
+                                <li key={sub.title}>
+                                  <NavigationMenuLink
+                                    render={<Link href={sub.href} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group/sub" />}
+                                  >
+                                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover/sub:bg-blue-600 group-hover/sub:text-white transition-colors mt-0.5">
+                                      <SubIcon className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                      <div className="text-xs font-bold text-slate-900 group-hover/sub:text-blue-600 transition-colors">
+                                        {sub.title}
+                                      </div>
+                                      <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                        {sub.desc}
+                                      </div>
+                                    </div>
+                                  </NavigationMenuLink>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </NavigationMenuContent>
+                      </NavigationMenuItem>
+                    );
+                  }
 
-                    {/* Mega-Menu Dropdown Card */}
-                    {activeDropdown === item.label && item.dropdown && (
-                      <div className="absolute left-0 top-full pt-2 w-72 sm:w-80 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-2 space-y-1">
-                          {item.dropdown.map((sub) => {
-                            const SubIcon = sub.icon;
-                            return (
-                              <Link
-                                key={sub.title}
-                                href={sub.href}
-                                onClick={() => setActiveDropdown(null)}
-                                className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group/sub"
-                              >
-                                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover/sub:bg-blue-600 group-hover/sub:text-white transition-colors mt-0.5">
-                                  <SubIcon className="w-4 h-4" />
-                                </div>
-                                <div>
-                                  <div className="text-xs font-bold text-slate-900 group-hover/sub:text-blue-600 transition-colors">
-                                    {sub.title}
-                                  </div>
-                                  <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
-                                    {sub.desc}
-                                  </div>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
+                  return (
+                    <NavigationMenuItem key={item.label}>
+                      <NavigationMenuLink
+                        render={<Link href={item.href} className={navigationMenuTriggerStyle() + " bg-transparent hover:bg-slate-100/50"} />}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-[2px] shrink-0 mr-2"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-[#23191C]">{item.label}</span>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  );
+                })}
+              </NavigationMenuList>
 
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="group flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all duration-300"
-                >
-                  <span
-                    className="w-2.5 h-2.5 rounded-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-sm font-medium text-[#23191C]">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+              <NavigationMenuPositioner>
+                <NavigationMenuPopup />
+              </NavigationMenuPositioner>
+            </NavigationMenu>
+          </div>
 
           {/* Action Button */}
           <div className="hidden sm:flex items-center gap-3">
@@ -233,7 +235,7 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex md:hidden items-center">
+          <div className="flex lg:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-1.5 rounded-lg text-[#2A1B1D] hover:bg-black/5 transition-colors"
@@ -250,7 +252,7 @@ export function Navbar() {
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="absolute top-20 left-4 right-4 md:hidden border border-border bg-[#2A1B1D] rounded-2xl p-4 space-y-4 shadow-2xl">
+        <div className="absolute top-20 left-4 right-4 lg:hidden border border-border bg-[#2A1B1D] rounded-2xl p-4 space-y-4 shadow-2xl">
           <div className="flex flex-col space-y-1">
             {navItems.map((item) => (
               <React.Fragment key={item.label}>

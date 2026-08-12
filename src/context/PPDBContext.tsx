@@ -48,6 +48,8 @@ interface PPDBContextType {
   setAdminUser: React.Dispatch<React.SetStateAction<any | null>>;
   ppdbLogo: string;
   ppdbTitle: string;
+  profilSekolah: any;
+  setProfilSekolah: React.Dispatch<React.SetStateAction<any>>;
   fetchConfigs: () => Promise<void>;
   schoolId: string;
   schoolStatus: string;
@@ -117,12 +119,13 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, []);
-  const [wsStatus, setWsStatus] = useState<string>("SYNCING (15s)");
+  const [wsStatus, setWsStatus] = useState<string>("disconnected");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
   const [simulationActive, setSimulationActive] = useState<boolean>(false);
-  const [ppdbLogo, setPpdbLogo] = useState<string>("");
-  const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB SMK TB");
+  const [ppdbLogo, setPpdbLogo] = useState<string>("/logo_smktb.png");
+  const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB Online");
+  const [profilSekolah, setProfilSekolah] = useState<any>(null);
 
   const fetchConfigs = useCallback(async () => {
     try {
@@ -135,6 +138,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         }
         if (data.data.ppdb_title) {
           setPpdbTitle(data.data.ppdb_title);
+        }
+        if (data.data.ppdb_profil_sekolah) {
+          setProfilSekolah(data.data.ppdb_profil_sekolah);
         }
       }
     } catch (err) {
@@ -888,6 +894,8 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
         checkPaymentStatus,
         ppdbLogo,
         ppdbTitle,
+        profilSekolah,
+        setProfilSekolah,
         fetchConfigs,
         schoolId,
         schoolStatus,

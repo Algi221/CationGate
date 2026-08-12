@@ -490,7 +490,8 @@ appRouter.get('/', adminAuth, async (c: Context) => {
     await checkAndDisqualifyExpiredApplicants();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
     const calonSiswaFields = [
       "id", "nama", "nisn", "nipd", "nik", "tempat_lahir", "tgl_lahir", "jenis_kelamin", "agama", "kewarganegaraan",
@@ -506,7 +507,7 @@ appRouter.get('/', adminAuth, async (c: Context) => {
       "jurusan_1", "alasan_memilih", "hobi", "cita_cita", "nilai_us_teori", "nilai_us_praktik", "nilai_muatan_lokal", "cita_cita_setelah_lulus", "pelajaran_disenangi", "alasan_disenangi", "kesulitan_belajar",
       "perkelahian", "ket_perkelahian", "narkoba", "ket_narkoba", "pelanggaran_lain", "ket_pelanggaran_lain",
       "janji_taat", "janji_sanksi", "janji_akrab", "janji_belajar", "janji_nama_baik",
-      "periode", "gelombang", "registration_no", "status", "physical_doc_verified", "physical_doc_verified_by", "physical_doc_verified_at", "tgl_daftar", "verified_by", "rejected_by", "deleted_by"
+      "periode", "gelombang", "registration_no", "status", "physical_doc_verified", "physical_doc_verified_by", "physical_doc_verified_at", "physical_docs_checklist", "tgl_daftar", "verified_by", "rejected_by", "deleted_by"
     ];
     
     let query = supabase.from('student_applicants')
@@ -556,7 +557,8 @@ appRouter.get('/trashed', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
     const calonSiswaFields = [
       "id", "nama", "nisn", "nik", "tempat_lahir", "tgl_lahir", "jenis_kelamin", "agama", "kewarganegaraan",
@@ -572,7 +574,7 @@ appRouter.get('/trashed', adminAuth, async (c: Context) => {
       "jurusan_1", "alasan_memilih", "hobi", "cita_cita", "nilai_us_teori", "nilai_us_praktik", "nilai_muatan_lokal", "cita_cita_setelah_lulus", "pelajaran_disenangi", "alasan_disenangi", "kesulitan_belajar",
       "perkelahian", "ket_perkelahian", "narkoba", "ket_narkoba", "pelanggaran_lain", "ket_pelanggaran_lain",
       "janji_taat", "janji_sanksi", "janji_akrab", "janji_belajar", "janji_nama_baik",
-      "periode", "gelombang", "registration_no", "status", "physical_doc_verified", "physical_doc_verified_by", "physical_doc_verified_at", "tgl_daftar", "deleted_at", "verified_by", "rejected_by", "deleted_by"
+      "periode", "gelombang", "registration_no", "status", "physical_doc_verified", "physical_doc_verified_by", "physical_doc_verified_at", "physical_docs_checklist", "tgl_daftar", "deleted_at", "verified_by", "rejected_by", "deleted_by"
     ];
     
     let query = supabase.from('student_applicants')
@@ -597,7 +599,8 @@ appRouter.get('/export', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Data Calon Siswa');
@@ -701,7 +704,8 @@ appRouter.post('/:id/restore', adminAuth, async (c: Context) => {
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
     let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -733,7 +737,8 @@ appRouter.get('/:id', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
     let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -768,7 +773,8 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
     let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -934,7 +940,8 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
     let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -994,7 +1001,8 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
     if (permanent) {
       let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id);
@@ -1032,17 +1040,29 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
 appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-    const { verified } = await c.req.json();
+    const { verified, checklist } = await c.req.json();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = admin.school_id;
+    const schoolIdRaw = admin.school_id;
+    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
     const adminName = admin ? (admin.nama || admin.username) : 'Admin';
 
+    let isVerified = Boolean(verified);
+    let finalChecklist = checklist;
+
+    if (checklist) {
+      const requiredDocs = ['kk', 'akta', 'ijazah', 'ktp_ortu', 'pas_foto', 'bukti_bayar'];
+      isVerified = requiredDocs.every(doc => checklist[doc] === true);
+    }
+
     const updateData: any = {
-      physical_doc_verified: Boolean(verified),
-      physical_doc_verified_by: verified ? adminName : null,
-      physical_doc_verified_at: verified ? new Date().toISOString() : null,
+      physical_doc_verified: isVerified,
+      physical_doc_verified_by: isVerified ? adminName : null,
+      physical_doc_verified_at: isVerified ? new Date().toISOString() : null,
     };
+    if (finalChecklist) {
+      updateData.physical_docs_checklist = finalChecklist;
+    }
 
     let query = supabase.from('student_applicants').update(updateData).eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -1055,7 +1075,8 @@ appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
       data: {
         id: updatedRecord.id,
         physical_doc_verified: updatedRecord.physical_doc_verified,
-        physical_doc_verified_by: updatedRecord.physical_doc_verified_by
+        physical_doc_verified_by: updatedRecord.physical_doc_verified_by,
+        physical_docs_checklist: updatedRecord.physical_docs_checklist
       }
     });
 
@@ -1075,7 +1096,7 @@ appRouter.get('/registration-card/:nisn', async (c: Context) => {
     const schoolId = schoolSlug ? await resolveSchoolUUID(schoolSlug, fontInMemSchools) : null;
 
     let query = supabase.from('student_applicants')
-      .select('id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified')
+      .select('id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified, physical_docs_checklist')
       .eq('nisn', nisn);
     if (schoolId) query = query.eq('school_id', schoolId);
 

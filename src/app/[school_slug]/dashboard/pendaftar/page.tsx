@@ -675,7 +675,7 @@ function ApplicantsDirectoryContent() {
           </div>
 
           {/* Gelombang Filter Buttons */}
-          <div className="flex bg-slate-100 dark:bg-slate-955 p-1 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
+          <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-700 shrink-0 shadow-inner">
             {[
               { id: "ALL", label: "Semua Gelombang" },
               { id: "Gelombang 1", label: "Gelombang 1" },
@@ -685,10 +685,10 @@ function ApplicantsDirectoryContent() {
                 key={g.id}
                 type="button"
                 onClick={() => setGelombangFilter(g.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
                   gelombangFilter === g.id
-                    ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                    ? "bg-black text-white border-black dark:bg-black dark:border-slate-500 shadow-sm"
+                    : "bg-transparent text-slate-600 dark:text-slate-300 border-transparent hover:bg-slate-200/70 dark:hover:bg-slate-800"
                 }`}
               >
                 {g.label}
@@ -1273,8 +1273,8 @@ function ApplicantsDirectoryContent() {
             </div>
 
             {/* Modal Tabs Navigation */}
-            <div className="px-6 py-4 bg-slate-50/80 dark:bg-slate-950/40 border-b border-slate-100 dark:border-white/5 shrink-0">
-              <div className="flex flex-wrap bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-1 w-full border border-slate-200/50 dark:border-white/5">
+            <div className="px-6 py-4 bg-slate-50/80 dark:bg-slate-950/40 border-b border-slate-100 dark:border-white/5 shrink-0 w-full overflow-hidden">
+              <div className="flex overflow-x-auto hide-scrollbar bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-1 w-full max-w-full border border-slate-200/50 dark:border-white/5">
                 {[
                   { id: "biodata", label: "Biodata" },
                   { id: "periodik", label: "Periodik" },
@@ -1287,7 +1287,7 @@ function ApplicantsDirectoryContent() {
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider flex-1 text-center min-w-[90px] whitespace-nowrap ${activeTab === t.id
+                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider shrink-0 text-center min-w-[90px] whitespace-nowrap ${activeTab === t.id
                         ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/10"
                         : "text-slate-500 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 border border-transparent"
                       }`}
@@ -1592,92 +1592,114 @@ function ApplicantsDirectoryContent() {
                   </h4>
                   
                   <div className="p-6 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="space-y-1 text-left">
-                      <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[9px] tracking-wider block">Status Penyerahan Berkas Fisik</span>
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`inline-flex px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${
-                            selectedApplicant.physical_doc_verified
-                              ? "bg-emerald-50 border-emerald-300 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900"
-                              : "bg-rose-50 border-rose-300 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900"
-                          }`}
-                        >
-                          {selectedApplicant.physical_doc_verified ? "✓ Berkas Fisik Lengkap" : "⌛ Belum Diserahkan"}
-                        </span>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/5">
+                      <div className="space-y-1">
+                        <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest text-[10px] flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                            <Check size={12} />
+                          </div>
+                          Checklist Berkas Fisik
+                        </h4>
+                        <p className="text-[10px] text-slate-500 font-medium">Tandai dokumen yang telah diserahkan secara fisik ke sekolah.</p>
+                        {selectedApplicant.physical_doc_verified && selectedApplicant.physical_doc_verified_by && (
+                          <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold mt-1">
+                            ✓ Diverifikasi oleh admin {selectedApplicant.physical_doc_verified_by}
+                          </p>
+                        )}
                       </div>
-                      {selectedApplicant.physical_doc_verified && selectedApplicant.physical_doc_verified_by && (
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-semibold">
-                          Diverifikasi oleh admin <span className="font-bold text-slate-700 dark:text-white">{selectedApplicant.physical_doc_verified_by}</span>
-                        </p>
-                      )}
+                      <div className="text-right">
+                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          selectedApplicant.physical_doc_verified
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                        }`}>
+                          {selectedApplicant.physical_doc_verified ? "Lengkap & Valid" : "Belum Lengkap"}
+                        </div>
+                      </div>
                     </div>
 
-                    <button
-                      onClick={async () => {
-                        const token = localStorage.getItem("ppdb_token");
-                        const targetState = !selectedApplicant.physical_doc_verified;
-                        try {
-                          const res = await fetch(`/api/applicants/${selectedApplicant.id}/physical-doc`, {
-                            method: "PATCH",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ verified: targetState })
-                          });
-                          const data = await res.json();
-                          if (data.success) {
-                            setSelectedApplicant(prev => prev ? {
-                              ...prev,
-                              physical_doc_verified: targetState,
-                              physical_doc_verified_by: data.data.physical_doc_verified_by
-                            } : null);
-                            setApplicants(prev => prev.map(item => item.id === selectedApplicant.id ? {
-                              ...item,
-                              physical_doc_verified: targetState,
-                              physical_doc_verified_by: data.data.physical_doc_verified_by
-                            } : item));
-                            if (typeof addToast === "function") {
-                              addToast("Verifikasi Berkas Fisik", data.message, "success");
-                            }
-                          }
-                        } catch (err: any) {
-                          console.error("Gagal update berkas fisik:", err);
-                        }
-                      }}
-                      className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider shadow transition-all flex items-center gap-2 ${
-                        selectedApplicant.physical_doc_verified
-                          ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
-                          : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20"
-                      }`}
-                    >
-                      <Check size={15} />
-                      <span>{selectedApplicant.physical_doc_verified ? "Batalkan Verifikasi Berkas" : "Tandai Berkas Fisik Diterima"}</span>
-                    </button>
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { id: 'kk', label: 'Fotokopi Kartu Keluarga (KK)' },
+                        { id: 'ktp_ortu', label: 'Fotokopi KTP Orang Tua (Ayah & Ibu)' },
+                        { id: 'akta', label: 'Akta Kelahiran asli & 1 Fotokopi' },
+                        { id: 'ijazah', label: 'Fotokopi Ijazah / SKL legalisir' },
+                        { id: 'pas_foto', label: 'Pas foto berwarna 3x4 (3 lembar)' },
+                        { id: 'bukti_bayar', label: 'Bukti Pembayaran Pendaftaran' }
+                      ].map(doc => {
+                        const isChecked = selectedApplicant.physical_docs_checklist?.[doc.id] || false;
+                        return (
+                          <button
+                            key={doc.id}
+                            onClick={async () => {
+                              try {
+                                const token = localStorage.getItem("ppdb_token") || localStorage.getItem("ppdb_admin_token");
+                                const currentChecklist = selectedApplicant.physical_docs_checklist || {};
+                                const newChecklist = { ...currentChecklist, [doc.id]: !isChecked };
+                                
+                                // Optimistic update
+                                setSelectedApplicant(prev => prev ? {
+                                  ...prev,
+                                  physical_docs_checklist: newChecklist
+                                } : null);
 
-                  {/* Checklist Items */}
-                  <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl p-5 space-y-3">
-                    <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[9px] tracking-wider block">
-                      Daftar Kelengkapan Berkas Fisik Yang Harus Diterima Panitia:
-                    </span>
-                    <ul className="text-xs space-y-2 text-slate-700 dark:text-slate-300 font-semibold">
-                      <li className="flex items-center gap-2.5">
-                        <span className="text-blue-500 font-bold">✓</span> Fotokopi Kartu Keluarga (KK)
-                      </li>
-                      <li className="flex items-center gap-2.5">
-                        <span className="text-blue-500 font-bold">✓</span> Fotokopi KTP Orang Tua (Ayah &amp; Ibu)
-                      </li>
-                      <li className="flex items-center gap-2.5">
-                        <span className="text-blue-500 font-bold">✓</span> Akta Kelahiran asli &amp; 1 Fotokopi
-                      </li>
-                      <li className="flex items-center gap-2.5">
-                        <span className="text-blue-500 font-bold">✓</span> Fotokopi Ijazah / Surat Keterangan Lulus (SKL) legalisir
-                      </li>
-                      <li className="flex items-center gap-2.5">
-                        <span className="text-blue-500 font-bold">✓</span> Pas foto berwarna terbaru ukuran 3x4 (3 lembar)
-                      </li>
-                    </ul>
+                                const res = await fetch(`/api/applicants/${selectedApplicant.id}/physical-doc`, {
+                                  method: "PATCH",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${token}`
+                                  },
+                                  body: JSON.stringify({ checklist: newChecklist, verified: false })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                  setSelectedApplicant(prev => prev ? {
+                                    ...prev,
+                                    physical_doc_verified: data.data.physical_doc_verified,
+                                    physical_doc_verified_by: data.data.physical_doc_verified_by,
+                                    physical_docs_checklist: data.data.physical_docs_checklist
+                                  } : null);
+                                  setApplicants(prev => prev.map(item => item.id === selectedApplicant.id ? {
+                                    ...item,
+                                    physical_doc_verified: data.data.physical_doc_verified,
+                                    physical_doc_verified_by: data.data.physical_doc_verified_by,
+                                    physical_docs_checklist: data.data.physical_docs_checklist
+                                  } : item));
+                                } else {
+                                  // Revert on error
+                                  setSelectedApplicant(prev => prev ? { ...prev, physical_docs_checklist: currentChecklist } : null);
+                                  if (typeof addToast === "function") {
+                                    addToast("Gagal Update", data.message, "error");
+                                  }
+                                }
+                              } catch(err) {
+                                console.error("Error updating checklist:", err);
+                              }
+                            }}
+                            className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                              isChecked 
+                                ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50" 
+                                : "bg-slate-50 border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 hover:border-blue-400/50"
+                            }`}
+                          >
+                            <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${
+                              isChecked
+                                ? "bg-emerald-500 border-emerald-600 text-white"
+                                : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                            }`}>
+                              {isChecked && <Check size={12} strokeWidth={3} />}
+                            </div>
+                            <span className={`text-xs font-bold leading-tight ${
+                              isChecked ? "text-emerald-900 dark:text-emerald-100" : "text-slate-600 dark:text-slate-400"
+                            }`}>
+                              {doc.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                   </div>
                 </div>
               )}

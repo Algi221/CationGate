@@ -157,7 +157,7 @@ function InvoiceContent() {
         <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
           <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Oops!</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6">{error || "Data tidak ditemukan."}</p>
-          <Link href="/" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          <Link href={schoolSlug ? `/${schoolSlug}` : "/"} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
             Kembali ke Beranda
           </Link>
         </div>
@@ -584,7 +584,7 @@ function InvoiceContent() {
               Cetak / Simpan PDF
             </button>
 
-            <Link href={isAdmin ? "/dashboard/pendaftar" : "/"} className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" style={{
+            <Link href={isAdmin ? (schoolSlug ? `/${schoolSlug}/dashboard/pendaftar` : "/dashboard/pendaftar") : (schoolSlug ? `/${schoolSlug}` : "/")} className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" style={{
               width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
               fontWeight: 900, fontSize: '11px',
               textTransform: 'uppercase', letterSpacing: '0.1em',

@@ -8,7 +8,7 @@ const mailerRouter = new Hono();
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 // Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_build');
 
 mailerRouter.post('/send-otp', async (c) => {
   try {

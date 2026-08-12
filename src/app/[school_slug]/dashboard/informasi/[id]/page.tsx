@@ -220,7 +220,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
               </>
             )}
           </button>
-          <Link href={`/${(params as any)?.school_slug || ''}/dashboard/informasi`} className="px-6 py-2 bg-slate-200 text-slate-800 rounded hover:bg-slate-300 flex items-center">
+          <Link href={`/${(params as any)?.school_slug || ''}/dashboard/informasi`} className="px-6 py-2 bg-slate-200 text-slate-800 dark:text-white rounded hover:bg-slate-300 flex items-center">
             <ArrowRight size={16} />
             <span>Kembali ke Daftar</span>
           </Link>

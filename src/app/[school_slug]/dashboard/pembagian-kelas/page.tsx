@@ -106,7 +106,7 @@ export default function ClassDivisionManagement() {
       <img
         src={url}
         alt={`Logo ${code}`}
-        className={`${size} rounded-full object-cover shrink-0 border border-slate-200/80 dark:border-white/10`}
+        className={`${size} rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-800/80 dark:border-white/10`}
       />
     );
   };
@@ -1059,7 +1059,7 @@ export default function ClassDivisionManagement() {
       {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm w-full mx-4">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm w-full mx-4">
             <svg className="animate-spin h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx={12} cy={12} r={10} stroke="currentColor" strokeWidth={4} />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -1068,7 +1068,7 @@ export default function ClassDivisionManagement() {
               <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">Memproses Kelas...</h4>
               <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Mengupdate Data Calon Siswa ({loadingProgress}%)</p>
             </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-slate-100 dark:bg-[#1e293b] h-2 rounded-full overflow-hidden">
               <div className="bg-gradient-to-r from-indigo-600 to-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
             </div>
           </div>
@@ -1079,7 +1079,7 @@ export default function ClassDivisionManagement() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
         
         {/* Info Box */}
-        <div className="xl:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center gap-4 transition-colors duration-300">
+        <div className="xl:col-span-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center gap-4 transition-colors duration-300">
           <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-100 dark:border-indigo-900/40 shrink-0 shadow-sm">
             <GraduationCap size={22} />
           </div>
@@ -1090,13 +1090,13 @@ export default function ClassDivisionManagement() {
         </div>
 
         {/* Metric 1: Total Classes */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
           <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Kelas Terbentuk (Kelas {selectedGrade} {selectedMajor})</span>
           <span className="text-2xl font-black text-slate-800 dark:text-white mt-1">{classesOfSelectedMajor.length} <span className="text-xs text-slate-455 font-bold">Kelas</span></span>
         </div>
 
         {/* Metric 2: Filled Classes */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
           <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Jumlah Kelas Terisi Siswa</span>
           <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{totalClassesFilled} <span className="text-xs text-slate-455 font-bold">Terisi</span></span>
         </div>
@@ -1104,7 +1104,7 @@ export default function ClassDivisionManagement() {
       </div>
 
       {/* Selected Major Selector Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 border-b border-slate-200/80 dark:border-slate-800/40 pb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 border-b border-slate-200 dark:border-slate-800/80 dark:border-slate-800/40 pb-6">
         {activeMajors.map((m) => (
           <button
             key={m.code}
@@ -1116,7 +1116,7 @@ export default function ClassDivisionManagement() {
             className={`flex flex-col items-center justify-center text-center p-6 rounded-3xl transition-all border duration-300 hover:scale-[1.03] group cursor-pointer ${
               selectedMajor === m.code
                 ? "bg-gradient-to-tr from-indigo-600 to-blue-600 border-indigo-600/85 text-white shadow-lg shadow-indigo-500/20 scale-[1.02]"
-                : "bg-white border-slate-200 hover:border-indigo-500/40 hover:bg-slate-50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
+                : "bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-800 hover:border-indigo-500/40 hover:bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
             }`}
           >
             {getMajorLogo(m.code, "w-12 h-12 shadow-md")}
@@ -1135,7 +1135,7 @@ export default function ClassDivisionManagement() {
       </div>
 
       {/* Pilihan Tingkat Kelas (Grade Tabs) */}
-      <div className="flex bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 p-1.5 rounded-2xl shadow-sm justify-start gap-2 max-w-lg transition-colors duration-300">
+      <div className="flex bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 p-1.5 rounded-2xl shadow-sm justify-start gap-2 max-w-lg transition-colors duration-300">
         {([10, 11, 12] as const).map((g) => (
           <button
             key={g}
@@ -1147,7 +1147,7 @@ export default function ClassDivisionManagement() {
             className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               selectedGrade === g
                 ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/20 scale-[1.02]"
-                : "text-slate-500 hover:text-slate-850 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50"
             }`}
           >
             Kelas {g} {g === 10 ? "(Baru Masuk)" : ""}
@@ -1156,7 +1156,7 @@ export default function ClassDivisionManagement() {
       </div>
 
       {/* Classes capacity indicators and list */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-5">
           <div className="flex items-center gap-2">
             <Layers size={14} className="text-slate-400" />
@@ -1180,7 +1180,7 @@ export default function ClassDivisionManagement() {
             </button>
             <button
               onClick={() => setIsAddingClass(!isAddingClass)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-250 dark:border-white/5 text-[10px] uppercase font-bold text-slate-655 dark:text-slate-350 dark:hover:text-white transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-250 dark:border-white/5 text-[10px] uppercase font-bold text-slate-655 dark:text-slate-350 dark:hover:text-white transition-all shadow-sm cursor-pointer"
             >
               {isAddingClass ? <X size={12} /> : <Plus size={12} />}
               <span>{isAddingClass ? "Tutup Form" : "Buat Kelas Baru"}</span>
@@ -1190,7 +1190,7 @@ export default function ClassDivisionManagement() {
 
         {/* Create Class Inline Form */}
         {isAddingClass && (
-          <form onSubmit={handleCreateClass} className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 mb-6 flex flex-wrap gap-4 items-end animate-in zoom-in-95 duration-200">
+          <form onSubmit={handleCreateClass} className="bg-slate-50 dark:bg-[#020617] p-5 rounded-2xl border border-slate-200 dark:border-slate-800/60 dark:border-white/5 mb-6 flex flex-wrap gap-4 items-end animate-in zoom-in-95 duration-200">
             <div className="space-y-1.5 shrink-0 w-full sm:w-auto sm:flex-1">
               <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Kelas Baru</label>
               <input
@@ -1198,7 +1198,7 @@ export default function ClassDivisionManagement() {
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
                 placeholder={`Contoh: X ${selectedMajor} 3`}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
+                className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
               />
             </div>
 
@@ -1226,7 +1226,7 @@ export default function ClassDivisionManagement() {
                 className={`p-5 border rounded-3xl flex flex-col justify-between hover:shadow-md cursor-pointer transition-all relative group overflow-hidden ${
                   activeDropClass === c.id
                     ? "bg-blue-50/50 dark:bg-blue-950/20 border-blue-500 ring-2 ring-blue-500 scale-[1.02] shadow-lg shadow-blue-500/10"
-                    : "bg-slate-50 dark:bg-slate-950/40 border-slate-200/60 dark:border-white/5 hover:border-blue-500/40"
+                    : "bg-slate-50 dark:bg-[#020617]/40 border-slate-200 dark:border-slate-800/60 dark:border-white/5 hover:border-blue-500/40"
                 }`}
               >
                 {/* Decorative border line */}
@@ -1280,7 +1280,7 @@ export default function ClassDivisionManagement() {
       </div>
 
       {/* Main Student Directory Grid & Checklist Panel */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300 space-y-6">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300 space-y-6">
         
         {/* Filtering Toolbar */}
         <div className="flex flex-col xl:flex-row gap-4 items-center justify-between border-b border-slate-100 dark:border-white/5 pb-5">
@@ -1295,12 +1295,12 @@ export default function ClassDivisionManagement() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Cari nama / NISN..."
-                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
               />
             </div>
 
             {/* Assignment Status Filter */}
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-500">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
               <Filter size={11} />
               <select
                 value={assignmentFilter}
@@ -1314,7 +1314,7 @@ export default function ClassDivisionManagement() {
             </div>
 
             {/* Gender Filter */}
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-500">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
               <Filter size={11} />
               <select
                 value={genderFilter}
@@ -1334,11 +1334,11 @@ export default function ClassDivisionManagement() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
+              <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
                 <th className="py-3.5 px-4 text-center w-12 pl-6">
                   <button 
                     onClick={handleSelectAll}
-                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all text-slate-500 flex items-center justify-center"
+                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-all text-slate-500 dark:text-slate-400 flex items-center justify-center"
                     title={selectedStudentIds.length === filteredStudents.length ? "Clear Selection" : "Select All"}
                   >
                     {selectedStudentIds.length === filteredStudents.length && filteredStudents.length > 0 ? (
@@ -1369,7 +1369,7 @@ export default function ClassDivisionManagement() {
                     onClick={() => handleSelectStudent(student.id)}
                     draggable={true}
                     onDragStart={(e) => handleDragStart(e, student.id)}
-                    className={`hover:bg-slate-50/70 dark:hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing select-none ${
+                    className={`hover:bg-slate-50 dark:bg-slate-800/50/70 dark:hover:bg-white dark:bg-[#0f172a]/10 transition-all cursor-grab active:cursor-grabbing select-none ${
                       isSelected ? "bg-blue-500/10 dark:bg-blue-500/15 border-l-2 border-blue-500" : ""
                     }`}
                   >
@@ -1427,7 +1427,7 @@ export default function ClassDivisionManagement() {
                           {assignedClass}
                         </span>
                       ) : (
-                        <span className="inline-flex px-2 py-0.5 rounded-full bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-white/5 text-slate-450 dark:text-slate-500 text-[9px] font-bold uppercase tracking-wider">
+                        <span className="inline-flex px-2 py-0.5 rounded-full bg-slate-50 dark:bg-[#020617]/30 border border-slate-200 dark:border-white/5 text-slate-450 dark:text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider">
                           Belum Diatur
                         </span>
                       )}
@@ -1441,7 +1441,7 @@ export default function ClassDivisionManagement() {
                             setSelectedStudentIds([student.id]);
                             handleAssignSelectedToClass(e.target.value);
                           }}
-                          className="px-2.5 py-1 text-[9px] uppercase font-black bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-white border border-slate-250 dark:border-white/5 rounded-lg focus:outline-none cursor-pointer"
+                          className="px-2.5 py-1 text-[9px] uppercase font-black bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-white border border-slate-250 dark:border-white/5 rounded-lg focus:outline-none cursor-pointer"
                         >
                           <option value="">Belum Diatur</option>
                           {classesOfSelectedMajor.map(c => (
@@ -1470,10 +1470,10 @@ export default function ClassDivisionManagement() {
       {/* Class Detail Modal Overlay */}
       {selectedClassDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/15">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
               <div>
                 <h3 className="text-base font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
                   <span>Daftar Kelas: {selectedClassDetail.name}</span>
@@ -1481,18 +1481,18 @@ export default function ClassDivisionManagement() {
                     {enrolledStudentsInDetail.length} Siswa Terdaftar
                   </span>
                 </h3>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-1">Daftar nama siswa resmi yang telah dimasukkan ke kelas ini</p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-1">Daftar nama siswa resmi yang telah dimasukkan ke kelas ini</p>
               </div>
               <button
                 onClick={() => { setSelectedClassDetail(null); setClassSearchTerm(""); }}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white flex items-center justify-center transition-all font-bold"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Actions & Filter */}
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/20 dark:bg-slate-950/5 flex flex-col sm:flex-row gap-4 items-center justify-between shrink-0">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/20 dark:bg-slate-950/5 flex flex-col sm:flex-row gap-4 items-center justify-between shrink-0">
               <div className="relative w-full sm:max-w-xs">
                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                   <Search size={13} />
@@ -1502,7 +1502,7 @@ export default function ClassDivisionManagement() {
                   value={classSearchTerm}
                   onChange={(e) => setClassSearchTerm(e.target.value)}
                   placeholder="Cari siswa di kelas..."
-                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
+                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
                 />
               </div>
 
@@ -1519,7 +1519,7 @@ export default function ClassDivisionManagement() {
             <div className="flex-1 overflow-y-auto p-6 max-h-[45vh]">
               <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest">
+                  <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest">
                     <th className="py-2.5 px-3 text-left w-12">No</th>
                     <th className="py-2.5 px-4 text-center">NIPD</th>
                     <th className="py-2.5 px-4">Nama Lengkap</th>
@@ -1531,7 +1531,7 @@ export default function ClassDivisionManagement() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {enrolledStudentsInDetail.map((student, idx) => (
-                    <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all">
+                    <tr key={student.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 dark:hover:bg-white dark:bg-[#0f172a]/5 transition-all">
                       <td className="py-3 px-3 text-slate-400 font-mono">{idx + 1}</td>
                       <td className="py-3 px-4 text-center font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
                       <td className="py-3 px-4">
@@ -1578,7 +1578,7 @@ export default function ClassDivisionManagement() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/40 dark:bg-slate-950/15 flex justify-end shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/40 dark:bg-slate-950/15 flex justify-end shrink-0">
               <button
                 onClick={() => { setSelectedClassDetail(null); setClassSearchTerm(""); }}
                 className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"

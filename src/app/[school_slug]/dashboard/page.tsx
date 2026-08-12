@@ -65,14 +65,14 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: delay * 0.08 }}
-      className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-5 shadow-sm transition-all duration-200`}
+      className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800 rounded-xl p-5 shadow-sm transition-all duration-200`}
     >
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">{label}</span>
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${c.iconBg} ${c.iconText}`}>{icon}</div>
       </div>
       <h3 className={`text-3xl font-bold leading-none mb-1 tabular-nums text-slate-900 dark:text-white`}>{displayValue}</h3>
-      <span className="text-xs text-slate-500 dark:text-slate-500 font-medium">{sub}</span>
+      <span className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 font-medium">{sub}</span>
     </motion.div>
   );
 }
@@ -562,7 +562,7 @@ export default function DashboardOverview() {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
       >
         <div className="space-y-1 max-w-2xl">
           <div className="flex items-center gap-2">
@@ -657,22 +657,22 @@ export default function DashboardOverview() {
         transition={{ duration: 0.55, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Area Chart */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Tren Registrasi</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
                 Statistik pendaftaran – {trendView === "hari" ? "7 hari terakhir" : trendView === "minggu" ? "4 minggu terakhir" : trendView === "bulan" ? "6 bulan terakhir" : "per periode"}
               </p>
             </div>
-            <div className="flex bg-slate-100/80 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200/40 dark:border-white/5 shrink-0">
+            <div className="flex bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-800/40 dark:border-white/5 shrink-0">
               {(["hari", "minggu", "bulan", "periode"] as const).map((v) => (
                 <button
                   key={v}
                   onClick={() => setTrendView(v)}
                   className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${trendView === v
-                    ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200/30"
-                    : "text-slate-400 hover:text-slate-700 dark:hover:text-white"}`}
+                    ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200 dark:border-slate-800/30"
+                    : "text-slate-400 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white"}`}
                 >
                   {v}
                 </button>
@@ -683,11 +683,11 @@ export default function DashboardOverview() {
         </div>
 
         {/* Kuota Panel */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col">
+        <div className="lg:col-span-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Data Keseluruhan</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Status kuota seluruh jurusan</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Status kuota seluruh jurusan</p>
             </div>
             <Link
               href={`/${schoolSlug}/dashboard/pendaftar?tab=kuota`}
@@ -705,7 +705,7 @@ export default function DashboardOverview() {
 
       {/* ── Bar Chart – Distribusi Jurusan ──────────────────────────────────── */}
       <motion.div
-        className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm"
+        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -716,14 +716,14 @@ export default function DashboardOverview() {
               <BarChart2 size={14} className="text-indigo-500" />
               Distribusi Pendaftar per Jurusan
             </h3>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Jumlah calon siswa berdasarkan pilihan jurusan pertama</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Jumlah calon siswa berdasarkan pilihan jurusan pertama</p>
           </div>
           {/* Legend */}
           <div className="hidden sm:flex items-center flex-wrap gap-x-4 gap-y-1">
             {majorsList.slice(0, 6).map((m) => (
               <div key={m.name} className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: m.color }} />
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{m.name}</span>
+                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">{m.name}</span>
               </div>
             ))}
           </div>
@@ -739,11 +739,11 @@ export default function DashboardOverview() {
         transition={{ duration: 0.55, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Recent Table */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
+        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftar Terbaru</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
             </div>
             <Link href={`/${schoolSlug}/dashboard/pendaftar`} className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
               Lihat Semua <ArrowRight size={12} />
@@ -752,7 +752,7 @@ export default function DashboardOverview() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-bold">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-600 text-[9px] uppercase tracking-widest">
+                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-600 dark:text-slate-300 text-[9px] uppercase tracking-widest">
                   <th className="pb-2 pt-1 pl-2">Nama</th>
                   <th className="pb-2 pt-1">Asal Sekolah</th>
                   <th className="pb-2 pt-1">Jurusan</th>
@@ -766,7 +766,7 @@ export default function DashboardOverview() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
-                    className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-all"
+                    className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-all"
                   >
                     <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[130px] truncate">{a.nama}</td>
                     <td className="py-2.5 truncate max-w-[110px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
@@ -796,13 +796,13 @@ export default function DashboardOverview() {
 
         {/* Kuota Progress Charts */}
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <div className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
             <h3 className="text-[10px] font-black text-slate-800 dark:text-white tracking-wider uppercase mb-3 flex items-center gap-2">
               <BarChart2 size={12} className="text-blue-500" /> Progress Calon Siswa
             </h3>
             <KuotaTab type="pendaftar" variant="minimal" />
           </div>
-          <div className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
             <h3 className="text-[10px] font-black text-slate-800 dark:text-white tracking-wider uppercase mb-3 flex items-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Progress Siswa Aktif
             </h3>

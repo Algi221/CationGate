@@ -257,7 +257,7 @@ export default function SchoolVerificationPage() {
       />
       
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-xs font-bold">
             <ShieldCheck className="w-4 h-4" /> Prosedur Verifikasi Legalitas Instansi
@@ -289,7 +289,7 @@ export default function SchoolVerificationPage() {
       </div>
 
       {/* Stepper Progress Header */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-sm">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-sm">
         <div className="grid grid-cols-4 gap-2">
           {[
             { step: 1, title: "1. Identitas & SK", icon: Building2 },
@@ -314,7 +314,7 @@ export default function SchoolVerificationPage() {
                 }`}
               >
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
-                  isActive ? "bg-white/20 text-white" : isDone ? "bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200" : "bg-slate-200 dark:bg-slate-700 text-slate-500"
+                  isActive ? "bg-white dark:bg-[#0f172a]/20 text-white" : isDone ? "bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200" : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
                 }`}>
                   {isDone ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                 </div>
@@ -329,7 +329,7 @@ export default function SchoolVerificationPage() {
       </div>
 
       {/* Main Step Form Container */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
         
         {/* ── STEP 1: Identitas & Legalitas ────────────────────────────────────── */}
         {currentStep === 1 && (
@@ -513,14 +513,14 @@ export default function SchoolVerificationPage() {
                   processFile(e.dataTransfer.files[0]);
                 }
               }}
-              className="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl bg-slate-50/50 dark:bg-slate-850/40 text-center space-y-4 cursor-pointer transition-all hover:bg-blue-50/20"
+              className="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-850/40 text-center space-y-4 cursor-pointer transition-all hover:bg-blue-50/20"
             >
               <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-100 dark:border-blue-900">
                 <Upload className="w-7 h-7" />
               </div>
 
               {uploadedFile || formData.sk_document_name ? (
-                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 inline-flex items-center gap-3 text-left max-w-full shadow-xs" onClick={(e) => e.stopPropagation()}>
+                <div className="p-4 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 inline-flex items-center gap-3 text-left max-w-full shadow-xs" onClick={(e) => e.stopPropagation()}>
                   <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center shrink-0">
                     <FileText className="w-5 h-5" />
                   </div>
@@ -566,7 +566,7 @@ export default function SchoolVerificationPage() {
                   placeholder="Atau masukkan Link Berkas PDF / Cloud Drive SK"
                   value={formData.sk_document_url}
                   onChange={(e) => setFormData({ ...formData, sk_document_url: e.target.value })}
-                  className="h-11 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-xs font-mono"
+                  className="h-11 rounded-xl bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-700 text-xs font-mono"
                 />
               </div>
             </div>

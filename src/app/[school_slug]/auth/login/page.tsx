@@ -59,10 +59,10 @@ export default function AdminLogin() {
 
   if (isSchoolNotFound) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-6">
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-[#020617] p-6">
         <div className="text-center space-y-4 max-w-md">
           <div className="w-16 h-16 mx-auto bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
-            <ShieldCheck className="w-8 h-8 text-slate-500" />
+            <ShieldCheck className="w-8 h-8 text-slate-500 dark:text-slate-400" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Sekolah Tidak Ditemukan</h1>
           <p className="text-slate-600 dark:text-slate-400">
@@ -82,7 +82,7 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-white font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-white dark:bg-[#0f172a] font-sans selection:bg-blue-600 selection:text-white">
       
       {/* Left Panel - Dark Mode Design matching Image 2 */}
       <div className="w-full lg:w-[45%] bg-[#0b1121] relative flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">
@@ -146,22 +146,22 @@ export default function AdminLogin() {
           </div>
         </div>
 
-        <div className="text-sm text-slate-500 flex items-center justify-between pt-6 relative z-10 border-t border-slate-800">
+        <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center justify-between pt-6 relative z-10 border-t border-slate-800">
           <span>Powered by CationGate</span>
           <span>• Secure & Encrypted</span>
         </div>
       </div>
 
       {/* Right Panel – Admin Login Form */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-white">
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-white dark:bg-[#0f172a]">
         {/* Floating Card like in Image 2 */}
-        <div className="w-full max-w-[440px] bg-[#f8fafc] border border-slate-200 p-8 sm:p-10 rounded-3xl shadow-sm">
+        <div className="w-full max-w-[440px] bg-[#f8fafc] border border-slate-200 dark:border-slate-800 p-8 sm:p-10 rounded-3xl shadow-sm">
           
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Login Admin
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Masuk menggunakan akun admin atau panitia PPDB
             </p>
           </div>
@@ -175,8 +175,8 @@ export default function AdminLogin() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2 text-left">
-              <label htmlFor="username" className="text-sm font-medium text-slate-700 block">
-                Alamat Gmail (atau Username)
+              <label htmlFor="username" className="text-sm font-medium text-slate-700 dark:text-slate-200 block">
+                Username
               </label>
               <div className="relative">
                 <input
@@ -184,14 +184,14 @@ export default function AdminLogin() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin@gmail.com"
-                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
+                  placeholder="Masukkan username"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2 text-left">
-              <label htmlFor="password" className="text-sm font-medium text-slate-700 block">
+              <label htmlFor="password" className="text-sm font-medium text-slate-700 dark:text-slate-200 block">
                 Password
               </label>
               <div className="relative">
@@ -201,12 +201,12 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
-                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -232,9 +232,9 @@ export default function AdminLogin() {
             </button>
           </form>
 
-          <div className="pt-6 mt-8 border-t border-slate-200 text-center">
-            <p className="text-sm text-slate-500">
-              Lupa password akun admin?
+          <div className="pt-6 mt-8 border-t border-slate-200 dark:border-slate-800 text-center">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Lupa password atau kendala akses?
             </p>
             <Link href={`/${params.school_slug}/auth/forgot-password`} className="inline-block text-sm text-blue-600 font-semibold mt-1 cursor-pointer hover:underline transition-all">
               Reset Password Disini

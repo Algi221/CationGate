@@ -132,8 +132,8 @@ export default function SubscriptionManagementPage() {
         <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-2">
           <Lock size={32} />
         </div>
-        <h2 className="text-2xl font-black text-slate-800">Akses Ditolak</h2>
-        <p className="text-slate-500 max-w-md">
+        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Akses Ditolak</h2>
+        <p className="text-slate-500 dark:text-slate-400 max-w-md">
           Halaman ini khusus untuk <strong>Superadmin Sekolah</strong>. Anda tidak memiliki izin untuk mengelola status SPMB dan lisensi langganan.
         </p>
         <Link href="./" className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors">
@@ -202,7 +202,7 @@ export default function SubscriptionManagementPage() {
       />
       
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-2 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-xs font-bold">
             <CreditCard className="w-4 h-4" /> Pengaturan Lisensi & Kontrol SPMB
@@ -234,7 +234,7 @@ export default function SubscriptionManagementPage() {
       </div>
 
       {/* Kontrol SPMB Section */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
          <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
               Status Pendaftaran Publik (SPMB)
@@ -263,7 +263,7 @@ export default function SubscriptionManagementPage() {
       <div className="pt-4">
         <div className="text-center mb-8">
            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Pilih Paket CationGate</h2>
-           <p className="text-sm text-slate-500 mt-2">Pilih paket langganan yang sesuai dengan kebutuhan operasional sekolah Anda.</p>
+           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Pilih paket langganan yang sesuai dengan kebutuhan operasional sekolah Anda.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -273,7 +273,7 @@ export default function SubscriptionManagementPage() {
               <motion.div
                 key={pkg.id}
                 whileHover={{ y: -4 }}
-                className={`relative flex flex-col bg-white dark:bg-slate-900 border-2 rounded-3xl p-6 shadow-sm overflow-hidden ${
+                className={`relative flex flex-col bg-white dark:bg-[#0f172a] border-2 rounded-3xl p-6 shadow-sm overflow-hidden ${
                   isActive ? "border-blue-500 dark:border-blue-500" : pkg.isPopular ? "border-slate-300 dark:border-slate-700" : "border-slate-200 dark:border-slate-800"
                 }`}
               >
@@ -293,7 +293,7 @@ export default function SubscriptionManagementPage() {
                 </div>
                 <div className="mb-6 flex items-end gap-1">
                   <span className="text-3xl font-black text-slate-900 dark:text-white leading-none">{pkg.price}</span>
-                  <span className="text-xs font-semibold text-slate-500 mb-1">{pkg.period}</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{pkg.period}</span>
                 </div>
                 <div className="flex-1">
                   <ul className="space-y-3">
@@ -307,11 +307,11 @@ export default function SubscriptionManagementPage() {
                 </div>
                 <div className="mt-8">
                   {isActive ? (
-                    <button disabled className="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200 dark:border-slate-700">
+                    <button disabled className="w-full py-3 rounded-xl bg-slate-100 dark:bg-[#1e293b] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200 dark:border-slate-700">
                       <CheckCircle2 className="w-4 h-4" /> Sedang Digunakan
                     </button>
                   ) : pkg.price === "Rp 0" ? (
-                    <button onClick={() => { localStorage.setItem("ppdb_school_plan", pkg.id); setCurrentPlan(pkg.id); }} className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700">
+                    <button onClick={() => { localStorage.setItem("ppdb_school_plan", pkg.id); setCurrentPlan(pkg.id); }} className="w-full py-3 rounded-xl bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700">
                       Gunakan Paket Free
                     </button>
                   ) : (

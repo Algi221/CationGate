@@ -522,13 +522,13 @@ export default function MajorPage() {
 
   if (!major) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-6 transition-colors duration-300">
+      <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 p-6 transition-colors duration-300">
         <div className="absolute inset-0 bg-glow-container">
           <div className="bg-glow bg-glow-1"></div>
           <div className="bg-glow bg-glow-2"></div>
         </div>
         
-        <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800 p-10 rounded-[32px] max-w-md w-full text-center shadow-2xl relative z-10">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 p-10 rounded-[32px] max-w-md w-full text-center shadow-2xl relative z-10">
           <div className="w-20 h-20 bg-rose-500/10 dark:bg-rose-500/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Palette size={40} />
           </div>
@@ -555,7 +555,7 @@ export default function MajorPage() {
 
   return (
     <div 
-      className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300"
+      className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 transition-colors duration-300"
       style={{
         '--major-accent': accentColor,
         '--major-accent-rgb': accentRgb,
@@ -624,7 +624,7 @@ export default function MajorPage() {
       <div className="fixed top-6 left-6 z-50">
         <Link 
           href="/" 
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -634,7 +634,7 @@ export default function MajorPage() {
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
           title={isDark ? 'Mode Terang' : 'Mode Gelap'}
         >
           {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
@@ -718,7 +718,7 @@ export default function MajorPage() {
                 <div className="flex flex-col w-full gap-5 mt-2">
                   <div className="flex flex-wrap items-center gap-4">
 
-                    <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md">
+                    <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 backdrop-blur-md">
                       <ArrowLeft size={16} /> Lihat Jurusan Lain
                     </Link>
 
@@ -741,7 +741,7 @@ export default function MajorPage() {
         <div className="w-full lg:w-1/2 relative group">
           <div className="absolute -inset-1.5 major-gradient-bg rounded-[36px] blur-lg opacity-40 group-hover:opacity-60 transition duration-700 pointer-events-none"></div>
           
-          <div className="relative bg-white dark:bg-slate-900 rounded-[32px] p-3 border border-slate-200/40 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
+          <div className="relative bg-white dark:bg-[#0f172a] rounded-[32px] p-3 border border-slate-200 dark:border-slate-800/40 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
             <img 
               src={sanitizeSrc(major.banner)} 
               alt={`${major.title} Banner`}
@@ -755,7 +755,7 @@ export default function MajorPage() {
       {/* PROFILE VIDEO SECTION - Rendered only if video exists */}
       {major.video && (
         <section className="py-12 px-6 max-w-5xl mx-auto w-full relative z-10 animate-in fade-in duration-700">
-          <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-850 p-6 md:p-10 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col items-center text-center space-y-6">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-850 p-6 md:p-10 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col items-center text-center space-y-6">
             <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full major-gradient-bg opacity-10 dark:opacity-25 blur-3xl pointer-events-none"></div>
             
             <div className="space-y-2">
@@ -771,7 +771,7 @@ export default function MajorPage() {
               </p>
             </div>
 
-            <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-slate-950 border border-slate-200/30 dark:border-slate-800 shadow-2xl flex items-center justify-center p-2">
+            <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800/30 dark:border-slate-800 shadow-2xl flex items-center justify-center p-2">
               {major.video.startsWith("data:video") || major.video.includes(".mp4") || major.video.startsWith("blob:") ? (
                 <video 
                   src={sanitizeSrc(major.video)} 
@@ -794,7 +794,7 @@ export default function MajorPage() {
       )}
 
       {/* CORE SYLLABUS & CURRICULUM SECTION */}
-      <section className="py-20 bg-slate-100/50 dark:bg-slate-900/30 relative border-y border-slate-200/50 dark:border-slate-800">
+      <section className="py-20 bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-900/30 relative border-y border-slate-200 dark:border-slate-800/50 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-6">
           
           <div className="text-center mb-16">
@@ -813,7 +813,7 @@ export default function MajorPage() {
             {major.syllabus.map((item, idx) => (
               <div 
                 key={idx} 
-                className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/20 transition-all duration-300 relative group overflow-hidden"
+                className="bg-white dark:bg-[#0f172a] border border-white/50 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/20 transition-all duration-300 relative group overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-full h-[4px] major-gradient-bg opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-300"></div>
                 
@@ -854,9 +854,9 @@ export default function MajorPage() {
           {major.gallery.map((img, index) => (
             <div 
               key={index} 
-              className="group bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-3xl p-3 shadow-md hover:shadow-xl transition-all duration-500 relative overflow-hidden"
+              className="group bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 rounded-3xl p-3 shadow-md hover:shadow-xl transition-all duration-500 relative overflow-hidden"
             >
-              <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100">
+              <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100 dark:bg-[#1e293b]">
                 <img 
                   src={img.url} 
                   alt={img.caption}
@@ -878,7 +878,7 @@ export default function MajorPage() {
       </section>
 
       {/* CAREERS OPPORTUNITY SECTION */}
-      <section className="py-20 bg-slate-100/50 dark:bg-slate-900/30 relative border-y border-slate-200/50 dark:border-slate-800">
+      <section className="py-20 bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-900/30 relative border-y border-slate-200 dark:border-slate-800/50 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-6">
           
           <div className="text-center mb-16">
@@ -897,7 +897,7 @@ export default function MajorPage() {
             {major.careers.map((career, idx) => (
               <div 
                 key={idx} 
-                className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 p-8 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 flex items-start gap-5 relative group"
+                className="bg-white dark:bg-[#0f172a] border border-white/50 dark:border-slate-800 p-8 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 flex items-start gap-5 relative group"
               >
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 major-bg-accent major-text-accent">
                   <Briefcase size={22} />
@@ -949,7 +949,7 @@ export default function MajorPage() {
           </div>
 
           {/* Partners Column */}
-          <div className="w-full lg:w-1/2 bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md rounded-[32px] p-8 flex flex-col justify-between shadow-md">
+          <div className="w-full lg:w-1/2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 backdrop-blur-md rounded-[32px] p-8 flex flex-col justify-between shadow-md">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                 <Award size={24} />
@@ -981,7 +981,7 @@ export default function MajorPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_60%)] pointer-events-none"></div>
           
           <div className="relative z-10 max-w-xl mx-auto space-y-6">
-            <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md text-white rounded-full text-xs font-extrabold uppercase tracking-wider">
+            <span className="inline-block px-3 py-1 bg-white dark:bg-[#0f172a]/20 backdrop-blur-md text-white rounded-full text-xs font-extrabold uppercase tracking-wider">
               PPDB TP. 2026/2027
             </span>
             
@@ -997,7 +997,7 @@ export default function MajorPage() {
               <Link href="/daftar" className="bg-[#ffffff] text-slate-900 hover:bg-[#f8fafc] text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto">
                 Daftar Jurusan Ini
               </Link>
-              <Link href="/" className="border border-white/30 bg-white/10 hover:bg-white/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
+              <Link href="/" className="border border-white/30 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
                 Kembali Ke Beranda
               </Link>
             </div>
@@ -1007,7 +1007,7 @@ export default function MajorPage() {
 
       {/* EXPLORE NEXT MAJOR CTA */}
       <section className="py-16 max-w-6xl mx-auto px-6 w-full relative z-10">
-        <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800 rounded-[3rem] p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 rounded-[3rem] p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
           <div className="absolute -right-24 -bottom-24 w-80 h-80 rounded-full next-gradient-bg opacity-10 dark:opacity-20 blur-3xl pointer-events-none group-hover:scale-110 transition duration-700"></div>
           
           <div className="space-y-4 max-w-2xl text-left relative z-10">
@@ -1037,7 +1037,7 @@ export default function MajorPage() {
       </main>
 
       {/* FOOTER */}
-      <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
+      <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-slate-500 dark:text-slate-400">
             {/* Col 1 */}
@@ -1139,7 +1139,7 @@ export default function MajorPage() {
             </div>
           </div>
 
-          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-550">
+          <div className="border-t border-slate-200 dark:border-slate-800/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-550">
             <div>
               &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. All rights reserved.
             </div>

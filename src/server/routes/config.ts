@@ -23,6 +23,7 @@ function saveBase64File(base64Str: string, prefix: string, subfolder: string = '
     }
     const contentType = matches[1];
     const dataBuffer = Buffer.from(matches[2], 'base64');
+    const targetDir = path.join(process.cwd(), 'public', 'assets', subfolder, 'uploads');
 
     const sizeInBytes = dataBuffer.length;
     if (sizeInBytes > 5 * 1024 * 1024) {
@@ -50,12 +51,11 @@ function saveBase64File(base64Str: string, prefix: string, subfolder: string = '
     else if (contentType.includes('quicktime') || contentType.includes('mov')) ext = 'mov';
     
     const filename = `${prefix}_${Date.now()}.${ext}`;
-    const dynamicTargetDir = path.join(process.cwd(), 'public', 'assets', subfolder, 'uploads');
     
-    if (!fs.existsSync(dynamicTargetDir)) {
-      fs.mkdirSync(dynamicTargetDir, { recursive: true });
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
     }
-    const targetPath = path.join(dynamicTargetDir, filename);
+    const targetPath = path.join(targetDir, filename);
     fs.writeFileSync(targetPath, dataBuffer);
     
     return `/assets/${subfolder}/uploads/${filename}`;

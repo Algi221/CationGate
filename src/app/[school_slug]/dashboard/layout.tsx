@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import {
   Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
   Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User, Paintbrush
+  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User, Paintbrush, Search
 } from "lucide-react";
 import SchoolNotFound from "@/components/SchoolNotFound";
 
@@ -44,16 +44,16 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
     breadcrumbs.push({ label: "Sampah", href: `${paths[0] ? '/' + paths[0] : ''}/dashboard/pendaftar?tab=trash` });
 
   return (
-    <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wide select-none">
+    <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium tracking-wide select-none">
       {breadcrumbs.map((bc, idx) => {
         const isLast = idx === breadcrumbs.length - 1;
         return (
           <React.Fragment key={idx}>
-            {idx > 0 && <span className="text-slate-300 dark:text-slate-700">›</span>}
+            {idx > 0 && <span className="text-slate-300 dark:text-slate-700 dark:text-slate-200">›</span>}
             {isLast ? (
               <span className="text-slate-600 dark:text-slate-300 font-semibold">{bc.label}</span>
             ) : (
-              <Link href={bc.href} className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">
+              <Link href={bc.href} className="hover:text-slate-600 dark:text-slate-300 dark:hover:text-slate-400 transition-colors">
                 {bc.label}
               </Link>
             )}
@@ -179,7 +179,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
         logoutAdmin();
-        router.push("/auth/login?expired=true");
+        router.push(`/${schoolSlug}/auth/login?expired=true`);
       }, limit);
       const now = Date.now();
       if (now - lastStorageUpdate > 10000) {
@@ -250,7 +250,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           {
             category: "Status Legalitas",
             items: [
-              { href: "/dashboard/verification", icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
+              { href: `/${schoolSlug}/dashboard/verification`, icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
             ]
           }
         ]
@@ -258,41 +258,42 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     {
       category: "Manajemen Siswa",
       items: [
-        { href: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard`, icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
         {
-          href: "/dashboard/pendaftar",
+          href: `/${schoolSlug}/dashboard/pendaftar`,
           icon: <Users size={18} />,
           label: "Data Calon Siswa",
           lockedIfUnverified: true,
           subItems: [
-            { label: "Pendaftar Reguler", href: "/dashboard/pendaftar?tab=active" },
-            { label: "Pendaftar Pindahan", href: "/dashboard/pendaftar?tab=transfer" },
-            { label: "Kuota & Target", href: "/dashboard/pendaftar?tab=kuota" },
-            { label: "Tempat Sampah", href: "/dashboard/pendaftar?tab=trash" }
+            { label: "Pendaftar Reguler", href: `/${schoolSlug}/dashboard/pendaftar?tab=active` },
+            { label: "Pendaftar Pindahan", href: `/${schoolSlug}/dashboard/pendaftar?tab=transfer` },
+            { label: "Kuota & Target", href: `/${schoolSlug}/dashboard/pendaftar?tab=kuota` },
+            { label: "Tempat Sampah", href: `/${schoolSlug}/dashboard/pendaftar?tab=trash` }
           ]
         },
-        { href: "/dashboard/pembagian-kelas", icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
-        { href: "/dashboard/siswa-aktif", icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
+        { href: `/${schoolSlug}/dashboard/pembagian-kelas`, icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard/siswa-aktif`, icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
       ]
     },
     {
       category: "Konten Portal",
       items: [
-        { href: "/dashboard/informasi", icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard/informasi`, icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
         {
-          href: "/dashboard/kelola-ui",
+          href: `/${schoolSlug}/dashboard/kelola-ui`,
           icon: <Palette size={18} />,
           label: "Kelola UI/Data",
           lockedIfUnverified: true,
           subItems: [
-            { label: "Hero & Kontak", href: "/dashboard/kelola-ui?tab=hero" },
-            { label: "Program Keahlian", href: "/dashboard/kelola-ui?tab=majors" },
-            { label: "Alur Pendaftaran", href: "/dashboard/kelola-ui?tab=alur" },
-            { label: "Form & Panduan", href: "/dashboard/kelola-ui?tab=form" },
-            { label: "Bank Sekolah", href: "/dashboard/kelola-ui?tab=bank" },
-            { label: "Mitra Industri", href: "/dashboard/kelola-ui?tab=partners" },
-            { label: "FAQ", href: "/dashboard/kelola-ui?tab=faq" },
-            { label: "Riwayat Perubahan", href: "/dashboard/kelola-ui?tab=revisions" }
+            { label: "Profil Sekolah", href: `/${schoolSlug}/dashboard/profil-sekolah` },
+            { label: "Hero & Kontak", href: `/${schoolSlug}/dashboard/kelola-ui?tab=hero` },
+            { label: "Program Keahlian", href: `/${schoolSlug}/dashboard/kelola-ui?tab=majors` },
+            { label: "Alur Pendaftaran", href: `/${schoolSlug}/dashboard/kelola-ui?tab=alur` },
+            { label: "Form & Panduan", href: `/${schoolSlug}/dashboard/kelola-ui?tab=form` },
+            { label: "Bank Sekolah", href: `/${schoolSlug}/dashboard/kelola-ui?tab=bank` },
+            { label: "Mitra Industri", href: `/${schoolSlug}/dashboard/kelola-ui?tab=partners` },
+            { label: "FAQ", href: `/${schoolSlug}/dashboard/kelola-ui?tab=faq` },
+            { label: "Riwayat Perubahan", href: `/${schoolSlug}/dashboard/kelola-ui?tab=revisions` }
           ]
         },
         { href: "/dashboard/settings/appearance", icon: <Paintbrush size={18} />, label: "Tema & Tampilan", lockedIfUnverified: true }
@@ -301,20 +302,19 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     {
       category: "Pengaturan Sistem",
       items: [
-        { href: "/dashboard/subscription", icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
-        { href: "/dashboard/admin", icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
-        { href: "/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Utama", lockedIfUnverified: true }
+        { href: `/${schoolSlug}/dashboard/subscription`, icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard/admin`, icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
+        { href: `/${schoolSlug}/dashboard/settings`, icon: <Settings size={18} />, label: "Pengaturan Utama", lockedIfUnverified: true }
       ]
     }
   ];
 
   // ── Nav link helper with Submenu support ───────────────────────────────────
   const renderMenuItem = (item: any, delayIndex: number) => {
-    const prefix = schoolSlug ? `/${schoolSlug}` : '';
-    const fullHref = item.href.startsWith('/') ? `${prefix}${item.href}` : item.href;
+    const fullHref = item.href;
     const hasSub = !!item.subItems;
     const isOpen = !!openDropdowns[item.href];
-    const isLocked = !isSchoolVerified && item.href !== "/dashboard/verification";
+    const isLocked = !isSchoolVerified && item.href !== `/${schoolSlug}/dashboard/verification`;
     const isActive = item.exact
       ? pathname === fullHref || pathname === item.href
       : pathname === fullHref || pathname === item.href || pathname.startsWith(fullHref + "/");
@@ -383,10 +383,10 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               isCollapsed ? "justify-center p-3" : "px-4 py-2.5"
             } ${
               isLocked
-                ? "opacity-50 text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 cursor-not-allowed"
+                ? "opacity-50 text-slate-400 dark:text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-800/20 cursor-not-allowed"
                 : isActive && (!hasSub || isCollapsed)
                 ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold border-transparent"
-                : "border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                : "border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-[#1e293b]/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
             }`}
           title={isCollapsed ? (isLocked ? `${item.label} (Terkunci 🔒)` : item.label) : undefined}
         >
@@ -405,7 +405,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           ) : hasSub && !isCollapsed ? (
             <ChevronDown
               size={14}
-              className={`text-slate-400 dark:text-slate-500 transition-transform duration-300 shrink-0 ml-2 ${
+              className={`text-slate-400 dark:text-slate-500 dark:text-slate-400 transition-transform duration-300 shrink-0 ml-2 ${
                 isOpen ? "rotate-180 text-blue-500" : ""
               }`}
             />
@@ -426,7 +426,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   className="pl-4 ml-6 pr-2 py-1.5 space-y-1 border-l-2 border-slate-200 dark:border-slate-800"
                 >
                   {item.subItems.map((sub: any) => {
-                    const fullSubHref = sub.href.startsWith('/') ? `${prefix}${sub.href}` : sub.href;
+                    const fullSubHref = sub.href;
                     const defaultTab = sub.href.includes("pendaftar") ? "active" : "hero";
                     const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");
                     const tabVal = urlParams.get("tab");
@@ -456,7 +456,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                           className={`relative z-10 group flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-sm font-medium transition-colors duration-200 border ${
                             isSubActive
                               ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-semibold border-transparent"
-                              : "border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                              : "border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-[#1e293b]/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                           }`}
                         >
                           <span className="truncate">{sub.label}</span>
@@ -477,7 +477,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const sectionHeader = (label: string) => (
     <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
       <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-        <span className={`text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+        <span className={`text-[11px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
           isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
         }`}>
           {label}
@@ -504,7 +504,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         initial={{ x: -80, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-300 dark:border-slate-700 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-[#0f172a] border-r border-slate-300 dark:border-slate-700 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
         isCollapsed ? "w-20" : "w-72"
       } ${
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
@@ -513,7 +513,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         {/* Toggle Collapse Button */}
         <button
           onClick={handleToggleCollapse}
-          className="hidden md:flex absolute top-[24px] -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
+          className="hidden md:flex absolute top-[24px] -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
           title={isCollapsed ? "Perluas Sidebar" : "Sembunyikan Sidebar"}
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -574,14 +574,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
         {/* Top Header */}
         <motion.header
-          className="h-16 border-b border-slate-200/80 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300"
+          className="h-16 border-b border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 bg-white dark:bg-[#0f172a] flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300"
           initial={{ y: -64, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
         >
           <div className="flex items-center gap-3">
             <button
-              className="md:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              className="md:hidden p-1.5 -ml-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-800 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu size={20} />
@@ -599,10 +599,22 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
           >
+            {/* Global Search Bar */}
+            <div className="relative hidden md:flex items-center mr-2">
+              <div className="absolute left-3 text-slate-400">
+                <Search size={14} />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Cari menu (Ctrl+K)" 
+                className="w-48 lg:w-56 h-9 pl-9 pr-3 text-xs font-bold bg-slate-100 dark:bg-[#1e293b]/80 border border-slate-200 dark:border-slate-700/60 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/20 text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400"
+              />
+            </div>
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow"
+              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow shrink-0"
               title={isDark ? "Beralih ke Terang" : "Beralih ke Gelap"}
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
@@ -612,13 +624,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             <div className="relative" ref={userDropdownRef}>
               <button
                 onClick={() => setShowUserDropdown((v) => !v)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-800 transition-all"
               >
-                <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-semibold text-slate-700 dark:text-slate-300 text-sm shadow-sm overflow-hidden shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-sm shadow-sm overflow-hidden shrink-0">
                   {adminUser?.foto_profil ? (
                     <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
                   ) : (
-                    <User size={16} className="text-white" />
+                    <User size={16} className="text-slate-500 dark:text-slate-400" />
                   )}
                 </div>
                 <span className="hidden md:block text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
@@ -632,20 +644,20 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
               {/* Dropdown */}
               {showUserDropdown && (
-                <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-slate-900/60 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-700/60 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-slate-900/60 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                   {/* User info */}
                   <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-semibold text-slate-700 dark:text-slate-300 text-base shadow-sm shrink-0 overflow-hidden">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-base shadow-sm shrink-0 overflow-hidden">
                         {adminUser?.foto_profil ? (
                           <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
                         ) : (
-                          <User size={18} className="text-white" />
+                          <User size={18} className="text-slate-500 dark:text-slate-400" />
                         )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{adminUser?.nama || "Admin TB"}</p>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">@{adminUser?.username || "admin"}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium truncate">@{adminUser?.username || "admin"}</p>
                         <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
                           isSchoolVerified
                             ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900"
@@ -662,7 +674,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                     <Link
                       href={schoolSlug ? `/${schoolSlug}/dashboard/profile` : "/dashboard/profile"}
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-white dark:bg-[#0f172a]/5 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors"
                     >
                       <UserCircle size={15} className="text-slate-400 shrink-0" />
                       <span className="text-xs font-semibold">Profil Saya</span>
@@ -670,7 +682,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                     <Link
                       href={schoolSlug ? `/${schoolSlug}/dashboard/settings` : "/dashboard/settings"}
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-white dark:bg-[#0f172a]/5 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors"
                     >
                       <Settings size={15} className="text-slate-400 shrink-0" />
                       <span className="text-xs font-semibold">Pengaturan</span>
@@ -679,7 +691,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                       href={schoolSlug ? `/${schoolSlug}` : "/"}
                       target="_blank"
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-white dark:bg-[#0f172a]/5 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors"
                     >
                       <Globe size={15} className="text-slate-400 shrink-0" />
                       <span className="text-xs font-semibold">Lihat Website</span>
@@ -718,7 +730,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       {/* ── Logout Confirmation Modal ──────────────────────────────────────── */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
-          <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 text-center max-w-sm w-full mx-4 backdrop-blur-xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 text-center max-w-sm w-full mx-4 backdrop-blur-xl animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 rounded-full flex items-center justify-center text-rose-600 dark:text-rose-500 border border-rose-100 dark:border-rose-900/40 shadow-inner">
               <LogOut size={28} className="animate-pulse" />
             </div>
@@ -732,7 +744,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
+                className="flex-1 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
               >
                 Batal
               </button>

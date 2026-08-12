@@ -54,7 +54,7 @@ export default function DataPendaftarPage() {
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="relative min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="relative min-h-screen bg-slate-50 dark:bg-[#020617] transition-colors duration-300">
       
       {/* Background Glowing Blobs */}
       <div className="bg-glow-container opacity-60">
@@ -63,9 +63,9 @@ export default function DataPendaftarPage() {
       </div>
 
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center shadow-sm">
+      <nav className="sticky top-0 z-40 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center shadow-sm">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+          <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
             <ArrowLeft size={18} className="text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
           </div>
           <span className="font-bold text-slate-800 dark:text-white hidden sm:block">Kembali ke Beranda</span>
@@ -77,7 +77,7 @@ export default function DataPendaftarPage() {
           <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
           <button 
             onClick={toggleDark} 
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" 
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" 
             title={isDark ? 'Mode Terang' : 'Mode Gelap'}
           >
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
@@ -111,7 +111,7 @@ export default function DataPendaftarPage() {
               placeholder="Cari Nama atau NISN..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all"
+              className="w-full bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all"
             />
           </div>
           <div className="flex gap-4 md:w-auto w-full">
@@ -122,7 +122,7 @@ export default function DataPendaftarPage() {
                 id="pendaftar-filter-jurusan"
                 value={filterJurusan}
                 onChange={(e) => setFilterJurusan(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white appearance-none cursor-pointer transition-all"
+                className="w-full bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white appearance-none cursor-pointer transition-all"
               >
                 <option value="Semua">Semua Jurusan</option>
                 <option value="Rekayasa Perangkat Lunak">RPL</option>
@@ -147,7 +147,7 @@ export default function DataPendaftarPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                <tr className="bg-slate-50 dark:bg-[#020617]/50 border-b border-slate-200 dark:border-slate-700">
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">No</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama & NISN</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Asal Sekolah</th>
@@ -159,7 +159,7 @@ export default function DataPendaftarPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {currentData.length > 0 ? (
                   currentData.map((item, index) => (
-                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <tr key={item.id} className="hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-400">{startIndex + index + 1}</td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-bold text-slate-800 dark:text-white mb-0.5">{item.nama}</div>
@@ -188,7 +188,7 @@ export default function DataPendaftarPage() {
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                       <div className="flex flex-col items-center justify-center">
-                        <Search size={40} className="text-slate-300 dark:text-slate-600 mb-3" />
+                        <Search size={40} className="text-slate-300 dark:text-slate-600 dark:text-slate-300 mb-3" />
                         <p className="text-sm font-medium">Tidak ada data pendaftar yang cocok dengan filter Anda.</p>
                       </div>
                     </td>
@@ -200,7 +200,7 @@ export default function DataPendaftarPage() {
           
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/30">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-[#020617]/30">
               <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                 Menampilkan {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredData.length)} dari {filteredData.length} Data
               </div>
@@ -208,7 +208,7 @@ export default function DataPendaftarPage() {
                 <button 
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -218,7 +218,7 @@ export default function DataPendaftarPage() {
                 <button 
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
                 >
                   <ChevronRight size={16} />
                 </button>
@@ -240,7 +240,7 @@ export default function DataPendaftarPage() {
               </h2>
               <button 
                 onClick={() => setSelectedStudent(null)}
-                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                className="w-8 h-8 rounded-full bg-white dark:bg-[#0f172a]/20 flex items-center justify-center text-white hover:bg-white dark:bg-[#0f172a]/30 transition-colors"
               >
                 <X size={18} />
               </button>
@@ -354,7 +354,7 @@ export default function DataPendaftarPage() {
             </div>
             
             {/* Modal Footer */}
-            <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+            <div className="bg-slate-50 dark:bg-[#020617]/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
               <button 
                 onClick={() => setSelectedStudent(null)}
                 className="px-6 py-2.5 rounded-full font-bold text-sm bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"

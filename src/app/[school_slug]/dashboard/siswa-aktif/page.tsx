@@ -569,12 +569,12 @@ function ActiveStudentsDirectoryContent() {
             <h3 className="text-3xl font-black leading-none">{stats.total} <span className="text-xs font-bold text-indigo-200">Siswa</span></h3>
             <p className="text-[10px] text-indigo-150 font-bold mt-1">Gabungan seluruh angkatan terverifikasi</p>
           </div>
-          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
+          <div className="w-12 h-12 bg-white dark:bg-[#0f172a]/10 rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
             <GraduationCap size={24} className="text-indigo-100" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition-colors duration-300">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition-colors duration-300">
           <div className="space-y-2">
             <span className="text-[10px] text-slate-400 dark:text-slate-550 uppercase font-black tracking-widest">Periode Terkini (2026-2027)</span>
             <h3 className="text-3xl font-black leading-none text-slate-800 dark:text-white">{stats.currentBatch} <span className="text-xs font-bold text-slate-400">Siswa</span></h3>
@@ -585,7 +585,7 @@ function ActiveStudentsDirectoryContent() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition-colors duration-300">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition-colors duration-300">
           <div className="space-y-2">
             <span className="text-[10px] text-slate-400 dark:text-slate-550 uppercase font-black tracking-widest">Konsentrasi Populer</span>
             <h3 className="text-base font-black truncate max-w-[200px] leading-tight text-slate-800 dark:text-white uppercase tracking-wider">{stats.popular}</h3>
@@ -598,7 +598,7 @@ function ActiveStudentsDirectoryContent() {
       </div>
 
       {/* Control Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
         <div className="w-full xl:w-auto flex flex-col md:flex-row items-center gap-3 flex-1">
           {/* Universal Search Input */}
           <div className="relative w-full md:max-w-md">
@@ -608,7 +608,7 @@ function ActiveStudentsDirectoryContent() {
               placeholder="Cari nama siswa, NISN, atau asal sekolah..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#020617]/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all"
             />
           </div>
 
@@ -618,7 +618,7 @@ function ActiveStudentsDirectoryContent() {
             <select
               value={majorFilter}
               onChange={(e) => setMajorFilter(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer uppercase tracking-wider"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#020617]/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer uppercase tracking-wider"
             >
               <option value="ALL">Semua Jurusan</option>
               <option value="Rekayasa Perangkat Lunak">RPL / PPLG</option>
@@ -636,7 +636,7 @@ function ActiveStudentsDirectoryContent() {
             <select
               value={classFilter}
               onChange={(e) => setClassFilter(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer tracking-wider"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#020617]/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer tracking-wider"
             >
               <option value="ALL">Semua Kelas</option>
               {uniqueClasses.map((kls) => (
@@ -651,7 +651,7 @@ function ActiveStudentsDirectoryContent() {
             <select
               value={genderFilter}
               onChange={(e) => setGenderFilter(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer tracking-wider"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#020617]/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer tracking-wider"
             >
               <option value="ALL">Semua Gender</option>
               <option value="L">Laki-Laki</option>
@@ -667,7 +667,7 @@ function ActiveStudentsDirectoryContent() {
               setNewPeriodValue(getNextPeriod());
               setIsAddPeriodModalOpen(true);
             }}
-            className="w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800"
           >
             + Tambah Periode
           </button>
@@ -678,7 +678,7 @@ function ActiveStudentsDirectoryContent() {
             disabled={filteredApplicants.length === 0}
             className={`w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border shadow-sm ${
               filteredApplicants.length === 0
-                ? "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 border-transparent cursor-not-allowed"
+                ? "bg-slate-100 dark:bg-[#1e293b] text-slate-400 dark:bg-slate-800 dark:text-slate-600 dark:text-slate-300 border-transparent cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-500 text-white border-blue-500 hover:border-blue-400 shadow-[0_4px_12px_rgba(59,130,246,0.15)] cursor-pointer"
             }`}
           >
@@ -691,8 +691,8 @@ function ActiveStudentsDirectoryContent() {
       {/* Accordion List (Grouped by Period) */}
       <div className="space-y-4">
         {sortedPeriods.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-16 text-center shadow-sm">
-            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-slate-600">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-3xl p-16 text-center shadow-sm">
+            <div className="w-16 h-16 bg-slate-50 dark:bg-[#020617] border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-slate-600 dark:text-slate-300">
               <Users size={28} />
             </div>
             <h4 className="font-extrabold text-slate-700 dark:text-slate-300 text-sm">Tidak Ada Siswa Aktif</h4>
@@ -710,12 +710,12 @@ function ActiveStudentsDirectoryContent() {
             return (
               <div 
                 key={period} 
-                className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] transition-colors duration-300"
+                className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] transition-colors duration-300"
               >
                 {/* Accordion Trigger Header */}
                 <div 
                   onClick={() => togglePeriod(period)}
-                  className="px-6 py-5 flex items-center justify-between cursor-pointer select-none bg-slate-50/40 dark:bg-slate-950/15 border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-950/25"
+                  className="px-6 py-5 flex items-center justify-between cursor-pointer select-none bg-slate-50 dark:bg-slate-800/50/40 dark:bg-slate-950/15 border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50 dark:bg-slate-800/50/80 dark:hover:bg-slate-950/25"
                 >
                   <div className="flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100/50 dark:border-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
@@ -746,7 +746,7 @@ function ActiveStudentsDirectoryContent() {
                         e.stopPropagation();
                         handleExportExcel(students, `angkatan_${period.replace("-", "_")}`);
                       }}
-                      className="p-2 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 dark:bg-white/5 dark:hover:bg-blue-950/40 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-xl transition-all shadow-sm"
+                      className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-blue-50 hover:text-blue-600 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-xl transition-all shadow-sm"
                       title={`Ekspor Daftar Siswa Excel Periode ${period}`}
                     >
                       <Download size={14} />
@@ -790,14 +790,14 @@ function ActiveStudentsDirectoryContent() {
                           e.stopPropagation();
                           addToast("Tidak Bisa Dihapus", `Periode ${period} masih memiliki ${students.length} siswa aktif.`, "warning");
                         }}
-                        className="p-2 bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-slate-400 dark:text-slate-600 rounded-xl transition-all shadow-sm cursor-not-allowed"
+                        className="p-2 bg-slate-100 dark:bg-white dark:bg-[#0f172a]/5 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 text-slate-400 dark:text-slate-600 dark:text-slate-300 rounded-xl transition-all shadow-sm cursor-not-allowed"
                         title="Tidak bisa hapus periode yang masih ada siswanya"
                       >
                         <Trash2 size={14} />
                       </button>
                     )}
                     
-                    <div className="p-1 rounded-lg text-slate-400 dark:text-slate-600">
+                    <div className="p-1 rounded-lg text-slate-400 dark:text-slate-600 dark:text-slate-300">
                       {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </div>
                   </div>
@@ -832,13 +832,13 @@ function ActiveStudentsDirectoryContent() {
                             {students.map((student, idx) => (
                               <tr 
                                 key={student.id}
-                                className="border-b border-slate-100/50 dark:border-white/5 hover:bg-slate-50/30 dark:hover:bg-slate-950/10 transition-colors"
+                                className="border-b border-slate-100 dark:border-slate-800/50 dark:border-white/5 hover:bg-slate-50 dark:bg-slate-800/50/30 dark:hover:bg-slate-950/10 transition-colors"
                               >
-                                <td className="py-3.5 px-3 text-slate-400 dark:text-slate-600 font-mono">{idx + 1}</td>
+                                <td className="py-3.5 px-3 text-slate-400 dark:text-slate-600 dark:text-slate-300 font-mono">{idx + 1}</td>
                                 <td className="py-3.5 px-4 font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
                                 <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-xs">
                                   {student.diterima_kelas || student.diterimaKelas ? student.diterima_kelas || student.diterimaKelas : (
-                                    <span className="text-[9px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">BELUM ADA</span>
+                                    <span className="text-[9px] px-2 py-0.5 rounded bg-slate-100 dark:bg-[#1e293b] text-slate-400 dark:text-slate-500 dark:text-slate-400">BELUM ADA</span>
                                   )}
                                 </td>
                                 <td className="py-3.5 px-4">
@@ -874,7 +874,7 @@ function ActiveStudentsDirectoryContent() {
                                         handleViewDetail(student);
                                         setActiveTab("biodata");
                                       }}
-                                      className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200/50 dark:border-white/5"
+                                      className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5"
                                       title="Detail Siswa"
                                     >
                                       <Eye size={13} />
@@ -906,7 +906,7 @@ function ActiveStudentsDirectoryContent() {
       {selectedApplicant && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedApplicant(null)}></div>
-          <div className="relative bg-white w-full max-w-4xl rounded-[24px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <div className="relative bg-white dark:bg-[#0f172a] w-full max-w-4xl rounded-[24px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             
             {/* Modal Top Header */}
             <div className="px-8 pt-8 pb-6 flex justify-between items-start">
@@ -916,7 +916,7 @@ function ActiveStudentsDirectoryContent() {
                 </div>
                 <div>
                   <div className="flex items-center gap-3 mb-1.5">
-                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{selectedApplicant.nama}</h2>
+                    <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">{selectedApplicant.nama}</h2>
                     <span className="px-3 py-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/30 rounded-full uppercase tracking-widest whitespace-nowrap">
                       Siswa Aktif
                     </span>
@@ -924,7 +924,7 @@ function ActiveStudentsDirectoryContent() {
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 flex-wrap">
                     <span className="text-blue-500 font-mono">NIPD: {nipdMap.get(selectedApplicant.id) || "-"}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10 shadow-sm backdrop-blur-md transition-all hover:bg-white/10 cursor-default">
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-[#0f172a]/5 rounded-lg border border-white/10 shadow-sm backdrop-blur-md transition-all hover:bg-white dark:bg-[#0f172a]/10 cursor-default">
                     <BookOpen size={13} className="text-blue-400" />
                     <span className="text-blue-500 font-mono">NO. DAFTAR: {formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
@@ -942,7 +942,7 @@ function ActiveStudentsDirectoryContent() {
               </div>
               <button
                 onClick={() => setSelectedApplicant(null)}
-                className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors shrink-0 ml-4"
+                className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:text-slate-300 transition-colors shrink-0 ml-4"
               >
                 <X size={18} />
               </button>
@@ -950,7 +950,7 @@ function ActiveStudentsDirectoryContent() {
 
             {/* Navigation Tabs */}
             <div className="px-8 shrink-0">
-              <div className="bg-slate-100 p-1.5 rounded-[16px] flex items-center gap-1 w-full overflow-x-auto scrollbar-none">
+              <div className="bg-slate-100 dark:bg-[#1e293b] p-1.5 rounded-[16px] flex items-center gap-1 w-full overflow-x-auto scrollbar-none">
                 {[
                   { id: "biodata", label: "Biodata" },
                   { id: "periodik", label: "Periodik" },
@@ -967,8 +967,8 @@ function ActiveStudentsDirectoryContent() {
                     }}
                     className={`px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-[12px] shrink-0 transition-colors ${
                       activeTab === t.id
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                        ? "bg-white dark:bg-[#0f172a] text-blue-600 shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50"
                     }`}
                   >
                     {t.label}
@@ -987,27 +987,27 @@ function ActiveStudentsDirectoryContent() {
                       <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-500 flex items-center justify-center">
                         <User size={14} />
                       </div>
-                      <h3 className="text-[11px] font-extrabold text-slate-700 uppercase tracking-widest">Identitas Diri</h3>
+                      <h3 className="text-[11px] font-extrabold text-slate-700 dark:text-slate-200 uppercase tracking-widest">Identitas Diri</h3>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-4 border border-slate-100 dark:border-slate-800">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</div>
-                      <div className="text-sm font-bold text-slate-800">{selectedApplicant.nama}</div>
+                      <div className="text-sm font-bold text-slate-800 dark:text-white">{selectedApplicant.nama}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-4 border border-slate-100 dark:border-slate-800">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NISN / NIK</div>
-                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</div>
+                      <div className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-4 border border-slate-100 dark:border-slate-800">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tempat, Tanggal Lahir</div>
-                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</div>
+                      <div className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-4 border border-slate-100 dark:border-slate-800">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jenis Kelamin / Agama</div>
-                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</div>
+                      <div className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</div>
                     </div>
                   </div>
 
@@ -1017,27 +1017,27 @@ function ActiveStudentsDirectoryContent() {
                       <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-500 flex items-center justify-center">
                         <span className="text-blue-500 font-bold" style={{fontSize: "12px"}}>!</span>
                       </div>
-                      <h3 className="text-[11px] font-extrabold text-slate-700 uppercase tracking-widest">Alamat & Kontak</h3>
+                      <h3 className="text-[11px] font-extrabold text-slate-700 dark:text-slate-200 uppercase tracking-widest">Alamat & Kontak</h3>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-4 border border-slate-100 dark:border-slate-800">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp / Email</div>
                       <div className="text-sm font-bold text-blue-500">{selectedApplicant.whatsapp || "-"} / {selectedApplicant.email || "-"}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-4 border border-slate-100 dark:border-slate-800">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Alamat Tempat Tinggal</div>
-                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</div>
+                      <div className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-4 border border-slate-100 dark:border-slate-800">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Kelurahan / Kecamatan</div>
-                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</div>
+                      <div className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[16px] p-4 border border-slate-100 dark:border-slate-800">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tinggal Dengan / Transportasi</div>
-                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</div>
+                      <div className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</div>
                     </div>
                   </div>
                 </div>
@@ -1067,7 +1067,7 @@ function ActiveStudentsDirectoryContent() {
                         <span className="text-slate-400 dark:text-slate-550 block mb-1.5 font-bold uppercase text-[9px] tracking-wider">Kebutuhan Khusus</span>
                         <div className="flex flex-wrap gap-1.5">
                           {Array.isArray(selectedApplicant.kebutuhan_khusus) ? selectedApplicant.kebutuhan_khusus.map((k, idx) => (
-                            <span key={idx} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-355 border border-slate-200 dark:border-white/5 px-2.5 py-1 rounded-lg font-black text-[9px] uppercase">{k}</span>
+                            <span key={idx} className="bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-355 border border-slate-200 dark:border-white/5 px-2.5 py-1 rounded-lg font-black text-[9px] uppercase">{k}</span>
                           )) : <span className="text-slate-455 italic font-semibold">Tidak Ada</span>}
                         </div>
                       </div>
@@ -1168,15 +1168,15 @@ function ActiveStudentsDirectoryContent() {
                     <FileCheck size={12} className="text-blue-500" /> Komitmen & Janji Kedisiplinan
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
+                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-2xl">
                       <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tawuran / Perkelahian</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.perkelahian === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.perkelahian || "Tidak"}</span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
+                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-2xl">
                       <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penyalahgunaan Narkoba</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.narkoba === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.narkoba || "Tidak"}</span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
+                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-2xl">
                       <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pelanggaran Hukum Lain</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.pelanggaran_lain === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.pelanggaran_lain || "Tidak"}</span>
                     </div>
@@ -1197,7 +1197,7 @@ function ActiveStudentsDirectoryContent() {
             </div>
 
             {/* Modal Action Controls Footer */}
-            <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white shrink-0">
+            <div className="px-8 py-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-[#0f172a] shrink-0">
               <div>
                 <button
                   onClick={() => {
@@ -1235,7 +1235,7 @@ function ActiveStudentsDirectoryContent() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSelectedApplicant(null)}
-                  className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-100 transition-colors"
+                  className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-[#1e293b] hover:text-slate-900 border border-slate-100 dark:border-slate-800 transition-colors"
                 >
                   Tutup
                 </button>
@@ -1248,8 +1248,8 @@ function ActiveStudentsDirectoryContent() {
       {/* Add Period Modal */}
       {isAddPeriodModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-sm flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/15">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-sm flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
               <h3 className="text-lg font-black text-slate-850 dark:text-white uppercase tracking-wide">
                 Tambah Periode Angkatan
               </h3>
@@ -1275,15 +1275,15 @@ function ActiveStudentsDirectoryContent() {
                   placeholder={getNextPeriod()}
                   value={newPeriodValue}
                   onChange={(e) => setNewPeriodValue(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-xl text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all uppercase"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617]/50 border border-slate-200 dark:border-white/5 rounded-xl text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all uppercase"
                   required
                 />
               </div>
-              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/15 flex items-center justify-end gap-3">
+              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsAddPeriodModalOpen(false)}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200/50 dark:border-white/5"
+                  className="px-4 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-600 dark:text-slate-355 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5"
                 >
                   Batal
                 </button>
@@ -1301,13 +1301,13 @@ function ActiveStudentsDirectoryContent() {
       {/* ===== EDIT MODAL ===== */}
       {editApplicant && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
             {/* Header */}
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-slate-900 shrink-0 relative">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-[#0f172a] shrink-0 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
               
               <div className="flex items-center gap-5 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
                   <Pencil size={24} />
                 </div>
                 <div>
@@ -1319,13 +1319,13 @@ function ActiveStudentsDirectoryContent() {
                   </p>
                 </div>
               </div>
-              <button onClick={() => setEditApplicant(null)} className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all relative z-10 shrink-0">
+              <button onClick={() => setEditApplicant(null)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-rose-500 flex items-center justify-center transition-all relative z-10 shrink-0">
                 <X size={16} />
               </button>
             </div>
 
             {/* Body — scrollable form */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50/50 dark:bg-slate-950/20 hide-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 hide-scrollbar">
               {[
                 {
                   section: "Identitas Diri", icon: <User size={14} />, fields: [
@@ -1379,7 +1379,7 @@ function ActiveStudentsDirectoryContent() {
                   ]
                 }
               ].map((section) => (
-                <div key={section.section} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
+                <div key={section.section} className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
                   <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">
                     <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
                       {section.icon}
@@ -1394,7 +1394,7 @@ function ActiveStudentsDirectoryContent() {
                           <select
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
+                            className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
                           >
                             {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
@@ -1403,7 +1403,7 @@ function ActiveStudentsDirectoryContent() {
                             type={f.type || "text"}
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"
+                            className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"
                           />
                         )}
                       </div>
@@ -1414,10 +1414,10 @@ function ActiveStudentsDirectoryContent() {
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/80 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
               <button
                 onClick={() => setEditApplicant(null)}
-                className="px-6 py-3 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
+                className="px-6 py-3 bg-white dark:bg-[#0f172a] hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
               >
                 Batal
               </button>
@@ -1439,7 +1439,7 @@ function ActiveStudentsDirectoryContent() {
 
 export default function ActiveStudentsDirectory() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-500 font-bold animate-pulse">Memuat direktori siswa...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-slate-500 dark:text-slate-400 font-bold animate-pulse">Memuat direktori siswa...</div>}>
       <ActiveStudentsDirectoryContent />
     </Suspense>
   );

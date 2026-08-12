@@ -197,7 +197,7 @@ export default function ForumPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={toggleDark}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
               title={isDark ? 'Mode Terang' : 'Mode Gelap'}
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
@@ -209,7 +209,7 @@ export default function ForumPage() {
             {/* Hamburger Button visible only on mobile/tablet */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex md:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-[101] cursor-pointer"
+              className="flex md:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-[101] cursor-pointer"
               aria-label="Toggle Mobile Menu"
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -220,7 +220,7 @@ export default function ForumPage() {
 
       {/* Fullscreen Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/98 backdrop-blur-2xl animate-in fade-in duration-300 md:hidden animate-out fade-out">
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 md:hidden animate-out fade-out">
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
 
@@ -276,7 +276,7 @@ export default function ForumPage() {
               </Link>
               <button
                 onClick={() => { toggleDark(); setMobileMenuOpen(false); }}
-                className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl border border-slate-200 dark:border-slate-700/80 text-slate-750 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl border border-slate-200 dark:border-slate-700/80 text-slate-750 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
               >
                 {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               </button>
@@ -312,9 +312,9 @@ export default function ForumPage() {
               <span className="text-xs font-bold uppercase tracking-wider">Memuat pengumuman...</span>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
+            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
               <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 border border-slate-100 dark:border-slate-700">
-                <Megaphone className="text-slate-400 dark:text-slate-500" size={28} />
+                <Megaphone className="text-slate-400 dark:text-slate-500 dark:text-slate-400" size={28} />
               </div>
               <h3 className="text-slate-800 dark:text-white font-black uppercase tracking-wider mb-3">Belum Ada Informasi</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
@@ -337,7 +337,7 @@ export default function ForumPage() {
                         handleViewDetail(item.id);
                       }
                     }}
-                    className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 cursor-pointer group ${loadingDetailId === item.id ? 'opacity-80 pointer-events-none' : ''}`}
+                    className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800 rounded-2xl p-6 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 cursor-pointer group ${loadingDetailId === item.id ? 'opacity-80 pointer-events-none' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex flex-wrap gap-2 items-center">
@@ -363,7 +363,7 @@ export default function ForumPage() {
 
                     <div className="flex flex-col sm:flex-row gap-5 mb-4">
                       {media.foto && (
-                        <div className="w-full sm:w-48 h-48 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="w-full sm:w-48 h-48 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 shadow-sm">
                            <img src={sanitizeSrc(media.foto)} alt={item.judul || "Pengumuman"} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-350" />
                         </div>
                       )}
@@ -379,7 +379,7 @@ export default function ForumPage() {
 
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                        <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center">
                           <User size={12} className="text-slate-400" />
                         </div>
                         Panitia PPDB SMK TB
@@ -416,7 +416,7 @@ export default function ForumPage() {
               placeholder="Cari pengumuman..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all placeholder-slate-400 text-slate-800 dark:text-white shadow-sm"
+              className="w-full pl-11 pr-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all placeholder-slate-400 text-slate-800 dark:text-white shadow-sm"
             />
           </div>
 
@@ -424,7 +424,7 @@ export default function ForumPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-[#F0F4F8] dark:bg-slate-900 rounded-2xl p-6 border border-slate-100/50 dark:border-slate-800 shadow-sm"
+            className="bg-[#F0F4F8] dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800/50 dark:border-slate-800 shadow-sm"
           >
             <h3 className="font-bold text-slate-800 dark:text-white text-sm mb-5">Pengumuman Terbaru</h3>
             {recentPosts.length === 0 ? (
@@ -448,7 +448,7 @@ export default function ForumPage() {
                       }}
                       className={`flex gap-4 items-start cursor-pointer group ${loadingDetailId === item.id ? 'opacity-80 pointer-events-none' : ''}`}
                     >
-                      <div className="flex flex-col items-center justify-center w-10 h-11 bg-white dark:bg-slate-800 rounded-lg border border-slate-200/60 dark:border-slate-700 shadow-sm shrink-0">
+                      <div className="flex flex-col items-center justify-center w-10 h-11 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-800/60 dark:border-slate-700 shadow-sm shrink-0">
                         <span className="text-[9px] font-bold text-blue-600 uppercase">{month}</span>
                         <span className="text-sm font-black text-slate-800 dark:text-white leading-none mt-0.5">{day}</span>
                       </div>
@@ -471,12 +471,12 @@ export default function ForumPage() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-blue-500/20"
           >
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white dark:bg-[#0f172a]/10 rounded-full blur-2xl"></div>
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl"></div>
             <div className="relative z-10">
               <span className="text-[9px] font-black uppercase tracking-widest text-blue-200">PPDB {schoolPeriod.includes("-") ? schoolPeriod.split("-")[0] : schoolPeriod}</span>
               <h3 className="text-lg font-bold leading-snug mt-1 mb-4">Pendaftaran Siswa Baru Telah Dibuka</h3>
-              <Link href="/daftar" className="inline-block bg-white text-blue-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
+              <Link href="/daftar" className="inline-block bg-white dark:bg-[#0f172a] text-blue-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
                 Daftar Sekarang
               </Link>
             </div>
@@ -494,7 +494,7 @@ export default function ForumPage() {
             onClick={() => setSelectedPost(null)}
           >
             <div
-              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-y-auto md:overflow-hidden my-8 max-h-[90vh] md:max-h-[85vh]"
+              className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-y-auto md:overflow-hidden my-8 max-h-[90vh] md:max-h-[85vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {media.foto && (
@@ -510,14 +510,14 @@ export default function ForumPage() {
               )}
               
               <div className="flex-1 flex flex-col min-w-0 h-auto md:h-full overflow-visible md:overflow-y-auto">
-                <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15 sticky top-0 z-20 backdrop-blur-md">
+                <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 sticky top-0 z-20 backdrop-blur-md">
                   <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-900">
                     <Calendar size={11} />
                     {formatDate(selectedPost.tanggal)}
                   </div>
                   <button
                     onClick={() => setSelectedPost(null)}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white flex items-center justify-center transition-all font-bold cursor-pointer"
                   >
                     ✕
                   </button>
@@ -550,10 +550,10 @@ export default function ForumPage() {
                         {/* Document Preview & Download Button */}
                         {media.dokumen && (
                           <div className="space-y-3 text-left w-full">
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi / Surat Keputusan:</span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi / Surat Keputusan:</span>
                             
                             {media.dokumen.startsWith("data:application/pdf") ? (
-                              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-white">
+                              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-white dark:bg-[#0f172a]">
                                 <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-[350px] border-0" />
                               </div>
                             ) : media.dokumen.startsWith("data:image/") ? (
@@ -567,7 +567,7 @@ export default function ForumPage() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center gap-3">
+                              <div className="p-4 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-650 dark:text-emerald-450 flex items-center justify-center border border-emerald-500/20 shrink-0">
                                   <BookOpen size={18} />
                                 </div>
@@ -594,7 +594,7 @@ export default function ForumPage() {
                   )}
                 </div>
 
-                <div className="p-5 bg-slate-50/50 dark:bg-slate-950/15 border-t border-slate-100 dark:border-white/5 flex justify-end sticky bottom-0 z-20 backdrop-blur-md">
+                <div className="p-5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 border-t border-slate-100 dark:border-white/5 flex justify-end sticky bottom-0 z-20 backdrop-blur-md">
                   <button
                     onClick={() => setSelectedPost(null)}
                     className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all cursor-pointer"
@@ -616,7 +616,7 @@ export default function ForumPage() {
         >
           <button 
             onClick={() => setLightboxImage(null)}
-            className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer z-50 border border-white/10 hover:scale-105 active:scale-95"
+            className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 text-white flex items-center justify-center transition-all cursor-pointer z-50 border border-white/10 hover:scale-105 active:scale-95"
             aria-label="Tutup"
           >
             <X size={20} />

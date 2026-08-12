@@ -113,7 +113,7 @@ export default function AppearanceSettingsPage() {
         </p>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full blur-[80px] pointer-events-none opacity-20" style={{ backgroundColor: themeColor }}></div>
 
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6 relative z-10">
@@ -183,9 +183,9 @@ export default function AppearanceSettingsPage() {
                       type="text"
                       value={themeColor}
                       onChange={(e) => setThemeColor(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 transition-all uppercase focus:outline-none"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 transition-all uppercase focus:outline-none"
                       maxLength={7}
-                      style={{ "--tw-ring-color": themeColor } as React.CSSProperties}
+                      style={{ '--focus-ring-color': themeColor } as React.CSSProperties}
                     />
                   </div>
                 </div>
@@ -194,7 +194,7 @@ export default function AppearanceSettingsPage() {
             </div>
 
             {/* Preview Box */}
-            <div className="w-full md:w-auto p-6 rounded-3xl border border-slate-200/80 dark:border-slate-700 flex flex-col items-center justify-center gap-4 bg-slate-50/50 dark:bg-slate-800/30 backdrop-blur-sm min-w-[220px]">
+            <div className="w-full md:w-auto p-6 rounded-3xl border border-slate-200 dark:border-slate-800/80 dark:border-slate-700 flex flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-800/30 backdrop-blur-sm min-w-[220px]">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Preview Tombol</span>
               <button 
                 className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 active:scale-95 w-full"

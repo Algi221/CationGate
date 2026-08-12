@@ -145,7 +145,7 @@ function InvoiceContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#020617]">
         <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
@@ -153,11 +153,11 @@ function InvoiceContent() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-6">
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#020617] p-6">
+        <div className="bg-white dark:bg-[#0f172a] p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
           <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Oops!</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6">{error || "Data tidak ditemukan."}</p>
-          <Link href="/" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          <Link href={schoolSlug ? `/${schoolSlug}` : "/"} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
             Kembali ke Beranda
           </Link>
         </div>
@@ -277,7 +277,7 @@ function InvoiceContent() {
 
         /* Force light theme colors on invoice-sheet on screen in dark mode */
         html.dark .invoice-sheet,
-        html.dark .invoice-sheet.bg-white {
+        html.dark .invoice-sheet.bg-white dark:bg-[#0f172a] {
           background-color: #ffffff !important;
           color: #0f172a !important;
           border-color: #e2e8f0 !important;
@@ -327,7 +327,7 @@ function InvoiceContent() {
       <div className="screen-layout">
         
         {/* ===== INVOICE SHEET ===== */}
-        <div className="invoice-sheet bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden" style={{ position: 'relative' }}>
+        <div className="invoice-sheet bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800/50 overflow-hidden" style={{ position: 'relative' }}>
           
           {/* Stamp */}
           {data.payment_status === "Paid" ? (
@@ -562,7 +562,7 @@ function InvoiceContent() {
           )}
 
           {/* Print & Return */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" style={{ borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800" style={{ borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
             <h3 className="text-slate-700 dark:text-slate-200" style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
               Tindakan Nota
             </h3>
@@ -584,7 +584,7 @@ function InvoiceContent() {
               Cetak / Simpan PDF
             </button>
 
-            <Link href={isAdmin ? "/dashboard/pendaftar" : "/"} className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" style={{
+            <Link href={isAdmin ? (schoolSlug ? `/${schoolSlug}/dashboard/pendaftar` : "/dashboard/pendaftar") : (schoolSlug ? `/${schoolSlug}` : "/")} className="bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300" style={{
               width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
               fontWeight: 900, fontSize: '11px',
               textTransform: 'uppercase', letterSpacing: '0.1em',

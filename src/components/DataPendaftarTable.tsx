@@ -244,9 +244,9 @@ export default function DataPendaftarTable() {
       <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-[22px] font-black text-slate-800 dark:text-white mb-1">Calon Peserta Didik Baru</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">Data pendaftar PPDB Online secara real-time.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Data pendaftar PPDB Online secara real-time.</p>
         </div>
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900 shadow-sm text-blue-600 dark:text-blue-400 shrink-0">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-transparent border border-blue-200 dark:border-blue-800/50 shadow-sm text-blue-500 dark:text-blue-400 shrink-0">
           <User size={16} className="text-blue-500" />
           <div className="text-sm font-bold">Total: {displayTotal}</div>
         </div>
@@ -262,7 +262,7 @@ export default function DataPendaftarTable() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             aria-label="Cari nama atau NISN pendaftar"
-            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
+            className="w-full bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
           />
         </div>
         <div className="flex gap-2">
@@ -272,7 +272,7 @@ export default function DataPendaftarTable() {
             value={filterJurusan}
             onChange={(e) => setFilterJurusan(e.target.value)}
             aria-label="Filter berdasarkan jurusan"
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all cursor-pointer min-w-[180px]"
+            className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all cursor-pointer min-w-[180px]"
           >
             <option value="Semua">Semua Jurusan</option>
             {uniqueMajors.map((major: any) => (
@@ -287,11 +287,11 @@ export default function DataPendaftarTable() {
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
-                <th className="px-4 py-4 text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest w-[35%]">NAMA LENGKAP</th>
-                <th className="px-4 py-4 text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest w-[25%]">ASAL SEKOLAH</th>
-                <th className="px-4 py-4 text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest w-[20%]">STATUS</th>
-                <th className="px-4 py-4 text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest w-[20%]">AKSI</th>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <th className="px-4 py-4 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest w-[35%]">NAMA LENGKAP</th>
+                <th className="px-4 py-4 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest w-[25%]">ASAL SEKOLAH</th>
+                <th className="px-4 py-4 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest w-[20%]">STATUS</th>
+                <th className="px-4 py-4 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest w-[20%]">AKSI</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/50 dark:divide-slate-800/50">
@@ -317,10 +317,10 @@ export default function DataPendaftarTable() {
                       <div className="text-[14px] font-semibold text-slate-600 dark:text-slate-300">{item.sekolah_asal || item.sekolahAsal || "-"}</div>
                     </td>
                     <td className="px-4 py-5">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                        item.status === 'Approved' ? 'bg-white dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50' :
-                        item.status === 'Rejected' ? 'bg-white dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50' :
-                        'bg-white dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50'
+                      <span className={`inline-flex items-center px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                        item.status === 'Approved' ? 'bg-transparent text-emerald-500 dark:text-emerald-400 border border-emerald-500/40 dark:border-emerald-800' :
+                        item.status === 'Rejected' ? 'bg-transparent text-rose-500 dark:text-rose-400 border border-rose-500/40 dark:border-rose-800' :
+                        'bg-transparent text-blue-500 dark:text-blue-400 border border-blue-500/40 dark:border-blue-800'
                       }`}>
                         {item.status === 'Approved' ? 'TERVERIFIKASI' : item.status === 'Rejected' ? 'DITOLAK' : 'MENUNGGU'}
                       </span>
@@ -329,7 +329,7 @@ export default function DataPendaftarTable() {
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedStudent(item); }}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-3 py-1.5 rounded-md relative z-50 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-[12px] font-bold text-blue-500 dark:text-blue-300 hover:text-blue-600 transition-colors bg-blue-50 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/80 px-3 py-1.5 rounded-md relative z-50 cursor-pointer"
                       >
                         Detail <ArrowRight size={14} />
                       </button>

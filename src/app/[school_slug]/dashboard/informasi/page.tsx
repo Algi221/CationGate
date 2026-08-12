@@ -505,7 +505,7 @@ export default function KelolaInformasi() {
             </button>
             <button
               onClick={fetchInformasi}
-              className="px-5 py-3.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all border border-white/5 flex items-center gap-2"
+              className="px-5 py-3.5 bg-white dark:bg-[#0f172a]/5 hover:bg-white dark:bg-[#0f172a]/10 text-slate-300 hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all border border-white/5 flex items-center gap-2"
             >
               Sinkronkan Ulang
             </button>
@@ -513,7 +513,7 @@ export default function KelolaInformasi() {
         </div>
 
         {/* Informational Metric Display */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-8 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.01)] relative overflow-hidden transition-colors duration-300">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-8 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.01)] relative overflow-hidden transition-colors duration-300">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-slate-400 dark:text-slate-550 font-extrabold text-[10px] uppercase tracking-widest block">Ringkasan Publikasi</span>
@@ -525,7 +525,7 @@ export default function KelolaInformasi() {
               <div className="text-5xl font-black tracking-tight text-slate-850 dark:text-white">
                 {informasiList.length}
               </div>
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-bold block mt-1.5 uppercase tracking-wide">Total Informasi Aktif</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold block mt-1.5 uppercase tracking-wide">Total Informasi Aktif</span>
             </div>
           </div>
           <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
@@ -543,13 +543,13 @@ export default function KelolaInformasi() {
 
       {/* Main Grid View */}
       {loading ? (
-        <div className="py-24 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/40 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center gap-4 text-slate-500 transition-colors duration-300">
+        <div className="py-24 bg-white dark:bg-[#0f172a] rounded-3xl border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center gap-4 text-slate-500 dark:text-slate-400 transition-colors duration-300">
           <Loader2 size={32} className="animate-spin text-blue-500 dark:text-blue-400" />
           <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400">Sedang memuat data informasi...</span>
         </div>
       ) : informasiList.length === 0 ? (
-        <div className="py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/60 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center text-center p-8 transition-colors duration-300">
-          <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-850 flex items-center justify-center text-slate-450 dark:text-slate-500 mb-4 border border-slate-200/60 dark:border-white/5">
+        <div className="py-20 bg-white dark:bg-[#0f172a] rounded-3xl border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center text-center p-8 transition-colors duration-300">
+          <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-850 flex items-center justify-center text-slate-450 dark:text-slate-500 dark:text-slate-400 mb-4 border border-slate-200 dark:border-slate-800/60 dark:border-white/5">
             <Megaphone size={24} />
           </div>
           <h3 className="text-slate-850 dark:text-white font-black text-sm uppercase tracking-wide">Belum Ada Informasi</h3>
@@ -571,7 +571,7 @@ export default function KelolaInformasi() {
             return (
               <div 
                 key={item.id}
-                className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-white/10 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer ${loadingDetailId === item.id ? 'opacity-75 pointer-events-none' : ''}`}
+                className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-white/10 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer ${loadingDetailId === item.id ? 'opacity-75 pointer-events-none' : ''}`}
                 onClick={() => {
                   if (loadingDetailId === null) {
                     handleOpenPreview(item);
@@ -611,7 +611,7 @@ export default function KelolaInformasi() {
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-blue-500/10 to-indigo-650/10 dark:from-blue-600/5 dark:to-indigo-500/5 flex flex-col items-center justify-center text-slate-400 dark:text-slate-650 gap-2">
                         <ImageIcon size={32} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-300" />
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-600">Media Poster Kosong</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-600 dark:text-slate-300">Media Poster Kosong</span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -629,7 +629,7 @@ export default function KelolaInformasi() {
                 </div>
 
                 {/* Action Bar Footer */}
-                <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-955/20 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-20" onClick={(e) => e.stopPropagation()}>
+                <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-955/20 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-20" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => handleOpenPreview(item)}
                     className="text-[11px] font-extrabold uppercase tracking-wide text-blue-550 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-1 active:scale-[0.98] transition-all"
@@ -651,7 +651,7 @@ export default function KelolaInformasi() {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenEditModal(item)}
-                      className={`p-2 bg-slate-100 hover:bg-blue-500/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-blue-500/20 ${loadingDetailId !== null ? 'opacity-50 pointer-events-none' : ''}`}
+                      className={`p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-blue-500/10 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-blue-500/10 text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5 hover:border-blue-500/20 ${loadingDetailId !== null ? 'opacity-50 pointer-events-none' : ''}`}
                       title="Edit Informasi"
                       disabled={loadingDetailId !== null}
                     >
@@ -659,7 +659,7 @@ export default function KelolaInformasi() {
                     </button>
                     <button
                       onClick={() => setDeleteConfirmId(item.id)}
-                      className="p-2 bg-slate-100 hover:bg-rose-500/10 dark:bg-white/5 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-rose-500/20"
+                      className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-rose-500/10 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5 hover:border-rose-500/20"
                       title="Hapus Informasi"
                     >
                       <Trash2 size={13} />
@@ -676,10 +676,10 @@ export default function KelolaInformasi() {
       {/* CREATE & EDIT FORM MODAL */}
       {isOpenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
+            <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
               <div>
                 <h3 className="text-lg font-black text-slate-850 dark:text-white uppercase tracking-wide flex items-center gap-2">
                   <Megaphone size={18} className="text-blue-600 dark:text-blue-400" />
@@ -689,7 +689,7 @@ export default function KelolaInformasi() {
               </div>
               <button
                 onClick={() => setIsOpenModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white flex items-center justify-center transition-all font-bold"
               >
                 ✕
               </button>
@@ -703,7 +703,7 @@ export default function KelolaInformasi() {
                 <div className="space-y-2">
                   <label className="text-slate-650 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">Judul Pengumuman <span className="text-rose-500">*</span></label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500 dark:text-slate-400">
                       <FileText size={15} />
                     </span>
                     <input
@@ -712,7 +712,7 @@ export default function KelolaInformasi() {
                       onChange={(e) => setJudul(e.target.value)}
                       placeholder="Masukkan judul pengumuman informasi..."
                       required
-                      className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
                 </div>
@@ -721,7 +721,7 @@ export default function KelolaInformasi() {
                 <div className="space-y-2">
                   <label className="text-slate-650 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">Tanggal Publikasi <span className="text-rose-500">*</span></label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500 dark:text-slate-400">
                       <Calendar size={15} />
                     </span>
                     <input
@@ -729,7 +729,7 @@ export default function KelolaInformasi() {
                       value={tanggal}
                       onChange={(e) => setTanggal(e.target.value)}
                       required
-                      className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer"
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer"
                     />
                   </div>
                 </div>
@@ -743,7 +743,7 @@ export default function KelolaInformasi() {
                     placeholder="Tuliskan detail pengumuman informasi secara rinci di sini..."
                     required
                     rows={6}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-sm font-semibold leading-relaxed focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-y"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-sm font-semibold leading-relaxed focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-y"
                   />
                 </div>
 
@@ -774,7 +774,7 @@ export default function KelolaInformasi() {
                       className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all flex flex-col items-center justify-center gap-2 cursor-pointer h-52 relative overflow-hidden ${
                         dragActive
                           ? "border-blue-500 bg-blue-500/5"
-                          : "border-slate-300 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 bg-slate-50 dark:bg-slate-950/20"
+                          : "border-slate-300 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 bg-slate-50 dark:bg-[#020617]/20"
                       }`}
                     >
                       <input
@@ -789,7 +789,7 @@ export default function KelolaInformasi() {
                       </div>
                       <div className="space-y-1">
                         <h5 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">Pilih atau Seret Foto Anda</h5>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">Format JPG, PNG, atau WEBP. Maksimum ukuran file 3 MB</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">Format JPG, PNG, atau WEBP. Maksimum ukuran file 3 MB</p>
                       </div>
                     </div>
                   )}
@@ -817,7 +817,7 @@ export default function KelolaInformasi() {
                         </div>
                       </div>
                     ) : (
-                      <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 bg-slate-50 dark:bg-slate-950/20 rounded-2xl p-4 text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer h-36 relative overflow-hidden">
+                      <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 bg-slate-50 dark:bg-[#020617]/20 rounded-2xl p-4 text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer h-36 relative overflow-hidden">
                         <input
                           type="file"
                           accept="video/mp4,video/webm"
@@ -829,7 +829,7 @@ export default function KelolaInformasi() {
                         </div>
                         <div className="space-y-0.5">
                           <h5 className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">Pilih Berkas Video</h5>
-                          <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">Format MP4 atau WEBM. Maksimal 10 MB</p>
+                          <p className="text-[9px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">Format MP4 atau WEBM. Maksimal 10 MB</p>
                         </div>
                       </div>
                     )}
@@ -840,7 +840,7 @@ export default function KelolaInformasi() {
                     <label className="text-slate-650 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">Dokumen Lampiran (Maks 5MB)</label>
                     
                     {dokumenUrl ? (
-                      <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-36 bg-slate-50 dark:bg-slate-950/40 p-4 group flex flex-col items-center justify-center text-center shadow-inner">
+                      <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-36 bg-slate-50 dark:bg-[#020617]/40 p-4 group flex flex-col items-center justify-center text-center shadow-inner">
                         <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 mb-1">
                           <FileText size={18} />
                         </div>
@@ -859,7 +859,7 @@ export default function KelolaInformasi() {
                         </div>
                       </div>
                     ) : (
-                      <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 bg-slate-50 dark:bg-slate-950/20 rounded-2xl p-4 text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer h-36 relative overflow-hidden">
+                      <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 bg-slate-50 dark:bg-[#020617]/20 rounded-2xl p-4 text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer h-36 relative overflow-hidden">
                         <input
                           type="file"
                           accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
@@ -871,7 +871,7 @@ export default function KelolaInformasi() {
                         </div>
                         <div className="space-y-0.5">
                           <h5 className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">Pilih Berkas Dokumen</h5>
-                          <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">PDF, DOCX, XLSX, TXT. Maksimal 5 MB</p>
+                          <p className="text-[9px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">PDF, DOCX, XLSX, TXT. Maksimal 5 MB</p>
                         </div>
                       </div>
                     )}
@@ -881,11 +881,11 @@ export default function KelolaInformasi() {
               </div>
 
               {/* Modal Action Buttons Footer */}
-              <div className="p-6 bg-slate-50/50 dark:bg-slate-950/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-end gap-3">
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsOpenModal(false)}
-                  className="px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-655 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all"
+                  className="px-5 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-655 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all"
                 >
                   Batal
                 </button>
@@ -915,7 +915,7 @@ export default function KelolaInformasi() {
         const media = parseMedia(previewItem.foto_url);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
+            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-3xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
               
               {/* Poster Header */}
               {media.foto ? (
@@ -937,14 +937,14 @@ export default function KelolaInformasi() {
                   </button>
                 </div>
               ) : (
-                <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
+                <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
                   <div className="px-3 py-1.5 bg-blue-100 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-sm">
                     <Calendar size={11} />
                     <span>{formatDate(previewItem.tanggal)}</span>
                   </div>
                   <button
                     onClick={() => setPreviewItem(null)}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white flex items-center justify-center transition-all font-bold"
                   >
                     ✕
                   </button>
@@ -982,7 +982,7 @@ export default function KelolaInformasi() {
                         <div className="space-y-3 text-left w-full">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi:</span>
                                    {media.dokumen.startsWith("data:application/pdf") ? (
-                            <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-white">
+                            <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-white dark:bg-[#0f172a]">
                               <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-[450px] border-0" />
                             </div>
                           ) : media.dokumen.startsWith("data:image/") ? (
@@ -990,7 +990,7 @@ export default function KelolaInformasi() {
                               <img src={sanitizeSrc(media.dokumen)} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
                             </div>
                           ) : (
-                            <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center gap-3">
+                            <div className="p-4 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center gap-3">
                               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 shrink-0">
                                 <FileText size={18} />
                               </div>
@@ -1018,7 +1018,7 @@ export default function KelolaInformasi() {
               </div>
 
             {/* Detail Actions Footer */}
-            <div className="p-6 bg-slate-50/50 dark:bg-slate-955/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-between">
+            <div className="p-6 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-955/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-between">
               <div className="text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider">
                 ID Publikasi: #{previewItem.id}
               </div>
@@ -1029,7 +1029,7 @@ export default function KelolaInformasi() {
                     setPreviewItem(null);
                     handleOpenEditModal(item);
                   }}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-blue-500/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-655 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl text-xs font-black uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all flex items-center gap-1.5"
+                  className="px-4 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-blue-500/10 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-blue-500/10 text-slate-655 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl text-xs font-black uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all flex items-center gap-1.5"
                 >
                   <Edit3 size={13} />
                   <span>Ubah Data</span>
@@ -1051,7 +1051,7 @@ export default function KelolaInformasi() {
       {/* DELETE CONFIRMATION MODAL */}
       {deleteConfirmId && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-md shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300 text-center relative p-8">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-md shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300 text-center relative p-8">
             <div className="w-20 h-20 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center text-rose-500 dark:text-rose-400 mx-auto mb-6 border border-rose-200 dark:border-rose-900/30">
               <AlertCircle size={36} strokeWidth={1.5} />
             </div>
@@ -1062,7 +1062,7 @@ export default function KelolaInformasi() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-6 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-655 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all w-full sm:w-auto"
+                className="px-6 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-655 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all w-full sm:w-auto"
               >
                 Batal
               </button>

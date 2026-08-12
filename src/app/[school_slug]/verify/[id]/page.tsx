@@ -86,9 +86,9 @@ export default function VerificationPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex flex-col items-center justify-center p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-[100px] pointer-events-none" />
-        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl space-y-6 relative z-10 text-center">
+        <div className="max-w-md w-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl space-y-6 relative z-10 text-center">
           <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400 mx-auto border border-blue-100 dark:border-blue-900/30">
             <User size={32} />
           </div>
@@ -110,7 +110,7 @@ export default function VerificationPage() {
                 value={inputNik}
                 onChange={(e) => setInputNik(e.target.value.replace(/\D/g, ""))}
                 placeholder="Contoh: 3276012345670001"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-sm tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white font-mono text-sm tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -132,7 +132,7 @@ export default function VerificationPage() {
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
             <Link
               href={`/${schoolSlug}`}
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
             >
               <ArrowLeft size={14} />
               Kembali ke Portal Sekolah
@@ -144,7 +144,7 @@ export default function VerificationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex flex-col items-center justify-center p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
       {/* Dynamic Background Glowing Blobs */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-[100px] pointer-events-none" />
@@ -154,8 +154,8 @@ export default function VerificationPage() {
         {/* Premium flex ticket card display (same layout as DataPendaftarTable detail but read-only) */}
         <div className="w-full bg-gradient-to-br from-white via-slate-50/50 to-blue-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/30 border border-slate-200 dark:border-blue-500/20 rounded-[32px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-colors duration-300">
           {/* Perforated Ticket Notches */}
-          <div className="hidden md:block absolute -top-3.5 left-[66.67%] -translate-x-1/2 w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 z-20 transition-colors" />
-          <div className="hidden md:block absolute -bottom-3.5 left-[66.67%] -translate-x-1/2 w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 z-20 transition-colors" />
+          <div className="hidden md:block absolute -top-3.5 left-[66.67%] -translate-x-1/2 w-7 h-7 rounded-full bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-900 z-20 transition-colors" />
+          <div className="hidden md:block absolute -bottom-3.5 left-[66.67%] -translate-x-1/2 w-7 h-7 rounded-full bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-900 z-20 transition-colors" />
 
           {/* Ticket Top bar */}
           <div className="flex justify-between items-center border-b border-slate-150 dark:border-white/5 pb-4 mb-4 transition-colors">
@@ -201,11 +201,11 @@ export default function VerificationPage() {
               
               {/* Sekolah Asal Details - Clean & borderless */}
               <div className="flex items-center gap-3">
-                 <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                 <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e293b]/80 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
                     <MapPin size={16} />
                  </div>
                  <div>
-                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] block mb-0.5">Asal Sekolah</span>
+                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.15em] block mb-0.5">Asal Sekolah</span>
                     <span className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                       {data.sekolah_asal || "-"}
                     </span>
@@ -215,12 +215,12 @@ export default function VerificationPage() {
 
             {/* Right Side: Major selection */}
             <div className="md:col-span-5 flex flex-col justify-center h-full">
-              <div className="relative w-full h-full min-h-[140px] bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-900/80 dark:to-indigo-950/40 border border-slate-200/80 dark:border-blue-500/20 rounded-[24px] p-6 transition-all flex flex-col items-center justify-center overflow-hidden group hover:border-blue-400/50 dark:hover:border-blue-400/50 hover:shadow-xl hover:shadow-blue-500/10">
+              <div className="relative w-full h-full min-h-[140px] bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-900/80 dark:to-indigo-950/40 border border-slate-200 dark:border-slate-800/80 dark:border-blue-500/20 rounded-[24px] p-6 transition-all flex flex-col items-center justify-center overflow-hidden group hover:border-blue-400/50 dark:hover:border-blue-400/50 hover:shadow-xl hover:shadow-blue-500/10">
                 {/* Decorative background circle */}
                 <div className="absolute -top-8 -right-8 w-32 h-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/15 transition-colors duration-500" />
                 <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/15 transition-colors duration-500" />
                 
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-white dark:bg-slate-900 flex items-center justify-center mb-4 relative z-10 border border-slate-200 dark:border-blue-500/25 p-1 shadow-sm">
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-white dark:bg-[#0f172a] flex items-center justify-center mb-4 relative z-10 border border-slate-200 dark:border-blue-500/25 p-1 shadow-sm">
                   <img
                     src={getMajorLogoUrl(data.jurusan_1)}
                     alt="Logo Jurusan"
@@ -231,11 +231,11 @@ export default function VerificationPage() {
                   />
                 </div>
                 
-                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase block mb-2 relative z-10 text-center">Program Keahlian</span>
+                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 tracking-[0.2em] uppercase block mb-2 relative z-10 text-center">Program Keahlian</span>
                 <span className="text-base md:text-lg font-black text-slate-800 dark:text-white uppercase block tracking-wider leading-tight text-center relative z-10">
                   {data.jurusan_1}
                 </span>
-                <div className="mt-4 inline-block px-4 py-1.5 bg-white/80 dark:bg-slate-950/50 rounded-full border border-slate-200 dark:border-white/10 relative z-10 shadow-sm">
+                <div className="mt-4 inline-block px-4 py-1.5 bg-white dark:bg-[#0f172a] rounded-full border border-slate-200 dark:border-white/10 relative z-10 shadow-sm">
                   <span className="text-[9px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest block">SMK Taruna Bhakti</span>
                 </div>
               </div>
@@ -246,7 +246,7 @@ export default function VerificationPage() {
           {/* Ticket Footer */}
           <div className="border-t border-slate-150 dark:border-white/5 pt-3.5 mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[9px] font-bold text-slate-450 dark:text-slate-400 tracking-wider transition-colors">
             <div></div>
-            <span className="text-slate-500 font-black">TERVERIFIKASI SISTEM PPDB</span>
+            <span className="text-slate-500 dark:text-slate-400 font-black">TERVERIFIKASI SISTEM PPDB</span>
           </div>
 
         </div>
@@ -300,7 +300,7 @@ export default function VerificationPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link 
             href={`/${schoolSlug}`}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-350 hover:bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 hover:border-slate-350 hover:bg-slate-50 dark:bg-slate-800/50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
           >
             <ArrowLeft size={14} />
             Ke Halaman Utama

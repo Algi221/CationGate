@@ -110,7 +110,7 @@ export default function DaftarSaaS() {
   ];
 
   return (
-    <div className="flex min-h-screen font-sans bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+    <div className="flex min-h-screen font-sans bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white transition-colors duration-300">
       <Script 
         src="https://app.sandbox.midtrans.com/snap/snap.js" 
         data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
@@ -179,8 +179,8 @@ export default function DaftarSaaS() {
       </div>
 
       {/* Right Panel - Form Content */}
-      <div className="w-full lg:w-7/12 flex flex-col justify-center px-6 sm:px-16 lg:px-24 py-12 bg-slate-50">
-        <div className="w-full max-w-lg mx-auto p-8 bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <div className="w-full lg:w-7/12 flex flex-col justify-center px-6 sm:px-16 lg:px-24 py-12 bg-white">
+        <div className="w-full max-w-lg mx-auto p-8 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50">
           
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-8">

@@ -127,18 +127,18 @@ export default function SimGymSection() {
   }, []);
 
   return (
-    <section className="relative w-full min-h-screen bg-[#e6e5dd] dark:bg-[#0b1121] flex flex-col lg:flex-row transition-colors duration-500 overflow-hidden">
+    <section className="relative w-full min-h-screen bg-[#e6e5dd][#0b1121] flex flex-col lg:flex-row transition-colors duration-500 overflow-hidden">
       {/* 1. BAGIAN TEKS (z-40 agar berada di atas komentar jika overlap) */}
       <div className="w-full lg:w-[40%] relative z-40 flex flex-col justify-center pt-24 pb-8 px-6 sm:px-12 md:px-20 lg:py-0 lg:pl-10 xl:pl-20 items-center lg:items-start text-center lg:text-left">
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-gray-900 dark:text-white tracking-tight leading-tight mb-4 transition-colors">
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-gray-900 tracking-tight leading-tight mb-4 transition-colors">
           Template SPMB SMK
         </h2>
-        <p className="text-gray-700 dark:text-slate-400 text-base md:text-lg mb-8 max-w-md transition-colors font-medium leading-relaxed">
+        <p className="text-gray-700 text-base md:text-lg mb-8 max-w-md transition-colors font-medium leading-relaxed">
           Sistem pendaftaran siswa baru yang modern, responsif, dan mudah
           dikelola. Dilengkapi fitur lengkap yang siap disesuaikan dengan
           identitas sekolah Anda.
         </p>
-        <button className="w-fit px-7 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
+        <button className="w-fit px-7 py-3.5 bg-gray-900 text-white text-sm font-semibold rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
           Lihat Demo ↗
         </button>
       </div>
@@ -159,7 +159,7 @@ export default function SimGymSection() {
             className="relative flex gap-5 z-30 origin-center pointer-events-auto"
           >
             {/* Mockup 1 (Kiri) */}
-            <div className="w-[320px] h-[220px] bg-white dark:bg-[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 dark:border-slate-700 transition-colors flex flex-col">
+            <div className="w-[320px] h-[220px] bg-white[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)][0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 transition-colors flex flex-col">
               <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
                 <img
                   src="/assets/landing/imageLanding.png"
@@ -168,7 +168,7 @@ export default function SimGymSection() {
                 />
               </div>
               <div className="px-2">
-                <p className="text-[14px] font-bold text-gray-900 dark:text-white">
+                <p className="text-[14px] font-bold text-gray-900">
                   Halaman Landing yang Keren
                 </p>
                 <p className="text-[11px] text-gray-500 mt-0.5">
@@ -178,7 +178,7 @@ export default function SimGymSection() {
             </div>
 
             {/* Mockup 2 (Kanan) */}
-            <div className="w-[320px] h-[220px] bg-white dark:bg-[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 dark:border-slate-700 transition-colors flex flex-col">
+            <div className="w-[320px] h-[220px] bg-white[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)][0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 transition-colors flex flex-col">
               <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
                 <img
                   src="/assets/landing/imageLanding1.png"
@@ -187,7 +187,7 @@ export default function SimGymSection() {
                 />
               </div>
               <div className="px-2">
-                <p className="text-[14px] font-bold text-gray-900 dark:text-white">
+                <p className="text-[14px] font-bold text-gray-900">
                   Landing Page Interaktif
                 </p>
                 <p className="text-[11px] text-gray-500 mt-0.5">

@@ -255,7 +255,7 @@ export function CinematicFooter() {
             
             {/* Top Centered Banner: CTA */}
             <div className="flex flex-col items-center justify-center text-center space-y-4 max-w-3xl mx-auto pb-10 border-b border-border/40 w-full">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-[#23191C] dark:text-white">
+              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-[#23191C]">
                 Siap Modernisasi Sekolah Anda?
               </h2>
               <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
@@ -264,10 +264,10 @@ export function CinematicFooter() {
               <div className="pt-2">
                 <Link
                   href="/daftar"
-                  className="px-8 py-3.5 rounded-full bg-[#EAEAEA] dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-sm border border-slate-300 dark:border-slate-700 hover:bg-[#E0E0E0] dark:hover:bg-slate-700 transition-colors shadow-xs inline-flex items-center justify-center gap-2"
+                  className="px-8 py-3.5 rounded-full bg-[#EAEAEA] text-slate-900 font-bold text-sm border border-slate-300 hover:bg-[#E0E0E0] transition-colors shadow-xs inline-flex items-center justify-center gap-2"
                 >
                   <span>Mulai Pendaftaran</span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-800 dark:text-slate-200" />
+                  <ArrowUpRight className="w-4 h-4 text-slate-800" />
                 </Link>
               </div>
             </div>

@@ -90,7 +90,7 @@ export default function ProfilSekolahPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200">
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-800 dark:text-slate-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Header */}
@@ -117,10 +117,10 @@ export default function ProfilSekolahPage() {
           </button>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+        <div className="bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
           
           {/* Sidebar Tabs */}
-          <div className="w-full md:w-64 bg-slate-50 dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-800 shrink-0">
+          <div className="w-full md:w-64 bg-slate-50 dark:bg-[#020617]/50 border-r border-slate-200 dark:border-slate-800 shrink-0">
             <div className="p-4 space-y-1">
               {[
                 { id: "identitas", label: "Identitas Sekolah", icon: <School className="w-5 h-5" /> },
@@ -159,35 +159,35 @@ export default function ProfilSekolahPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Sekolah</label>
-                    <input type="text" name="nama" value={identitas.nama} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: SMK TARUNA BHAKTI" />
+                    <input type="text" name="nama" value={identitas.nama} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: SMK TARUNA BHAKTI" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Status Akreditasi</label>
-                    <input type="text" name="akreditasi" value={identitas.akreditasi} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: A / Nomor: ..." />
+                    <input type="text" name="akreditasi" value={identitas.akreditasi} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: A / Nomor: ..." />
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Alamat Lengkap</label>
-                    <textarea name="alamat" rows={3} value={identitas.alamat} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none" placeholder="Alamat jalan, kelurahan, kecamatan, kota, provinsi, dsb." />
+                    <textarea name="alamat" rows={3} value={identitas.alamat} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none" placeholder="Alamat jalan, kelurahan, kecamatan, kota, provinsi, dsb." />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NPSN</label>
-                    <input type="text" name="npsn" value={identitas.npsn} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Pokok Sekolah Nasional" />
+                    <input type="text" name="npsn" value={identitas.npsn} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Pokok Sekolah Nasional" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NIS</label>
-                    <input type="text" name="nis" value={identitas.nis} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Induk Sekolah" />
+                    <input type="text" name="nis" value={identitas.nis} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Induk Sekolah" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NSS</label>
-                    <input type="text" name="nss" value={identitas.nss} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Statistik Sekolah" />
+                    <input type="text" name="nss" value={identitas.nss} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Statistik Sekolah" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Tahun Berdiri</label>
-                    <input type="text" name="tahun_berdiri" value={identitas.tahun_berdiri} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Tahun" />
+                    <input type="text" name="tahun_berdiri" value={identitas.tahun_berdiri} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Tahun" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email Utama</label>
-                    <input type="email" name="email" value={identitas.email} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="email@sekolah.com" />
+                    <input type="email" name="email" value={identitas.email} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="email@sekolah.com" />
                   </div>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function ProfilSekolahPage() {
                   rows={15}
                   value={sejarah}
                   onChange={(e) => setSejarah(e.target.value)}
-                  className="w-full flex-1 px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
+                  className="w-full flex-1 px-4 py-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
                   placeholder="Tuliskan sejarah sekolah di sini..."
                 />
               </div>
@@ -227,7 +227,7 @@ export default function ProfilSekolahPage() {
                     rows={4}
                     value={visi}
                     onChange={(e) => setVisi(e.target.value)}
-                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
+                    className="w-full px-4 py-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
                     placeholder="Contoh: Menghasilkan Lulusan Yang Kompeten Dalam Ilmu Pengetahuan dan Teknologi..."
                   />
                 </div>
@@ -237,7 +237,7 @@ export default function ProfilSekolahPage() {
                     rows={8}
                     value={misi}
                     onChange={(e) => setMisi(e.target.value)}
-                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
+                    className="w-full px-4 py-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
                     placeholder="Contoh:
 1. Menumbuhkan Semangat Kreatifitas...
 2. Melaksanakan Kurikulum...
@@ -260,7 +260,7 @@ export default function ProfilSekolahPage() {
                   rows={15}
                   value={tujuan}
                   onChange={(e) => setTujuan(e.target.value)}
-                  className="w-full flex-1 px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
+                  className="w-full flex-1 px-4 py-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
                   placeholder="Dalam mewujudkan visi dan misi, sekolah mempunyai tujuan sebagai berikut:
 - Menghasilkan lulusan yang kompeten
 - Meningkatkan kualitas pembelajaran..."

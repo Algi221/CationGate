@@ -216,7 +216,7 @@ export default function SimulationSettings() {
               className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                 currentTab === t.id
                   ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  : "bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
               {t.label}
@@ -231,7 +231,7 @@ export default function SimulationSettings() {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Keamanan & Ganti Password Admin Card */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
 
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
@@ -276,7 +276,7 @@ export default function SimulationSettings() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Masukkan password saat ini..."
-                    className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
+                    className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-[#020617]/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
                   />
                   <button
                     type="button"
@@ -301,7 +301,7 @@ export default function SimulationSettings() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Minimal 6 karakter..."
-                      className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
+                      className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-[#020617]/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
                     />
                   </div>
                 </div>
@@ -318,7 +318,7 @@ export default function SimulationSettings() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Ulangi password baru..."
-                      className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
+                      className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-[#020617]/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
                     />
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export default function SimulationSettings() {
           </div>
 
           {/* ── Student Seeder / Test Data Generator ──────────────────────── */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] left-[-10%] w-[250px] h-[250px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none"></div>
 
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
@@ -370,7 +370,7 @@ export default function SimulationSettings() {
                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
                   seederRunning 
                     ? "bg-emerald-50 dark:bg-emerald-950/45 border border-emerald-200/40 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400 animate-pulse" 
-                    : "bg-slate-100 dark:bg-slate-800 border border-slate-200/40 dark:border-slate-700/40 text-slate-500 dark:text-slate-400"
+                    : "bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-800/40 dark:border-slate-700/40 text-slate-500 dark:text-slate-400"
                 }`}>
                   <div className={`w-1.5 h-1.5 rounded-full ${seederRunning ? "bg-emerald-500" : "bg-slate-400"}`}></div>
                   {seederRunning ? "Active" : "Idle"}
@@ -416,7 +416,7 @@ export default function SimulationSettings() {
 
                 {/* Interval config */}
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl flex-1">
+                  <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-[#020617]/30 border border-slate-200 dark:border-slate-800 rounded-2xl flex-1">
                     <Timer size={14} className="text-slate-400 shrink-0" />
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">Interval:</span>
                     <input
@@ -426,7 +426,7 @@ export default function SimulationSettings() {
                       value={seederInterval}
                       onChange={(e) => setSeederInterval(Math.max(1, Math.min(120, parseInt(e.target.value) || 1)))}
                       disabled={seederRunning}
-                      className="w-16 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 text-xs font-black text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:opacity-50 transition-all"
+                      className="w-16 text-center bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 text-xs font-black text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:opacity-50 transition-all"
                     />
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400">detik</span>
                   </div>
@@ -474,7 +474,7 @@ export default function SimulationSettings() {
         <div className="space-y-6">
           
           {/* Kartu tips keamanan */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] rounded-full bg-blue-500/5 blur-[50px] pointer-events-none"></div>
 
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 flex items-center gap-1.5">

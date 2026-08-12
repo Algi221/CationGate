@@ -155,7 +155,7 @@ export default function VerifyAccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-white dark:bg-[#0f172a] font-sans flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-12">
@@ -198,7 +198,7 @@ export default function VerifyAccountPage() {
                     value={formData.npsn}
                     onChange={e => setFormData({ ...formData, npsn: e.target.value })}
                     placeholder="20012345"
-                    className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white shadow-sm placeholder:text-zinc-400"
+                    className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white dark:bg-[#0f172a] shadow-sm placeholder:text-zinc-400"
                   />
                 </div>
                 <div className="space-y-2">
@@ -208,7 +208,7 @@ export default function VerifyAccountPage() {
                     value={formData.dapodik_code}
                     onChange={e => setFormData({ ...formData, dapodik_code: e.target.value })}
                     placeholder="123456"
-                    className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white shadow-sm placeholder:text-zinc-400"
+                    className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white dark:bg-[#0f172a] shadow-sm placeholder:text-zinc-400"
                   />
                 </div>
               </div>
@@ -221,7 +221,7 @@ export default function VerifyAccountPage() {
                   value={formData.official_email}
                   onChange={e => setFormData({ ...formData, official_email: e.target.value })}
                   placeholder="humas@smktarunabhakti.sch.id"
-                  className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white shadow-sm placeholder:text-zinc-400"
+                  className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white dark:bg-[#0f172a] shadow-sm placeholder:text-zinc-400"
                 />
                 <p className="text-[11px] text-zinc-400">Kode OTP akan dikirim ke email ini untuk verifikasi kepemilikan.</p>
               </div>
@@ -240,7 +240,7 @@ export default function VerifyAccountPage() {
                     value={formData.instagram_url}
                     onChange={e => setFormData({ ...formData, instagram_url: e.target.value })}
                     placeholder="https://instagram.com/smktarunabhakti"
-                    className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white shadow-sm placeholder:text-zinc-400"
+                    className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white dark:bg-[#0f172a] shadow-sm placeholder:text-zinc-400"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -251,7 +251,7 @@ export default function VerifyAccountPage() {
                       value={formData.linkedin_url}
                       onChange={e => setFormData({ ...formData, linkedin_url: e.target.value })}
                       placeholder="https://linkedin.com/..."
-                      className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white shadow-sm placeholder:text-zinc-400"
+                      className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white dark:bg-[#0f172a] shadow-sm placeholder:text-zinc-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -261,7 +261,7 @@ export default function VerifyAccountPage() {
                       value={formData.website_url}
                       onChange={e => setFormData({ ...formData, website_url: e.target.value })}
                       placeholder="https://smktb.sch.id"
-                      className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white shadow-sm placeholder:text-zinc-400"
+                      className="h-12 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white dark:bg-[#0f172a] shadow-sm placeholder:text-zinc-400"
                     />
                   </div>
                 </div>
@@ -305,7 +305,7 @@ export default function VerifyAccountPage() {
                   onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="000000"
                   maxLength={6}
-                  className="h-14 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white shadow-sm text-center text-2xl font-mono tracking-[0.5em] placeholder:text-zinc-300 placeholder:tracking-[0.5em]"
+                  className="h-14 rounded-xl border-zinc-200 focus-visible:ring-1 focus-visible:ring-zinc-950 focus-visible:border-zinc-950 transition-all bg-white dark:bg-[#0f172a] shadow-sm text-center text-2xl font-mono tracking-[0.5em] placeholder:text-zinc-300 placeholder:tracking-[0.5em]"
                 />
               </div>
 

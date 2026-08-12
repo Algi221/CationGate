@@ -38,6 +38,11 @@
   --font-serif: "Baskerville", "Iowan Old Style", "Times New Roman", serif;
   --font-display: "Plus Jakarta Sans", "Baskerville", Arial, sans-serif;
   --radius: 0.75rem;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  --primary-glow-strong: rgba(42, 27, 29, 0.4);
 }
 
 .dark {
@@ -47,6 +52,11 @@
   --body: #cbd5e1;
   --border: #1e293b;
   color-scheme: dark;
+  
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(30, 41, 59, 0.5);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  --primary-glow-strong: rgba(255, 211, 59, 0.4);
 }
 
 @layer base {
@@ -329,23 +339,24 @@ html.dark body {
 }
 
 .hero-title {
-  font-size: 44px;
-  line-height: 1.2;
-  font-weight: 900;
-  color: var(--dark);
-  -webkit-text-stroke: 1.5px var(--dark); 
-  max-width: 800px;
-  margin-bottom: 20px;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--heading);
+  max-width: 900px;
+  margin-bottom: 24px;
   animation: fadeInUp 0.9s ease-out;
   padding: 0 20px;
-  filter: drop-shadow(0px 1px 4px rgba(255, 255, 255, 0.6));
+  text-align: center;
+}
+
+html.dark .hero-title {
+  color: var(--heading);
+  filter: drop-shadow(0px 2px 16px rgba(0, 0, 0, 0.4));
 }
 
 .hero-title span {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 1.5px transparent; 
   display: inline-block;
 }
 
@@ -357,6 +368,10 @@ html.dark body {
   margin-bottom: 32px;
   animation: fadeInUp 1s ease-out;
   padding: 0 20px;
+}
+
+html.dark .hero-subtitle {
+  color: var(--body);
 }
 
 .hero-action {
@@ -496,6 +511,10 @@ html.dark body {
   font-size: 13px;
   font-weight: 700;
   color: var(--dark);
+}
+
+html.dark .badge-info span {
+  color: var(--heading);
 }
 
 .badge-aset {

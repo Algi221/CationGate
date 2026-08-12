@@ -29,6 +29,8 @@ import {
   Database,
   Building
 } from "lucide-react";
+import { toast } from "sonner";
+import { uploadFileDirect, base64ToFile } from "@/utils/storage";
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
 import DOMPurify from "dompurify";
@@ -708,7 +710,7 @@ export default function KelolaUserInterface() {
     setDragActiveStates(prev => ({ ...prev, [elementId]: active }));
   };
 
-  const processMediaFile = (file: File, type: "logo" | "banner" | "video" | "gallery-0" | "gallery-1" | "gallery-2" | "gallery-3") => {
+  const processMediaFile = async (file: File, type: "logo" | "banner" | "video" | "gallery-0" | "gallery-1" | "gallery-2" | "gallery-3") => {
     const isVideo = type === "video";
     const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
     
@@ -734,28 +736,31 @@ export default function KelolaUserInterface() {
       }
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
+    try {
+      showToastMsg("Mengunggah media ke cloud...", "info");
+      const publicUrl = await uploadFileDirect(file, `major_${type}`);
+      
       if (editingMajor) {
         setEditingMajor(prev => {
           if (!prev) return null;
-          if (type === "logo") return { ...prev, logo: base64 };
-          if (type === "banner") return { ...prev, banner: base64 };
-          if (type === "video") return { ...prev, video: base64 };
+          if (type === "logo") return { ...prev, logo: publicUrl };
+          if (type === "banner") return { ...prev, banner: publicUrl };
+          if (type === "video") return { ...prev, video: publicUrl };
           if (type.startsWith("gallery-")) {
             const slotIdx = parseInt(type.split("-")[1]);
             const updatedGallery = [...prev.gallery];
             if (!updatedGallery[slotIdx]) updatedGallery[slotIdx] = { url: "", caption: "" };
-            updatedGallery[slotIdx] = { ...updatedGallery[slotIdx], url: base64 };
+            updatedGallery[slotIdx] = { ...updatedGallery[slotIdx], url: publicUrl };
             return { ...prev, gallery: updatedGallery };
           }
           return prev;
         });
-        showToastMsg(`Berkas ${type.toUpperCase()} berhasil dimuat. Klik Simpan Detail di bawah untuk menerapkan.`);
       }
-    };
-    reader.readAsDataURL(file);
+      showToastMsg("Media berhasil diunggah!", "success");
+    } catch (err) {
+      console.error(err);
+      showToastMsg("Gagal mengunggah media.", "error");
+    }
   };
 
   const handleAddAlur = () => {
@@ -909,11 +914,17 @@ export default function KelolaUserInterface() {
   const handleSchoolLogoChange = async (file: File) => {
     try {
       setCompressing(true);
+      showToastMsg("Mengompresi logo...");
       const result = await compressImage(file, 400, 400, 0.85);
-      setSchoolLogo(result.base64);
-      showToastMsg(`✨ Logo di-kompres otomatis! Ukuran berkas berkurang ${result.reductionPercentage}%`);
+      
+      showToastMsg("Mengunggah logo ke cloud...", "info");
+      const compressedFile = base64ToFile(result.base64, file.name);
+      const publicUrl = await uploadFileDirect(compressedFile, 'school_logo');
+      
+      setSchoolLogo(publicUrl);
+      showToastMsg(`✨ Logo berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
     } catch (e) {
-      showToastMsg("Gagal mengompres logo.", "error");
+      showToastMsg("Gagal memproses logo.", "error");
     } finally {
       setCompressing(false);
     }
@@ -923,15 +934,27 @@ export default function KelolaUserInterface() {
     try {
       setCompressing(true);
       if (file.type.startsWith("video/")) {
+        showToastMsg("Memproses video...");
         const result = await compressVideo(file);
-        setHeroMediaUrl(result.base64);
+        
+        showToastMsg("Mengunggah video ke cloud...", "info");
+        const processedFile = base64ToFile(result.base64, file.name);
+        const publicUrl = await uploadFileDirect(processedFile, 'hero_video');
+        
+        setHeroMediaUrl(publicUrl);
         setHeroMediaType("video");
-        showToastMsg("✨ Video Hero berhasil diproses dan disimpan!");
+        showToastMsg("✨ Video Hero berhasil diunggah!", "success");
       } else {
+        showToastMsg("Mengompresi gambar...");
         const result = await compressImage(file, 1600, 1000, 0.8);
-        setHeroMediaUrl(result.base64);
+        
+        showToastMsg("Mengunggah gambar ke cloud...", "info");
+        const compressedFile = base64ToFile(result.base64, file.name);
+        const publicUrl = await uploadFileDirect(compressedFile, 'hero_image');
+        
+        setHeroMediaUrl(publicUrl);
         setHeroMediaType("image");
-        showToastMsg(`✨ Foto Hero di-kompres otomatis! Ukuran berkas berkurang ${result.reductionPercentage}%`);
+        showToastMsg(`✨ Foto Hero berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
       }
     } catch (e) {
       showToastMsg("Gagal memproses media Hero.", "error");

@@ -6,6 +6,7 @@ import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Fil
 import { usePPDB } from "@/context/PPDBContext";
 import dompurify from "dompurify";
 import Swal from 'sweetalert2';
+import { uploadFileDirect } from "@/utils/storage";
 
 
 const sanitizeUrl = (url: string | undefined | null): string => {
@@ -646,17 +647,28 @@ export default function DaftarPage() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      try {
+        Swal.fire({
+          title: 'Mengunggah...',
+          text: 'Mohon tunggu sementara file Anda sedang diunggah ke cloud.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+        const publicUrl = await uploadFileDirect(file, `pendaftar_${fieldName}`);
         setFormData(prev => ({
           ...prev,
-          [fieldName]: reader.result as string
+          [fieldName]: publicUrl
         }));
-      };
-      reader.readAsDataURL(file);
+        Swal.close();
+      } catch (err) {
+        console.error("Upload error:", err);
+        Swal.fire('Gagal', 'Gagal mengunggah file. Silakan coba lagi.', 'error');
+      }
     }
   };
 
@@ -1821,11 +1833,22 @@ export default function DaftarPage() {
       }
       
       setManualReceiptName(file.name);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setManualReceiptBase64(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      Swal.fire({
+        title: 'Mengunggah Bukti Bayar...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+      uploadFileDirect(file, `receipt_${submittedCandidate.nisn}`)
+        .then((publicUrl) => {
+          setManualReceiptBase64(publicUrl);
+          Swal.close();
+        })
+        .catch((err) => {
+          console.error(err);
+          Swal.fire('Gagal', 'Gagal mengunggah bukti bayar.', 'error');
+        });
     };
 
     const handleConfirmOption = async (metode: string, receiptBase64: string = "") => {

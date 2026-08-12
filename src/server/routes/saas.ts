@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { getSupabaseClient } from '../db/supabase';
 import { pool } from '../db/client';
+import { redis } from '../../utils/redis';
 // @ts-ignore
 import midtransClient from 'midtrans-client';
 
@@ -36,6 +37,17 @@ function checkThreeDayTakedown(schoolObj: any): boolean {
 saasRouter.get('/school-by-slug/:slug', async (c) => {
   try {
     const slug = c.req.param('slug');
+    
+    // 0. Check Redis cache first
+    try {
+      const cached = await redis.get(`school:${slug}`);
+      if (cached) {
+        return c.json({ success: true, data: cached });
+      }
+    } catch (redisErr) {
+      console.warn('Redis cache read error:', redisErr);
+    }
+
     const supabase = getSupabaseClient();
     
     // 1. Check verified 'schools' table first
@@ -46,6 +58,9 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
       .maybeSingle();
       
     if (verifiedData) {
+      try {
+        await redis.setex(`school:${slug}`, 300, verifiedData); // cache for 5 minutes
+      } catch (e) {}
       return c.json({ success: true, data: verifiedData });
     }
 
@@ -78,6 +93,9 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
       if (memSchool && memSchool.school_uuid) {
         candidateData.school_uuid = memSchool.school_uuid;
       }
+      try {
+        await redis.setex(`school:${slug}`, 300, candidateData);
+      } catch (e) {}
       return c.json({ success: true, data: candidateData });
     }
 
@@ -137,11 +155,29 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
   }
 });
 
+// Check if email already exists
+saasRouter.post('/check-email', async (c) => {
+  try {
+    const { email } = await c.req.json();
+    if (!email) return c.json({ available: false }, 400);
+
+    const supabase = getSupabaseClient();
+    const { data: existingEmailInSchools } = await supabase.from('schools').select('id').or(`email.eq.${email},official_email.eq.${email}`).maybeSingle();
+    const { data: existingEmailInCandidates } = await supabase.from('prospective_schools').select('id').eq('official_email', email).maybeSingle();
+    const { data: existingAdminEmail } = await supabase.from('admin_users').select('id').eq('email', email).maybeSingle();
+
+    const isTaken = !!(existingEmailInSchools || existingEmailInCandidates || existingAdminEmail);
+    return c.json({ available: !isTaken });
+  } catch (err) {
+    console.error('Error checking email:', err);
+    return c.json({ available: false }, 500);
+  }
+});
+
 // Register new school from Landing Page
 saasRouter.post('/register', async (c) => {
   try {
-    const body = await c.req.json();
-    const { school_name, slug, email, phone, address, admin_name, admin_username, admin_password, plan_type } = body;
+    const { school_name, slug, email, phone, address, plan_type, admin_name, admin_username, admin_password, admin_email } = await c.req.json();
     
     if (!school_name || !slug || !email || !admin_username || !admin_password) {
       return c.json({ success: false, message: 'Data tidak lengkap' }, 400);
@@ -278,7 +314,8 @@ saasRouter.post('/register', async (c) => {
     const hashedPassword = bcrypt.hashSync(admin_password, 10);
     try {
       await supabase.from('admin_users').insert({
-        username: admin_username,
+        username: admin_email || email,
+        email: admin_email || email,
         password_hash: hashedPassword,
         nama_lengkap: admin_name || admin_username,
         role: 'superadmin',
@@ -287,10 +324,10 @@ saasRouter.post('/register', async (c) => {
     } catch (adminErr: any) {
       try {
         await pool.query(
-          `INSERT INTO admin_users (username, password_hash, nama_lengkap, role, school_id)
-           VALUES ($1, $2, $3, 'superadmin', $4::uuid)
+          `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, school_id)
+           VALUES ($1, $2, $3, $4, 'superadmin', $5::uuid)
            ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
-          [admin_username, hashedPassword, admin_name || admin_username, generatedSchoolUUID]
+          [admin_email || email, admin_email || email, hashedPassword, admin_name || admin_username, generatedSchoolUUID]
         );
       } catch (e) {}
     }

@@ -176,7 +176,7 @@ export default function AdminLogin() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2 text-left">
               <label htmlFor="username" className="text-sm font-medium text-slate-700 block">
-                Username
+                Alamat Gmail (atau Username)
               </label>
               <div className="relative">
                 <input
@@ -184,7 +184,7 @@ export default function AdminLogin() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Masukkan username"
+                  placeholder="admin@gmail.com"
                   className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
               </div>
@@ -234,11 +234,11 @@ export default function AdminLogin() {
 
           <div className="pt-6 mt-8 border-t border-slate-200 text-center">
             <p className="text-sm text-slate-500">
-              Lupa password atau kendala akses?
+              Lupa password akun admin?
             </p>
-            <p className="text-sm text-blue-600 font-semibold mt-1 cursor-pointer hover:underline">
-              Hubungi Superadmin Sekolah
-            </p>
+            <Link href={`/${params.school_slug}/auth/forgot-password`} className="inline-block text-sm text-blue-600 font-semibold mt-1 cursor-pointer hover:underline transition-all">
+              Reset Password Disini
+            </Link>
           </div>
 
         </div>

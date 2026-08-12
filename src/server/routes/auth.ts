@@ -132,7 +132,7 @@ authRouter.post('/login', rateLimiter({
     }
 
     if (!adminUser) {
-      let query = supabase.from('admin_users').select('*').eq('username', username);
+      let query = supabase.from('admin_users').select('*').or(`username.eq.${username},email.eq.${username}`);
       if (schoolId) query = query.eq('school_id', schoolId);
       const { data } = await query.maybeSingle();
       adminUser = data;

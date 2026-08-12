@@ -185,7 +185,7 @@ export default function AppearanceSettingsPage() {
                       onChange={(e) => setThemeColor(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 transition-all uppercase focus:outline-none"
                       maxLength={7}
-                      style={{ focusRingColor: themeColor }}
+                      style={{ "--tw-ring-color": themeColor } as React.CSSProperties}
                     />
                   </div>
                 </div>

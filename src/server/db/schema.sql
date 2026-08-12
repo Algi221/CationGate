@@ -55,6 +55,7 @@
             id SERIAL PRIMARY KEY,
             school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE,
             username VARCHAR(50) UNIQUE NOT NULL,
+            email VARCHAR(100) UNIQUE,
             password_hash VARCHAR(255) NOT NULL,
             nama_lengkap VARCHAR(100) NOT NULL,
             role VARCHAR(20) DEFAULT 'superadmin', -- 'superadmin' (Superadmin Sekolah), 'admin' (Admin Sekolah Staff)

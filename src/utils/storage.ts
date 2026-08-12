@@ -1,0 +1,64 @@
+/**
+ * Utility for handling direct-to-S3 file uploads using Pre-signed URLs.
+ * This bypasses the Node.js server RAM entirely for the file blob.
+ */
+
+export async function uploadFileDirect(file: File, prefix: string = 'media'): Promise<string> {
+  try {
+    // 1. Request a pre-signed URL from our secure backend
+    const response = await fetch('/api/storage/presigned-url', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fileName: `${prefix}_${file.name}`,
+        contentType: file.type,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to get pre-signed URL');
+    }
+
+    const { signedUrl, publicUrl } = await response.json();
+
+    // 2. Upload the raw File directly to Supabase Storage via PUT
+    const uploadResponse = await fetch(signedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type,
+      },
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error('Failed to upload file to S3 storage');
+    }
+
+    // 3. Return the final public URL
+    return publicUrl;
+  } catch (error) {
+    console.error('Direct S3 upload error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Helper to convert Base64 Data URI to a File object
+ */
+export function base64ToFile(base64Str: string, fileName: string): File {
+  const matches = base64Str.match(/^data:([A-Za-z0-9-+\/.]+);base64,(.+)$/);
+  if (!matches || matches.length !== 3) {
+    throw new Error('Invalid base64 string');
+  }
+  const contentType = matches[1];
+  const byteString = atob(matches[2]);
+  const arrayBuffer = new ArrayBuffer(byteString.length);
+  const uint8Array = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < byteString.length; i++) {
+    uint8Array[i] = byteString.charCodeAt(i);
+  }
+  return new File([arrayBuffer], fileName, { type: contentType });
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
 
 interface Toast {
   id: string;
@@ -751,15 +752,45 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
   }, [addWsLog]);
 
   useEffect(() => {
-    // Real-time background sync interval (every 15s)
-    const interval = setInterval(() => {
-      fetchPublicApplicants();
-      if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) {
-        fetchAdminApplicants();
-      }
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [fetchPublicApplicants, fetchAdminApplicants, adminToken, adminUser]);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (supabaseUrl && supabaseKey && schoolId) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      
+      const channel = supabase
+        .channel(`public:applicants:school_id=eq.${schoolId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'applicants', filter: `school_id=eq.${schoolId}` },
+          (payload) => {
+            console.log('Real-Time Supabase Change Received (Applicants):', payload);
+            fetchPublicApplicants();
+            if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) {
+              fetchAdminApplicants();
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+             setWsStatus("CONNECTED");
+          }
+        });
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      // Fallback to HTTP Polling if Supabase config is missing
+      const interval = setInterval(() => {
+        fetchPublicApplicants();
+        if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) {
+          fetchAdminApplicants();
+        }
+      }, 15000);
+      return () => clearInterval(interval);
+    }
+  }, [fetchPublicApplicants, fetchAdminApplicants, adminToken, adminUser, schoolId]);
 
   useEffect(() => {
     connectWsRef.current = connectWs;

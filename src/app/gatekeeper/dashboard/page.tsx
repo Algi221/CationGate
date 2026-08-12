@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import {
   Building2, ShieldCheck, CheckCircle2, Clock, Sparkles, RefreshCw,
   TrendingUp, ArrowUpRight, AlertCircle, Bell, ExternalLink, PieChart,
@@ -65,6 +66,29 @@ export default function GatekeeperOverviewPage() {
 
   useEffect(() => {
     fetchSchools();
+    
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      
+      const channel = supabase
+        .channel('public:schools')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'schools' },
+          (payload) => {
+            console.log('Real-Time Supabase Change Received (Schools):', payload);
+            fetchSchools();
+          }
+        )
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, []);
 
   // Compute Live Metrics

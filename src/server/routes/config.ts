@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { configSaveSchema, singleConfigSchema } from '../validations/config';
+import { getCached, setCached, delCached } from '../db/redis';
 
 const configRouter = new Hono();
 
@@ -97,6 +98,17 @@ configRouter.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
+    const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
+    
+    // 1. Try to get from Redis Cache first
+    const cachedData = await getCached<Record<string, any>>(cacheKey);
+    if (cachedData) {
+      return c.json({
+        success: true,
+        data: cachedData,
+        source: 'cache'
+      });
+    }
 
     let query = supabase.from('landing_page_config').select('*');
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -115,9 +127,13 @@ configRouter.get('/', async (c) => {
       configMap[row.config_key] = row.config_value;
     });
 
+    // 3. Save to Redis Cache (expire in 1 hour)
+    await setCached(cacheKey, configMap, 3600);
+
     return c.json({
       success: true,
-      data: configMap
+      data: configMap,
+      source: 'db'
     });
   } catch (err: any) {
     console.warn('Fetch config DB exception (using default config):', err.message);
@@ -163,6 +179,10 @@ configRouter.post('/', adminAuth, async (c) => {
       .upsert(payload, { onConflict: 'config_key' });
       
     if (error) throw error;
+
+    // Invalidate Redis cache
+    const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
+    await delCached(cacheKey);
 
     return c.json({
       success: true,
@@ -257,6 +277,10 @@ configRouter.post('/save-all', adminAuth, async (c) => {
 
     const { error: revError } = await supabase.from('ui_revisions').insert(revPayload);
     if (revError) throw revError;
+
+    // Invalidate Redis cache
+    const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
+    await delCached(cacheKey);
 
     console.log('[SUCCESS] Configurations successfully saved to PostgreSQL database.');
     return c.json({

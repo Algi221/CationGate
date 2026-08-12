@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
+import { AnimatePresence, motion } from "framer-motion";
 import { 
   CheckCircle2, 
   ArrowRight, 
@@ -16,11 +17,15 @@ import {
   User, 
   Sparkles, 
   Lock,
-  Globe
+  Globe,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordStrength } from "@/components/ui/password-strength";
+import { OTPVerification } from "@/components/ui/otp-input";
 
 type PlanType = 'trial' | 'yearly';
 
@@ -28,13 +33,94 @@ export default function DaftarSaaS() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     school_name: '', slug: '', email: '', phone: '', address: '',
-    admin_name: '', admin_username: '', admin_password: ''
+    admin_name: '', admin_password: ''
   });
   
   const [plan, setPlan] = useState<PlanType>('trial');
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Plan, 2: Instansi, 3: Admin, 4: Success
   const [errorMsg, setErrorMsg] = useState('');
+
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailErrorState, setEmailErrorState] = useState('');
+  const [emailSuccessState, setEmailSuccessState] = useState(false);
+  
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
+
+  const handleSendOTP = async () => {
+    if (!formData.email) {
+      setErrorMsg("Harap isi Email Resmi instansi terlebih dahulu.");
+      return;
+    }
+    setOtpLoading(true);
+    setErrorMsg("");
+    try {
+      const res = await fetch('/api/mailer/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, type: 'registration' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpSent(true);
+        setCooldown(60);
+      } else {
+        setErrorMsg(data.message || "Gagal mengirim OTP.");
+      }
+    } catch (err) {
+      setErrorMsg("Terjadi kesalahan sistem saat mengirim OTP.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOTPAsync = async (code: string) => {
+    try {
+      const res = await fetch('/api/mailer/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, otp: code })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpVerified(true);
+        setErrorMsg("");
+        return true;
+      } else {
+        setErrorMsg(data.message || "Kode OTP salah atau kedaluwarsa.");
+        return false;
+      }
+    } catch (err) {
+      setErrorMsg("Terjadi kesalahan sistem saat verifikasi OTP.");
+      return false;
+    }
+  };
+
+  const handleResendAsync = async () => {
+    try {
+      const res = await fetch('/api/mailer/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, type: 'registration' })
+      });
+      const data = await res.json();
+      return data.success;
+    } catch (e) {
+      return false;
+    }
+  };
 
   // Auto-generate slug from school name
   useEffect(() => {
@@ -54,10 +140,18 @@ export default function DaftarSaaS() {
       }
     }
     if (step === 2) {
-      if (!formData.admin_name || !formData.admin_username || !formData.admin_password) {
+      if (!formData.admin_name || !formData.admin_password) {
         setErrorMsg("Harap lengkapi data administrator");
         return;
       }
+    }
+    if (emailChecking) {
+      setErrorMsg("Mohon tunggu, sedang memverifikasi ketersediaan email...");
+      return;
+    }
+    if (emailErrorState) {
+      setErrorMsg("Email sudah terdaftar, silakan gunakan email lain.");
+      return;
     }
     setErrorMsg("");
     setStep(prev => prev + 1);
@@ -77,8 +171,52 @@ export default function DaftarSaaS() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmailCheck = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const email = e.target.value;
+    if (!email) {
+      setEmailErrorState('');
+      setEmailSuccessState(false);
+      return;
+    }
+
+    // Format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailErrorState('Format email tidak valid (harus mengandung @ dan domain).');
+      setEmailSuccessState(false);
+      return;
+    }
+    
+    setEmailChecking(true);
+    setEmailErrorState('');
+    setEmailSuccessState(false);
+    
+    try {
+      // Fake delay to make it feel like real checking
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const res = await fetch('/api/saas/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!data.available) {
+        setEmailErrorState('Email sudah terdaftar di sistem.');
+        setEmailSuccessState(false);
+      } else {
+        setEmailErrorState('');
+        setEmailSuccessState(true);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setEmailChecking(false);
+    }
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     
     setLoading(true);
     setErrorMsg('');
@@ -87,7 +225,7 @@ export default function DaftarSaaS() {
       const res = await fetch('/api/saas/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, plan_type: 'trial' })
+        body: JSON.stringify({ ...formData, admin_username: formData.email, admin_email: formData.email, plan_type: 'trial' })
       });
       const data = await res.json();
       
@@ -264,7 +402,7 @@ export default function DaftarSaaS() {
                       <Label htmlFor="slug" className="text-slate-700 text-sm font-semibold">Subdomain Portal Sekolah</Label>
                       <div className="flex items-center shadow-sm rounded-xl">
                         <div className="h-12 flex items-center px-4 border border-r-0 border-slate-200 bg-slate-100 text-slate-500 text-sm rounded-l-xl font-mono shrink-0">
-                          cationgate.com/
+                          cationgate.site/
                         </div>
                         <Input 
                           id="slug"
@@ -284,10 +422,24 @@ export default function DaftarSaaS() {
                           id="email" type="email"
                           required
                           value={formData.email} 
-                          onChange={e => setFormData({...formData, email: e.target.value})} 
+                          onBlur={handleEmailCheck}
+                          onChange={e => {
+                            setFormData({...formData, email: e.target.value});
+                            if (emailErrorState) setEmailErrorState('');
+                            if (emailSuccessState) setEmailSuccessState(false);
+                          }} 
                           placeholder="info@sman1jakarta.sch.id" 
-                          className="h-12 rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-slate-900 placeholder:text-slate-400 text-sm shadow-sm"
+                          className={`h-12 rounded-xl transition-all text-sm shadow-sm ${
+                            emailErrorState 
+                              ? 'border-red-500 bg-red-50 text-red-900 focus:border-red-500 focus:ring-red-500/20' 
+                              : emailSuccessState
+                                ? 'border-emerald-500 bg-emerald-50 text-emerald-900 focus:border-emerald-500 focus:ring-emerald-500/20'
+                                : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 text-slate-900 placeholder:text-slate-400'
+                          }`}
                         />
+                        {emailChecking && <p className="text-xs text-slate-500 mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Memeriksa ketersediaan email...</p>}
+                        {emailErrorState && <p className="text-xs text-red-600 mt-1 font-medium flex items-center gap-1"><Info className="w-3.5 h-3.5" /> {emailErrorState}</p>}
+                        {emailSuccessState && <p className="text-xs text-emerald-600 mt-1 font-medium flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Email tersedia dan valid.</p>}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone" className="text-slate-700 text-sm font-semibold">No. Telepon / WA</Label>
@@ -325,7 +477,6 @@ export default function DaftarSaaS() {
                 {/* Step 2: Admin Account */}
                 {step === 2 && (
                   <div className="space-y-5">
-
                     <div className="space-y-2">
                       <Label htmlFor="admin_name" className="text-slate-700 text-sm font-semibold">Nama Lengkap Admin PPDB</Label>
                       <Input 
@@ -338,28 +489,29 @@ export default function DaftarSaaS() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="admin_username" className="text-slate-700 text-sm font-semibold">Username Admin</Label>
-                        <Input 
-                          id="admin_username"
-                          required
-                          value={formData.admin_username} 
-                          onChange={e => setFormData({...formData, admin_username: e.target.value})} 
-                          placeholder="admin_ppdb" 
-                          className="h-12 rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-slate-900 placeholder:text-slate-400 text-sm shadow-sm"
-                        />
-                      </div>
+                    <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="admin_password" className="text-slate-700 text-sm font-semibold">Password Access</Label>
-                        <Input 
-                          id="admin_password" type="password"
-                          required
-                          value={formData.admin_password} 
-                          onChange={e => setFormData({...formData, admin_password: e.target.value})} 
-                          placeholder="••••••••" 
-                          className="h-12 rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-slate-900 placeholder:text-slate-400 text-sm shadow-sm"
-                        />
+                        <div className="relative">
+                          <Input 
+                            id="admin_password" type={showPassword ? "text" : "password"}
+                            required
+                            value={formData.admin_password} 
+                            onChange={e => setFormData({...formData, admin_password: e.target.value})} 
+                            placeholder="••••••••" 
+                            className="h-12 w-full rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-slate-900 placeholder:text-slate-400 text-sm shadow-sm pr-12"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                          >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                        <div className="pt-2">
+                          <PasswordStrength value={formData.admin_password} />
+                        </div>
                       </div>
                     </div>
 
@@ -375,7 +527,7 @@ export default function DaftarSaaS() {
                 )}
 
                 {/* Step 3: Confirmation */}
-                {step === 3 && (
+                {step >= 3 && (
                   <div className="space-y-6">
                     
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -399,9 +551,9 @@ export default function DaftarSaaS() {
                           
                           <div>
                             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Subdomain</p>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <Globe className="w-3.5 h-3.5 text-slate-400" />
-                              <p className="text-sm font-medium text-slate-900">cationgate.com/<span className="text-blue-600 font-bold">{formData.slug || "-"}</span></p>
+                            <div className="flex items-start gap-1.5 mt-0.5">
+                              <Globe className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
+                              <p className="text-sm font-medium text-slate-900 break-all leading-tight">cationgate.site/<span className="text-blue-600 font-bold">{formData.slug || "-"}</span></p>
                             </div>
                           </div>
                         </div>
@@ -420,7 +572,7 @@ export default function DaftarSaaS() {
                               <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
                                 <User className="w-3 h-3 text-slate-500" />
                               </div>
-                              <p className="text-sm font-medium text-slate-900">{formData.admin_name || "-"} <span className="text-slate-400 font-normal">(@{formData.admin_username || "-"})</span></p>
+                              <p className="text-sm font-medium text-slate-900">{formData.admin_name || "-"}</p>
                             </div>
                           </div>
                         </div>
@@ -431,17 +583,65 @@ export default function DaftarSaaS() {
                       <Button type="button" variant="outline" className="w-1/3 h-12 rounded-xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all shadow-sm" onClick={() => setStep(2)} disabled={loading}>
                         Ubah Data
                       </Button>
-                      <Button type="submit" className="flex-1 h-12 rounded-xl bg-slate-900 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 text-white font-bold text-sm transition-all flex items-center justify-center" disabled={loading}>
-                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Selesaikan Pendaftaran"}
+                      <Button type="button" onClick={() => {
+                        handleSendOTP();
+                        setStep(4);
+                      }} className="flex-1 h-12 rounded-xl bg-slate-900 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 text-white font-bold text-sm transition-all flex items-center justify-center" disabled={loading}>
+                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Kirim Kode OTP"}
                       </Button>
                     </div>
                   </div>
                 )}
 
+                {/* Step 4: OTP Verification Modal */}
+                <AnimatePresence>
+                  {step === 4 && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                    >
+                      <motion.div
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        className="relative w-full max-w-md"
+                      >
+                        {/* Close / Back button */}
+                        <button
+                          type="button"
+                          onClick={() => setStep(3)}
+                          className="absolute -top-12 right-0 sm:-right-12 sm:top-0 w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-colors border border-white/20 backdrop-blur-md"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+
+                        <OTPVerification 
+                          email={formData.email}
+                          length={6}
+                          onVerify={async (code) => {
+                            const isValid = await handleVerifyOTPAsync(code);
+                            if (isValid) {
+                              // After OTP verified, wait a bit for success animation then submit
+                              setTimeout(() => {
+                                handleSubmit();
+                              }, 1200);
+                            }
+                            return isValid;
+                          }}
+                          onResend={handleResendAsync}
+                          className="mx-auto"
+                        />
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </form>
             </div>
           
-          {step <= 3 && (
+          {step <= 4 && (
             <p className="text-left text-[11px] text-slate-500 mt-8 leading-relaxed">
               Dengan mendaftar, Anda menyetujui <Link href="/terms" className="text-blue-600 font-semibold hover:underline">Syarat & Ketentuan</Link> serta <Link href="/privacy" className="text-blue-600 font-semibold hover:underline">Kebijakan Privasi</Link> CationGate.
             </p>

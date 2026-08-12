@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import Cropper from "react-easy-crop";
-import type { Area } from "react-easy-crop";
+import Cropper, { Area } from "react-easy-crop";
+
+import { uploadFileDirect, base64ToFile } from "@/utils/storage";
 import {
   Camera, User, Save, CheckCircle2,
   AlertCircle, Shield, Calendar, Trash2, ZoomIn, ZoomOut, RotateCw, Crop
@@ -65,7 +66,7 @@ export default function ProfilePage() {
 
   // ── Status ───────────────────────────────────────────────────────────────
   const [profileSaving, setProfileSaving] = useState(false);
-  const [profileMsg, setProfileMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [profileMsg, setProfileMsg] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -107,14 +108,20 @@ export default function ProfilePage() {
   const handleCropSave = async () => {
     if (!cropImageSrc || !croppedAreaPixels) return;
     try {
+      setProfileMsg({ type: "info", text: "Mengunggah foto profil ke cloud..." });
       const croppedBase64 = await getCroppedImg(cropImageSrc, croppedAreaPixels);
-      setPreviewPhoto(croppedBase64);
-      setFotoProfil(croppedBase64);
+      
+      const file = base64ToFile(croppedBase64, "profile_photo.jpg");
+      const publicUrl = await uploadFileDirect(file, `profile_${adminUser?.username || 'user'}`);
+      
+      setPreviewPhoto(publicUrl);
+      setFotoProfil(publicUrl);
       setCropModalOpen(false);
       setCropImageSrc(null);
+      setProfileMsg({ type: "success", text: "Foto profil siap disimpan!" });
     } catch (err) {
-      console.error("Crop failed", err);
-      setProfileMsg({ type: "error", text: "Gagal memotong foto." });
+      console.error("Crop/Upload failed", err);
+      setProfileMsg({ type: "error", text: "Gagal memotong atau mengunggah foto." });
     }
   };
 

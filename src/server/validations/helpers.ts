@@ -12,6 +12,9 @@ export const base64FileSchema = (maxSizeMb: number, allowedMimes: string[]) => {
     // If empty or not provided, let optional/default pass
     if (!val) return true;
     
+    // Accept standard URLs (from Supabase direct uploads)
+    if (val.startsWith('http')) return true;
+    
     // Check if it has a valid Data URI prefix
     if (!val.startsWith('data:')) return false;
     

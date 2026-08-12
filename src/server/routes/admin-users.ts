@@ -20,7 +20,10 @@ adminUsersRouter.get('/ysbmo/staff', async (c) => {
 adminUsersRouter.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let query = supabase.from('admin_users').select('id, username, nama_lengkap, role, created_at').is('deleted_at', null).order('id', { ascending: true });
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -38,7 +41,10 @@ adminUsersRouter.get('/', async (c) => {
 adminUsersRouter.get('/trashed', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let query = supabase.from('admin_users')
       .select('id, username, nama_lengkap, role, created_at, deleted_at')
@@ -60,7 +66,10 @@ adminUsersRouter.post('/:id/restore', async (c) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let checkQuery = supabase.from('admin_users').select('id').eq('id', id).not('deleted_at', 'is', null);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
@@ -98,7 +107,10 @@ adminUsersRouter.post('/', async (c) => {
     const { username, password, nama_lengkap, role } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let checkQuery = supabase.from('admin_users').select('id').eq('username', username);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
@@ -141,7 +153,10 @@ adminUsersRouter.put('/:id', async (c) => {
     const { username, password, nama_lengkap, role } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let checkQuery = supabase.from('admin_users').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
@@ -188,7 +203,10 @@ adminUsersRouter.delete('/:id', async (c) => {
     const id = parseInt(c.req.param('id') || '0');
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let checkQuery = supabase.from('admin_users').select('id').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);

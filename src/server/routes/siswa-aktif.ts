@@ -11,7 +11,10 @@ const siswaAktifRouter = new Hono();
 siswaAktifRouter.get('/', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     const siswaAktifFields = [
       "id", "calon_siswa_id", "nama", "nisn", "nik", "tempat_lahir", "tgl_lahir", "jenis_kelamin", "agama", "kewarganegaraan",
@@ -53,7 +56,10 @@ siswaAktifRouter.get('/:id', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let query = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -97,7 +103,10 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
     const validated = result.data as any;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
@@ -256,7 +265,10 @@ siswaAktifRouter.delete('/:id', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
@@ -311,7 +323,10 @@ siswaAktifRouter.post('/generate-nipd', adminAuth, async (c: Context) => {
     const startSequenceStr = body.startSequenceStr;
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let defaultPrefix = "2627";
     if (periode && typeof periode === "string") {
@@ -402,7 +417,10 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
 
     let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
@@ -426,7 +444,7 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     if (errSA) throw errSA;
 
     // 2. Insert MutasiHistory
-    const admin = c.get('admin') as any;
+    const admin = (c as any).get('admin') as any;
     const mutasiPayload: any = {
       siswa_aktif_id: id,
       jurusan_asal: jurusanAsal,

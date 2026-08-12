@@ -37,7 +37,9 @@ import {
   Clock,
   Radio,
   Search,
-  School
+  School,
+  Target,
+  ListChecks
 } from "lucide-react";
 
 import dynamic from "next/dynamic";
@@ -58,6 +60,17 @@ const ScrollFloat = dynamic(() => import("@/components/ScrollFloat"), {
 import dompurify from "dompurify";
 import { usePPDB } from "@/context/PPDBContext";
 import { useParams } from "next/navigation";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuPopup,
+  NavigationMenuPositioner,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu-1";
 import SchoolNotFound from "@/components/SchoolNotFound";
 
 const sanitizeUrl = (url: string | undefined | null): string | null => {
@@ -77,10 +90,12 @@ const sanitizeSrc = (src: string | undefined | null): string | null => {
   return url;
 };
 
-const SafeImage = ({ src, alt, width, height, className, onError, ...props }: any) => {
+const SafeImage = ({ src, alt, width, height, className, onError, fill, priority, sizes, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
   const isDataUrl = src && src.startsWith("data:");
   
+  const finalSizes = fill && !sizes ? "(max-width: 768px) 48px, 64px" : sizes;
+
   if (isDataUrl || useFallbackImg || !src) {
     return (
       <img 
@@ -101,6 +116,9 @@ const SafeImage = ({ src, alt, width, height, className, onError, ...props }: an
       alt={alt} 
       width={width} 
       height={height} 
+      fill={fill}
+      priority={priority}
+      sizes={finalSizes}
       className={className} 
       onError={(e) => {
         setUseFallbackImg(true);
@@ -470,24 +488,106 @@ export default function Home() {
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
 
       {/* FLOATING NAVBAR */}
-      <div className="navbar-wrapper">
-        <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
-          <div className="nav-left">
-            <Link href="/" className="logo-container">
-              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={36} height={36} className="w-9 h-9 object-contain" />
-              <span className="logo-text font-extrabold">{ppdbTitle}</span>
+      <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center shrink-0 min-w-0">
+            <Link href="/" className="flex items-center gap-3 overflow-visible group min-w-0">
+              <div className="relative h-10 w-10 shrink-0 overflow-visible">
+                <SafeImage src={ppdbLogo} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
+              </div>
+              <span className="text-xl font-extrabold text-slate-900 dark:text-white truncate max-w-[180px] sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                {ppdbTitle}
+              </span>
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
-            <a href="#alur" className="btn-nav-link">Alur Pendaftaran</a>
-            <a href="#majors" className="btn-nav-link">Jurusan</a>
-            <a href="#kemitraan" className="btn-nav-link">Mitra Industri</a>
-              <a href="#faq" className="btn-nav-link">FAQ</a>
-            <Link href="/forum" className="btn-nav-link">Forum Informasi</Link>
+          <div className="hidden lg:flex items-center gap-1 shrink-0 z-50">
+            <NavigationMenu>
+              <NavigationMenuList>
+                {/* Beranda */}
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    render={<Link href={`/${schoolSlug}`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                  >
+                    Beranda
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                {/* Profil Sekolah Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                    Profil Sekolah
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="w-[180px] p-2 flex flex-col gap-1">
+                      {[
+                        { title: "Sejarah", href: `/${schoolSlug}/profil?section=sejarah` },
+                        { title: "Identitas Sekolah", href: `/${schoolSlug}/profil?section=identitas` },
+                        { title: "Visi & Misi", href: `/${schoolSlug}/profil?section=visimisi` },
+                        { title: "Tujuan", href: `/${schoolSlug}/profil?section=tujuan` }
+                      ].map((sub) => (
+                        <li key={sub.title}>
+                          <NavigationMenuLink
+                            render={<Link href={sub.href} className="block px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800 rounded-md transition-colors" />}
+                          >
+                            {sub.title}
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Jurusan Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                    Jurusan
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] md:w-[500px] lg:w-[600px] grid-cols-2 gap-2 p-4">
+                      {majors.map((major, idx) => (
+                        <li key={idx}>
+                          <NavigationMenuLink
+                            render={<Link href={`/${schoolSlug}/jurusan/${major.code.toLowerCase()}`} className="flex flex-col gap-1 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group/sub" />}
+                          >
+                            <div className="text-sm font-bold text-slate-900 dark:text-white transition-colors truncate">
+                              {major.title || major.code}
+                            </div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight line-clamp-2">
+                              {major.desc || "Program keahlian unggulan"}
+                            </div>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Forum & Blog */}
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    render={<Link href={`/${schoolSlug}/forum`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                  >
+                    Forum Informasi
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    render={<Link href={`/${schoolSlug}/blog`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                  >
+                    Blog
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+
+              <NavigationMenuPositioner>
+                <NavigationMenuPopup />
+              </NavigationMenuPositioner>
+            </NavigationMenu>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={toggleDark}
               className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
@@ -495,7 +595,7 @@ export default function Home() {
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <Link href="/daftar" className="btn-primary-pill !hidden md:!inline-flex">
+            <Link href="/daftar" className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
               Daftar
             </Link>
 
@@ -509,7 +609,7 @@ export default function Home() {
             </button>
           </div>
         </nav>
-      </div>
+      </header>
 
       {/* Fullscreen Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
@@ -589,10 +689,10 @@ export default function Home() {
       )}
 
       {/* HERO SECTION WRAPPER */}
-      <main className="flex-grow w-full">
+      <main className="flex-grow w-full relative z-0">
         <div className="relative w-full overflow-hidden">
           {/* Media Background - Full Width */}
-          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+          <div className="absolute inset-0 -z-10 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
             {heroMediaType === "video" && heroMediaUrl ? (
               <video
                 src={sanitizeUrl(heroMediaUrl) || undefined}
@@ -600,7 +700,7 @@ export default function Home() {
                 muted
                 loop
                 playsInline
-                className="w-full h-full object-cover transition-opacity duration-1000"
+                className="object-cover w-full h-full opacity-[0.03] dark:opacity-[0.05] pointer-events-none filter blur-[8px] scale-[1.02]"
               />
             ) : heroMediaType === "image" && heroMediaUrl ? (
               <img
@@ -611,13 +711,16 @@ export default function Home() {
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
             )}
-            <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
+            <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm pointer-events-none"></div>
           </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[90vh] flex flex-col justify-center">
 
         {/* HERO SECTION */}
         <section className="hero">
 
           {/* Floating elements representing major names dynamically */}
+          <div className="badges-container">
           {majors.map((m, index) => {
             const isEven = index % 2 === 0;
             const sideIndex = Math.floor(index / 2);
@@ -668,9 +771,11 @@ export default function Home() {
             );
           })}
 
+          </div>
+
           {/* Hero Copy */}
           <div className="badge-wrapper relative z-10 flex flex-col items-center gap-3">
-            <span className="badge-pill">{ppdbTitle.toUpperCase()}</span>
+            <span className="badge-pill">SPMB {schoolDisplayName.toUpperCase()}</span>
             <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-800/60 px-4 py-2 rounded-full backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
                <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
                <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>
@@ -723,7 +828,8 @@ export default function Home() {
           </div>
 
         </section>
-      </div>
+          </div>
+        </div>
       {/* JADWAL GELOMBANG PENDAFTARAN */}
       <section id="gelombang" className="py-20 max-w-6xl mx-auto px-6 relative z-10">
         <div className="text-center mb-12">
@@ -1278,7 +1384,7 @@ export default function Home() {
             </a>
           </div>
         </section>
-        </main>
+      </main>
 
       {/* FOOTER */}
       <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">

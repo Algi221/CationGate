@@ -267,6 +267,10 @@ export default function DataPendaftarTable() {
     );
   }
 
+  const uniqueMajors = Array.from(
+    new Set(publicApplicants.map((item: any) => item.jurusan_1 || item.jurusan1).filter(Boolean))
+  ).sort();
+
   const filteredData = activeRows.filter(item => {
     const matchName = 
       (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -321,12 +325,9 @@ export default function DataPendaftarTable() {
             className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-800 dark:text-white transition-all"
           >
             <option value="Semua">Semua Jurusan</option>
-            <option value="Rekayasa Perangkat Lunak">RPL</option>
-            <option value="Teknik Jaringan Komputer & Telekomunikasi">TJKT</option>
-            <option value="Desain Komunikasi Visual">DKV</option>
-            <option value="Broadcasting & Perfilman">BC</option>
-            <option value="Animasi">Animasi</option>
-            <option value="Teknik Elektronika">TE</option>
+            {uniqueMajors.map((major: any) => (
+              <option key={major} value={major}>{major}</option>
+            ))}
           </select>
         </div>
       </div>

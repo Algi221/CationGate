@@ -200,11 +200,11 @@ export default function ProfilePage() {
 
             {/* Avatar */}
             <div className="relative group">
-              <div className="w-28 h-28 rounded-3xl overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <div className="w-28 h-28 rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm">
                 {previewPhoto ? (
                   <img src={previewPhoto} alt="Foto Profil" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl font-black text-white">{userInitial}</span>
+                  <User size={48} className="text-slate-400 dark:text-slate-500" />
                 )}
               </div>
 
@@ -231,7 +231,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/40 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-950/60 transition-all flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5"
               >
                 <Camera size={12} />
                 Ganti Foto
@@ -350,7 +350,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={profileSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all"
+                  className="flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-slate-900 rounded-2xl text-xs font-black uppercase tracking-wider shadow-sm transition-all"
                 >
                   {profileSaving ? (
                     <>
@@ -459,7 +459,7 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={handleCropSave}
-                className="px-5 py-2.5 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 transition-all flex items-center gap-2"
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
               >
                 <Crop size={14} />
                 Terapkan

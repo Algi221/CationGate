@@ -215,6 +215,7 @@ export default function DataPendaftarTable() {
     );
   }
 
+  const uniqueMajors = Array.from(new Set(displayApplicants.map((item: any) => item.jurusan_1 || item.jurusan1).filter(Boolean)));
   const filteredData = displayApplicants.filter(item => {
     const matchName = 
       (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || 

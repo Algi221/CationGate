@@ -176,7 +176,7 @@ export default function AdminLogin() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2 text-left">
               <label htmlFor="username" className="text-sm font-medium text-slate-700 dark:text-slate-200 block">
-                Username
+                Email
               </label>
               <div className="relative">
                 <input
@@ -184,7 +184,7 @@ export default function AdminLogin() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Masukkan username"
+                  placeholder="Masukkan email"
                   className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
               </div>

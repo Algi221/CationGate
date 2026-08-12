@@ -5,9 +5,20 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "drop" | "exit">("start");
-  const [isMounted, setIsMounted] = useState(true);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasSeen = sessionStorage.getItem("cationgate_has_seen_loading");
+    if (hasSeen) {
+      setIsMounted(false);
+      return;
+    }
+
+    setIsMounted(true);
+    sessionStorage.setItem("cationgate_has_seen_loading", "true");
+
     // 1. Langsung mulai turun ke bawah tanpa jeda
     const t1 = setTimeout(() => setPhase("drop"), 100);
 

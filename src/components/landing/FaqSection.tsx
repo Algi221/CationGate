@@ -7,23 +7,22 @@ import { Button } from "@/components/ui/button";
 export function FaqSection() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
-  // Ed-Tech SaaS FAQs specified in PRD
   const faqs = [
     {
-      q: "How does CationGate ensure data privacy & regulatory security?",
-      a: "CationGate employs end-to-end AES-256 encryption at rest and in transit. Our infrastructure complies fully with ISO 27001 data protection standards and Kemendikbudristek Dapodik security guidelines.",
+      q: "Bagaimana CationGate menjamin keamanan data & privasi sekolah?",
+      a: "CationGate menerapkan enkripsi AES-256 tingkat tinggi untuk seluruh data pendaftaran dan akademik. Infrastruktur cloud kami mematuhi standar ISO 27001 dan panduan keamanan data Kemendikbudristek Dapodik.",
     },
     {
-      q: "How accurate is the AI-Powered Lesson & Assessment Generation?",
-      a: "Our AI model is fine-tuned specifically on accredited national K-12 and higher-ed curricula. Every generated lesson plan and quiz undergoes automated validation checks against grade-level learning benchmarks.",
+      q: "Bagaimana alur pendaftaran murid baru (PPDB) bekerja di platform ini?",
+      a: "Calon siswa dapat mendaftar secara mandiri lewat formulir online yang responsif, mengunggah berkas, hingga mengikuti ujian seleksi CBT. Panitia sekolah dapat memverifikasi berkas dan mengumumkan kelulusan secara otomatis.",
     },
     {
-      q: "Can CationGate export student records directly to Dapodik?",
-      a: "Absolutely. CationGate provides one-click export formatted specifically for official Dapodik Excel/CSV upload requirements, eliminating duplicate manual data entry.",
+      q: "Apakah data pendaftar dapat diekspor langsung ke Dapodik?",
+      a: "Ya, CationGate menyediakan fitur ekspor data satu klik yang disesuaikan secara khusus dengan format upload resmi Dapodik (Excel/CSV), menghilangkan kebutuhan input ulang secara manual.",
     },
     {
-      q: "What hardware is required for teachers and students?",
-      a: "CationGate is 100% cloud-based and responsive. It operates smoothly on any modern browser across laptops, Chromebooks, tablets, or mobile devices with low-bandwidth optimization.",
+      q: "Perangkat apa saja yang dibutuhkan oleh guru dan siswa?",
+      a: "CationGate berbasis cloud 100% dan sepenuhnya responsif. Dapat diakses dengan lancar di komputer, laptop, tablet, maupun smartphone tanpa perlu menginstal aplikasi berat.",
     },
   ];
 
@@ -33,25 +32,21 @@ export function FaqSection() {
       className="py-20 bg-background border-b border-border relative"
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="text-center max-w-xl mx-auto mb-12 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#8EC9F6]/20 text-[#2A1B1D] text-xs font-bold border border-border">
             <HelpCircle className="w-3.5 h-3.5 text-[#2A1B1D]" />
-            Ed-Tech Platform FAQ
+            Pertanyaan Umum (FAQ)
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
-            Frequently Asked Questions
+            Pertanyaan Yang Sering Diajukan
           </h2>
 
           <p className="text-body text-base font-medium">
-            Everything you need to know about implementing CationGate in your
-            school.
+            Segala hal yang perlu Anda ketahui tentang implementasi CationGate di sekolah Anda.
           </p>
         </div>
 
-        {/* FAQ Accordion List */}
-        <div></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 items-start">
           {faqs.map((faq, idx) => {
             const isOpen = openIdx === idx;
@@ -82,7 +77,6 @@ export function FaqSection() {
           })}
         </div>
 
-        {/* WhatsApp / Direct Contact Support Box */}
         <div className="p-6 rounded-2xl bg-surface border border-border shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-2xs">
@@ -90,25 +84,17 @@ export function FaqSection() {
             </div>
             <div>
               <div className="font-extrabold text-sm text-heading">
-                Have Additional Technical Questions?
+                Punya Pertanyaan Teknis Lainnya?
               </div>
               <div className="text-xs text-body font-medium">
-                Our Ed-Tech engineering team is available for 1-on-1
-                consultations.
+                Tim teknis CationGate siap membantu konsultasi 1-on-1 kapan saja.
               </div>
             </div>
           </div>
 
-          <a
-            href="https://wa.me/6281292244456?text=Hello%20CationGate%20Team,%20I%20have%20technical%20questions%20about%20the%20Ed-Tech%20SaaS"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button
-              size="sm"
-              className="bg-primary hover:bg-[#F3C625] text-white font-bold rounded-xl text-xs px-5 shadow-2xs"
-            >
-              Speak With Engineering
+          <a href="/daftar">
+            <Button className="bg-[#2A1B1D] text-white hover:bg-[#58504E] font-bold text-xs px-5 py-2.5 rounded-xl shrink-0">
+              Hubungi Tim Teknis
             </Button>
           </a>
         </div>

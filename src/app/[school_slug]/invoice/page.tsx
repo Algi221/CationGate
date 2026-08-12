@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useParams } from "next/navigation";
 import { Printer, ArrowLeft, Phone } from "lucide-react";
 import Link from "next/link";
 import dompurify from "dompurify";
@@ -61,13 +61,16 @@ function InvoiceContent() {
     return `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
   };
 
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || '';
+
   const handleSendWhatsApp = () => {
     const url = getWaSendUrl();
     if (url) {
       window.open(url, '_blank');
       // Setelah membuka WA, kembalikan admin ke dashboard pendaftar
       setTimeout(() => {
-        window.location.href = "/dashboard/pendaftar";
+        window.location.href = schoolSlug ? `/${schoolSlug}/dashboard/pendaftar` : "/dashboard/pendaftar";
       }, 1000);
     }
   };

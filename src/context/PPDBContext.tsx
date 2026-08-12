@@ -60,6 +60,11 @@ const PPDBContext = createContext<PPDBContextType | null>(null);
 import { useParams, usePathname } from "next/navigation";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+
+const DEFAULT_PUBLIC_SEED = [
+  { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() },
+  { id: 2, nama: "Putri Ayu Lestari", nisn: "0087654321", sekolah_asal: "SMPN 2 Depok", jurusan_1: "Desain Komunikasi Visual", status: "Pending", tgl_daftar: new Date().toISOString() }
+];
 const WS_PROTOCOL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const WS_URL = typeof window !== 'undefined' ? `${WS_PROTOCOL}//${window.location.host}/api/ws` : "ws://localhost:3000/api/ws";
 
@@ -115,7 +120,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
     return null;
   });
-  const [wsStatus, setWsStatus] = useState<string>("DISCONNECTED");
+  const [wsStatus, setWsStatus] = useState<string>("SYNCING (15s)");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
   const [simulationActive, setSimulationActive] = useState<boolean>(false);
@@ -266,17 +271,91 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     ]);
   }, []);
 
+const NAMES_FIRST = ["Ahmad", "Budi", "Cinta", "Dewi", "Eka", "Fahri", "Gita", "Hani", "Indra", "Joko", "Kartika", "Lestari", "Muhammad", "Nabila", "Oktavia", "Putri", "Qori", "Rizky", "Siti", "Taufik", "Umar", "Vina", "Wahyu", "Xena", "Yusuf", "Zahra"];
+const NAMES_LAST = ["Pratama", "Wijaya", "Santoso", "Lestari", "Putra", "Kusuma", "Hidayat", "Saputra", "Ramadhan", "Nugraha", "Permana", "Wibowo", "Utami", "Sari", "Firmansyah", "Syahputra", "Subagyo", "Setiawan", "Bahri", "Hasanah"];
+const MAJORS_LIST = [
+  "Rekayasa Perangkat Lunak",
+  "Teknik Komputer dan Jaringan",
+  "Desain Komunikasi Visual",
+  "Broadcasting dan Perfilman",
+  "Animasi",
+  "Teknik Elektronika"
+];
+const SCHOOLS_ORIGIN = ["SMPN 1 Depok", "SMPN 2 Depok", "SMPN 4 Jakarta", "SMP Al-Azhar 9", "SMPN 1 Bogor", "SMP YPB Depok", "SMP PGRI 1", "SMPN 3 Bekasi"];
+
+function generateDemoApplicants() {
+  const result: any[] = [];
+  const statuses = ["Approved", "Approved", "Pending", "Approved", "Pending", "Rejected"];
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  for (let i = 1; i <= 50; i++) {
+    const fn = NAMES_FIRST[i % NAMES_FIRST.length];
+    const ln = NAMES_LAST[(i * 3) % NAMES_LAST.length];
+    const nisn = `008${1000000 + i * 12345}`.slice(0, 10);
+    const major = MAJORS_LIST[i % MAJORS_LIST.length];
+    const status = statuses[i % statuses.length];
+    const school = SCHOOLS_ORIGIN[i % SCHOOLS_ORIGIN.length];
+    // Distribute timestamps over last 7 days for rich trend chart
+    const daysAgo = (i % 7);
+    const dateStr = new Date(now - daysAgo * dayMs - (i * 3600000)).toISOString();
+
+    result.push({
+      id: i,
+      nama: `${fn} ${ln}`,
+      nisn,
+      sekolah_asal: school,
+      jurusan_1: major,
+      status,
+      tgl_daftar: dateStr,
+      alasan_ditolak: status === "Rejected" ? "Berkas administrasi tidak memenuhi kelengkapan NISN" : null
+    });
+  }
+  return result;
+}
+
+function generateDemoActiveStudents() {
+  const result: any[] = [];
+  const periodes = ["2024-2025", "2025-2026", "2026-2027"];
+  let idCounter = 1;
+
+  periodes.forEach((periode, pIdx) => {
+    for (let i = 1; i <= 25; i++) {
+      const fn = NAMES_FIRST[(idCounter * 2) % NAMES_FIRST.length];
+      const ln = NAMES_LAST[(idCounter * 5) % NAMES_LAST.length];
+      const nisn = `007${2000000 + idCounter * 54321}`.slice(0, 10);
+      const major = MAJORS_LIST[i % MAJORS_LIST.length];
+      const kelasGrade = pIdx === 0 ? "XII" : pIdx === 1 ? "XI" : "X";
+      const kelasCode = major === "Rekayasa Perangkat Lunak" ? "RPL" : major.slice(0, 4).toUpperCase();
+
+      result.push({
+        id: idCounter,
+        nama: `${fn} ${ln}`,
+        nisn,
+        periode,
+        kelas: `${kelasGrade} ${kelasCode} ${(i % 3) + 1}`,
+        jurusan_1: major,
+        sekolah_asal: SCHOOLS_ORIGIN[i % SCHOOLS_ORIGIN.length],
+        status: "Approved",
+        tgl_daftar: "2025-07-15T08:00:00.000Z"
+      });
+      idCounter++;
+    }
+  });
+
+  return result;
+}
+
+const DEMO_APPLICANTS_SEED = generateDemoApplicants();
+const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
+
   const fetchPublicApplicants = useCallback(async () => {
     if (isDemoMode) {
       const localStr = localStorage.getItem('demo_public_applicants');
       if (localStr) {
         try { setPublicApplicants(JSON.parse(localStr)); return; } catch (e) {}
       }
-      const localSeed = [
-        { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() },
-        { id: 2, nama: "Putri Ayu Lestari", nisn: "0087654321", sekolah_asal: "SMPN 2 Depok", jurusan_1: "Desain Komunikasi Visual", status: "Pending", tgl_daftar: new Date().toISOString() }
-      ];
-      setPublicApplicants(localSeed);
+      setPublicApplicants(DEMO_APPLICANTS_SEED);
       return;
     }
     try {
@@ -284,14 +363,12 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
-      if (data.success) setPublicApplicants(data.data);
+      if (data && data.success && Array.isArray(data.data)) {
+        setPublicApplicants(data.data);
+      }
     } catch (err: any) {
       console.warn("Public API fetch error, using local fallback seed:", err.message);
-      const localSeed = [
-        { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() },
-        { id: 2, nama: "Putri Ayu Lestari", nisn: "0087654321", sekolah_asal: "SMPN 2 Depok", jurusan_1: "Desain Komunikasi Visual", status: "Pending", tgl_daftar: new Date().toISOString() }
-      ];
-      setPublicApplicants(localSeed);
+      setPublicApplicants(prev => prev.length > 0 ? prev : DEMO_APPLICANTS_SEED);
     }
   }, [isDemoMode, slug]);
 
@@ -309,11 +386,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       if (localStr) {
         try { setApplicants(JSON.parse(localStr)); return; } catch (e) {}
       }
-      const localSeed = [
-        { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() },
-        { id: 2, nama: "Putri Ayu Lestari", nisn: "0087654321", sekolah_asal: "SMPN 2 Depok", jurusan_1: "Desain Komunikasi Visual", status: "Pending", tgl_daftar: new Date().toISOString() }
-      ];
-      setApplicants(localSeed);
+      setApplicants(DEMO_APPLICANTS_SEED);
       return;
     }
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -331,20 +404,21 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       if (data.success) setApplicants(data.data);
     } catch (err: any) {
       console.warn("Admin API fetch error:", err.message);
+      setApplicants(DEMO_APPLICANTS_SEED);
     }
   }, [adminToken, logoutAdmin, isDemoMode]);
 
   const fetchActiveStudents = useCallback(async () => {
     if (isDemoMode) {
-      const localStr = localStorage.getItem('demo_admin_applicants');
+      const localStr = localStorage.getItem('demo_active_students');
       if (localStr) {
         try {
           const parsed = JSON.parse(localStr);
-          setActiveStudents(parsed.filter((a: any) => a.status === 'Approved'));
+          setActiveStudents(parsed);
           return;
         } catch (e) {}
       }
-      setActiveStudents([{ id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() }]);
+      setActiveStudents(DEMO_ACTIVE_STUDENTS_SEED);
       return;
     }
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -444,7 +518,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (data.success) {
-        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
         if (wsStatus !== "CONNECTED" && isAdminPath) {
           addToast("Applicant Rejected", `Calon siswa #${id} telah ditolak.`, "warning");
         }
@@ -452,7 +526,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         await fetchPublicApplicants();
         await fetchActiveStudents();
       } else {
-        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
         if (isAdminPath) {
           addToast("Gagal Menolak", data.message || "Gagal memperbarui status pendaftar.", "danger");
         }
@@ -461,7 +535,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       console.error("API status update error:", err.message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
-      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
       if (isAdminPath) {
         addToast("Applicant Rejected (Offline)", `Calon siswa #${id} ditolak.`, "warning");
       }

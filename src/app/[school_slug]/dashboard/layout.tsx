@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import {
   Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
   Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard
+  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User
 } from "lucide-react";
 import SchoolNotFound from "@/components/SchoolNotFound";
 
@@ -38,10 +38,10 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
     breadcrumbs.push({ label, href });
   });
 
-  if (pathname === "/dashboard/admin" && activeTab === "trash")
-    breadcrumbs.push({ label: "Sampah", href: "/dashboard/admin?tab=trash" });
-  else if (pathname === "/dashboard/pendaftar" && activeTab === "trash")
-    breadcrumbs.push({ label: "Sampah", href: "/dashboard/pendaftar?tab=trash" });
+  if (pathname.includes("/dashboard/admin") && activeTab === "trash")
+    breadcrumbs.push({ label: "Sampah", href: `${paths[0] ? '/' + paths[0] : ''}/dashboard/admin?tab=trash` });
+  else if (pathname.includes("/dashboard/pendaftar") && activeTab === "trash")
+    breadcrumbs.push({ label: "Sampah", href: `${paths[0] ? '/' + paths[0] : ''}/dashboard/pendaftar?tab=trash` });
 
   return (
     <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wide select-none">
@@ -382,7 +382,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               isCollapsed ? "justify-center p-3" : "px-4 py-2.5"
             } ${
               isLocked
-                ? "opacity-50 border-transparent text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 cursor-not-allowed"
+                ? "opacity-50 text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 cursor-not-allowed"
                 : isActive && (!hasSub || isCollapsed)
                 ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold border-transparent"
                 : "border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
@@ -487,7 +487,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="h-screen bg-[#f7f7f7] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 flex font-sans overflow-hidden transition-colors duration-300">
+    <div data-dashboard className="h-screen bg-[#f7f7f7] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 flex font-sans overflow-hidden transition-colors duration-300">
 
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
@@ -598,15 +598,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
           >
-            {/* WS Status */}
-            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/5 text-xs font-bold transition-colors duration-300">
-              <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-ping" : wsStatus === "CONNECTING" ? "bg-amber-500 animate-pulse" : "bg-rose-500"}`} />
-              <span className={`w-2 h-2 rounded-full absolute ${wsStatus === "CONNECTED" ? "bg-emerald-500" : wsStatus === "CONNECTING" ? "bg-amber-500" : "bg-rose-500"}`} />
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider pl-1.5">
-                WS Live: {wsStatus === "CONNECTED" ? "Terkoneksi" : wsStatus === "CONNECTING" ? "Menghubungkan..." : "Terputus"}
-              </span>
-            </div>
-
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
@@ -615,8 +606,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-
-
 
             {/* ── User Avatar Dropdown ──────────────────────────────────── */}
             <div className="relative" ref={userDropdownRef}>
@@ -628,7 +617,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   {adminUser?.foto_profil ? (
                     <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
                   ) : (
-                    userInitial
+                    <User size={16} className="text-white" />
                   )}
                 </div>
                 <span className="hidden md:block text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
@@ -650,7 +639,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                         {adminUser?.foto_profil ? (
                           <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
                         ) : (
-                          userInitial
+                          <User size={18} className="text-white" />
                         )}
                       </div>
                       <div className="min-w-0">

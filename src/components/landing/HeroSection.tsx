@@ -1,113 +1,28 @@
-"use client";
+import { NumberTicker } from "../ui/number-ticker";
+import { Button } from "../ui/button";
+import { Radio, Play } from "lucide-react";
 
-import React from "react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+interface HeroSectionProps {
+  onOpenVideo?: () => void;
+}
 
-// Radix Icons untuk MagicUI Bento
-import {
-  StarIcon,
-  LockClosedIcon,
-  LightningBoltIcon,
-  MagicWandIcon,
-  PersonIcon,
-} from "@radix-ui/react-icons";
-
-import { BentoCard, BentoGrid } from "@/components/ui/bento-grid";
-
-// --- MAGIC UI FEATURES DATA ---
-const features = [
-  {
-    Icon: PersonIcon,
-    name: "500K+ Sekolah",
-    description: "Pilihan utama manajemen instansi pendidikan dengan sistem otomatis.",
-    href: "/",
-    cta: "Lihat Detail",
-    background: (
-      <img
-        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop"
-        className="absolute inset-0 h-full w-full object-cover opacity-20 transition-all duration-300 group-hover:scale-105 group-hover:opacity-30"
-        alt="Students dummy"
-      />
-    ),
-    className: "lg:col-start-1 lg:col-end-2 lg:row-start-1 lg:row-end-3",
-  },
-  {
-    Icon: StarIcon,
-    name: "95% Diskon",
-    description: "Diskon langganan khusus untuk pengguna baru.",
-    href: "/",
-    cta: "Klaim Promo",
-    background: (
-      <div className="absolute inset-0 bg-gradient-to-br from-[#8EC9F6]/30 to-transparent" />
-    ),
-    className: "lg:col-start-2 lg:col-end-3 lg:row-start-1 lg:row-end-2",
-  },
-  {
-    Icon: LockClosedIcon,
-    name: "CationGate Secure",
-    description: "Data dan dana dienkripsi aman. Terhubung langsung Dapodik.",
-    href: "/",
-    cta: "Pelajari Keamanan",
-    background: (
-      <img
-        src="https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=800&auto=format&fit=crop"
-        className="absolute -right-10 -top-10 h-[150%] w-[150%] object-cover opacity-10 transition-all duration-300 group-hover:opacity-20"
-        alt="Security dummy"
-      />
-    ),
-    className: "lg:col-start-3 lg:col-end-5 lg:row-start-1 lg:row-end-2",
-  },
-  {
-    Icon: MagicWandIcon,
-    name: "Fitur Pintar Web",
-    description: "Ubah data mentah jadi laporan berharga untuk kesehatan operasional dengan AI.",
-    href: "/",
-    cta: "Coba Fitur",
-    background: (
-      <img
-        src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop"
-        className="absolute -bottom-10 -right-10 h-full w-full object-cover opacity-15 transition-all duration-300 group-hover:scale-110"
-        alt="Dashboard dummy"
-      />
-    ),
-    className: "lg:col-start-2 lg:col-end-4 lg:row-start-2 lg:row-end-3",
-  },
-  {
-    Icon: LightningBoltIcon,
-    name: "Rp 45rb",
-    description: "Paket operasional termurah per bulan.",
-    href: "/",
-    cta: "Langganan",
-    background: (
-      <div className="absolute inset-0 bg-gradient-to-tr from-[#FFD33B]/20 to-[#FF9D67]/10" />
-    ),
-    className: "lg:col-start-4 lg:col-end-5 lg:row-start-2 lg:row-end-3",
-  },
-];
-
-// --- MAIN HERO COMPONENT ---
-export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
+export default function HeroSection({ onOpenVideo }: HeroSectionProps) {
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen overflow-hidden bg-[#FAF8F2] text-[#23191C] pb-32"
-    >
-      {/* Warm Glow Effect */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-[#FFD33B]/10 blur-[140px]" />
+    <main>
+      <div className="flex flex-col items-center justify-center min-h-screen py-20 bg-white">
+        <div className="w-full text-center px-4 mb-12 md:mb-16 mt-10">
+          <div className="relative inline-block text-center">
+            <div className="absolute -left-12 top-4 w-20 md:-left-20 md:w-16 hidden md:block">
+              <svg viewBox="0 0 100 30" fill="none" stroke="#FDE047" strokeWidth="6" strokeLinecap="round">
+                <path d="M5,15 Q15,0 25,15 T45,15 T65,15 T85,15" />
+              </svg>
+            </div>
 
-      {/* Main Content - Diperlebar menggunakan max-w-[1400px] */}
-      <div className="relative z-10 mx-auto flex max-w-[1400px] flex-col items-center px-5 pt-28 sm:px-6 lg:px-8">
-        
-        {/* ================= BAGIAN ATAS (TEKS & TOMBOL) ================= */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="flex w-full max-w-5xl flex-col items-center text-center"
-        >
+            <div className="absolute -right-8 -top-4 w-10 md:-right-16 md:w-12 hidden md:block">
+              <svg viewBox="0 0 50 60" fill="none" stroke="#111827" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10,10 L40,20 L10,30 L40,40 L10,50 L40,60" />
+              </svg>
+            </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-[#23191C] whitespace-nowrap">
             The intelligent platform for{" "}
@@ -145,23 +60,62 @@ export function HeroSection({ onOpenVideo }: { onOpenVideo?: () => void }) {
               Watch Demo
             </button>
           </div>
-        </motion.div>
+        </div>
 
-        {/* ================= BAGIAN BAWAH (MAGIC UI BENTO GRID) ================= */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
-          className="mt-16 w-full"
-        >
-          {/* Rahasianya di lg:auto-rows-[320px] dan gap-6 biar gede dan longgar */}
-          <BentoGrid className="w-full max-w-7xl justify-center h-160 lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-[320px] gap-4 sm:gap-6">
-            {features.map((feature) => (
-              <BentoCard key={feature.name} {...feature} />
-            ))}
-          </BentoGrid>
-        </motion.div>
+        <div className="w-full max-w-7xl px-4 md:px-8">
+          <div className="flex flex-col md:flex-row items-stretch w-full drop-shadow-xl">
+            <div className="relative w-full md:w-1/2 min-h-[20rem] md:min-h-[30rem] overflow-hidden rounded-t-[2.5rem] md:rounded-t-none md:rounded-tl-[3rem] md:rounded-bl-none md:rounded-br-[8rem] z-10">
+              <img
+                src="/assets/landing/imageDahboard.png"
+                alt="Tampilan Dashboard"
+                className="absolute inset-0 h-full w-full object-cover object-left transition-all duration-300 hover:scale-105"
+              />
+            </div>
+
+            <div className="relative flex w-full md:w-1/2 flex-col justify-center bg-[#8EC9F6] p-10 md:p-14 lg:p-20 text-left rounded-b-[2.5rem] md:rounded-b-none md:rounded-tl-none md:rounded-tr-[3rem] md:rounded-bl-[8rem] md:rounded-br-[3rem] z-0 overflow-hidden">
+              <div className="absolute bottom-6 right-6 w-32 opacity-70">
+                <svg viewBox="0 0 100 20" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                  <path d="M0,10 Q10,0 20,10 T40,10 T60,10 T80,10 T100,10" />
+                </svg>
+              </div>
+
+              <div className="mb-10 grid grid-cols-2 gap-6 relative z-10">
+                <div className="space-y-1">
+                  <div className="flex items-baseline">
+                    <NumberTicker value={50} decimalPlaces={0} className="text-5xl md:text-6xl font-black tracking-tighter text-[#2A1B1D]" />
+                    <span className="text-4xl md:text-5xl font-black text-[#2A1B1D]">+</span>
+                  </div>
+                  <p className="text-sm md:text-base font-bold text-[#2A1B1D]/80">Sekolah Berlangganan</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-baseline">
+                    <NumberTicker value={10} decimalPlaces={0} className="text-5xl md:text-6xl font-black tracking-tighter text-[#2A1B1D]" />
+                    <span className="text-4xl md:text-5xl font-black text-[#2A1B1D]">+</span>
+                  </div>
+                  <p className="text-sm md:text-base font-bold text-[#2A1B1D]/80">Mitra Aktif</p>
+                </div>
+              </div>
+
+              <p className="mb-10 text-base md:text-lg font-medium leading-relaxed text-[#2A1B1D]/90 max-w-md relative z-10">
+                Digitalisasi manajemen sekolah kini lebih mudah. Pantau nilai, kehadiran, dan kolaborasi guru-siswa dalam satu dashboard interaktif dan aman.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 relative z-10">
+                <Button variant="secondary" className="rounded-full px-6 py-6 bg-[#2A1B1D] text-sm md:text-base font-bold text-white hover:bg-[#58504E] border-none shadow-md">
+                  <Radio className="mr-2 w-5 h-5" />
+                  Coba Demo Live
+                </Button>
+                <Button type="button" onClick={onOpenVideo} className="rounded-full px-6 py-6 bg-white/90 hover:bg-white text-[#2A1B1D] text-sm md:text-base font-bold shadow-md">
+                  <Play fill="#8EC9F6" className="text-[#8EC9F6] mr-2 w-5 h-5" />
+                  Lihat Demo
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+    </main>
   );
 }
+
+export { HeroSection };

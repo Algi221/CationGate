@@ -4,6 +4,9 @@ import { getSupabaseClient } from '../db/supabase';
 import { broadcast } from '../ws/handler';
 import { rateLimiter } from '../middleware/rate-limiter';
 import { registerApplicantSchema, updateApplicantSchema } from '../validations/applicants';
+import { resolveSchoolUUID } from '../db/resolve-school';
+import { fontInMemSchools } from './saas';
+import { timingSafeEqual } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -188,10 +191,15 @@ appRouter.post('/', rateLimiter({
     const validated = result.data;
     
     const supabase = getSupabaseClient();
-    const schoolId = c.req.query('school_id'); // Pendaftaran public harus mengirim school_id
+    const schoolSlug = c.req.query('school_slug');
+    if (!schoolSlug) {
+      return c.json({ success: false, message: 'Parameter school_slug wajib disertakan.' }, 400);
+    }
     
+    // Resolve to actual UUID
+    const schoolId = await resolveSchoolUUID(schoolSlug, fontInMemSchools);
     if (!schoolId) {
-       return c.json({ success: false, message: 'Parameter school_id wajib disertakan.' }, 400);
+      return c.json({ success: false, message: 'Sekolah tidak ditemukan.' }, 404);
     }
 
     // Map Frontend body attributes to matching database fields
@@ -429,20 +437,12 @@ appRouter.post('/', rateLimiter({
       return c.json({ success: false, message: 'Gagal memproses formulir pendaftaran: ' + dbErr.message }, 500);
     }
 
-    // Generate nomor pendaftaran SPMB unik: SPMB-TAHUN-NNNNN
-    try {
-      const tahun = new Date().getFullYear();
-      const { count: totalSekolah } = await supabase.from('student_applicants')
-        .select('*', { count: 'exact', head: true })
-        .eq('school_id', schoolId)
-        .is('deleted_at', null);
-      const urutan = String((totalSekolah || 0)).padStart(5, '0');
-      const registrationNo = `SPMB-${tahun}-${urutan}`;
-      await supabase.from('student_applicants').update({ registration_no: registrationNo }).eq('id', savedRecord.id);
-      savedRecord = { ...savedRecord, registration_no: registrationNo };
-    } catch (regErr) {
-      console.warn('Gagal generate registration_no, akan di-generate ulang kemudian:', regErr);
-    }
+    // The database id is unique and avoids count+1 collisions under concurrent registration.
+    const registrationNo = `SPMB-${new Date().getFullYear()}-${String(savedRecord.id).padStart(5, '0')}`;
+    const { error: registrationError } = await supabase.from('student_applicants')
+      .update({ registration_no: registrationNo }).eq('id', savedRecord.id).eq('school_id', schoolId);
+    if (registrationError) throw registrationError;
+    savedRecord = { ...savedRecord, registration_no: registrationNo };
 
     // Broadcast websocket notification to active admins!
     broadcast({
@@ -489,7 +489,8 @@ appRouter.get('/', adminAuth, async (c: Context) => {
   try {
     await checkAndDisqualifyExpiredApplicants();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
 
     const calonSiswaFields = [
       "id", "nama", "nisn", "nipd", "nik", "tempat_lahir", "tgl_lahir", "jenis_kelamin", "agama", "kewarganegaraan",
@@ -516,8 +517,8 @@ appRouter.get('/', adminAuth, async (c: Context) => {
     if (schoolId) query = query.eq('school_id', schoolId);
     
     const { data: rows, error } = await query;
-    if (error || !rows || rows.length === 0) {
-      // Fallback seed data matching Image 1
+    if (process.env.NODE_ENV !== 'production' && (!rows || rows.length === 0)) {
+      // Development-only fallback seed data
       const defaultSeed = [
         { id: 252610466, nama: "Elisa Pratiwi", nisn: "0091234567", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 3 Depok", sekolahAsal: "SMPN 3 Depok", jurusan_1: "Desain Komunikasi Visual", jurusan1: "Desain Komunikasi Visual", status: "Approved", gelombang: "Gelombang 1", tgl_daftar: new Date().toISOString() },
         { id: 252610429, nama: "Rani Nugroho", nisn: "0092345678", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 2 Depok", sekolahAsal: "SMPN 2 Depok", jurusan_1: "Teknik Jaringan Komputer & Telekomunikasi", jurusan1: "Teknik Jaringan Komputer & Telekomunikasi", status: "Approved", gelombang: "Gelombang 2", tgl_daftar: new Date().toISOString() },
@@ -530,8 +531,13 @@ appRouter.get('/', adminAuth, async (c: Context) => {
       return c.json({ success: true, data: defaultSeed });
     }
 
-    return c.json({ success: true, data: rows });
+    if (error) throw error;
+    return c.json({ success: true, data: rows || [] });
   } catch (err) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Fetch applicants list error:', err);
+      return c.json({ success: false, message: 'Gagal mengambil data calon siswa.' }, 500);
+    }
     const defaultSeed = [
       { id: 252610466, nama: "Elisa Pratiwi", nisn: "0091234567", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 3 Depok", sekolahAsal: "SMPN 3 Depok", jurusan_1: "Desain Komunikasi Visual", jurusan1: "Desain Komunikasi Visual", status: "Approved", gelombang: "Gelombang 1", tgl_daftar: new Date().toISOString() },
       { id: 252610429, nama: "Rani Nugroho", nisn: "0092345678", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 2 Depok", sekolahAsal: "SMPN 2 Depok", jurusan_1: "Teknik Jaringan Komputer & Telekomunikasi", jurusan1: "Teknik Jaringan Komputer & Telekomunikasi", status: "Approved", gelombang: "Gelombang 2", tgl_daftar: new Date().toISOString() },
@@ -549,7 +555,8 @@ appRouter.get('/', adminAuth, async (c: Context) => {
 appRouter.get('/trashed', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
 
     const calonSiswaFields = [
       "id", "nama", "nisn", "nik", "tempat_lahir", "tgl_lahir", "jenis_kelamin", "agama", "kewarganegaraan",
@@ -589,7 +596,8 @@ appRouter.get('/trashed', adminAuth, async (c: Context) => {
 appRouter.get('/export', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Data Calon Siswa');
@@ -692,7 +700,8 @@ appRouter.post('/:id/restore', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
 
     let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -723,7 +732,8 @@ appRouter.get('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
 
     let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -757,7 +767,8 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
     const validated = result.data as any;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
 
     let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -922,7 +933,8 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
 
     let query = supabase.from('student_applicants').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -932,7 +944,6 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
       return c.json({ success: false, message: 'Calon siswa tidak ditemukan.' }, 404);
     }
 
-    const admin = (c as any).get('admin');
     const adminName = admin ? (admin.nama || admin.username) : 'Sistem';
 
     const updateData: any = { status };
@@ -982,7 +993,8 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
     const permanent = c.req.query('permanent') === 'true';
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
 
     if (permanent) {
       let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id);
@@ -1022,8 +1034,8 @@ appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     const { verified } = await c.req.json();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id');
-    const admin = (c as any).get('admin');
+    const admin = c.get('admin') as any;
+    const schoolId = admin.school_id;
     const adminName = admin ? (admin.nama || admin.username) : 'Admin';
 
     const updateData: any = {
@@ -1059,7 +1071,8 @@ appRouter.get('/registration-card/:nisn', async (c: Context) => {
   try {
     const nisn = c.req.param('nisn');
     const supabase = getSupabaseClient();
-    const schoolId = c.req.query('school_id');
+    const schoolSlug = c.req.query('school_slug');
+    const schoolId = schoolSlug ? await resolveSchoolUUID(schoolSlug, fontInMemSchools) : null;
 
     let query = supabase.from('student_applicants')
       .select('id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified')
@@ -1078,26 +1091,36 @@ appRouter.get('/registration-card/:nisn', async (c: Context) => {
   }
 });
 
-// 9. PUBLIC: Fetch public verification details by ID (for QR Code scanning)
-appRouter.get('/verify/:id', async (c: Context) => {
+// 9. PUBLIC: POST Verify applicant identity before revealing details
+appRouter.post('/verify/:id', rateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 menit
+  max: 5,                  // maks 5 percobaan
+  message: 'Batas verifikasi terlampaui. Silakan coba lagi 15 menit lagi.'
+}), async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
+    const { nik } = await c.req.json();
     const supabase = getSupabaseClient();
-    const schoolId = c.req.query('school_id');
+    const schoolSlug = c.req.query('school_slug');
 
-    let query = supabase.from('student_applicants').select('id, nama, nisn, sekolah_asal, jenis_kelamin, tgl_lahir, status, tgl_daftar, jurusan_1, periode, alasan_ditolak').eq('id', id);
-    if (schoolId) query = query.eq('school_id', schoolId);
-    
-    const { data: record, error } = await query.single();
+    // 1. Resolve school ID/UUID
+    const schoolId = await resolveSchoolUUID(schoolSlug || '', fontInMemSchools);
+    if (!schoolId) return c.json({ success: false, message: 'Sekolah tidak ditemukan.' }, 404);
 
-    if (error || !record) {
-      return c.json({ success: false, message: 'Calon siswa tidak ditemukan.' }, 404);
+    // 2. Fetch + Check NIK
+    const { data: applicant } = await supabase.from('student_applicants')
+      .select('id, nama, nisn, nik, tgl_lahir, status, tgl_daftar, jurusan_1, alasan_ditolak')
+      .eq('id', id)
+      .eq('school_id', schoolId)
+      .single();
+
+    if (!applicant || applicant.nik !== nik) {
+      return c.json({ success: false, message: 'Data pendaftar tidak ditemukan atau NIK tidak sesuai.' }, 404);
     }
 
-    return c.json({ success: true, data: record });
-  } catch (err) {
-    console.error('Fetch public verification detail error:', err);
-    return c.json({ success: false, message: 'Gagal mengambil data verifikasi.' }, 500);
+    return c.json({ success: true, data: applicant });
+  } catch (err: any) {
+    return c.json({ success: false, message: 'Kesalahan server verifikasi.' }, 500);
   }
 });
 

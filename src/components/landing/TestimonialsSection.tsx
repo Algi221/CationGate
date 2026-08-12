@@ -1,182 +1,160 @@
 "use client";
 
-import React from "react";
-import {
-  Star,
-  CheckCircle2,
-  Code2,
-  Cpu,
-  GraduationCap,
-  Building2,
-} from "lucide-react";
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
-export function TestimonialsSection() {
-  // Testimonials specified in PRD
-  const testimonials = [
-    {
-      quote:
-        "The real-time dashboards are incredible. We identified reading comprehension bottlenecks across Grade 9 in week 1 and adjusted our curriculum instantly.",
-      author: "Dr. Aris Setiawan, M.Ed.",
-      role: "Academic Director, SMA Global Mandiri",
-      badge: "School Administrator",
-      avatar: "A",
-      color: "bg-[#8EC9F6]",
-    },
-    {
-      quote:
-        "CationGate's AI lesson generation saved me over 10 hours a week. The adaptive quizzes keep students engaged without manual grading queues.",
-      author: "Dewi Lestari, S.Pd.",
-      role: "Senior STEM Educator, Telkom Academy",
-      badge: "Master Educator",
-      avatar: "D",
-      color: "bg-[#45C06B]",
-    },
-    {
-      quote:
-        "The personalized learning pathway adapted to my pace in Advanced Physics. I scored in the top 1% on national university entrance exams.",
-      author: "Fajar Pratama",
-      role: "Student, Grade 12 STEM Scholar",
-      badge: "Student Success",
-      avatar: "F",
-      color: "bg-[#E86BC6]",
-    },
-  ];
+// Testimonial disebar dengan jumlah yang pas dan proporsional
+const testimonials = [
+  {
+    id: 1,
+    name: "Pak Joy",
+    role: "Pembina IT",
+    text: "Sistem PPDB yang dibangun sangat solid. Kodenya clean, transisi dari manual ke digital berjalan lancar tanpa kendala.",
+    cardStyle: "mt-[10vh] rotate-[-1deg] w-[85vw] md:w-[320px]",
+  },
+  {
+    id: 2,
+    name: "Bu Miranda",
+    role: "Mentor Algoritma",
+    text: "Logika sistem dan alur datanya sangat rapi. Sangat memudahkan sekolah dalam menyeleksi calon siswa baru tahun ini.",
+    cardStyle: "mt-[38vh] rotate-[1.5deg] w-[85vw] md:w-[350px]",
+  },
+  {
+    id: 3,
+    name: "Ahmad Faishal Majdii",
+    role: "Lead Developer",
+    text: "Arsitektur database dan integrasi frontend ke backend berjalan mulus. UI/UX-nya juara dan responsif di semua perangkat.",
+    cardStyle: "mt-[12vh] rotate-[-1.5deg] w-[85vw] md:w-[330px]",
+  },
+  {
+    id: 4,
+    name: "Farel Al Fatir Fauzan",
+    role: "Frontend Engineer",
+    text: "Styling dengan Tailwind dan integrasinya sangat rapi. Komponen tidak berantakan sama sekali meski di-zoom ekstrim.",
+    cardStyle: "mt-[42vh] rotate-[1deg] w-[85vw] md:w-[320px]",
+  },
+  {
+    id: 5,
+    name: "Chika Julia Fairuz",
+    role: "System Analyst",
+    text: "Flow sistemnya luar biasa detail. CationGate benar-benar menyelamatkan banyak waktu tim saat masa pendaftaran sibuk.",
+    cardStyle: "mt-[15vh] rotate-[2deg] w-[85vw] md:w-[340px]",
+  },
+  {
+    id: 6,
+    name: "Prisa Setyani",
+    role: "UI/UX Designer",
+    text: "Layout scattered ngasih nyawa ke websitenya. Sangat natural dan interaktif untuk user experience keseluruhan.",
+    cardStyle: "mt-[35vh] rotate-[-2deg] w-[85vw] md:w-[330px]",
+  },
+];
 
-  // Our Team / Expert Educators specified in PRD
-  const teamMembers = [
-    {
-      name: "Dr. Elena Rostova",
-      role: "Head of Learning AI Architecture",
-      bio: "Former Stanford EdTech Fellow with 12+ years in adaptive neural learning algorithms.",
-      icon: Cpu,
-    },
-    {
-      name: "Budi Satria, M.T.",
-      role: "VP of Enterprise Engineering",
-      bio: "Ex-Google Lead Systems Architect specializing in sub-second multi-tenant databases.",
-      icon: Code2,
-    },
-    {
-      name: "Prof. Hendra Kusuma",
-      role: "Curriculum Alignment Advisor",
-      bio: "National Education Board Consultant specializing in Kemendikbud K-12 integration.",
-      icon: GraduationCap,
-    },
-  ];
+// Diringkas menjadi 3 kelompok frasa utama dengan variasi warna yang estetik
+const bgWords = [
+  { text: "APA KATA", color: "text-foreground/[0.08]" },
+  { text: "MEREKA TENTANG", color: "text-primary/[0.12]" },
+  { text: "CATIONGATE?", color: "text-on-surface/[0.1]" },
+];
+
+export default function TestimonialsSection() {
+  const targetRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start start", "end end"],
+  });
+
+  // Spring physics untuk pergerakan yang sangat empuk, natural, dan anti patah-patah
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 80,
+    damping: 30,
+    restDelta: 0.001,
+  });
+
+  // KUNCI PERBAIKAN: Menyamakan struktur string calc() agar Framer Motion bisa interpolasi animasinya!
+  // Nilai ini memastikan ujung paling kanan teks dan kartu mentok sempurna di sisi kanan layar
+  const xCards = useTransform(
+    smoothProgress,
+    [0, 1],
+    ["calc(0% + 0vw)", "calc(-100% + 100vw)"],
+  );
+  const xBg = useTransform(
+    smoothProgress,
+    [0, 1],
+    ["calc(0% + 0vw)", "calc(-100% + 100vw)"],
+  );
 
   return (
-    <section className="py-20 bg-background border-b border-border relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
-        {/* Section 1: The Minds Behind the Technology (Team) */}
-        <div>
-          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#8EC9F6]/20 text-[#2A1B1D] text-xs font-bold border border-border">
-              <Cpu className="w-3.5 h-3.5 text-[#2A1B1D]" />
-              Ed-Tech Leadership
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
-              The Minds Behind the Technology
+    <section ref={targetRef} className="relative h-[450vh] bg-background">
+      {/* Sticky Container */}
+      <div className="sticky top-0 h-screen w-full overflow-clip flex items-center bg-background">
+        {/* LAYER 0: Background Text */}
+        <motion.div
+          style={{ x: xBg }}
+          // KUNCI PERBAIKAN: Padding x-axis disamakan persis dengan kartu (px-[10vw]) agar ujung awal dan akhir selaras
+          className="absolute z-0 flex h-full w-max pointer-events-none items-center px-[10vw] gap-20 md:gap-32"
+        >
+          {bgWords.map((item, index) => (
+            <h2
+              key={index}
+              className={`text-6xl md:text-8xl lg:text-[10vw] font-black ${item.color} uppercase tracking-tighter shrink-0 font-heading select-none leading-none`}
+            >
+              {item.text}
             </h2>
+          ))}
+        </motion.div>
 
-            <p className="text-body text-base leading-relaxed font-medium">
-              Engineers, researchers, and master educators building the future
-              of adaptive learning.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {teamMembers.map((member, idx) => {
-              const Icon = member.icon;
-              return (
-                <div
-                  key={idx}
-                  className="p-6 rounded-2xl bg-surface border border-border shadow-2xs hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-[#FFD33B]/20 text-[#2A1B1D] flex items-center justify-center font-bold border border-border shrink-0">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-extrabold text-heading">
-                        {member.name}
-                      </h3>
-                      <div className="text-xs font-bold text-primary">
-                        {member.role}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-body leading-relaxed font-medium">
-                    {member.bio}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Section 2: Testimonial Grid */}
-        <div id="testimoni">
-          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#45C06B]/20 text-[#45C06B] text-xs font-bold border border-border">
-              <Star className="w-3.5 h-3.5 fill-current text-[#45C06B]" />
-              Verified Feedback
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-heading tracking-tight">
-              Trusted By Administrators, Teachers & Students
-            </h2>
-
-            <p className="text-body text-base leading-relaxed font-medium">
-              Read how CationGate delivers real impact in classrooms across
-              Indonesia.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((t, idx) => (
-              <div
-                key={idx}
-                className="p-7 rounded-2xl bg-surface border border-border shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
-              >
+        {/* LAYER 1: Kartu Testimonial Foreground */}
+        <motion.div
+          style={{ x: xCards }}
+          className="absolute z-10 flex w-max h-full items-start px-[10vw] gap-10 md:gap-16"
+        >
+          {testimonials.map((testimonial) => (
+            <div
+              key={testimonial.id}
+              className={`shrink-0 flex items-start ${testimonial.cardStyle}`}
+            >
+              <div className="w-full bg-surface p-6 md:p-8 border border-border rounded-card shadow-ambient hover:shadow-ambient-hover transition-all duration-300 hover:-translate-y-1 cursor-pointer group flex flex-col justify-between min-h-[290px]">
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-1 text-[#FFD33B]">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-current" />
-                      ))}
-                    </div>
-                    <span className="text-[10px] font-bold text-heading bg-background px-2.5 py-0.5 rounded-md border border-border">
-                      {t.badge}
-                    </span>
-                  </div>
+                  <svg
+                    className="w-7 h-7 md:w-8 md:h-8 text-primary/20 group-hover:text-primary transition-colors duration-300 mb-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                  </svg>
 
-                  <p className="text-xs sm:text-sm text-body leading-relaxed italic mb-6 font-medium">
-                    "{t.quote}"
+                  <p className="text-body-md md:text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+                    "{testimonial.text}"
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-border flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-xl ${t.color} text-white font-black flex items-center justify-center text-sm shrink-0 shadow-2xs`}
-                  >
-                    {t.avatar}
+                {/* Profil Karakter DiceBear */}
+                <div className="flex items-center gap-3 mt-auto pt-4 border-t border-border/40">
+                  <div className="w-11 h-11 rounded-full bg-secondary-container/20 border border-border/60 overflow-hidden shrink-0">
+                    <img
+                      src={`https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(testimonial.name)}&scale=120&backgroundColor=transparent`}
+                      alt={testimonial.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
                   </div>
-                  <div>
-                    <div className="font-extrabold text-xs text-heading flex items-center gap-1">
-                      <span>{t.author}</span>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#45C06B] shrink-0" />
-                    </div>
-                    <div className="text-[11px] text-body font-medium">
-                      {t.role}
-                    </div>
+                  <div className="flex flex-col gap-0.5">
+                    <h4 className="text-label-md text-on-surface font-bold leading-tight">
+                      {testimonial.name}
+                    </h4>
+                    <span className="text-label-sm text-primary uppercase tracking-wider font-semibold">
+                      {testimonial.role}
+                    </span>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
 }
+
+export { TestimonialsSection };

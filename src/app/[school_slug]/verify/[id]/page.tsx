@@ -45,112 +45,99 @@ const getMajorLogoUrl = (jurusan: string | null | undefined): string => {
 
 export default function VerificationPage() {
   const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "smk-taruna-bhakti";
   const id = params?.id;
 
-  const [loading, setLoading] = useState(true);
+  const [inputNik, setInputNik] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<VerificationData | null>(null);
   const [waAdmin, setWaAdmin] = useState<string>("6281292244456");
-  const [isDark, setIsDark] = useState(false);
 
-  useEffect(() => {
-    
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("ppdb-theme");
-      if (saved === "dark" || document.documentElement.classList.contains("dark")) {
-        setIsDark(true);
-      }
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputNik.trim() || inputNik.trim().length < 16) {
+      setError("Masukkan 16 digit NIK pendaftar yang valid.");
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [resVerify, resConfig] = await Promise.all([
-          fetch(`/api/applicants/verify/${id}`),
-          fetch(`/api/config`).catch(() => null)
-        ]);
-        
-        const jsonVerify = await resVerify.json();
-        if (jsonVerify.success && jsonVerify.data) {
-          setData(jsonVerify.data);
-        } else {
-          setError(jsonVerify.message || "Data pendaftar tidak ditemukan.");
-        }
-
-        if (resConfig && resConfig.ok) {
-          const jsonConfig = await resConfig.json();
-          if (jsonConfig.success && jsonConfig.data?.ppdb_wa_admin) {
-            setWaAdmin(jsonConfig.data.ppdb_wa_admin);
-          }
-        }
-      } catch (err) {
-        console.error("Fetch verification error:", err);
-        setError("Gagal menghubungi server verifikasi.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id]);
-
-  const getGenderLabel = (g: string | null | undefined) => {
-    if (!g) return "Laki-laki";
-    const clean = g.toUpperCase().trim();
-    if (clean === "L" || clean === "LAKI-LAKI" || clean === "LAKI_LAKI") return "Laki-laki";
-    if (clean === "P" || clean === "PEREMPUAN") return "Perempuan";
-    return g;
-  };
-
-  const getFormattedDate = (d: string | null | undefined) => {
-    if (!d) return "14 Juni 2010";
     try {
-      const date = new Date(d);
-      const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
-      return date.toLocaleDateString("id-ID", options);
-    } catch (e) {
-      return d;
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`/api/applicants/verify/${id}?school_slug=${encodeURIComponent(schoolSlug)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nik: inputNik.trim() }),
+      });
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setData(json.data);
+      } else {
+        setError(json.message || "Data calon siswa tidak ditemukan atau NIK tidak sesuai.");
+      }
+    } catch (err) {
+      console.error("Fetch verification error:", err);
+      setError("Gagal menghubungi server verifikasi. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
+  if (!data) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-slate-800 dark:text-white transition-colors duration-300">
-        <div className="flex flex-col items-center gap-3">
-          <svg className="animate-spin h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx={12} cy={12} r={10} stroke="currentColor" strokeWidth={4} />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          <span className="text-xs font-black uppercase tracking-wider text-slate-450">Memuat Sistem Verifikasi...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-slate-800 dark:text-white transition-colors duration-300">
-        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl text-center space-y-5">
-          <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/20 flex items-center justify-center text-rose-500 mx-auto border border-rose-100 dark:border-rose-900/30">
-            <XCircle size={32} />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-[100px] pointer-events-none" />
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl space-y-6 relative z-10 text-center">
+          <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400 mx-auto border border-blue-100 dark:border-blue-900/30">
+            <User size={32} />
           </div>
           <div>
-            <h2 className="text-lg font-black uppercase tracking-wider text-slate-850 dark:text-white">Verifikasi Gagal</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed mt-2 uppercase tracking-wide">
-              {error || "Data pendaftaran tidak sah atau tidak ditemukan di server PPDB SMK Taruna Bhakti."}
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-850 dark:text-white">Verifikasi Status Pendaftaran</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed mt-2">
+              Masukkan NIK calon siswa untuk melihat status pendaftaran secara aman.
             </p>
           </div>
-          <Link 
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-black uppercase tracking-wider transition-all"
-          >
-            <ArrowLeft size={14} />
-            Kembali ke Beranda
-          </Link>
+
+          <form onSubmit={handleVerify} className="space-y-4 text-left">
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">
+                Nomor Induk Kependudukan (NIK)
+              </label>
+              <input
+                type="text"
+                maxLength={16}
+                value={inputNik}
+                onChange={(e) => setInputNik(e.target.value.replace(/\D/g, ""))}
+                placeholder="Contoh: 3276012345670001"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-sm tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {error && (
+              <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 text-xs font-bold text-center">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider transition-all disabled:opacity-50 shadow-lg shadow-blue-500/20"
+            >
+              {loading ? "Memverifikasi..." : "Verifikasi Status"}
+            </button>
+          </form>
+
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Link
+              href={`/${schoolSlug}`}
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+            >
+              <ArrowLeft size={14} />
+              Kembali ke Portal Sekolah
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -312,7 +299,7 @@ export default function VerificationPage() {
         {/* Footer links */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link 
-            href="/"
+            href={`/${schoolSlug}`}
             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-350 hover:bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
           >
             <ArrowLeft size={14} />

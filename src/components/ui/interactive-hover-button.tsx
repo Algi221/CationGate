@@ -44,7 +44,7 @@ export function InteractiveHoverButton({
       {/* Hover */}
       <div
         className="
-          text-primary-foreground 
+          text-white 
           absolute 
           top-0 
           z-10 

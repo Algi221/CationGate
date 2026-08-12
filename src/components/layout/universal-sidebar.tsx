@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 import {
   SidebarProvider,
@@ -28,11 +29,6 @@ import {
 } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -41,25 +37,27 @@ import {
   AvatarImage,
 } from '@/components/ui/avatar';
 import {
-  BadgeCheck,
-  Bell,
-  CreditCard,
-  LogOut,
-  MoreHorizontal,
   Settings,
-  Sparkles,
   ChevronsUpDown,
   ChevronRight,
+  Users,
+  LayoutDashboard,
+  Shield,
+  Palette,
+  Key,
+  Globe,
+  Sliders,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useParams } from 'next/navigation';
 
 type NavItem = {
   title: string;
   icon: LucideIcon;
   isActive?: boolean;
   url?: string;
-  items?: { title: string; url: string }[];
+  items?: { title: string; url: string; icon?: LucideIcon }[];
 };
 
 type ProjectItem = {
@@ -123,7 +121,7 @@ const SIDEBAR_DATA: Record<Role, RoleData> = {
     navMain: [
       {
         title: 'Manajemen Siswa',
-        icon: Settings,
+        icon: Users,
         isActive: true,
         items: [
           { title: 'Ringkasan', url: '/dashboard' },
@@ -134,7 +132,7 @@ const SIDEBAR_DATA: Record<Role, RoleData> = {
       },
       {
         title: 'Konten Portal',
-        icon: Settings,
+        icon: LayoutDashboard,
         items: [
           { title: 'Kelola Informasi', url: '/dashboard/informasi' },
           { title: 'Kelola UI/Data', url: '/dashboard/kelola-ui' },
@@ -144,8 +142,11 @@ const SIDEBAR_DATA: Record<Role, RoleData> = {
         title: 'Pengaturan Sistem',
         icon: Settings,
         items: [
-          { title: 'Manajemen Admin', url: '/dashboard/admin' },
-          { title: 'Pengaturan', url: '/dashboard/settings' },
+          { title: 'Manajemen Admin', url: '/dashboard/admin', icon: Shield },
+          { title: 'Umum & Simulasi', url: '/dashboard/settings?tab=umum', icon: Sliders },
+          { title: 'Tampilan & Logo', url: '/dashboard/settings?tab=tampilan', icon: Palette },
+          { title: 'Keamanan & Password', url: '/dashboard/settings?tab=keamanan', icon: Key },
+          { title: 'Integrasi & API', url: '/dashboard/settings?tab=integrasi', icon: Globe },
         ],
       },
     ],
@@ -184,10 +185,22 @@ export const UniversalSidebar = ({
 }) => {
   const isMobile = useIsMobile();
   const pathname = usePathname();
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || '';
+
+  const formatTenantUrl = (url?: string) => {
+    if (!url) return '#';
+    if (role === 'admin_sekolah' && schoolSlug && url.startsWith('/dashboard')) {
+      return `/${schoolSlug}${url}`;
+    }
+    return url;
+  };
+
+  const [hoveredId, setHoveredId] = React.useState<string | null>(null);
 
   const currentRole = role as Role;
   const roleData = SIDEBAR_DATA[currentRole] || SIDEBAR_DATA.admin_sekolah;
-  const [activeTeam, setActiveTeam] = React.useState(roleData.teams[0]);
+  const [activeTeam] = React.useState(roleData.teams[0]);
 
   if (!activeTeam) return null;
 
@@ -226,33 +239,43 @@ export const UniversalSidebar = ({
 
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel className="text-muted-foreground">
-              Main Navigation
-            </SidebarGroupLabel>
             <SidebarMenu>
               {roleData.navMain.map((item) => {
+                const itemTargetUrl = formatTenantUrl(item.url);
                 const hasSubItems = item.items && item.items.length > 0;
-                const isGroupActive =
-                  item.isActive ||
-                  (hasSubItems &&
-                    item.items?.some((subItem) =>
-                      pathname.startsWith(subItem.url)
-                    ));
+                const isGroupActive = Boolean(
+                  hasSubItems &&
+                    item.items?.some((subItem) => {
+                      const subUrl = formatTenantUrl(subItem.url);
+                      return pathname.startsWith(subUrl.split('?')[0]);
+                    })
+                );
 
                 if (!hasSubItems) {
+                  const itemId = `main-${item.title}`;
                   return (
                     <React.Fragment key={item.title}>
-                      <SidebarMenuItem>
+                      <SidebarMenuItem
+                        className="relative"
+                        onMouseEnter={() => setHoveredId(itemId)}
+                      >
+                        {hoveredId === itemId && (
+                          <motion.div
+                            layoutId="sidebar-hover-pill"
+                            className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/15 rounded-xl pointer-events-none -z-0"
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          />
+                        )}
                         <SidebarMenuButton
                           asChild
                           tooltip={item.title}
-                          className={`hover:bg-slate-800 hover:text-white dark:hover:bg-slate-700 transition-all duration-300 text-[15px] h-10 px-3 ${
-                            pathname.startsWith(item.url || '')
-                              ? 'text-white bg-slate-800 dark:bg-slate-700 font-semibold'
-                              : 'text-slate-700 font-medium'
+                          className={`relative z-10 transition-colors text-[15px] h-10 px-3 ${
+                            pathname.startsWith(itemTargetUrl)
+                              ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-500/10 dark:bg-blue-400/15'
+                              : 'text-slate-700 dark:text-slate-200 font-medium'
                           }`}
                         >
-                          <Link href={item.url || '#'}>
+                          <Link href={itemTargetUrl}>
                             {item.icon && <item.icon className="size-5" />}
                             <span className="font-medium">{item.title}</span>
                           </Link>
@@ -272,8 +295,8 @@ export const UniversalSidebar = ({
                       <SidebarMenuButton
                         asChild
                         tooltip={item.title}
-                        className={`hover:bg-slate-800 hover:text-white dark:hover:bg-slate-700 transition-all duration-300 text-[15px] h-10 px-3 w-full justify-between ${
-                          isGroupActive ? 'text-white bg-slate-800 dark:bg-slate-700 font-semibold' : 'text-slate-700 font-medium'
+                        className={`transition-colors text-[15px] h-10 px-3 w-full justify-between ${
+                          isGroupActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-700 dark:text-slate-200 font-medium'
                         }`}
                       >
                         <CollapsibleTrigger>
@@ -285,22 +308,37 @@ export const UniversalSidebar = ({
                         </CollapsibleTrigger>
                       </SidebarMenuButton>
                       <CollapsibleContent>
-                        <SidebarMenuSub className="border-l-2 border-slate-200 ml-4 pl-4 mt-1">
+                        <SidebarMenuSub className="border-l-2 border-slate-200 dark:border-slate-800 ml-4 pl-3 mt-1 space-y-1">
                           {item.items?.map((subItem) => {
+                            const subItemUrl = formatTenantUrl(subItem.url);
+                            const subItemId = `sub-${subItem.title}`;
                             const isSubActive =
-                              pathname === subItem.url ||
-                              pathname.startsWith(subItem.url + '/');
+                              pathname === subItemUrl ||
+                              pathname.startsWith(subItemUrl.split('?')[0]);
+                            const SubIcon = subItem.icon;
                             return (
-                              <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubItem
+                                key={subItem.title}
+                                className="relative"
+                                onMouseEnter={() => setHoveredId(subItemId)}
+                              >
+                                {hoveredId === subItemId && (
+                                  <motion.div
+                                    layoutId="sidebar-hover-pill"
+                                    className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/15 rounded-xl pointer-events-none -z-0"
+                                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                                  />
+                                )}
                                 <SidebarMenuSubButton
                                   asChild
-                                  className={`hover:bg-slate-800 hover:text-white dark:hover:bg-slate-700 transition-all duration-300 text-[14px] h-9 px-3 ${
+                                  className={`relative z-10 transition-colors text-[14px] h-9 px-3 ${
                                     isSubActive
-                                      ? 'text-white bg-slate-800 dark:bg-slate-700 font-semibold'
-                                      : 'text-slate-600 font-medium'
+                                      ? 'text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-400/15 font-bold'
+                                      : 'text-slate-600 dark:text-slate-300 font-medium'
                                   }`}
                                 >
-                                  <Link href={subItem.url}>
+                                  <Link href={subItemUrl} className="flex items-center gap-2">
+                                    {SubIcon && <SubIcon className="size-4 text-blue-500" />}
                                     <span>{subItem.title}</span>
                                   </Link>
                                 </SidebarMenuSubButton>

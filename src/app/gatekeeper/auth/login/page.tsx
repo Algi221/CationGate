@@ -23,8 +23,10 @@ export default function GatekeeperLogin() {
     if (adminToken) window.location.href = "/gatekeeper/dashboard";
   }, [adminToken, router]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!username || !password) {
       setError("Harap isi username dan password Gatekeeper.");
       return;
@@ -34,7 +36,7 @@ export default function GatekeeperLogin() {
     try {
       const res = await loginGatekeeper(username, password);
       if (res.success) {
-        window.location.href = "/gatekeeper/dashboard";
+        router.push("/gatekeeper/dashboard");
       } else {
         setError(res.message || "Kredensial Gatekeeper tidak valid.");
       }
@@ -178,8 +180,11 @@ export default function GatekeeperLogin() {
               </div>
             </div>
 
+            <button type="submit" className="hidden" />
+
             <Button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={loading}
               className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all mt-6"
             >

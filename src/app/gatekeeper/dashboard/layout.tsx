@@ -148,7 +148,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
           logoutAdmin();
-          router.push(`/gatekeeper/login?expired=true`);
+          router.push(`/gatekeeper/auth/login?expired=true`);
           return;
         }
       }
@@ -157,7 +157,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         if (localStorage.getItem("ppdb_admin_token")) {
            return;
         }
-        router.push(`/gatekeeper/login`);
+        router.push(`/gatekeeper/auth/login`);
         return;
       }
       
@@ -183,7 +183,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
         logoutAdmin();
-        router.push("/gatekeeper/login?expired=true");
+        router.push("/gatekeeper/auth/login?expired=true");
       }, limit);
       const now = Date.now();
       if (now - lastStorageUpdate > 10000) {
@@ -220,7 +220,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const confirmLogout = () => {
     logoutAdmin();
     setShowLogoutConfirm(false);
-    router.push("/gatekeeper/login");
+    router.push("/gatekeeper/auth/login");
   };
 
   if (!mounted) return null;

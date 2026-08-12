@@ -12,7 +12,7 @@ const configRouter = new Hono();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function saveBase64File(base64Str: string, prefix: string, subfolder: string = 'jurusan'): string {
+async function saveBase64File(base64Str: string, prefix: string, subfolder: string = 'jurusan'): Promise<string> {
   if (typeof base64Str !== 'string' || !base64Str.startsWith('data:')) {
     return base64Str;
   }
@@ -202,7 +202,7 @@ configRouter.post('/', adminAuth, async (c) => {
     if (key === 'ppdb_majors_config') {
       processedValue = await processMajorsConfig(value);
     } else if (key === 'ppdb_logo_url') {
-      processedValue = saveBase64File(value, 'school_logo', 'sekolah');
+      processedValue = await saveBase64File(value, 'school_logo', 'sekolah');
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
@@ -291,7 +291,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config);
     }
     if (processedConfigs.ppdb_logo_url) {
-      processedConfigs.ppdb_logo_url = saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
+      processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
     }
 
     for (const [key, value] of Object.entries(processedConfigs)) {

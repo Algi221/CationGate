@@ -83,6 +83,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   const [applicants, setApplicants] = useState<any[]>([]);
   const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
+  const [profilSekolah, setProfilSekolah] = useState<any>(null);
   const [activeStudents, setActiveStudents] = useState<any[]>([]);
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [adminUser, setAdminUser] = useState<any | null>(null);

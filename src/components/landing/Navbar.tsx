@@ -103,6 +103,7 @@ export function Navbar() {
         ]
       }
     },
+    { label: "Blog", href: "/blog", color: "#A855F7" },
     { label: "Hubungi Kami", href: "/kontak", color: "#E86BC6" },
   ];
 
@@ -145,11 +146,11 @@ export function Navbar() {
                   >
                     <button
                       type="button"
-                      className="group flex items-center justify-center px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer relative"
+                      className="group/navitem flex items-center justify-center px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer relative"
                     >
-                      <span className="text-sm font-medium text-[#23191C] flex items-center gap-1.5 relative z-10 pl-2">
+                      <span className="text-sm font-medium text-[#23191C] flex items-center gap-1.5 relative z-10 pl-3">
                         <span
-                          className="absolute left-0 w-1.5 h-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
+                          className="absolute left-0 w-1.5 h-3 rounded-[3px] opacity-0 group-hover/navitem:opacity-100 transition-all duration-300 scale-y-0 group-hover/navitem:scale-y-100"
                           style={{ backgroundColor: item.color }}
                         />
                         {item.label}
@@ -223,11 +224,11 @@ export function Navbar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="group flex items-center justify-center px-4 py-2 rounded-xl transition-all duration-300 relative"
+                  className="group/navitem flex items-center justify-center px-4 py-2 rounded-xl transition-all duration-300 relative"
                 >
-                  <span className="text-sm font-medium text-[#23191C] relative z-10 flex items-center pl-3">
+                  <span className="text-sm font-medium text-[#23191C] relative z-10 flex items-center pl-3.5">
                     <span
-                      className="absolute left-0 w-2 h-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 scale-0 group-hover:scale-100"
+                      className="absolute left-0 w-1.5 h-3 rounded-[3px] opacity-0 group-hover/navitem:opacity-100 transition-all duration-300 scale-y-0 group-hover/navitem:scale-y-100"
                       style={{ backgroundColor: item.color }}
                     />
                     {item.label}

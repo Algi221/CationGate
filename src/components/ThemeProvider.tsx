@@ -18,7 +18,8 @@ export function ThemeProvider({
     pathname?.startsWith("/kontak") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
-    pathname?.startsWith("/daftar");
+    pathname?.startsWith("/daftar") ||
+    pathname?.startsWith("/blog");
 
   return (
     <NextThemesProvider

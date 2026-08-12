@@ -20,6 +20,17 @@ import {
   Shield,
 } from "lucide-react";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuPopup,
+  NavigationMenuPositioner,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "../ui/navigation-menu-1";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -118,9 +129,11 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const hasDropdown = Boolean(item.dropdown);
+          <div className="hidden lg:flex items-center gap-1">
+            <NavigationMenu>
+              <NavigationMenuList>
+                {navItems.map((item) => {
+                  const hasDropdown = Boolean(item.dropdown);
 
               if (hasDropdown || item.dropdownType === "bento") {
                 return (
@@ -251,7 +264,7 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex md:hidden items-center">
+          <div className="flex lg:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-1.5 rounded-lg text-[#2A1B1D] hover:bg-black/5 transition-colors"

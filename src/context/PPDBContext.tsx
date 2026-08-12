@@ -49,6 +49,8 @@ interface PPDBContextType {
   setAdminUser: React.Dispatch<React.SetStateAction<any | null>>;
   ppdbLogo: string;
   ppdbTitle: string;
+  profilSekolah: any;
+  setProfilSekolah: React.Dispatch<React.SetStateAction<any>>;
   fetchConfigs: () => Promise<void>;
   schoolId: string;
   schoolStatus: string;
@@ -136,6 +138,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         }
         if (data.data.ppdb_title) {
           setPpdbTitle(data.data.ppdb_title);
+        }
+        if (data.data.ppdb_profil_sekolah) {
+          setProfilSekolah(data.data.ppdb_profil_sekolah);
         }
       }
     } catch (err) {
@@ -919,6 +924,8 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
         checkPaymentStatus,
         ppdbLogo,
         ppdbTitle,
+        profilSekolah,
+        setProfilSekolah,
         fetchConfigs,
         schoolId,
         schoolStatus,

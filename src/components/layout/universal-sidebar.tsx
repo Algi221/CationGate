@@ -75,83 +75,86 @@ type RoleData = {
 
 type Role = 'gatekeeper' | 'admin_sekolah';
 
-const SIDEBAR_DATA: Record<Role, RoleData> = {
-  gatekeeper: {
-    user: {
-      name: 'Gatekeeper Superadmin',
-      email: 'uno@cationgate.id',
-      avatar: 'https://github.com/shadcn.png',
-      roleLabel: 'Platform Superadmin',
+const getSidebarData = (schoolSlug: string): Record<Role, RoleData> => {
+  const prefix = schoolSlug ? `/${schoolSlug}` : '';
+  return {
+    gatekeeper: {
+      user: {
+        name: 'Gatekeeper Superadmin',
+        email: 'uno@cationgate.id',
+        avatar: 'https://github.com/shadcn.png',
+        roleLabel: 'Platform Superadmin',
+      },
+      teams: [
+        { name: 'Cation Gate', logo: Settings, plan: 'Gatekeeper Platform' },
+      ],
+      navMain: [
+        {
+          title: 'Platform',
+          icon: Settings,
+          isActive: true,
+          items: [
+            { title: 'Dashboard', url: '/gatekeeper/dashboard' },
+            { title: 'Manajemen Sekolah', url: '/gatekeeper/dashboard/schools' },
+            { title: 'Feedback & Tiket', url: '/gatekeeper/dashboard/feedback' },
+          ],
+        },
+        {
+          title: 'Settings',
+          icon: Settings,
+          items: [
+            { title: 'Pengaturan System', url: '/gatekeeper/dashboard/settings' },
+            { title: 'Profil Gatekeeper', url: '/gatekeeper/dashboard/profile' },
+          ],
+        },
+      ],
+      projects: [],
     },
-    teams: [
-      { name: 'Cation Gate', logo: Settings, plan: 'Gatekeeper Platform' },
-    ],
-    navMain: [
-      {
-        title: 'Platform',
-        icon: Settings,
-        isActive: true,
-        items: [
-          { title: 'Dashboard', url: '/gatekeeper/dashboard' },
-          { title: 'Manajemen Sekolah', url: '/gatekeeper/dashboard/schools' },
-          { title: 'Feedback & Tiket', url: '/gatekeeper/dashboard/feedback' },
-        ],
+    admin_sekolah: {
+      user: {
+        name: 'Admin Sekolah',
+        email: 'admin@sekolah.sch.id',
+        avatar: 'https://github.com/shadcn.png',
+        roleLabel: 'Admin Sekolah',
       },
-      {
-        title: 'Settings',
-        icon: Settings,
-        items: [
-          { title: 'Pengaturan System', url: '/gatekeeper/dashboard/settings' },
-          { title: 'Profil Gatekeeper', url: '/gatekeeper/dashboard/profile' },
-        ],
-      },
-    ],
-    projects: [],
-  },
-  admin_sekolah: {
-    user: {
-      name: 'Admin Sekolah',
-      email: 'admin@sekolah.sch.id',
-      avatar: 'https://github.com/shadcn.png',
-      roleLabel: 'Admin Sekolah',
+      teams: [
+        { name: 'Sekolah Ku', logo: Settings, plan: 'PPDB Portal' },
+      ],
+      navMain: [
+        {
+          title: 'Manajemen Siswa',
+          icon: Users,
+          isActive: true,
+          items: [
+            { title: 'Ringkasan', url: `${prefix}/dashboard` },
+            { title: 'Data Calon Siswa', url: `${prefix}/dashboard/pendaftar` },
+            { title: 'Pembagian Kelas', url: `${prefix}/dashboard/pembagian-kelas` },
+            { title: 'Siswa Aktif', url: `${prefix}/dashboard/siswa-aktif` },
+          ],
+        },
+        {
+          title: 'Konten Portal',
+          icon: LayoutDashboard,
+          items: [
+            { title: 'Kelola Informasi', url: `${prefix}/dashboard/informasi` },
+            { title: 'Kelola UI/Data', url: `${prefix}/dashboard/kelola-ui` },
+          ],
+        },
+        {
+          title: 'Pengaturan Sistem',
+          icon: Settings,
+          items: [
+            { title: 'Manajemen Admin', url: `${prefix}/dashboard/admin`, icon: Shield },
+            { title: 'Umum & Simulasi', url: `${prefix}/dashboard/settings?tab=umum`, icon: Sliders },
+            { title: 'Tampilan & Logo', url: `${prefix}/dashboard/settings?tab=tampilan`, icon: Palette },
+            { title: 'Keamanan & Password', url: `${prefix}/dashboard/settings?tab=keamanan`, icon: Key },
+            { title: 'Integrasi & API', url: `${prefix}/dashboard/settings?tab=integrasi`, icon: Globe },
+          ],
+        },
+      ],
+      projects: [],
     },
-    teams: [
-      { name: 'Sekolah Ku', logo: Settings, plan: 'PPDB Portal' },
-    ],
-    navMain: [
-      {
-        title: 'Manajemen Siswa',
-        icon: Users,
-        isActive: true,
-        items: [
-          { title: 'Ringkasan', url: '/dashboard' },
-          { title: 'Data Calon Siswa', url: '/dashboard/pendaftar' },
-          { title: 'Pembagian Kelas', url: '/dashboard/pembagian-kelas' },
-          { title: 'Siswa Aktif', url: '/dashboard/siswa-aktif' },
-        ],
-      },
-      {
-        title: 'Konten Portal',
-        icon: LayoutDashboard,
-        items: [
-          { title: 'Kelola Informasi', url: '/dashboard/informasi' },
-          { title: 'Kelola UI/Data', url: '/dashboard/kelola-ui' },
-        ],
-      },
-      {
-        title: 'Pengaturan Sistem',
-        icon: Settings,
-        items: [
-          { title: 'Manajemen Admin', url: '/dashboard/admin', icon: Shield },
-          { title: 'Umum & Simulasi', url: '/dashboard/settings?tab=umum', icon: Sliders },
-          { title: 'Tampilan & Logo', url: '/dashboard/settings?tab=tampilan', icon: Palette },
-          { title: 'Keamanan & Password', url: '/dashboard/settings?tab=keamanan', icon: Key },
-          { title: 'Integrasi & API', url: '/dashboard/settings?tab=integrasi', icon: Globe },
-        ],
-      },
-    ],
-    projects: [],
-  },
+  };
 };
 
 const NavCollapsible = ({
@@ -199,6 +202,7 @@ export const UniversalSidebar = ({
   const [hoveredId, setHoveredId] = React.useState<string | null>(null);
 
   const currentRole = role as Role;
+  const SIDEBAR_DATA = getSidebarData(schoolSlug);
   const roleData = SIDEBAR_DATA[currentRole] || SIDEBAR_DATA.admin_sekolah;
   const [activeTeam] = React.useState(roleData.teams[0]);
 

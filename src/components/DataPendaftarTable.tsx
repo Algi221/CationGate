@@ -271,12 +271,9 @@ export default function DataPendaftarTable() {
             className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all cursor-pointer min-w-[180px]"
           >
             <option value="Semua">Semua Jurusan</option>
-            <option value="Rekayasa Perangkat Lunak">RPL</option>
-            <option value="Teknik Jaringan Komputer & Telekomunikasi">TJKT</option>
-            <option value="Desain Komunikasi Visual">DKV</option>
-            <option value="Broadcasting & Perfilman">BC</option>
-            <option value="Animasi">Animasi</option>
-            <option value="Teknik Elektronika">TE</option>
+            {uniqueMajors.map((major: any) => (
+              <option key={major} value={major}>{major}</option>
+            ))}
           </select>
         </div>
       </div>

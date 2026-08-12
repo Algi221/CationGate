@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { getSupabaseClient } from '../db/supabase';
+import { adminAuth } from '../middleware/auth';
 
 const router = new Hono();
 
@@ -162,10 +163,13 @@ router.get('/', async (c) => {
   }
 });
 
-router.post('/targets', async (c) => {
+router.post('/targets', adminAuth, async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
     const body = await c.req.json();
     const { targets } = body;
 

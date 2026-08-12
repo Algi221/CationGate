@@ -1,6 +1,5 @@
 import { Hono, Context } from 'hono';
 import { getSupabaseClient } from '../db/supabase';
-import { broadcast } from '../ws/handler';
 import { confirmPaymentSchema } from '../validations/payment';
 
 const paymentRouter = new Hono();
@@ -37,11 +36,6 @@ paymentRouter.post('/confirm-payment-option', async (c: Context) => {
       console.error('Supabase update error:', error);
       return c.json({ success: false, message: 'Candidate not found' }, 404);
     }
-
-    broadcast({
-      event: 'APPLICANT_UPDATED',
-      data: updatedRecord
-    }, true);
 
     return c.json({ success: true, message: 'Payment option confirmed successfully', data: updatedRecord });
   } catch (err: any) {

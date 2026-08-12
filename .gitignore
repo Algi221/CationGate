@@ -55,3 +55,11 @@ next-env.d.ts
 !README.md
 hasil_export/
 opencode.json
+
+# Uploads
+public/assets/*/uploads/
+frontend/public/assets/*/uploads/
+/public/assets/jurusan/uploads/
+/public/assets/sekolah/uploads/
+/frontend/public/assets/jurusan/uploads/
+/frontend/public/assets/sekolah/uploads/

@@ -1,6 +1,7 @@
 import { NumberTicker } from "../ui/number-ticker";
 import { Button } from "../ui/button";
-import { Radio, Play } from "lucide-react";
+import { Radio, Play, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface HeroSectionProps {
   onOpenVideo?: () => void;
@@ -31,6 +32,7 @@ export default function HeroSection({ onOpenVideo }: HeroSectionProps) {
               <span className="absolute bottom-[4px] left-0 z-0 h-[30%] w-full rounded-[3px] bg-[#FFD33B]" />
             </span>
           </h1>
+          </div>
 
           {/* Description - Single Line */}
           <p className="mt-6 max-w-4xl text-base sm:text-lg font-medium leading-relaxed text-[#58504E]">
@@ -83,14 +85,14 @@ export default function HeroSection({ onOpenVideo }: HeroSectionProps) {
                 <div className="space-y-1">
                   <div className="flex items-baseline">
                     <NumberTicker value={50} decimalPlaces={0} className="text-5xl md:text-6xl font-black tracking-tighter text-[#2A1B1D]" />
-                    <span className="text-4xl md:text-5xl font-black text-[#2A1B1D]">+</span>
+                    <span className="text-[42px] md:text-[68px] font-black text-[#2A1B1D]">+</span>
                   </div>
                   <p className="text-sm md:text-base font-bold text-[#2A1B1D]/80">Sekolah Berlangganan</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-baseline">
                     <NumberTicker value={10} decimalPlaces={0} className="text-5xl md:text-6xl font-black tracking-tighter text-[#2A1B1D]" />
-                    <span className="text-4xl md:text-5xl font-black text-[#2A1B1D]">+</span>
+                    <span className="text-[42px] md:text-[68px] font-black text-[#2A1B1D]">+</span>
                   </div>
                   <p className="text-sm md:text-base font-bold text-[#2A1B1D]/80">Mitra Aktif</p>
                 </div>

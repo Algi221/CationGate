@@ -1,6 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+// Cache the client so we don't create thousands of connections
+let supabaseInstance: SupabaseClient | null = null;
 
 export const getSupabaseClient = (_authHeader?: string) => {
+  if (supabaseInstance) return supabaseInstance;
+
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const supabaseKey = 
     process.env.SUPABASE_SECRET_KEY || 
@@ -9,5 +14,6 @@ export const getSupabaseClient = (_authHeader?: string) => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
     '';
 
-  return createClient(supabaseUrl, supabaseKey);
+  supabaseInstance = createClient(supabaseUrl, supabaseKey);
+  return supabaseInstance;
 };

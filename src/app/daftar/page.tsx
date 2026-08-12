@@ -277,7 +277,7 @@ export default function DaftarSaaS() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-slate-700 text-sm font-semibold">Email Resmi</Label>
                         <Input 
@@ -338,7 +338,7 @@ export default function DaftarSaaS() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="admin_username" className="text-slate-700 text-sm font-semibold">Username Admin</Label>
                         <Input 

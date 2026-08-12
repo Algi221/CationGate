@@ -24,7 +24,10 @@ gatekeeperRouter.post('/login', async (c) => {
     }
 
     // Env Credential Check
-    if (username === GATEKEEPER_USERNAME && password === GATEKEEPER_PASSWORD) {
+    const currentUsername = process.env.GATEKEEPER_USERNAME || GATEKEEPER_USERNAME;
+    const currentPassword = process.env.GATEKEEPER_PASSWORD || GATEKEEPER_PASSWORD;
+
+    if (username === currentUsername && password === currentPassword) {
       const defaultGatekeeper = {
         id: 1,
         username: GATEKEEPER_USERNAME,

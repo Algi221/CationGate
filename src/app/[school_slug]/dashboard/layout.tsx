@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import {
   Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
   Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User
+  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User, Paintbrush
 } from "lucide-react";
 import SchoolNotFound from "@/components/SchoolNotFound";
 
@@ -294,7 +294,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             { label: "FAQ", href: "/dashboard/kelola-ui?tab=faq" },
             { label: "Riwayat Perubahan", href: "/dashboard/kelola-ui?tab=revisions" }
           ]
-        }
+        },
+        { href: "/dashboard/settings/appearance", icon: <Paintbrush size={18} />, label: "Tema & Tampilan", lockedIfUnverified: true }
       ]
     },
     {
@@ -302,7 +303,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       items: [
         { href: "/dashboard/subscription", icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
         { href: "/dashboard/admin", icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
-        { href: "/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan", lockedIfUnverified: true }
+        { href: "/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Utama", lockedIfUnverified: true }
       ]
     }
   ];

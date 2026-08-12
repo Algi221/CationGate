@@ -148,17 +148,21 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
           logoutAdmin();
-          router.push(`/auth/login?expired=true`);
+          router.push(`/gatekeeper/login?expired=true`);
           return;
         }
       }
       if (!adminToken) {
-        router.push(`/auth/login`);
+        // Allow PPDBContext hydration to complete if token is in localStorage
+        if (localStorage.getItem("ppdb_admin_token")) {
+           return;
+        }
+        router.push(`/gatekeeper/login`);
         return;
       }
       
-      // Ensure role is superadmin
-      if (adminUser && adminUser.role !== 'superadmin') {
+      // Ensure role is gatekeeper or superadmin
+      if (adminUser && adminUser.role !== 'gatekeeper' && adminUser.role !== 'superadmin') {
          Swal.fire({
             title: "Akses Ditolak",
             text: "Anda tidak memiliki hak akses sebagai Gatekeeper (Superadmin).",
@@ -179,7 +183,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
         logoutAdmin();
-        router.push("/auth/login?expired=true");
+        router.push("/gatekeeper/login?expired=true");
       }, limit);
       const now = Date.now();
       if (now - lastStorageUpdate > 10000) {
@@ -216,12 +220,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const confirmLogout = () => {
     logoutAdmin();
     setShowLogoutConfirm(false);
-    router.push("/auth/login");
+    router.push("/gatekeeper/login");
   };
 
   if (!mounted) return null;
   
-  if (!adminToken || (adminUser && adminUser.role !== 'superadmin')) {
+  if (!adminToken || (adminUser && adminUser.role !== 'gatekeeper' && adminUser.role !== 'superadmin')) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-white transition-colors duration-300">
         <div className="flex flex-col items-center gap-3">
@@ -288,8 +292,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     {
       category: "Pengaturan Platform",
       items: [
-        { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Sistem" },
-        { href: "/gatekeeper/dashboard/profile", icon: <UserCircle size={18} />, label: "Profil Gatekeeper" }
+        { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Sistem" }
       ]
     }
   ];
@@ -344,7 +347,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           <Link
             href={fullHref}
             onClick={handleItemClick}
-            className={`relative z-10 flex items-center justify-between rounded-2xl text-xs font-bold uppercase tracking-wider transition-colors duration-200 border ${
+            className={`relative z-10 flex items-center justify-between rounded-2xl text-[13px] font-semibold transition-colors duration-200 border ${
               isCollapsed ? "justify-center p-3" : "px-4 py-3"
             } ${
               isActive && (!hasSub || isCollapsed)
@@ -413,13 +416,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                         )}
                         <Link
                           href={fullSubHref}
-                          className={`relative z-10 group flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-[10px] font-bold tracking-wide uppercase transition-colors duration-200 border ${
+                          className={`relative z-10 group flex items-center gap-2.5 py-2.5 px-4 rounded-xl text-xs transition-colors duration-200 border ${
                             isSubActive
-                              ? "bg-blue-600 dark:bg-blue-600 text-white border-blue-600 font-black shadow-sm shadow-blue-500/20"
-                              : "border-transparent text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                              ? "bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 font-bold"
+                              : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium"
                           }`}
                         >
-                          <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${isSubActive ? "bg-white scale-125" : "bg-slate-300 dark:bg-slate-600 group-hover:bg-blue-400 group-hover:scale-110"}`} />
                           <span className="truncate">{sub.label}</span>
                         </Link>
                       </div>
@@ -472,8 +474,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           {menuStructure.map((sec, idx) => (
             <div key={sec.category} className="space-y-1.5">
               {!isCollapsed && (
-                <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 pb-1 select-none flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700"></span> {sec.category}
+                <p className="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 pb-1 select-none flex items-center gap-3">
+                  {sec.category} <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700/60"></span>
                 </p>
               )}
               {isCollapsed && <div className="h-4" />}
@@ -484,23 +486,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           ))}
         </div>
 
-        <div className={`p-4 border-t border-slate-100 dark:border-slate-800/50 shrink-0 ${isCollapsed ? "flex justify-center" : ""}`}>
-          <div className={`bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex items-center gap-3 ${isCollapsed ? "w-12 h-12 justify-center p-0" : ""}`}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shrink-0 shadow-sm">
-              {userInitial}
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                  {adminUser?.nama || "Superadmin"}
-                </span>
-                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
-                  Gatekeeper
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
       </aside>
 
       {/* ─── MAIN CONTENT ────────────────────────────────────────────────────── */}
@@ -520,24 +505,24 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
             <button
               onClick={toggleTheme}
-              className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center"
+              className="w-9 h-9 rounded-full text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center focus:outline-none"
               title={isDark ? "Mode Terang" : "Mode Gelap"}
             >
-              {isDark ? <Sun size={18} strokeWidth={2.5} /> : <Moon size={18} strokeWidth={2.5} />}
+              {isDark ? <Sun size={18} strokeWidth={2.2} /> : <Moon size={18} strokeWidth={2.2} />}
             </button>
             
             <div className="relative" ref={userDropdownRef}>
               <button
                 onClick={() => setShowUserDropdown(!showUserDropdown)}
-                className="flex items-center gap-2.5 p-1.5 pl-3 pr-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all group"
+                className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group focus:outline-none ml-1"
               >
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-white dark:ring-slate-900">
                   {userInitial}
                 </div>
-                <ChevronDown size={14} strokeWidth={2.5} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300" />
+                <ChevronDown size={14} strokeWidth={2.5} className="text-slate-400 group-hover:text-slate-600 dark:text-slate-500 dark:group-hover:text-slate-300 mr-1" />
               </button>
 
               <AnimatePresence>

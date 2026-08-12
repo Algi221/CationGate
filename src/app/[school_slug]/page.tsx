@@ -700,30 +700,30 @@ export default function Home() {
           </div>
 
           {/* MAC BROWSER MOCKUP WRAPPER */}
-          <div className="mockup-container relative z-10 max-w-5xl mx-auto mt-10">
+          <div className="mockup-container relative z-10 w-full max-w-5xl mx-auto mt-8 md:mt-10 px-2 md:px-0">
             {/* Outer Dark Frame (Thick Bezel) */}
-            <div className="relative rounded-[2rem] bg-[#0f172a] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-1 ring-slate-900/50">
+            <div className="relative rounded-2xl md:rounded-[2rem] bg-[#0f172a] p-1.5 md:p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-1 ring-slate-900/50">
               
               {/* Inner Mac Window */}
-              <div className="w-full h-full bg-[#0f172a] overflow-hidden rounded-[1.25rem] relative flex flex-col">
+              <div className="w-full h-full bg-[#0f172a] overflow-hidden rounded-xl md:rounded-[1.25rem] relative flex flex-col">
                 
                 {/* Mockup Browser Top bar */}
-                <div className="flex items-center px-4 py-3 bg-[#0f172a] relative z-20 border-b border-slate-800/80">
-                  <div className="flex gap-2 w-20">
-                    <span className="w-3 h-3 rounded-full bg-red-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
-                    <span className="w-3 h-3 rounded-full bg-yellow-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
-                    <span className="w-3 h-3 rounded-full bg-green-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                <div className="flex items-center px-3 md:px-4 py-2 md:py-3 bg-[#0f172a] relative z-20 border-b border-slate-800/80">
+                  <div className="flex gap-1.5 md:gap-2 w-12 md:w-20">
+                    <span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                    <span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-yellow-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                    <span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
                   </div>
                   <div className="flex-1 flex justify-center">
-                    <div className="bg-slate-900/80 text-slate-400 text-[10px] font-medium px-6 py-1.5 rounded-md flex items-center justify-center min-w-[200px] shadow-inner border border-slate-800">
+                    <div className="bg-slate-900/80 text-slate-400 text-[9px] md:text-[10px] font-medium px-4 md:px-6 py-1 md:py-1.5 rounded-md flex items-center justify-center min-w-[120px] md:min-w-[200px] shadow-inner border border-slate-800 truncate max-w-[150px] md:max-w-none">
                       ppdb.{schoolSlug}.sch.id/dashboard
                     </div>
                   </div>
-                  <div className="w-20"></div> {/* Spacer for perfect centering */}
+                  <div className="w-12 md:w-20"></div> {/* Spacer for perfect centering */}
                 </div>
 
                 {/* Data Pendaftar Table View */}
-                <div className="dashboard-view block w-full p-6 h-[600px] bg-slate-50 dark:bg-slate-900 relative z-10 transition-colors duration-300 overflow-y-auto">
+                <div className="dashboard-view block w-full p-2 md:p-6 h-[400px] md:h-[600px] bg-slate-50 dark:bg-slate-900 relative z-10 transition-colors duration-300 overflow-auto">
                   <DataPendaftarTable />
                 </div>
 

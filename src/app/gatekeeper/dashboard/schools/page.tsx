@@ -33,7 +33,8 @@ import { Suspense } from "react";
 
 function GatekeeperSchoolManagementContent() {
   const searchParams = useSearchParams();
-  const initialFilter = searchParams?.get("filter") || "ALL";
+  const rawFilter = searchParams?.get("filter") || "ALL";
+  const initialFilter = rawFilter === "TAKEDOWN" ? "SUSPENDED" : rawFilter;
   const initialSearch = searchParams?.get("search") || "";
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
@@ -260,7 +261,7 @@ function GatekeeperSchoolManagementContent() {
             { id: "FULL_VERIFIED", label: "Terverifikasi" },
             { id: "PENDING_VERIFICATION", label: "Menunggu Verifikasi" },
             { id: "UNVERIFIED", label: "Belum Verifikasi" },
-            { id: "TAKEDOWN", label: "Dibekukan" },
+            { id: "SUSPENDED", label: "Dibekukan" },
           ].map((tab) => {
             const active = statusFilter === tab.id;
             return (

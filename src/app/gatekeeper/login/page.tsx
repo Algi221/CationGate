@@ -20,7 +20,7 @@ export default function GatekeeperLogin() {
 
   useEffect(() => {
     setMounted(true);
-    if (adminToken) router.push("/gatekeeper/dashboard");
+    if (adminToken) window.location.href = "/gatekeeper/dashboard";
   }, [adminToken, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -34,7 +34,7 @@ export default function GatekeeperLogin() {
     try {
       const res = await loginGatekeeper(username, password);
       if (res.success) {
-        router.push("/gatekeeper/dashboard");
+        window.location.href = "/gatekeeper/dashboard";
       } else {
         setError(res.message || "Kredensial Gatekeeper tidak valid.");
       }
@@ -48,7 +48,7 @@ export default function GatekeeperLogin() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row font-sans selection:bg-blue-600 selection:text-white">
+    <div data-dashboard="true" className="min-h-screen w-full flex flex-col lg:flex-row font-sans selection:bg-blue-600 selection:text-white">
 
       {/* Left Panel - Dark Mode Design matching Image 2 */}
       <div className="w-full lg:w-[45%] bg-[#0b1121] relative flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">

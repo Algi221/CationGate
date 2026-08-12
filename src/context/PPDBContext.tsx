@@ -81,45 +81,42 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   const [applicants, setApplicants] = useState<any[]>([]);
   const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
   const [activeStudents, setActiveStudents] = useState<any[]>([]);
-  const [adminToken, setAdminToken] = useState<string | null>(() => {
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+  const [adminUser, setAdminUser] = useState<any | null>(null);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("ppdb_admin_token");
-      // Clear legacy fake tokens (e.g. "token_admin_<id>" from /daftar registration)
-      // which are NOT valid JWTs and would cause 401 on every admin API call.
       if (token && !token.includes('.')) {
         localStorage.removeItem("ppdb_admin_token");
         localStorage.removeItem("ppdb_admin_user");
         localStorage.removeItem("ppdb_admin_last_active");
-        return null;
-      }
-      const lastActive = localStorage.getItem("ppdb_admin_last_active");
-      if (token && lastActive) {
-        const elapsed = Date.now() - parseInt(lastActive, 10);
-        if (elapsed > 60 * 60 * 1000) { // 1 hour
-          localStorage.removeItem("ppdb_admin_token");
-          localStorage.removeItem("ppdb_admin_user");
-          localStorage.removeItem("ppdb_admin_last_active");
-          return null;
+      } else {
+        const lastActive = localStorage.getItem("ppdb_admin_last_active");
+        if (token && lastActive) {
+          const elapsed = Date.now() - parseInt(lastActive, 10);
+          if (elapsed > 60 * 60 * 1000) { // 1 hour
+            localStorage.removeItem("ppdb_admin_token");
+            localStorage.removeItem("ppdb_admin_user");
+            localStorage.removeItem("ppdb_admin_last_active");
+          } else {
+            setAdminToken(token);
+          }
+        } else if (token) {
+           setAdminToken(token);
         }
       }
-      return token || null;
-    }
-    return null;
-  });
-  const [adminUser, setAdminUser] = useState<any | null>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem("ppdb_admin_user");
-      const lastActive = localStorage.getItem("ppdb_admin_last_active");
-      if (saved && lastActive) {
-        const elapsed = Date.now() - parseInt(lastActive, 10);
-        if (elapsed > 60 * 60 * 1000) {
-          return null;
+
+      const savedUser = localStorage.getItem("ppdb_admin_user");
+      if (savedUser) {
+        try {
+          setAdminUser(JSON.parse(savedUser));
+        } catch (e) {
+          // ignore
         }
       }
-      try { return saved ? JSON.parse(saved) : null; } catch (_) { return null; }
     }
-    return null;
-  });
+  }, []);
   const [wsStatus, setWsStatus] = useState<string>("SYNCING (15s)");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
@@ -148,6 +145,38 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetchConfigs();
   }, [fetchConfigs]);
+
+  useEffect(() => {
+    if (schoolId) {
+      fetch(`/api/config?school_id=${schoolId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data && data.data.ppdb_school_theme_color) {
+            const themeColor = data.data.ppdb_school_theme_color;
+            const styleId = "ppdb-school-theme";
+            let styleEl = document.getElementById(styleId);
+            if (!styleEl) {
+              styleEl = document.createElement("style");
+              styleEl.id = styleId;
+              document.head.appendChild(styleEl);
+            }
+            // Override Tailwind colors using hex value. Note: If we use hex, it works if tailwind config allows arbitrary values or if we just override root variables.
+            // Since globals.css defines --primary, we can just set it. Wait, Tailwind's config might use HSL or raw hex. 
+            // In globals.css: :root { --primary: var(--dark-brown); } and var(--dark-brown) is a color. 
+            // If Tailwind uses var(--primary), we can inject a style that sets --primary: themeColor !important;
+            styleEl.innerHTML = `
+              :where(:not(.dark *)):where(:not([data-dashboard] *)) .text-primary { color: ${themeColor} !important; }
+              :where(:not(.dark *)):where(:not([data-dashboard] *)) .bg-primary { background-color: ${themeColor} !important; }
+              :where(:not(.dark *)):where(:not([data-dashboard] *)) .border-primary { border-color: ${themeColor} !important; }
+              [data-dashboard] .bg-blue-600 { background-color: ${themeColor} !important; }
+              [data-dashboard] .text-blue-600 { color: ${themeColor} !important; }
+              [data-dashboard] .border-blue-600 { border-color: ${themeColor} !important; }
+            `;
+          }
+        })
+        .catch((err) => console.error("Gagal mengambil config tema sekolah:", err));
+    }
+  }, [schoolId]);
 
   useEffect(() => {
     if (slug) {
@@ -725,10 +754,12 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
     // Real-time background sync interval (every 15s)
     const interval = setInterval(() => {
       fetchPublicApplicants();
-      if (adminToken) fetchAdminApplicants();
+      if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) {
+        fetchAdminApplicants();
+      }
     }, 15000);
     return () => clearInterval(interval);
-  }, [fetchPublicApplicants, fetchAdminApplicants, adminToken]);
+  }, [fetchPublicApplicants, fetchAdminApplicants, adminToken, adminUser]);
 
   useEffect(() => {
     connectWsRef.current = connectWs;
@@ -812,13 +843,15 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
 
   useEffect(() => {
     if (!adminToken) return;
+    if (adminUser && (adminUser.role === 'gatekeeper' || adminUser.isGatekeeper)) return;
 
     fetchAdminApplicants();
     fetchActiveStudents();
+    
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
-  }, [adminToken, fetchAdminApplicants, fetchActiveStudents]);
+  }, [adminToken, adminUser, fetchAdminApplicants, fetchActiveStudents]);
 
 
 

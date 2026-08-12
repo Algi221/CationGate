@@ -1,11 +1,16 @@
 "use client";
+// Force Next.js rebuild
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Building2, ShieldCheck, CheckCircle2, Clock, Sparkles, RefreshCw,
-  TrendingUp, ArrowUpRight, AlertCircle, Bell, ExternalLink
+  TrendingUp, ArrowUpRight, AlertCircle, Bell, ExternalLink, PieChart,
+  Landmark, Hourglass, FileQuestion
 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface SchoolTenant {
   id: number | string;
@@ -75,31 +80,74 @@ export default function GatekeeperOverviewPage() {
       label: "Total Sekolah SaaS",
       value: totalSchoolsCount.toString(),
       change: `${totalSchoolsCount} Instansi Terdaftar`,
-      icon: Building2,
-      color: "text-blue-600 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900"
+      icon: Landmark,
+      color: "text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-500/10"
     },
     {
       label: "Verifikasi Resmi (Aktif)",
       value: verifiedCount.toString(),
       change: totalSchoolsCount > 0 ? `${Math.round((verifiedCount / totalSchoolsCount) * 100)}% Terverifikasi` : "0% Terverifikasi",
-      icon: ShieldCheck,
-      color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-900"
+      icon: CheckCircle2,
+      color: "text-emerald-600 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-500/10"
     },
     {
       label: "Menunggu Verifikasi SK",
       value: pendingCount.toString(),
       change: pendingCount > 0 ? "Perlu Tindakan Gatekeeper" : "Semua Berkas Diproses",
-      icon: Clock,
-      color: "text-amber-600 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-900"
+      icon: Hourglass,
+      color: "text-amber-600 dark:text-amber-400 bg-amber-100/50 dark:bg-amber-500/10"
     },
     {
       label: "Belum Kirim Dokumen SK",
       value: unverifiedCount.toString(),
       change: "Pendaftar Baru / Belum SK",
-      icon: TrendingUp,
-      color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-900"
+      icon: FileQuestion,
+      color: "text-rose-600 dark:text-rose-400 bg-rose-100/50 dark:bg-rose-500/10"
     },
   ];
+
+  const chartOptions: any = {
+    chart: {
+      type: 'donut',
+      fontFamily: 'inherit',
+      background: 'transparent',
+    },
+    labels: ['Terverifikasi', 'Menunggu Verifikasi', 'Belum Mengirim Berkas'],
+    colors: ['#059669', '#d97706', '#4f46e5'],
+    stroke: { width: 0 },
+    dataLabels: { enabled: false },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '75%',
+          labels: {
+            show: true,
+            name: { show: true, fontSize: '12px', fontWeight: 600, color: '#64748b' },
+            value: { show: true, fontSize: '24px', fontWeight: 800, color: '#0f172a' },
+            total: {
+              show: true,
+              showAlways: true,
+              label: 'Total',
+              color: '#64748b',
+              fontSize: '12px',
+              fontWeight: 600
+            }
+          }
+        }
+      }
+    },
+    legend: {
+      show: true,
+      position: 'bottom',
+      fontSize: '12px',
+      fontWeight: 600,
+      labels: { colors: '#64748b' },
+      markers: { width: 10, height: 10, radius: 10, offsetX: -4 }
+    },
+    theme: { mode: 'light' }
+  };
+
+  const chartSeries = [verifiedCount, pendingCount, unverifiedCount];
 
   return (
     <div className="space-y-6">
@@ -128,18 +176,15 @@ export default function GatekeeperOverviewPage() {
       )}
 
       {/* Top Banner Header */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-          <ShieldCheck className="w-96 h-96" />
+      <div className="bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-xs relative overflow-hidden">
+        <div className="absolute -right-10 -bottom-10 opacity-[0.03] dark:opacity-10 pointer-events-none">
+          <ShieldCheck className="w-96 h-96 text-slate-900 dark:text-white" />
         </div>
         <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold border border-blue-400/30">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" /> Live Data Synchronization Center
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-            Selamat Datang, Gatekeeper <span className="text-blue-400">Superadmin</span> 👋
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Selamat Datang, Gatekeeper <span className="text-blue-600 dark:text-blue-500">Superadmin</span> 👋
           </h1>
-          <p className="text-sm text-slate-300 leading-relaxed">
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
             Kelola verifikasi legalitas sekolah pendaftar, tanggapan feedback admin sekolah, dan pantau kesehatan infrastruktur SaaS CationGate secara terpusat.
           </p>
           <div className="pt-2 flex flex-wrap gap-3">
@@ -180,7 +225,7 @@ export default function GatekeeperOverviewPage() {
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   {st.label}
                 </span>
-                <div className={`p-2.5 rounded-xl border ${st.color}`}>
+                <div className={`p-2.5 rounded-full ${st.color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
               </div>
@@ -225,35 +270,28 @@ export default function GatekeeperOverviewPage() {
             {loading ? (
               <div className="p-8 text-center text-slate-400 text-xs font-bold">Memuat antrean verifikasi real-time...</div>
             ) : pendingSchools.length > 0 ? (
-              pendingSchools.map((sc) => (
-                <div key={sc.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 dark:hover:bg-slate-850/50 p-2 rounded-2xl transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
-                      {sc.name.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-slate-900 dark:text-white text-sm">{sc.name}</h4>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 border border-blue-100 dark:border-blue-900 uppercase">
-                          {sc.plan_type || "TRIAL"}
-                        </span>
+              <>
+                {pendingSchools.slice(0, 5).map((sc) => (
+                  <div key={sc.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 dark:hover:bg-slate-850/50 p-2 rounded-2xl transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
+                        {sc.name.substring(0, 2).toUpperCase()}
                       </div>
-                      <p className="text-xs text-slate-500 font-mono mt-0.5">
-                        NPSN: {sc.npsn || "-"} • {sc.official_email || "-"}
-                      </p>
+                      <div>
+                        <h4 className="font-bold text-slate-900 dark:text-white text-sm">{sc.name}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">NPSN: {sc.npsn || "-"}</p>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    
                     <Link
-                      href={`/gatekeeper/dashboard/schools?slug=${sc.slug}`}
-                      className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/20"
+                      href={`/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION`}
+                      className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1 shrink-0"
                     >
-                      <ShieldCheck className="w-3.5 h-3.5" /> Tinjau SK &amp; Verifikasi
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Review SK
                     </Link>
                   </div>
-                </div>
-              ))
+                ))}
+              </>
             ) : (
               <div className="p-8 text-center space-y-2">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />

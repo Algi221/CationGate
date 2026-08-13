@@ -8,6 +8,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
 import { SystemFlowSection } from "@/components/landing/SystemFlowSection";
+import HeroPPDB from "@/components/landing/HeroSectionDua";
 
 // 1. TAMBAHAN BARU: Import komponen SimGymSection yang baru dibuat
 import SimGymSection from "@/components/landing/SimGymSection"; 
@@ -38,8 +39,9 @@ export default function LandingPage() {
       <Navbar />
 
       <main className="flex-1">
-        <ScrollExpandSection/>
-        <HeroSection onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.trailerAnime)} />
+        {/* <ScrollExpandSection/> */}
+        <HeroPPDB/>
+        {/* <HeroSection onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.trailerAnime)} /> */}
         {/* <HeroSection
           onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
         /> */}
@@ -53,9 +55,9 @@ export default function LandingPage() {
         <SystemFlowSection />
         <SimGymSection /> {/* PANGGIL KOMPONEN SIMGYM DI SINI */}
         {/* <RegionalStatsSection /> */}
-        <SuccessStorySection
+        {/* <SuccessStorySection
           onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
-        />
+        /> */}
         <PricingSection />
         <FaqSection />
         <CtaBanner />

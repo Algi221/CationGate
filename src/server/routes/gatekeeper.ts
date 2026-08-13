@@ -15,7 +15,7 @@ if (!JWT_SECRET || !GATEKEEPER_USERNAME || !GATEKEEPER_PASSWORD) {
   throw new Error('JWT_SECRET, GATEKEEPER_USERNAME, and GATEKEEPER_PASSWORD are required.');
 }
 
-// 1. POST /api/gatekeeper/login - Gatekeeper Platform Auth
+
 gatekeeperRouter.post('/login', async (c) => {
   try {
     const { username, password } = await c.req.json();

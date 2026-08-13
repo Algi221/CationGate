@@ -10,14 +10,15 @@ export default function LoadingScreen() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const hasSeen = sessionStorage.getItem("cationgate_has_seen_loading");
+    const hasSeen = localStorage.getItem("cationgate_has_seen_loading");
     if (hasSeen) {
       setIsMounted(false);
       return;
     }
 
+    document.body.style.overflow = "hidden";
     setIsMounted(true);
-    sessionStorage.setItem("cationgate_has_seen_loading", "true");
+    localStorage.setItem("cationgate_has_seen_loading", "true");
 
     // 1. Langsung mulai turun ke bawah tanpa jeda
     const t1 = setTimeout(() => setPhase("drop"), 100);
@@ -26,7 +27,10 @@ export default function LoadingScreen() {
     const t2 = setTimeout(() => setPhase("exit"), 4500);
 
     // 3. Setelah animasi teks menghilang selesai, langsung bersihkan DOM
-    const t3 = setTimeout(() => setIsMounted(false), 5300);
+    const t3 = setTimeout(() => {
+      setIsMounted(false);
+      document.body.style.overflow = "auto";
+    }, 5300);
 
     return () => {
       clearTimeout(t1);

@@ -4,6 +4,10 @@ import React, { useEffect, useState } from 'react';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { Download, RefreshCw, AlertCircle, Pencil, Save, X, Calendar } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
+
 
 interface KuotaItem {
   no: number;

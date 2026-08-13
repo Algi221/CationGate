@@ -432,7 +432,7 @@ export default function DaftarPage() {
     const loadLiveConfig = async () => {
       try {
         const BACKEND_URL = typeof window !== 'undefined' ? `/api` : "/api";
-        const res = await fetch(`${BACKEND_URL}/api/config`);
+        const res = await fetch(`${BACKEND_URL}/config`);
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
@@ -491,7 +491,7 @@ export default function DaftarPage() {
     const loadKuota = async () => {
       try {
         const BACKEND_URL = typeof window !== 'undefined' ? `/api` : "/api";
-        const res = await fetch(`${BACKEND_URL}/api/kuota`);
+        const res = await fetch(`${BACKEND_URL}/kuota`);
         const json = await res.json();
         if (json.success && json.data) {
           setKuotaData(json.data.pendaftar);

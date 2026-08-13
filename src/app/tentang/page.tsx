@@ -16,6 +16,11 @@ import {
   ShieldCheck,
   BookOpen,
 } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 
 if (typeof window !== "undefined") {
@@ -48,6 +53,12 @@ export default function AboutPage() {
     async function fetchMembers() {
       try {
         setLoading(true);
+        if (!supabase) {
+          setMembers(defaultTeam);
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase
           .from("team_members")
           .select("id, name, role, photo_url");

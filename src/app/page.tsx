@@ -8,16 +8,11 @@ import HeroSection from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
 import { SystemFlowSection } from "@/components/landing/SystemFlowSection";
-
-// 1. TAMBAHAN BARU: Import komponen SimGymSection yang baru dibuat
+import HeroPPDB from "@/components/landing/HeroSectionDua";
 import SimGymSection from "@/components/landing/SimGymSection"; 
-
-import { RegionalStatsSection } from "@/components/landing/RegionalStatsSection";
-import { SuccessStorySection } from "@/components/landing/SuccessStorySection";
-import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
+import { TestimonialsSection } from "@/components/landing";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FaqSection } from "@/components/landing/FaqSection";
-import { CtaBanner } from "@/components/landing/CtaBanner";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import { VideoModal } from "@/components/landing/VideoModal";
 import { FloatingVideoWidget } from "@/components/landing/FloatingVideoWidget";
@@ -38,8 +33,9 @@ export default function LandingPage() {
       <Navbar />
 
       <main className="flex-1">
-        <ScrollExpandSection/>
-        <HeroSection onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.trailerAnime)} />
+        {/* <ScrollExpandSection/> */}
+        <HeroPPDB/>
+        {/* <HeroSection onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.trailerAnime)} /> */}
         {/* <HeroSection
           onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
         /> */}
@@ -52,14 +48,9 @@ export default function LandingPage() {
         {/* <FeaturesShowcase /> */}
         <SystemFlowSection />
         <SimGymSection /> {/* PANGGIL KOMPONEN SIMGYM DI SINI */}
-        {/* <RegionalStatsSection /> */}
-        <SuccessStorySection
-          onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
-        />
         <TestimonialsSection />
         <PricingSection />
         <FaqSection />
-        <CtaBanner />
       </main>
 
       <CinematicFooter />

@@ -49,11 +49,11 @@ const testimonials = [
   },
 ];
 
-// Diringkas menjadi 3 kelompok frasa utama dengan variasi warna yang estetik
+// Ditebalkan sedikit opasitasnya dan warnanya diseragamkan hitam semua (zinc-900 dengan opacity [0.08])
 const bgWords = [
-  { text: "APA KATA", color: "text-foreground/[0.08]" },
-  { text: "MEREKA TENTANG", color: "text-primary/[0.12]" },
-  { text: "CATIONGATE?", color: "text-on-surface/[0.1]" },
+  { text: "APA KATA", color: "text-zinc-900/[0.08]" },
+  { text: "MEREKA TENTANG", color: "text-zinc-900/[0.08]" },
+  { text: "CATIONGATE?", color: "text-zinc-900/[0.08]" },
 ];
 
 export default function TestimonialsSection() {
@@ -71,8 +71,6 @@ export default function TestimonialsSection() {
     restDelta: 0.001,
   });
 
-  // KUNCI PERBAIKAN: Menyamakan struktur string calc() agar Framer Motion bisa interpolasi animasinya!
-  // Nilai ini memastikan ujung paling kanan teks dan kartu mentok sempurna di sisi kanan layar
   const xCards = useTransform(
     smoothProgress,
     [0, 1],
@@ -85,13 +83,15 @@ export default function TestimonialsSection() {
   );
 
   return (
-    <section ref={targetRef} className="relative h-[450vh] bg-background">
-      {/* Sticky Container */}
-      <div className="sticky top-0 h-screen w-full overflow-clip flex items-center bg-background">
+    <section
+      ref={targetRef}
+      className="relative h-[450vh] bg-white border-t border-zinc-200"
+    >
+      {/* Sticky Container dengan background putih */}
+      <div className="sticky top-0 h-screen w-full overflow-clip flex items-center bg-white">
         {/* LAYER 0: Background Text */}
         <motion.div
           style={{ x: xBg }}
-          // KUNCI PERBAIKAN: Padding x-axis disamakan persis dengan kartu (px-[10vw]) agar ujung awal dan akhir selaras
           className="absolute z-0 flex h-full w-max pointer-events-none items-center px-[10vw] gap-20 md:gap-32"
         >
           {bgWords.map((item, index) => (

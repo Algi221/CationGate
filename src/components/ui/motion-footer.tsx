@@ -81,7 +81,7 @@ const STYLES = `
   white-space: nowrap;
   user-select: none;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(35, 25, 28, 0.14) 0%, rgba(35, 25, 28, 0.01) 85%);
+  background: linear-gradient(180deg, rgba(35, 25, 28, 0.08) 0%, rgba(35, 25, 28, 0.005) 85%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -102,13 +102,17 @@ const STYLES = `
 }
 `;
 
-export type MagneticButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & 
-  React.AnchorHTMLAttributes<HTMLAnchorElement> & {
-    as?: React.ElementType;
-  };
+export type MagneticButtonProps =
+  React.ButtonHTMLAttributes<HTMLButtonElement> &
+    React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+      as?: React.ElementType;
+    };
 
 const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
-  ({ className, children, as: Component = "button", ...props }, forwardedRef) => {
+  (
+    { className, children, as: Component = "button", ...props },
+    forwardedRef,
+  ) => {
     const localRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
@@ -157,7 +161,7 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
       }, element);
 
       return () => ctx.revert();
-    },[]);
+    }, []);
 
     return (
       <Component
@@ -172,7 +176,7 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
         {children}
       </Component>
     );
-  }
+  },
 );
 MagneticButton.displayName = "MagneticButton";
 
@@ -199,7 +203,7 @@ export function CinematicFooter() {
             end: "bottom bottom",
             scrub: 1,
           },
-        }
+        },
       );
 
       gsap.fromTo(
@@ -215,7 +219,7 @@ export function CinematicFooter() {
             end: "bottom bottom",
             scrub: 1,
           },
-        }
+        },
       );
     }, wrapperRef);
 
@@ -229,17 +233,13 @@ export function CinematicFooter() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-      
-      <div
-        ref={wrapperRef}
-        className="relative w-full bg-background"
-      >
-        <footer className="relative flex w-full flex-col justify-between overflow-hidden text-foreground cinematic-footer-wrapper border-t border-border bg-background pt-16 pb-8 px-6 md:px-16">
-          
+
+      <div ref={wrapperRef} className="relative w-full bg-white">
+        <footer className="relative flex w-full flex-col justify-between overflow-hidden text-foreground cinematic-footer-wrapper border-t border-zinc-200 bg-white pt-16 pb-8 px-6 md:px-16">
           {/* Background Layers */}
           <div className="absolute inset-0 z-0 pointer-events-none">
             <div className="absolute inset-0 footer-bg-grid opacity-30" />
-            <div className="absolute left-1/2 top-1/2 h-[70vw] w-[70vw] -translate-x-1/2 -translate-y-1/2 rounded-full footer-aurora opacity-50 blur-[120px]" />
+            <div className="absolute left-1/2 top-1/2 h-[70vw] w-[70vw] -translate-x-1/2 -translate-y-1/2 rounded-full footer-aurora opacity-30 blur-[120px]" />
           </div>
 
           {/* Giant CATIONGATE Background Text */}
@@ -251,86 +251,200 @@ export function CinematicFooter() {
           </div>
 
           {/* Main Content Area */}
-          <div ref={contentRef} className="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-10">
-            
+          <div
+            ref={contentRef}
+            className="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-10"
+          >
             {/* Top Centered Banner: CTA */}
-            <div className="flex flex-col items-center justify-center text-center space-y-4 max-w-3xl mx-auto pb-10 border-b border-border/40 w-full">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-[#23191C]">
+            <div className="flex flex-col items-center justify-center text-center space-y-4 max-w-3xl mx-auto pb-10 border-b border-zinc-200 w-full">
+              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-zinc-900">
                 Siap Modernisasi Sekolah Anda?
               </h2>
-              <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
-                Platform penyedia layanan sistem penerimaan murid baru dan manajemen siswa terpadu #1 di Indonesia.
+              <p className="text-sm md:text-base text-zinc-600 max-w-xl mx-auto">
+                Platform penyedia layanan sistem penerimaan murid baru dan
+                manajemen siswa terpadu #1 di Indonesia.
               </p>
               <div className="pt-2">
                 <Link
                   href="/daftar"
-                  className="px-8 py-3.5 rounded-full bg-[#EAEAEA] text-slate-900 font-bold text-sm border border-slate-300 hover:bg-[#E0E0E0] transition-colors shadow-xs inline-flex items-center justify-center gap-2"
+                  className="px-8 py-3.5 rounded-full bg-zinc-900 text-white font-bold text-sm border border-zinc-900 hover:bg-zinc-800 transition-colors shadow-xs inline-flex items-center justify-center gap-2"
                 >
                   <span>Mulai Pendaftaran</span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-800" />
+                  <ArrowUpRight className="w-4 h-4 text-white" />
                 </Link>
               </div>
             </div>
 
             {/* Comprehensive Multi-Column Footer Layout */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 py-4">
-              
               {/* Column 1: Brand Info */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
                     <DoorOpen className="w-4 h-4" />
                   </div>
-                  <span className="font-extrabold text-xl tracking-wide text-foreground">
+                  <span className="font-extrabold text-xl tracking-wide text-zinc-900">
                     CationGate
                   </span>
                 </div>
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  Solusi manajemen pendidikan modern berbasis cloud. Mengintegrasikan penerimaan siswa (PPDB), administrasi sekolah, asesmen CBT, hingga laporan sinkronisasi Dapodik.
+                <p className="text-xs leading-relaxed text-zinc-600">
+                  Solusi manajemen pendidikan modern berbasis cloud.
+                  Mengintegrasikan penerimaan siswa (PPDB), administrasi
+                  sekolah, asesmen CBT, hingga laporan sinkronisasi Dapodik.
                 </p>
               </div>
 
               {/* Column 2: Solusi & Fitur */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Solusi & Fitur</h3>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li><a href="#hero" className="hover:text-foreground transition-colors">Sistem Penerimaan Murid Baru (PPDB)</a></li>
-                  <li><a href="#capabilities" className="hover:text-foreground transition-colors">Manajemen Siswa & Akademik</a></li>
-                  <li><a href="#capabilities" className="hover:text-foreground transition-colors">Ujian & Asesmen CBT Pintar</a></li>
-                  <li><a href="#capabilities" className="hover:text-foreground transition-colors">Dashboard Analitik Real-time</a></li>
-                  <li><a href="#capabilities" className="hover:text-foreground transition-colors">Integrasi Data Dapodik</a></li>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+                  Solusi & Fitur
+                </h3>
+                <ul className="space-y-2 text-xs text-zinc-600">
+                  <li>
+                    <a
+                      href="#hero"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Sistem Penerimaan Murid Baru (PPDB)
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#capabilities"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Manajemen Siswa & Akademik
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#capabilities"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Ujian & Asesmen CBT Pintar
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#capabilities"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Dashboard Analitik Real-time
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#capabilities"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Integrasi Data Dapodik
+                    </a>
+                  </li>
                 </ul>
               </div>
 
               {/* Column 3: Navigasi Sekolah */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Navigasi</h3>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li><a href="#hero" className="hover:text-foreground transition-colors">Beranda</a></li>
-                  <li><a href="#features" className="hover:text-foreground transition-colors">Fitur Unggulan</a></li>
-                  <li><a href="#kemitraan" className="hover:text-foreground transition-colors">Mitra Industri</a></li>
-                  <li><a href="#pricing" className="hover:text-foreground transition-colors">Paket Biaya</a></li>
-                  <li><a href="#faq" className="hover:text-foreground transition-colors">Pertanyaan Umum (FAQ)</a></li>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+                  Navigasi
+                </h3>
+                <ul className="space-y-2 text-xs text-zinc-600">
+                  <li>
+                    <a
+                      href="#hero"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Beranda
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#features"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Fitur Unggulan
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#kemitraan"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Mitra Industri
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#pricing"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Paket Biaya
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#faq"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Pertanyaan Umum (FAQ)
+                    </a>
+                  </li>
                 </ul>
               </div>
 
               {/* Column 4: Kontak & Dukungan */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Dukungan & Legal</h3>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li><a href="#" className="hover:text-foreground transition-colors">Pusat Bantuan</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Dokumentasi API</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Kebijakan Privasi</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Syarat & Ketentuan</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Status Sistem (Online)</a></li>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+                  Dukungan & Legal
+                </h3>
+                <ul className="space-y-2 text-xs text-zinc-600">
+                  <li>
+                    <a
+                      href="#"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Pusat Bantuan
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Dokumentasi API
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Kebijakan Privasi
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Syarat & Ketentuan
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="hover:text-zinc-900 transition-colors"
+                    >
+                      Status Sistem (Online)
+                    </a>
+                  </li>
                 </ul>
               </div>
-
             </div>
 
             {/* Bottom Row: Copyright & Scroll to Top */}
-            <div className="pt-6 border-t border-border/40 flex items-center justify-between gap-4">
-              <div className="text-xs text-muted-foreground font-medium">
+            <div className="pt-6 border-t border-zinc-200 flex items-center justify-between gap-4">
+              <div className="text-xs text-zinc-500 font-medium">
                 © 2026 CationGate. All rights reserved.
               </div>
 
@@ -338,12 +452,11 @@ export function CinematicFooter() {
                 as="button"
                 onClick={scrollToTop}
                 aria-label="Kembali ke atas"
-                className="w-10 h-10 rounded-full footer-glass-pill flex items-center justify-center group"
+                className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 flex items-center justify-center group transition-colors"
               >
                 <ArrowUp className="w-4 h-4 transform group-hover:-translate-y-1 transition-transform duration-300" />
               </MagneticButton>
             </div>
-
           </div>
         </footer>
       </div>

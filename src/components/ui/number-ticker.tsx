@@ -11,6 +11,7 @@ interface NumberTickerProps extends ComponentPropsWithoutRef<"span"> {
   direction?: "up" | "down"
   delay?: number
   decimalPlaces?: number
+  waitForLoading?: boolean
 }
 
 export function NumberTicker({
@@ -20,6 +21,7 @@ export function NumberTicker({
   delay = 0,
   className,
   decimalPlaces = 0,
+  waitForLoading = true,
   ...props
 }: NumberTickerProps) {
   const ref = useRef<HTMLSpanElement>(null)
@@ -29,11 +31,33 @@ export function NumberTicker({
     stiffness: 100,
   })
   const isInView = useInView(ref, { once: true, margin: "0px" })
+  const loadingComplete = useRef(false)
+
+  // Check if loading already completed
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      loadingComplete.current = sessionStorage.getItem("cationgate_loading_session") !== "active"
+    }
+  }, [])
+
+  // Listen for loading complete event
+  useEffect(() => {
+    if (!waitForLoading) return
+
+    const handleLoadingComplete = () => {
+      loadingComplete.current = true
+    }
+
+    window.addEventListener("cationgate:loading-complete", handleLoadingComplete)
+    return () => window.removeEventListener("cationgate:loading-complete", handleLoadingComplete)
+  }, [waitForLoading])
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null
 
-    if (isInView) {
+    const shouldStart = isInView && (!waitForLoading || loadingComplete.current)
+
+    if (shouldStart) {
       timer = setTimeout(() => {
         motionValue.set(direction === "down" ? startValue : value)
       }, delay * 1000)
@@ -44,7 +68,7 @@ export function NumberTicker({
         clearTimeout(timer)
       }
     }
-  }, [motionValue, isInView, delay, value, direction, startValue])
+  }, [motionValue, isInView, delay, value, direction, startValue, waitForLoading, loadingComplete.current])
 
   useEffect(
     () =>

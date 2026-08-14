@@ -145,7 +145,7 @@ export default function HeroPPDB() {
                 <Home className="w-5 h-5 text-white" />
               </div>
               <div className="text-4xl font-black tracking-tight text-white z-10">
-                <NumberTicker value={127} className="font-black text-white" />+
+                <NumberTicker value={127} className="font-black text-white" waitForLoading={true} />+
               </div>
               <p className="text-sm font-bold text-white/90 leading-tight mt-1 z-10">
                 Sekolah Terdaftar
@@ -163,7 +163,7 @@ export default function HeroPPDB() {
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-green">Early Bird Promo</span>
                 <div className="flex items-baseline gap-1 mt-1">
                   <span className="text-3xl font-black text-heading tracking-tight">
-                    <NumberTicker value={30} className="font-black text-heading" />%
+                    <NumberTicker value={30} className="font-black text-heading" waitForLoading={true} />%
                   </span>
                   <span className="text-xs font-bold text-green uppercase tracking-wide">OFF</span>
                 </div>
@@ -181,7 +181,7 @@ export default function HeroPPDB() {
                 <Handshake className="w-5 h-5 text-[#2A1B1D]" />
               </div>
               <div className="text-4xl font-black tracking-tight text-[#2A1B1D] z-10">
-                <NumberTicker value={12} className="font-black text-[#2A1B1D]" />+
+                <NumberTicker value={12} className="font-black text-[#2A1B1D]" waitForLoading={true} />+
               </div>
               <p className="text-sm font-bold text-[#2A1B1D]/80 leading-tight mt-1 z-10">
                 Mitra Lembaga

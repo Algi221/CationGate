@@ -4,6 +4,7 @@ import "./globals.css";
 import { PPDBProvider } from "@/context/PPDBContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
+import LoadingScreen from "@/components/landing/LoadingScreen";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -39,6 +40,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        <LoadingScreen />
         <QueryProvider>
           <ThemeProvider
             attribute="class"

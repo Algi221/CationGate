@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
+const LOADING_KEY = "cationgate_loading_session";
+
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "drop" | "exit">("start");
   const [isMounted, setIsMounted] = useState<boolean>(false);
@@ -10,23 +12,29 @@ export default function LoadingScreen() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const hasSeen = localStorage.getItem("cationgate_has_seen_loading");
-    if (hasSeen) {
+    // Check if this is a fresh session (no active loading session)
+    // Using sessionStorage so it clears when tab closes
+    const hasActiveSession = sessionStorage.getItem(LOADING_KEY);
+
+    // If session already active, don't show loading (client-side navigation)
+    if (hasActiveSession) {
       setIsMounted(false);
       return;
     }
 
+    // This is a fresh load (hard refresh or first visit)
+    // Mark session as active
+    sessionStorage.setItem(LOADING_KEY, "active");
     document.body.style.overflow = "hidden";
     setIsMounted(true);
-    localStorage.setItem("cationgate_has_seen_loading", "true");
 
-    // 1. Langsung mulai turun ke bawah tanpa jeda
+    // 1. Start curtain drop immediately
     const t1 = setTimeout(() => setPhase("drop"), 100);
 
-    // 2. Tepat saat ujung ombak menyentuh bawah layar, teks langsung bereaksi menutup!
+    // 2. Start exit animation when curtain reaches bottom
     const t2 = setTimeout(() => setPhase("exit"), 4500);
 
-    // 3. Setelah animasi teks menghilang selesai, langsung bersihkan DOM
+    // 3. Cleanup after animation completes
     const t3 = setTimeout(() => {
       setIsMounted(false);
       document.body.style.overflow = "auto";
@@ -39,7 +47,16 @@ export default function LoadingScreen() {
     };
   }, []);
 
-  // Varian animasi untuk tirai biru
+  // Clear session flag when user leaves the page (allows loading on refresh)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem(LOADING_KEY);
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  // Animation variants
   const curtainVariants: Variants = {
     start: { y: "-20vh" },
     drop: {
@@ -51,7 +68,6 @@ export default function LoadingScreen() {
     },
   };
 
-  // Varian animasi untuk teks agar menutup dengan smooth
   const textVariants: Variants = {
     visible: { opacity: 1, scale: 1 },
     hidden: {
@@ -70,7 +86,7 @@ export default function LoadingScreen() {
           transition={{ duration: 0.8, ease: "easeInOut" }}
           className="fixed inset-0 z-[9999] w-screen h-screen flex flex-col items-center justify-center bg-background overflow-hidden"
         >
-          {/* SUNTIKAN CSS LANGSUNG */}
+          {/* Injected CSS for wave animation */}
           <style>{`
             @keyframes animateWave {
               0% { transform: translateX(0); }
@@ -86,7 +102,7 @@ export default function LoadingScreen() {
             }
           `}</style>
 
-          {/* TEKS MEMENTO MORI (PERBAIKAN DARK MODE) */}
+          {/* Logo Text */}
           <motion.div
             variants={textVariants}
             initial="visible"
@@ -98,7 +114,7 @@ export default function LoadingScreen() {
             </h1>
           </motion.div>
 
-          {/* TIRAI BIRU */}
+          {/* Curtain Animation */}
           <motion.div
             variants={curtainVariants}
             initial="start"
@@ -106,7 +122,7 @@ export default function LoadingScreen() {
             className="absolute top-0 left-0 w-full h-[200vh] z-20 flex flex-col"
           >
             <div className="relative w-full h-[15vh] overflow-hidden">
-              {/* Gelombang Belakang */}
+              {/* Background Wave */}
               <div className="absolute bottom-0 left-0 h-full wave-layer-slow">
                 <svg
                   className="w-full h-full"
@@ -122,7 +138,7 @@ export default function LoadingScreen() {
                 </svg>
               </div>
 
-              {/* Gelombang Depan */}
+              {/* Foreground Wave */}
               <div className="absolute bottom-0 left-0 h-full wave-layer-fast">
                 <svg
                   className="w-full h-full"
@@ -133,13 +149,13 @@ export default function LoadingScreen() {
                   <path
                     fill="#F3C625"
                     fillOpacity="1"
-                    d="M0,192L48,181.3C96,171,192,149,288,160C384,171,480,213,576,213.3C672,213,768,171,864,149.3C960,128,1056,128,1152,144C1248,160,1344,192,1392,208L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                    d="M0,192L48,181.3C96,171,192,149,288,160C384,171,480,213,576,213.3C672,213,768,171,864,149.3C960,128,1056,128,1152,144C1248,160,1344,192,1392,208L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,768,320C672,320,576,320,480,320C384,320,288,320,192,320C96,320,48,320,0,320Z"
                   ></path>
                 </svg>
               </div>
             </div>
 
-            {/* Kotak Biru Solid */}
+            {/* Solid Color Block */}
             <div className="flex-1 bg-[#FFD33B] w-full -mt-[1px]"></div>
           </motion.div>
         </motion.div>

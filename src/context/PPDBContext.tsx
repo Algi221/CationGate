@@ -24,6 +24,8 @@ interface WsLog {
 }
 
 interface PPDBContextType {
+  isLoaded: boolean;
+  setIsLoaded: React.Dispatch<React.SetStateAction<boolean>>;
   // Auth (proxied from AuthContext)
   adminToken: string | null;
   adminUser: any | null;
@@ -124,8 +126,18 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const { schoolId, schoolStatus, isDemoMode, isSchoolNotFound, ppdbLogo, ppdbTitle, profilSekolah, setProfilSekolah, fetchConfigs } = useSchool();
   const { toasts, addToast } = useToast();
 
+  const [isLoaded, setIsLoaded] = useState(false);
   const params = useParams();
   const slug = (params?.school_slug as string) || "";
+
+  useEffect(() => {
+    const handleLoadingComplete = () => setIsLoaded(true);
+    if (sessionStorage.getItem("cationgate_loading_session") !== "active") {
+        setIsLoaded(true);
+    }
+    window.addEventListener("cationgate:loading-complete", handleLoadingComplete);
+    return () => window.removeEventListener("cationgate:loading-complete", handleLoadingComplete);
+  }, []);
 
   const [applicants, setApplicants] = useState<any[]>([]);
   const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
@@ -440,6 +452,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   return (
     <PPDBContext.Provider
       value={{
+        isLoaded, setIsLoaded,
         applicants, setApplicants, publicApplicants, activeStudents,
         adminToken, adminUser, setAdminUser,
         wsStatus, toasts, wsLogs,

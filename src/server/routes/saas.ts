@@ -353,13 +353,23 @@ saasRouter.post('/register', async (c) => {
 saasRouter.post('/activate', async (c) => {
   try {
     const body = await c.req.json();
-    const { school_id, slug } = body;
+    const { school_id, slug, order_id } = body;
     const targetSlug = slug || school_id;
 
     if (!targetSlug) return c.json({ success: false, message: 'school_id or slug is required' }, 400);
 
     const supabase = getSupabaseClient();
     const idOrSlug = String(targetSlug);
+
+    // If order_id provided, update its status
+    if (order_id) {
+      try {
+        await supabase
+          .from('orders')
+          .update({ status: 'SETTLEMENT', updated_at: new Date().toISOString() })
+          .eq('order_id', order_id);
+      } catch (e) {}
+    }
 
     // 1. Update Supabase 'prospective_schools'
     try {
@@ -433,76 +443,267 @@ saasRouter.post('/activate', async (c) => {
   }
 });
 
-// Endpoint Midtrans Webhook Notification Handler (Sandbox & Production)
+// ═══════════════════════════════════════════════════════════════
+// MIDTRANS PAYMENT GATEWAY
+// Supports two order types:
+// - SCHOOL_PLAN: Subscription plan payment for tenant school
+// - STUDENT_FORM: Registration form payment for student
+// ═══════════════════════════════════════════════════════════════
+
+// Helper: Create Midtrans Snap Token for any order type
+async function createMidtransOrder({
+  orderType,
+  amount,
+  customerName,
+  customerEmail,
+  itemId,
+  itemName,
+  metadata = {}
+}: {
+  orderType: 'SCHOOL_PLAN' | 'STUDENT_FORM';
+  amount: number;
+  customerName: string;
+  customerEmail: string;
+  itemId: string;
+  itemName: string;
+  metadata?: any;
+}) {
+  const orderId = `CG-${orderType}-${Date.now()}`;
+
+  const parameter = {
+    transaction_details: {
+      order_id: orderId,
+      gross_amount: amount,
+    },
+    credit_card: { secure: true },
+    customer_details: {
+      first_name: customerName || 'Customer',
+      email: customerEmail || 'customer@cationgate.id',
+    },
+    item_details: [
+      {
+        id: itemId,
+        price: amount,
+        quantity: 1,
+        name: itemName,
+      },
+    ],
+  };
+
+  const transaction = await snap.createTransaction(parameter);
+  return { token: transaction.token, redirect_url: transaction.redirect_url, order_id: orderId };
+}
+
+// 1. POST /create-payment-token - Generic (back-compat) for SCHOOL_PLAN
+saasRouter.post('/create-payment-token', async (c) => {
+  try {
+    const { school_name, email, amount, plan_id, billing_cycle } = await c.req.json();
+    const grossAmount = amount || 750000;
+    const orderId = `CG-PRO-${Date.now()}`;
+
+    // Look up plan name if plan_id provided
+    let itemName = 'Paket SaaS CationGate Pro (1 Tahun)';
+    if (plan_id) {
+      try {
+        const supabase = getSupabaseClient();
+        const { data: plan } = await supabase.from('plans').select('*').eq('id', plan_id).maybeSingle();
+        if (plan) {
+          itemName = `Paket ${plan.name} (${billing_cycle === 'monthly' ? 'Bulanan' : 'Tahunan'})`;
+        }
+      } catch (e) {}
+    }
+
+    const result = await createMidtransOrder({
+      orderType: 'SCHOOL_PLAN',
+      amount: grossAmount,
+      customerName: school_name,
+      customerEmail: email,
+      itemId: plan_id ? `PLAN-${plan_id}` : 'PRO-YEARLY-750K',
+      itemName,
+    });
+
+    // Persist order
+    try {
+      const supabase = getSupabaseClient();
+      await supabase.from('orders').insert({
+        order_id: result.order_id,
+        order_type: 'SCHOOL_PLAN',
+        plan_id: plan_id || null,
+        amount: grossAmount,
+        status: 'PENDING',
+      });
+    } catch (dbErr) {
+      console.warn('Order insert warning (table may not exist yet):', dbErr);
+    }
+
+    return c.json({
+      success: true,
+      token: result.token,
+      redirect_url: result.redirect_url,
+      order_id: result.order_id,
+    });
+  } catch (err: any) {
+    console.error('Midtrans token creation error:', err?.message);
+    // Return mock token for sandbox resilience
+    return c.json({
+      success: true,
+      token: `MOCK-SNAP-TOKEN-${Date.now()}`,
+      message: 'Mock token created (Midtrans offline)',
+    });
+  }
+});
+
+// 2. POST /payment/student-form-token - Token for student registration fee
+saasRouter.post('/payment/student-form-token', async (c) => {
+  try {
+    const { school_id, applicant_name, applicant_email, applicant_nisn } = await c.req.json();
+    if (!school_id) {
+      return c.json({ success: false, message: 'school_id is required' }, 400);
+    }
+
+    // Fetch school-specific registration fee from landing_page_config
+    const supabase = getSupabaseClient();
+    let regFee = 150000; // default fallback
+    let schoolName = 'Sekolah';
+    try {
+      const { data: school } = await supabase.from('schools').select('name').eq('id', school_id).maybeSingle();
+      if (school) schoolName = school.name;
+    } catch (e) {}
+
+    try {
+      const { data: cfg } = await supabase
+        .from('landing_page_config')
+        .select('config_value')
+        .eq('school_id', school_id)
+        .eq('config_key', 'registration_fee')
+        .maybeSingle();
+
+      if (cfg && cfg.config_value) {
+        const val = cfg.config_value as any;
+        if (typeof val === 'object' && val.amount) {
+          regFee = Number(val.amount);
+        } else if (typeof val === 'number') {
+          regFee = val;
+        }
+      }
+    } catch (e) {}
+
+    const result = await createMidtransOrder({
+      orderType: 'STUDENT_FORM',
+      amount: regFee,
+      customerName: applicant_name,
+      customerEmail: applicant_email,
+      itemId: `REG-FEE-${school_id}`,
+      itemName: `Biaya Formulir Pendaftaran - ${schoolName}`,
+    });
+
+    // Persist order
+    try {
+      await supabase.from('orders').insert({
+        order_id: result.order_id,
+        order_type: 'STUDENT_FORM',
+        school_id,
+        amount: regFee,
+        status: 'PENDING',
+      });
+    } catch (dbErr) {
+      console.warn('Order insert warning (table may not exist yet):', dbErr);
+    }
+
+    return c.json({
+      success: true,
+      token: result.token,
+      redirect_url: result.redirect_url,
+      order_id: result.order_id,
+      amount: regFee,
+    });
+  } catch (err: any) {
+    console.error('Student form token error:', err?.message);
+    return c.json({
+      success: true,
+      token: `MOCK-SNAP-TOKEN-${Date.now()}`,
+      message: 'Mock token created (Midtrans offline)',
+    });
+  }
+});
+
+// 3. POST /midtrans-webhook - Handles both SCHOOL_PLAN & STUDENT_FORM
 saasRouter.post('/midtrans-webhook', async (c) => {
   try {
     const notificationJson = await c.req.json();
     const statusResponse = await snap.transaction.notification(notificationJson);
-    
+
     const orderId = statusResponse.order_id;
     const transactionStatus = statusResponse.transaction_status;
     const fraudStatus = statusResponse.fraud_status;
 
-    console.log(`[Midtrans Webhook] Transaction notification received. OrderId: ${orderId}, Status: ${transactionStatus}, Fraud: ${fraudStatus}`);
+    console.log(`[Midtrans Webhook] OrderId: ${orderId}, Status: ${transactionStatus}, Fraud: ${fraudStatus}`);
 
+    // Map transaction status to our internal status
+    let internalStatus = 'PENDING';
     if (transactionStatus === 'capture' || transactionStatus === 'settlement') {
-      if (fraudStatus === 'challenge') {
-        console.warn(`[Midtrans Webhook] Transaction ${orderId} challenged.`);
-      } else {
-        console.log(`[Midtrans Webhook] Transaction ${orderId} SUCCESSFUL/SETTLED.`);
+      internalStatus = 'SETTLEMENT';
+    } else if (transactionStatus === 'cancel' || transactionStatus === 'deny') {
+      internalStatus = 'CANCELLED';
+    } else if (transactionStatus === 'expire') {
+      internalStatus = 'EXPIRED';
+    }
+
+    // Update order in DB
+    const supabase = getSupabaseClient();
+    let orderRow: any = null;
+    try {
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('order_id', orderId)
+        .maybeSingle();
+      orderRow = orderData;
+    } catch (e) {}
+
+    // Always try to update order status
+    try {
+      await supabase
+        .from('orders')
+        .update({ status: internalStatus, updated_at: new Date().toISOString() })
+        .eq('order_id', orderId);
+    } catch (e) {}
+
+    // If successful, trigger downstream effects based on order_type
+    if (internalStatus === 'SETTLEMENT' && orderRow) {
+      if (orderRow.order_type === 'SCHOOL_PLAN') {
+        // Activate school subscription
+        try {
+          await supabase
+            .from('prospective_schools')
+            .update({ status: 'FULL_VERIFIED', is_verified: true })
+            .or(`slug.eq.${orderRow.school_id},id.eq.${orderRow.school_id}`);
+          await supabase
+            .from('schools')
+            .update({ status: 'FULL_VERIFIED', is_verified: true })
+            .or(`slug.eq.${orderRow.school_id},id.eq.${orderRow.school_id}`);
+        } catch (e) {
+          console.warn('School activation warning:', e);
+        }
+      } else if (orderRow.order_type === 'STUDENT_FORM') {
+        // Mark student registration fee as paid
+        try {
+          if (orderRow.applicant_id) {
+            await supabase
+              .from('calon_siswa')
+              .update({ registration_paid: true })
+              .eq('id', orderRow.applicant_id);
+          }
+        } catch (e) {
+          console.warn('Student fee update warning:', e);
+        }
       }
     }
+
     return c.json({ success: true, message: 'Webhook processed' });
   } catch (err: any) {
     console.warn('[Midtrans Webhook Error]:', err.message);
     return c.json({ success: true, message: 'Webhook received' });
-  }
-});
-
-// Endpoint untuk generate Snap Token Midtrans Paket Pro Rp 750.000 / Tahun
-saasRouter.post('/create-payment-token', async (c) => {
-  try {
-    const { school_name, email, amount } = await c.req.json();
-    const orderId = `CG-PRO-${Date.now()}`;
-    const grossAmount = amount || 750000;
-
-    const parameter = {
-      transaction_details: {
-        order_id: orderId,
-        gross_amount: grossAmount
-      },
-      credit_card: {
-        secure: true
-      },
-      customer_details: {
-        first_name: school_name || 'Admin Sekolah',
-        email: email || 'admin@cationgate.id'
-      },
-      item_details: [
-        {
-          id: 'PRO-YEARLY-750K',
-          price: grossAmount,
-          quantity: 1,
-          name: 'Paket SaaS CationGate Pro (1 Tahun)'
-        }
-      ]
-    };
-
-    const transaction = await snap.createTransaction(parameter);
-    return c.json({
-      success: true,
-      token: transaction.token,
-      redirect_url: transaction.redirect_url,
-      order_id: orderId
-    });
-  } catch (err: any) {
-    console.error('Midtrans token creation error:', err?.message);
-    // Return mock token for sandbox resilience if Midtrans credentials are offline
-    return c.json({
-      success: true,
-      token: `MOCK-SNAP-TOKEN-${Date.now()}`,
-      message: 'Mock token created'
-    });
   }
 });
 

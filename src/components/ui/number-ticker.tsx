@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useRef, type ComponentPropsWithoutRef } from "react"
-import { useInView, useMotionValue, useSpring } from "motion/react"
+import { useEffect, useRef, useState, type ComponentPropsWithoutRef } from "react"
+import { useMotionValue, useSpring } from "motion/react"
 
 import { cn } from "@/lib/utils"
 
@@ -9,19 +9,15 @@ interface NumberTickerProps extends ComponentPropsWithoutRef<"span"> {
   value: number
   startValue?: number
   direction?: "up" | "down"
-  delay?: number
   decimalPlaces?: number
-  waitForLoading?: boolean
 }
 
 export function NumberTicker({
   value,
   startValue = 0,
   direction = "up",
-  delay = 0,
   className,
   decimalPlaces = 0,
-  waitForLoading = true,
   ...props
 }: NumberTickerProps) {
   const ref = useRef<HTMLSpanElement>(null)
@@ -30,45 +26,49 @@ export function NumberTicker({
     damping: 60,
     stiffness: 100,
   })
-  const isInView = useInView(ref, { once: true, margin: "0px" })
-  const loadingComplete = useRef(false)
-
-  // Check if loading already completed
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      loadingComplete.current = sessionStorage.getItem("cationgate_loading_session") !== "active"
-    }
-  }, [])
-
-  // Listen for loading complete event
-  useEffect(() => {
-    if (!waitForLoading) return
-
-    const handleLoadingComplete = () => {
-      loadingComplete.current = true
-    }
-
-    window.addEventListener("cationgate:loading-complete", handleLoadingComplete)
-    return () => window.removeEventListener("cationgate:loading-complete", handleLoadingComplete)
-  }, [waitForLoading])
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null
+    let isCancelled = false;
 
-    const shouldStart = isInView && (!waitForLoading || loadingComplete.current)
-
-    if (shouldStart) {
-      timer = setTimeout(() => {
-        motionValue.set(direction === "down" ? startValue : value)
-      }, delay * 1000)
-    }
+    // Tunggu sebentar (50ms) agar LoadingScreen sempat merender dan menyetel sessionStorage
+    const timer = setTimeout(() => {
+      if (isCancelled) return;
+      
+      const status = sessionStorage.getItem("cationgate_loading_session");
+      if (status === "active") {
+        // LoadingScreen sedang berjalan, tunggu event selesainya
+        const handleLoadingComplete = () => setIsReady(true);
+        window.addEventListener("cationgate:loading-complete", handleLoadingComplete);
+        
+        // Safety fallback jika event gagal ditangkap
+        const safety = setTimeout(() => setIsReady(true), 6000);
+        
+        return () => {
+          window.removeEventListener("cationgate:loading-complete", handleLoadingComplete);
+          clearTimeout(safety);
+        };
+      } else {
+        // Tidak ada LoadingScreen, langsung jalankan animasi
+        setIsReady(true);
+      }
+    }, 50);
 
     return () => {
-      if (timer !== null) {
-        clearTimeout(timer)
-      }
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isReady) {
+      // Delay sedikit lagi untuk memastikan layout benar-benar siap dirender
+      const timeoutId = setTimeout(() => {
+        motionValue.set(direction === "down" ? startValue : value)
+      }, 50)
+      return () => clearTimeout(timeoutId)
     }
-  }, [motionValue, isInView, delay, value, direction, startValue, waitForLoading, loadingComplete.current])
+  }, [isReady, motionValue, direction, startValue, value])
 
   useEffect(
     () =>

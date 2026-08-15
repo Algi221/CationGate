@@ -48,7 +48,14 @@ function GatekeeperSchoolManagementContent() {
   const fetchSchools = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/gatekeeper/schools");
+      const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
+      
+      const res = await fetch("/api/gatekeeper/schools", {
+        headers: {
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        }
+      });
+      
       if (!res.ok) {
         setSchools([]);
         return;
@@ -88,9 +95,13 @@ function GatekeeperSchoolManagementContent() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
+          const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
           await fetch("/api/gatekeeper/approve-school", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
             body: JSON.stringify({ school_id: school.slug || school.id }),
           });
         } catch (e) {}
@@ -160,9 +171,13 @@ function GatekeeperSchoolManagementContent() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
+          const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
           await fetch("/api/gatekeeper/takedown-school", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
             body: JSON.stringify({ school_id: school.slug || school.id }),
           });
         } catch (e) {}

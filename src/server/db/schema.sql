@@ -1,6 +1,32 @@
         -- Database Schema CationGate (Multi-Tenant SaaS)
         -- Compatibility: PostgreSQL (pgAdmin ready)
 
+        -- Table for Subscription Plans (managed by Gatekeeper)
+        CREATE TABLE IF NOT EXISTS plans (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(50) NOT NULL,
+            price_monthly INTEGER NOT NULL,
+            price_yearly INTEGER NOT NULL,
+            features JSONB NOT NULL DEFAULT '[]',
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Table for Orders (track Midtrans transactions)
+        CREATE TABLE IF NOT EXISTS orders (
+            id SERIAL PRIMARY KEY,
+            order_id VARCHAR(100) NOT NULL UNIQUE,
+            order_type VARCHAR(20) NOT NULL,
+            school_id INTEGER REFERENCES schools(id) ON DELETE CASCADE,
+            applicant_id INTEGER REFERENCES calon_siswa(id) ON DELETE SET NULL,
+            plan_id INTEGER REFERENCES plans(id) ON DELETE SET NULL,
+            amount INTEGER NOT NULL,
+            status VARCHAR(20) DEFAULT 'PENDING',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
         -- Table for Prospective Schools (Calon Sekolah - Unverified SaaS Tenants)
         CREATE TABLE IF NOT EXISTS prospective_schools (
             id SERIAL PRIMARY KEY,
@@ -290,3 +316,9 @@
         INSERT INTO admin_users (school_id, username, password_hash, nama_lengkap, role) 
         VALUES (1, 'admin_tb', '$2a$10$9.8ZaoTOEEpOo89r7wawguTCJRzkhMuZ.D9i21lWsQ0eBxk0O9cyi', 'Panitia PPDB Biasa', 'admin')
         ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role;
+
+        -- Default Plans
+        INSERT INTO plans (name, price_monthly, price_yearly, features) VALUES
+        ('STARTER', 649000, 499000, '["Subdomain (sekolah.cationgate.id)", "250 Active Learner Capacity", "AI Lesson Plan Generation (50/mo)", "Email Support"]'),
+        ('PRO INSTITUTION', 1299000, 999000, '["All Starter Plan Features", "UNLIMITED Active Learners", "Custom Domain (sch.id / edu)", "Unlimited AI Lesson & Assessment", "Real-Time Telemetry & Skill Heatmaps", "WhatsApp Broadcast API Integration"]')
+        ON CONFLICT DO NOTHING;

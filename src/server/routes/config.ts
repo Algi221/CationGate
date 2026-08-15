@@ -407,4 +407,67 @@ configRouter.post('/restore', adminAuth, async (c) => {
   }
 });
 
+
+// ===================================================================
+// REGISTRATION FEE (SCHOOL-SPECIFIC)
+// ===================================================================
+
+// GET /api/config/registration_fee - PUBLIC
+configRouter.get('/registration_fee', async (c) => {
+  const schoolId = c.req.header('X-School-Id');
+  if (!schoolId) {
+    return c.json({ success: false, message: 'X-School-Id header is required' }, 400);
+  }
+
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('landing_page_config')
+      .select('config_value')
+      .eq('school_id', schoolId)
+      .eq('config_key', 'registration_fee')
+      .maybeSingle();
+
+    if (error) throw error;
+    return c.json({ success: true, data });
+  } catch (err: any) {
+    return c.json({ success: false, message: 'Failed to fetch config' }, 500);
+  }
+});
+
+// POST /api/config/registration_fee - ADMIN AUTH
+configRouter.post('/registration_fee', adminAuth, async (c) => {
+  const schoolId = c.req.header('X-School-Id');
+  if (!schoolId) {
+    return c.json({ success: false, message: 'X-School-Id header is required' }, 400);
+  }
+
+  try {
+    const body = await c.req.json();
+    const { amount } = body;
+    
+    if (amount == null || isNaN(Number(amount))) {
+      return c.json({ success: false, message: 'Amount must be a number' }, 400);
+    }
+    
+    const configValue = { amount: Number(amount) };
+
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('landing_page_config')
+      .upsert(
+        { school_id: schoolId, config_key: 'registration_fee', config_value: configValue, updated_at: new Date().toISOString() },
+        { onConflict: 'school_id,config_key' }
+      )
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return c.json({ success: true, message: 'Registration fee updated', data });
+  } catch (err: any) {
+    return c.json({ success: false, message: err.message }, 500);
+  }
+});
+
 export default configRouter;

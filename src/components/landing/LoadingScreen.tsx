@@ -5,28 +5,37 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const LOADING_KEY = "cationgate_loading_session";
 
+// Shared gate so NumberTicker knows whether a loading session is in progress.
+// Evaluated once at module load.
+let loadingActive =
+  typeof window !== "undefined" &&
+  sessionStorage.getItem(LOADING_KEY) === null;
+
+export function isActiveLoading() {
+  return loadingActive;
+}
+
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "drop" | "exit">("start");
-  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     // Check if this is a fresh session (no active loading session)
-    // Using sessionStorage so it clears when tab closes
     const hasActiveSession = sessionStorage.getItem(LOADING_KEY);
 
-    // If session already active, don't show loading (client-side navigation)
+    // If session already active, don't show loading
     if (hasActiveSession) {
-      setIsMounted(false);
+      setTimeout(() => setIsMounted(false), 0);
       return;
     }
 
     // This is a fresh load (hard refresh or first visit)
-    // Mark session as active
     sessionStorage.setItem(LOADING_KEY, "active");
+    loadingActive = false;
     document.body.style.overflow = "hidden";
-    setIsMounted(true);
+
 
     // 1. Start curtain drop immediately
     const t1 = setTimeout(() => setPhase("drop"), 100);
@@ -46,6 +55,17 @@ export default function LoadingScreen() {
       clearTimeout(t3);
     };
   }, []);
+
+  // Dispatch loading complete event when animation finishes
+  useEffect(() => {
+    if (isMounted && phase === "exit") {
+      const timer = setTimeout(() => {
+        sessionStorage.removeItem(LOADING_KEY);
+        window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
+      }, 800); // Wait for exit animation to finish
+      return () => clearTimeout(timer);
+    }
+  }, [isMounted, phase]);
 
   // Clear session flag when user leaves the page (allows loading on refresh)
   useEffect(() => {

@@ -1,123 +1,236 @@
-import { NumberTicker } from "../ui/number-ticker";
-import { Button } from "../ui/button";
-import { Radio, Play, ArrowRight } from "lucide-react";
-import Link from "next/link";
+'use client';
 
-interface HeroSectionProps {
-  onOpenVideo?: () => void;
-}
+import { motion } from 'framer-motion';
+import { 
+  Star, 
+  Tag,
+  Home, 
+  Handshake, 
+  Globe,
+  Users,
+  ShieldCheck,
+  Zap,
+  LayoutDashboard,
+  Play,
+  ArrowUpRight
+} from 'lucide-react';
+import { NumberTicker } from '@/components/ui/number-ticker';
 
-export default function HeroSection({ onOpenVideo }: HeroSectionProps) {
+export default function HeroPPDB() {
+  // ARRAY UNTUK FITUR KARTU 5 (ALL-IN-ONE PACKAGE)
+  const features = [
+    { icon: Globe, text: 'Website Profil Sekolah Modern' },
+    { icon: Users, text: 'Sistem PPDB Online Otomatis' },
+    { icon: LayoutDashboard, text: 'Dashboard Admin & Siswa' },
+    { icon: ShieldCheck, text: 'Domain SSL & Cloud Hosting' },
+    { icon: Zap, text: 'Fitur Export & Import Data' },
+  ];
+
   return (
-    <main>
-      <div className="flex flex-col items-center justify-center min-h-screen py-20 bg-white">
-        <div className="w-full text-center px-4 mb-12 md:mb-16 mt-10">
-          <div className="relative inline-block text-center">
-            <div className="absolute -left-12 top-4 w-20 md:-left-20 md:w-16 hidden md:block">
-              <svg viewBox="0 0 100 30" fill="none" stroke="#FDE047" strokeWidth="6" strokeLinecap="round">
-                <path d="M5,15 Q15,0 25,15 T45,15 T65,15 T85,15" />
-              </svg>
-            </div>
+    <div className="w-full min-h-screen p-4 sm:p-8 md:p-12 flex flex-col items-center justify-center font-sans text-heading relative overflow-hidden">
+      
+      {/* Background Dot Pattern */}
+      <div 
+        className="absolute inset-0 opacity-30 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(var(--green) 1px, transparent 1px)`,
+          backgroundSize: '20px 20px'
+        }}
+      />
 
-            <div className="absolute -right-8 -top-4 w-10 md:-right-16 md:w-12 hidden md:block">
-              <svg viewBox="0 0 50 60" fill="none" stroke="#111827" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10,10 L40,20 L10,30 L40,40 L10,50 L40,60" />
-              </svg>
-            </div>
+      <div className="w-full max-w-7xl mx-auto z-10 flex flex-col items-center gap-8 py-2">
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-[#23191C] whitespace-nowrap">
-            The intelligent platform for{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10">modern schools</span>
-              <span className="absolute bottom-[4px] left-0 z-0 h-[30%] w-full rounded-[3px] bg-[#FFD33B]" />
-            </span>
-          </h1>
-          </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-center max-w-3xl mx-auto my-1 space-y-4"
+        >
+          <h3 className="text-xl sm:text-2xl font-black text-heading tracking-tight">
+            "Satu Platform Terpadu Untuk Transformasi Digital Sekolah Anda"
+          </h3>
 
-          {/* Description - Single Line */}
-          <p className="mt-6 max-w-4xl text-base sm:text-lg font-medium leading-relaxed text-[#58504E]">
-            One platform to manage learning, monitor progress, and empower teachers with intelligent tools.
+          <p className="text-xs sm:text-sm text-body font-medium max-w-xl mx-auto">
+            Kelola pendaftaran siswa baru, informasi sekolah, hingga manajemen admin tanpa ribet.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="mt-10 flex w-full flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/daftar" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="group h-12 w-full rounded-lg border-0 bg-[#23191C] px-8 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#3D3235] hover:shadow-xl active:scale-95 sm:w-auto"
-              >
-                <span>Get Started</span>
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </Button>
-            </Link>
+          {/* DUA TOMBOL WAJIB: LIVE PREVIEW & WATCH DEMO */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button className="px-6 py-3 rounded-full bg-[#23191C] hover:bg-[#3A2B30] text-white font-extrabold text-xs sm:text-sm transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2 group">
+              <span>Live Preview</span>
+              <ArrowUpRight className="w-4 h-4 text-[#F3C625] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </button>
 
-            <button
-              type="button"
-              onClick={onOpenVideo}
-              className="group flex h-12 w-full items-center justify-center gap-2.5 rounded-lg border border-[#E7E1D6] bg-white px-7 text-sm font-semibold text-[#23191C] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#D9D3C7] hover:bg-[#F7F4ED] hover:shadow-md sm:w-auto"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#23191C] text-white transition-transform duration-300 group-hover:scale-110">
-                <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
-              </span>
-              Watch Demo
+            <button className="px-6 py-3 rounded-full bg-surface hover:bg-background text-heading font-extrabold text-xs sm:text-sm border border-border transition-all shadow-sm hover:-translate-y-0.5 flex items-center gap-2">
+              <Play className="w-3.5 h-3.5 text-green fill-green" />
+              <span>Watch Demo</span>
             </button>
           </div>
+        </motion.div>
+
+        {/* BENTO GRID WRAPPER */}
+        <div className="w-full relative">
+
+          {/* AVATAR STACK MELAYANG DI TENGAH GRID */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: "-50%", x: "-50%" }}
+            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+            transition={{ delay: 0.35 }}
+            className="hidden md:flex absolute top-10/12 left-2/3 ml-6 -translate-x-10/12 -translate-y-1/2 z-30 items-center justify-center gap-3 py-2 px-4 rounded-full border border-border shadow-xl backdrop-blur-md pointer-events-auto"
+          >
+            {/* Stack Avatar */}
+            <div className="flex items-center -space-x-2.5 overflow-hidden p-0.5">
+              <img 
+                className="inline-block h-7 w-7 rounded-full ring-2 ring-surface object-cover shadow-xs" 
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" 
+                alt="Mitra Sekolah 1" 
+              />
+              <img 
+                className="inline-block h-7 w-7 rounded-full ring-2 ring-surface object-cover shadow-xs" 
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" 
+                alt="Mitra Sekolah 2" 
+              />
+              <img 
+                className="inline-block h-7 w-7 rounded-full ring-2 ring-surface object-cover shadow-xs" 
+                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" 
+                alt="Mitra Sekolah 3" 
+              />
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2A1B1D] text-[#F3C625] text-[9px] font-black ring-2 ring-surface shadow-xs">
+                +12
+              </div>
+            </div>
+
+            {/* Rating & Text */}
+            <div className="flex flex-col items-start leading-none">
+              <div className="flex items-center gap-0.5 text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-2.5 h-2.5 fill-amber-400" />
+                ))}
+                <span className="text-[10px] font-black text-heading ml-1">5.0</span>
+              </div>
+              <span className="text-[10px] font-bold text-muted mt-0.5">
+                99+ Sekolah menilai
+              </span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-start"
+          >
+            
+            {/* KARTU 1: PREVIEW DASHBOARD / PORTAL */}
+            <div className="md:col-span-3 h-[420px] sm:h-[480px] rounded-2xl overflow-hidden relative shadow-md group border border-border">
+              <img 
+                src="/assets/landing/mockup.png" 
+                alt="PPDB Dashboard Preview" 
+                className="w-full h-full object-cover object-left transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#2A1B1D]/80 via-transparent to-transparent flex flex-col justify-end p-4 text-slate-50">
+                <span className="text-[10px] font-bold tracking-wider uppercase bg-green px-2 py-0.5 rounded-md w-fit mb-1 text-dark-brown">
+                  Portal PPDB
+                </span>
+                <p className="text-xs font-semibold">Sistem Pendaftaran Online</p>
+              </div>
+            </div>
+
+            {/* KARTU 2: PINK CARD */}
+            <div className="md:col-span-2 h-70 sm:h-78 bg-[#E86BC6] text-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-md relative overflow-hidden">
+              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/20 blur-sm pointer-events-none" />
+              <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-white/15 pointer-events-none" />
+
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center mb-2 z-10">
+                <Home className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-4xl font-black tracking-tight text-white z-10">
+                <NumberTicker value={127} className="font-black text-white" />+
+              </div>
+              <p className="text-sm font-bold text-white/90 leading-tight mt-1 z-10">
+                Sekolah Terdaftar
+              </p>
+            </div>
+
+            {/* KARTU 3: DISKON & PROMO SPESIAL */}
+            <div className="md:col-span-3 h-55 sm:h-50 bg-surface rounded-2xl p-5 flex flex-col justify-between shadow-sm relative overflow-hidden group border border-border">
+              <div className="absolute top-0 right-0 bg-[#23191C] text-white font-black text-[10px] sm:text-xs px-3 py-1.5 rounded-bl-xl shadow-xs tracking-wider flex items-center gap-1 z-10">
+                <Tag className="w-3 h-3 text-[#F3C625]" />
+                <span>HEMAT 30%</span>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-green">Early Bird Promo</span>
+                <div className="flex items-baseline gap-1 mt-1">
+                  <span className="text-3xl font-black text-heading tracking-tight">
+                    <NumberTicker value={30} className="font-black text-heading" />%
+                  </span>
+                  <span className="text-xs font-bold text-green uppercase tracking-wide">OFF</span>
+                </div>
+                <p className="text-xs font-extrabold text-heading mt-1">Diskon Langganan PPDB</p>
+                <p className="text-[10px] text-muted">Khusus 50 sekolah pendaftar pertama</p>
+              </div>
+            </div>
+
+            {/* KARTU 4: BIRU CARD */}
+            <div className="md:col-span-2 h-70 sm:h-78 bg-[#8EC9F6] text-surface rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-md relative overflow-hidden">
+              <div className="absolute -top-8 -left-8 w-28 h-28 rounded-full bg-white/30 blur-sm pointer-events-none" />
+              <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-white/20 pointer-events-none" />
+
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center mb-2 z-10">
+                <Handshake className="w-5 h-5 text-[#2A1B1D]" />
+              </div>
+              <div className="text-4xl font-black tracking-tight text-[#2A1B1D] z-10">
+                <NumberTicker value={12} className="font-black text-[#2A1B1D]" />+
+              </div>
+              <p className="text-sm font-bold text-[#2A1B1D]/80 leading-tight mt-1 z-10">
+                Mitra Lembaga
+              </p>
+            </div>
+
+       
+<div className="md:col-span-2 h-[420px] sm:h-[480px] bg-transparent text-[#2A1B1D] rounded-2xl flex flex-col justify-between relative group border-0">
+  
+  <div className="space-y-1.5 z-10 bg-[#F3C625] p-6 rounded-2xl">
+    <h1 className="text-2xl font-black leading-tight tracking-tight pt-1">
+      Apa Saja Yang Anda Dapatkan?
+    </h1>
+  </div>
+
+  <div className="grid lg:grid-cols-1 grid-cols-2 gap-3 my-auto py-2 z-10">
+    {features.map((item, index) => {
+      const Icon = item.icon;
+      return (
+        <div key={index} className="flex items-center gap-2.5 p-3 bg-white/40 backdrop-blur-xs rounded-xl border border-white/10 shadow-sm transition hover:bg-white/60">
+          <div className="w-6 h-6 rounded-lg bg-[#2A1B1D] flex items-center justify-center shrink-0">
+            <Icon className="w-3.5 h-3.5 text-[#F3C625]" />
+          </div>
+          <span className="text-sm font-extrabold leading-tight text-[#2A1B1D]">
+            {item.text}
+          </span>
+        </div>
+      );
+    })}
+  </div>
+
+</div>
+          </motion.div>
         </div>
 
-        <div className="w-full max-w-7xl px-4 md:px-8">
-          <div className="flex flex-col md:flex-row items-stretch w-full drop-shadow-xl">
-            <div className="relative w-full md:w-1/2 min-h-[20rem] md:min-h-[30rem] overflow-hidden rounded-t-[2.5rem] md:rounded-t-none md:rounded-tl-[3rem] md:rounded-bl-none md:rounded-br-[8rem] z-10">
-              <img
-                src="/assets/landing/imageDahboard.png"
-                alt="Tampilan Dashboard"
-                className="absolute inset-0 h-full w-full object-cover object-left transition-all duration-300 hover:scale-105"
-              />
-            </div>
-
-            <div className="relative flex w-full md:w-1/2 flex-col justify-center bg-[#8EC9F6] p-10 md:p-14 lg:p-20 text-left rounded-b-[2.5rem] md:rounded-b-none md:rounded-tl-none md:rounded-tr-[3rem] md:rounded-bl-[8rem] md:rounded-br-[3rem] z-0 overflow-hidden">
-              <div className="absolute bottom-6 right-6 w-32 opacity-70">
-                <svg viewBox="0 0 100 20" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
-                  <path d="M0,10 Q10,0 20,10 T40,10 T60,10 T80,10 T100,10" />
-                </svg>
-              </div>
-
-              <div className="mb-10 grid grid-cols-2 gap-6 relative z-10">
-                <div className="space-y-1">
-                  <div className="flex items-baseline">
-                    <NumberTicker value={50} decimalPlaces={0} className="text-5xl md:text-6xl font-black tracking-tighter text-[#2A1B1D]" />
-                    <span className="text-[42px] md:text-[68px] font-black text-[#2A1B1D]">+</span>
-                  </div>
-                  <p className="text-sm md:text-base font-bold text-[#2A1B1D]/80">Sekolah Berlangganan</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-baseline">
-                    <NumberTicker value={10} decimalPlaces={0} className="text-5xl md:text-6xl font-black tracking-tighter text-[#2A1B1D]" />
-                    <span className="text-[42px] md:text-[68px] font-black text-[#2A1B1D]">+</span>
-                  </div>
-                  <p className="text-sm md:text-base font-bold text-[#2A1B1D]/80">Mitra Aktif</p>
-                </div>
-              </div>
-
-              <p className="mb-10 text-base md:text-lg font-medium leading-relaxed text-[#2A1B1D]/90 max-w-md relative z-10">
-                Digitalisasi manajemen sekolah kini lebih mudah. Pantau nilai, kehadiran, dan kolaborasi guru-siswa dalam satu dashboard interaktif dan aman.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 relative z-10">
-                <Button variant="secondary" className="rounded-full px-6 py-6 bg-[#2A1B1D] text-sm md:text-base font-bold text-white hover:bg-[#58504E] border-none shadow-md">
-                  <Radio className="mr-2 w-5 h-5" />
-                  Coba Demo Live
-                </Button>
-                <Button type="button" onClick={onOpenVideo} className="rounded-full px-6 py-6 bg-white/90 hover:bg-white text-[#2A1B1D] text-sm md:text-base font-bold shadow-md">
-                  <Play fill="#8EC9F6" className="text-[#8EC9F6] mr-2 w-5 h-5" />
-                  Lihat Demo
-                </Button>
-              </div>
-            </div>
+        <div className="flex md:hidden justify-center items-center gap-3 py-2 px-4 rounded-full bg-surface border border-border shadow-xs mt-2">
+          <div className="flex items-center -space-x-2">
+            <img className="h-6 w-6 rounded-full object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" />
+            <img className="h-6 w-6 rounded-full object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="Avatar" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2A1B1D] text-[#F3C625] text-[8px] font-bold">+12</div>
+          </div>
+          <div className="flex items-center gap-1 text-amber-400 text-[10px] font-bold">
+            <Star className="w-3 h-3 fill-amber-400" />
+            <span>5.0 (99+ Sekolahmenilai)</span>
           </div>
         </div>
+
       </div>
-    </main>
+
+    </div>
   );
 }
-
-export { HeroSection };

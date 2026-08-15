@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import LoadingScreen from "@/components/landing/LoadingScreen";
 import { Navbar } from "@/components/landing/Navbar";
 import ScrollExpandSection  from "@/components/landing/ScrollExpandSection";
 import HeroSection from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
 import { SystemFlowSection } from "@/components/landing/SystemFlowSection";
-import HeroPPDB from "@/components/landing/HeroSectionDua";
+import HeroPPDB from "@/components/landing/HeroSection";
 import SimGymSection from "@/components/landing/SimGymSection"; 
 import { TestimonialsSection } from "@/components/landing";
 import { PricingSection } from "@/components/landing/PricingSection";
@@ -28,8 +27,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white flex flex-col relative overflow-x-clip">
-      <LoadingScreen />
-
       <Navbar />
 
       <main className="flex-1">

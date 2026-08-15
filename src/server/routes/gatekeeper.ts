@@ -292,4 +292,94 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// PLANS CRUD (Managed by Gatekeeper)
+// ═══════════════════════════════════════════════════════════════
+
+// GET /api/gatekeeper/plans - List all plans
+gatekeeperRouter.get('/plans', gatekeeperAuth, async (c) => {
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    return c.json({ success: true, data: data || [] });
+  } catch (err: any) {
+    console.error('Get plans error:', err?.message);
+    return c.json({ success: false, message: 'Gagal mengambil data paket' }, 500);
+  }
+});
+
+// POST /api/gatekeeper/plans - Create a new plan
+gatekeeperRouter.post('/plans', gatekeeperAuth, async (c) => {
+  try {
+    const { name, price_monthly, price_yearly, features, is_active } = await c.req.json();
+    if (!name || price_monthly == null || price_yearly == null) {
+      return c.json({ success: false, message: 'Nama, harga bulanan, dan harga tahunan wajib diisi' }, 400);
+    }
+
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .insert({ name, price_monthly, price_yearly, features: features || [], is_active: is_active !== false })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return c.json({ success: true, data });
+  } catch (err: any) {
+    console.error('Create plan error:', err?.message);
+    return c.json({ success: false, message: 'Gagal membuat paket: ' + err?.message }, 500);
+  }
+});
+
+// PUT /api/gatekeeper/plans/:id - Update a plan
+gatekeeperRouter.put('/plans/:id', gatekeeperAuth, async (c) => {
+  try {
+    const planId = Number(c.req.param('id'));
+    const updates = await c.req.json();
+
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .update({
+        ...(updates.name && { name: updates.name }),
+        ...(updates.price_monthly != null && { price_monthly: updates.price_monthly }),
+        ...(updates.price_yearly != null && { price_yearly: updates.price_yearly }),
+        ...(updates.features != null && { features: updates.features }),
+        ...(updates.is_active != null && { is_active: updates.is_active }),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', planId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return c.json({ success: true, data });
+  } catch (err: any) {
+    console.error('Update plan error:', err?.message);
+    return c.json({ success: false, message: 'Gagal mengupdate paket: ' + err?.message }, 500);
+  }
+});
+
+// DELETE /api/gatekeeper/plans/:id - Delete a plan
+gatekeeperRouter.delete('/plans/:id', gatekeeperAuth, async (c) => {
+  try {
+    const planId = Number(c.req.param('id'));
+    const supabase = getSupabaseClient();
+    const { error } = await supabase.from('plans').delete().eq('id', planId);
+
+    if (error) throw error;
+    return c.json({ success: true, message: 'Paket berhasil dihapus' });
+  } catch (err: any) {
+    console.error('Delete plan error:', err?.message);
+    return c.json({ success: false, message: 'Gagal menghapus paket: ' + err?.message }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+
 export default gatekeeperRouter;

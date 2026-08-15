@@ -45,7 +45,15 @@ export default function GatekeeperOverviewPage() {
     try {
       setLoading(true);
       setError("");
-      const res = await fetch("/api/gatekeeper/schools");
+      
+      const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
+      
+      const res = await fetch("/api/gatekeeper/schools", {
+        headers: {
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        }
+      });
+      
       if (!res.ok) {
         setSchools([]);
         return;

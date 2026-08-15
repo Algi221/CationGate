@@ -39,8 +39,13 @@ export default function GatekeeperPackagesPage() {
       const res = await fetch("/api/gatekeeper/plans", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const json = await res.json();
-      if (json.success) setPlans(json.data || []);
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        if (json.success) setPlans(json.data || []);
+      } catch (parseError) {
+        console.error("Invalid JSON from API:", text.substring(0, 150));
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -98,12 +103,17 @@ export default function GatekeeperPackagesPage() {
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
-      if (json.success) {
-        setShowModal(false);
-        fetchPlans();
-      } else {
-        alert(json.message || "Gagal menyimpan paket");
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        if (json.success) {
+          setShowModal(false);
+          fetchPlans();
+        } else {
+          alert("Gagal menyimpan paket");
+        }
+      } catch (parseError) {
+        console.error("Invalid JSON:", text.substring(0, 150));
       }
     } catch (err) {
       console.error(err);

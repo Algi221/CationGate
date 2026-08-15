@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { getSupabaseClient } from '../db/supabase';
-import { adminAuth } from '../middleware/auth';
+import { adminAuth, requireTenantId, TenantError } from '../middleware/auth';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -211,14 +211,14 @@ configRouter.post('/', adminAuth, async (c) => {
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = await requireTenantId(c);
 
     const payload: any = {
       config_key: key,
       config_value: processedValue,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      school_id: schoolId
     };
-    if (schoolId) payload.school_id = schoolId;
 
     const { error } = await supabase
       .from('landing_page_config')
@@ -247,13 +247,12 @@ configRouter.post('/', adminAuth, async (c) => {
 configRouter.get('/revisions', adminAuth, async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = await requireTenantId(c);
 
     let query = supabase.from('ui_revisions')
       .select('id, changed_by, description, created_at')
-      .order('created_at', { ascending: false });
-    
-    if (schoolId) query = query.eq('school_id', schoolId);
+      .order('created_at', { ascending: false })
+      .eq('school_id', schoolId);
 
     const { data: revisions, error } = await query;
     if (error) throw error;
@@ -289,7 +288,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
 
     const { configs, description } = result.data;
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = await requireTenantId(c);
 
     let processedConfigs = { ...configs };
     if (processedConfigs.ppdb_majors_config) {
@@ -305,7 +304,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
         config_value: value,
         updated_at: new Date().toISOString()
       };
-      if (schoolId) payload.school_id = schoolId;
+      payload.school_id = schoolId;
 
       const { error } = await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
       if (error) throw error;
@@ -319,7 +318,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       changed_by: adminName,
       description: description || 'Melakukan pembaruan massal UI'
     };
-    if (schoolId) revPayload.school_id = schoolId;
+    revPayload.school_id = schoolId;
 
     const { error: revError } = await supabase.from('ui_revisions').insert(revPayload);
     if (revError) throw revError;
@@ -356,10 +355,10 @@ configRouter.post('/restore', adminAuth, async (c) => {
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = await requireTenantId(c);
 
-    let query = supabase.from('ui_revisions').select('*').eq('id', parseInt(revisionId));
-    if (schoolId) query = query.eq('school_id', schoolId);
+    let query = supabase.from('ui_revisions').select('*').eq('id', parseInt(revisionId))
+      .eq('school_id', schoolId);
     const { data: revision, error } = await query.single();
     
     if (error || !revision) {
@@ -370,7 +369,14 @@ configRouter.post('/restore', adminAuth, async (c) => {
     }
 
     const { config_values, changed_by } = revision;
-    const configs = typeof config_values === 'string' ? JSON.parse(config_values) : config_values;
+    let configs = config_values;
+    if (typeof config_values === 'string') {
+      try {
+        configs = JSON.parse(config_values);
+      } catch (e) {
+        configs = {};
+      }
+    }
 
     for (const [key, value] of Object.entries(configs)) {
       const payload: any = {
@@ -378,7 +384,7 @@ configRouter.post('/restore', adminAuth, async (c) => {
         config_value: value,
         updated_at: new Date().toISOString()
       };
-      if (schoolId) payload.school_id = schoolId;
+      payload.school_id = schoolId;
       await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
     }
 
@@ -390,7 +396,7 @@ configRouter.post('/restore', adminAuth, async (c) => {
       changed_by: adminName,
       description: `Mengembalikan (Restore) tampilan ke versi riwayat #${revisionId} (dibuat oleh ${changed_by})`
     };
-    if (schoolId) newRevPayload.school_id = schoolId;
+    newRevPayload.school_id = schoolId;
 
     await supabase.from('ui_revisions').insert(newRevPayload);
 
@@ -437,12 +443,8 @@ configRouter.get('/registration_fee', async (c) => {
 
 // POST /api/config/registration_fee - ADMIN AUTH
 configRouter.post('/registration_fee', adminAuth, async (c) => {
-  const schoolId = c.req.header('X-School-Id');
-  if (!schoolId) {
-    return c.json({ success: false, message: 'X-School-Id header is required' }, 400);
-  }
-
   try {
+    const schoolId = await requireTenantId(c);
     const body = await c.req.json();
     const { amount } = body;
     

@@ -1170,7 +1170,7 @@ export default function KelolaUserInterface() {
                         if (file) handleSchoolLogoChange(file);
                       }}
                     >
-                      {schoolLogo ? (
+                      {schoolLogo && (schoolLogo.startsWith('data:image/') || schoolLogo.startsWith('https://')) ? (
                         <img src={schoolLogo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain rounded-lg" />
                       ) : (
                         <div className="text-center text-slate-500 dark:text-slate-400">

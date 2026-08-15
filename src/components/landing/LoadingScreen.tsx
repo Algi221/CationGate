@@ -108,6 +108,7 @@ export default function LoadingScreen() {
         >
           {/* Injected CSS for wave animation */}
           <style>{`
+            body { overflow: hidden !important; }
             @keyframes animateWave {
               0% { transform: translateX(0); }
               100% { transform: translateX(-50%); }

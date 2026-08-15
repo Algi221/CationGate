@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import dompurify from "dompurify";
 
@@ -45,7 +45,9 @@ import {
   Sparkles,
   Trash2,
   Pencil,
-  PieChart
+  PieChart,
+  Upload,
+  FileSpreadsheet
 } from "lucide-react";
 
 import { useRouter, useSearchParams } from "next/navigation";
@@ -169,6 +171,8 @@ function ActiveStudentsDirectoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activePageTab = searchParams.get("tab") || "active";
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
 
   const handleTabChange = (tab: "active" | "kuota") => {
     router.push(`/dashboard/siswa-aktif?tab=${tab}`);
@@ -190,7 +194,13 @@ function ActiveStudentsDirectoryContent() {
   const [customPeriods, setCustomPeriods] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem("ppdb_custom_periods");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error("Invalid JSON in ppdb_custom_periods:", saved);
+        }
+      }
     }
     return [];
   });
@@ -461,6 +471,111 @@ function ActiveStudentsDirectoryContent() {
     return { total, currentBatch, popular };
   }, [activeApplicants]);
 
+  const handleDownloadTemplate = async () => {
+    const ExcelJS = (await import('exceljs')).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Template Siswa Aktif');
+
+    worksheet.columns = [
+      { header: 'Nama Lengkap', key: 'nama', width: 35 },
+      { header: 'NISN', key: 'nisn', width: 25 },
+      { header: 'NIPD', key: 'nipd', width: 20 },
+      { header: 'Jurusan', key: 'jurusan', width: 20 },
+      { header: 'Periode Angkatan', key: 'periode', width: 20 },
+      { header: 'Jenis Kelamin (L/P)', key: 'jk', width: 20 },
+    ];
+
+    worksheet.addRow({
+      nama: 'Contoh Siswa',
+      nisn: '1234567890',
+      nipd: '242510001',
+      jurusan: 'TKJ',
+      periode: '2026-2027',
+      jk: 'L'
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Template_Import_Siswa_Aktif.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(await file.arrayBuffer());
+      const worksheet = workbook.worksheets[0];
+      
+      const students: any[] = [];
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // Skip header
+        
+        const rowData: any = {};
+        worksheet.columns?.forEach((col, idx) => {
+          if (col.key) {
+            rowData[col.key] = row.getCell(idx + 1).value?.toString() || '';
+          }
+        });
+        
+        if (rowData.nama) {
+          students.push({
+            nama: rowData.nama,
+            nisn: rowData.nisn || '',
+            nipd: rowData.nipd || '',
+            jurusan: rowData.jurusan || '',
+            periode: rowData.periode || '2026-2027',
+            jenis_kelamin: rowData.jk === 'L' ? 'Laki-laki' : (rowData.jk === 'P' ? 'Perempuan' : ''),
+            status: 'Lulus/Aktif'
+          });
+        }
+      });
+
+      if (students.length === 0) {
+        addToast('Tidak ada data siswa yang valid ditemukan di Excel.', 'error');
+        setIsImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+
+      const token = localStorage.getItem('ppdb_admin_token');
+      const res = await fetch('/api/siswa-aktif/import', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ students })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        addToast(data.message, 'success');
+        if (typeof fetchActiveStudents === 'function') {
+          fetchActiveStudents();
+        }
+      } else {
+        addToast(data.message || 'Gagal mengimpor data.', 'error');
+      }
+    } catch (err) {
+      console.error('Import error:', err);
+      addToast('Terjadi kesalahan saat membaca file Excel.', 'error');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleExportExcel = async (students: Applicant[], fileNameSuffix: string) => {
     if (students.length === 0) return;
 
@@ -684,6 +799,32 @@ function ActiveStudentsDirectoryContent() {
           >
             <Download size={14} />
             Ekspor Semua Siswa
+          </button>
+
+          {/* Import Excel */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isImporting}
+            className="w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border shadow-sm bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 hover:border-emerald-400 shadow-[0_4px_12px_rgba(16,185,129,0.15)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Upload size={14} />
+            {isImporting ? 'Mengimpor...' : 'Impor Siswa'}
+          </button>
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleImportExcel}
+          />
+
+          {/* Download Template */}
+          <button
+            onClick={handleDownloadTemplate}
+            className="w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            <FileSpreadsheet size={14} />
+            Template
           </button>
         </div>
       </div>

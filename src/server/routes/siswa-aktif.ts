@@ -478,4 +478,51 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
   }
 });
 
+// 8. ADMIN ONLY: Import Excel Data
+siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
+  try {
+    const supabase = getSupabaseClient(c.req.header('Authorization'));
+    const admin = (c as any).get('admin');
+    const schoolId = admin?.school_id;
+    if (!schoolId) {
+      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    }
+
+    const body = await c.req.json();
+    if (!body || !Array.isArray(body.students)) {
+      return c.json({ success: false, message: 'Invalid payload. Expected an array of students.' }, 400);
+    }
+
+    const studentsToInsert = body.students.map((student: any) => ({
+      ...student,
+      school_id: schoolId, // Critical: Enforce tenant isolation
+    }));
+
+    const { data, error } = await supabase
+      .from('active_students')
+      .insert(studentsToInsert)
+      .select('id');
+
+    if (error) {
+      console.error('Supabase insert error during import:', error);
+      throw error;
+    }
+
+    // Broadcast to update UI
+    broadcast({ event: 'siswa_aktif_update', data: { school_id: schoolId } });
+
+    return c.json({
+      success: true,
+      message: `Berhasil mengimpor ${data?.length || 0} siswa.`,
+      count: data?.length || 0,
+    });
+  } catch (err: any) {
+    console.error('Import active students error:', err);
+    return c.json({
+      success: false,
+      message: 'Gagal mengimpor data siswa: ' + err.message
+    }, 500);
+  }
+});
+
 export default siswaAktifRouter;

@@ -17,8 +17,14 @@ const fetchApplicants = async (schoolId: string): Promise<Applicant[]> => {
   if (!schoolId) return [];
   const res = await fetch(`/api/applicants?school_id=${schoolId}`);
   if (!res.ok) throw new Error("Gagal mengambil data pendaftar");
-  const data = await res.json();
-  return data.data || [];
+  const text = await res.text();
+  try {
+    const data = JSON.parse(text);
+    return data.data || [];
+  } catch (err) {
+    console.error("Invalid JSON from API:", text.substring(0, 150));
+    return [];
+  }
 };
 
 // Hook for fetching data with Focus-based Polling
@@ -44,7 +50,13 @@ export const useUpdateApplicantStatus = (schoolId: string) => {
         body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error("Gagal update status");
-      return res.json();
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        console.error("Invalid JSON from API:", text.substring(0, 150));
+        throw new Error("Invalid response from server");
+      }
     },
     // OPTIMISTIC UPDATE TRICK
     onMutate: async ({ id, status }) => {

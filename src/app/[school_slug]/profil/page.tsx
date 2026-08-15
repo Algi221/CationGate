@@ -5,7 +5,7 @@ import { usePPDB } from "@/context/PPDBContext";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Building2, School, Target, ListChecks, FileText } from "lucide-react";
-import LoadingScreen from "@/components/landing/LoadingScreen";
+
 import SafeImage from "@/components/SafeImage";
 
 export default function ProfilSekolahPublicPage() {
@@ -20,7 +20,11 @@ export default function ProfilSekolahPublicPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) return <LoadingScreen />;
+  if (!mounted) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
 
   if (isSchoolNotFound || schoolStatus === 'TAKEDOWN') {
     router.push('/');

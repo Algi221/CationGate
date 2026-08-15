@@ -707,4 +707,39 @@ saasRouter.post('/midtrans-webhook', async (c) => {
   }
 });
 
+// Mock endpoint for pricing plans
+saasRouter.get('/plans', (c) => {
+  return c.json({
+    success: true,
+    data: [
+      {
+        id: 1,
+        name: "STARTER",
+        priceMonthly: 649000,
+        priceYearly: 499000,
+        features: [
+          "Subdomain (sekolah.cationgate.id)",
+          "250 Active Learner Capacity",
+          "AI Lesson Plan Generation (50/mo)",
+          "Email Support",
+        ],
+      },
+      {
+        id: 2,
+        name: "PRO INSTITUTION",
+        priceMonthly: 1299000,
+        priceYearly: 999000,
+        features: [
+          "All Starter Plan Features",
+          "UNLIMITED Active Learners",
+          "Custom Domain (sch.id / edu)",
+          "Unlimited AI Lesson & Assessment",
+          "Real-Time Telemetry & Skill Heatmaps",
+          "WhatsApp Broadcast API Integration",
+        ],
+      },
+    ]
+  });
+});
+
 export default saasRouter;

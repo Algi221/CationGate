@@ -1,5 +1,5 @@
 import { Hono, Context } from 'hono';
-import { adminAuth } from '../middleware/auth';
+import { adminAuth, requireTenantId } from '../middleware/auth';
 import { getSupabaseClient } from '../db/supabase';
 import { broadcast } from '../ws/handler';
 import { rateLimiter } from '../middleware/rate-limiter';
@@ -331,10 +331,14 @@ appRouter.post('/', rateLimiter({
     try {
       let gelombangConfig: any = null;
       const { data: configRecord } = await supabase.from('landing_page_config').select('config_value').eq('config_key', 'ppdb_gelombang_config').eq('school_id', schoolId).single();
-      if (configRecord) {
+      if (configRecord && configRecord.config_value) {
         gelombangConfig = configRecord.config_value;
         if (typeof gelombangConfig === 'string') {
-          gelombangConfig = JSON.parse(gelombangConfig);
+          try {
+            gelombangConfig = JSON.parse(gelombangConfig);
+          } catch (e) {
+            gelombangConfig = {};
+          }
         }
       }
 
@@ -394,7 +398,13 @@ appRouter.post('/', rateLimiter({
       const { data: configRecord } = await supabase.from('landing_page_config').select('config_value').eq('config_key', 'kuota_targets').eq('school_id', schoolId).single();
       if (configRecord && configRecord.config_value) {
         let cv = configRecord.config_value;
-        if (typeof cv === 'string') cv = JSON.parse(cv);
+        if (typeof cv === 'string') {
+          try {
+            cv = JSON.parse(cv);
+          } catch (e) {
+            cv = {};
+          }
+        }
         targets = { ...targets, ...(cv as Record<string, number>) };
       }
     } catch (e) {
@@ -489,9 +499,7 @@ appRouter.get('/', adminAuth, async (c: Context) => {
   try {
     await checkAndDisqualifyExpiredApplicants();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = await requireTenantId(c);
 
     const calonSiswaFields = [
       "id", "nama", "nisn", "nipd", "nik", "tempat_lahir", "tgl_lahir", "jenis_kelamin", "agama", "kewarganegaraan",
@@ -513,9 +521,8 @@ appRouter.get('/', adminAuth, async (c: Context) => {
     let query = supabase.from('student_applicants')
       .select(calonSiswaFields.join(','))
       .is('deleted_at', null)
-      .order('tgl_daftar', { ascending: false });
-      
-    if (schoolId) query = query.eq('school_id', schoolId);
+      .order('tgl_daftar', { ascending: false })
+      .eq('school_id', schoolId);
     
     const { data: rows, error } = await query;
     if (process.env.NODE_ENV !== 'production' && (!rows || rows.length === 0)) {
@@ -556,9 +563,7 @@ appRouter.get('/', adminAuth, async (c: Context) => {
 appRouter.get('/trashed', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = await requireTenantId(c);
 
     const calonSiswaFields = [
       "id", "nama", "nisn", "nik", "tempat_lahir", "tgl_lahir", "jenis_kelamin", "agama", "kewarganegaraan",
@@ -580,9 +585,8 @@ appRouter.get('/trashed', adminAuth, async (c: Context) => {
     let query = supabase.from('student_applicants')
       .select(calonSiswaFields.join(','))
       .not('deleted_at', 'is', null)
-      .order('deleted_at', { ascending: false });
-      
-    if (schoolId) query = query.eq('school_id', schoolId);
+      .order('deleted_at', { ascending: false })
+      .eq('school_id', schoolId);
     
     const { data: rows, error } = await query;
     if (error) throw error;
@@ -707,8 +711,8 @@ appRouter.post('/:id/restore', adminAuth, async (c: Context) => {
     const schoolIdRaw = admin.school_id;
     const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
-    let query = supabase.from('student_applicants').select('*').eq('id', id);
-    if (schoolId) query = query.eq('school_id', schoolId);
+    let query = supabase.from('student_applicants').select('*').eq('id', id)
+      .eq('school_id', schoolId);
     const { data: existing } = await query.single();
 
     if (!existing) {
@@ -740,8 +744,8 @@ appRouter.get('/:id', adminAuth, async (c: Context) => {
     const schoolIdRaw = admin.school_id;
     const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
-    let query = supabase.from('student_applicants').select('*').eq('id', id);
-    if (schoolId) query = query.eq('school_id', schoolId);
+    let query = supabase.from('student_applicants').select('*').eq('id', id)
+      .eq('school_id', schoolId);
     
     const { data: applicant, error } = await query.single();
 
@@ -776,8 +780,8 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
     const schoolIdRaw = admin.school_id;
     const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
 
-    let query = supabase.from('student_applicants').select('*').eq('id', id);
-    if (schoolId) query = query.eq('school_id', schoolId);
+    let query = supabase.from('student_applicants').select('*').eq('id', id)
+      .eq('school_id', schoolId);
     const { data: existingRecord } = await query.single();
 
     if (!existingRecord) {
@@ -912,8 +916,7 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
       jenis_beasiswa: f.jenisBeasiswa !== undefined ? f.jenisBeasiswa : (existingRecord as any).jenis_beasiswa,
     };
 
-    let updateQuery = supabase.from('student_applicants').update(fields).eq('id', id);
-    if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
+    let updateQuery = supabase.from('student_applicants').update(fields).eq('id', id).eq('school_id', schoolId);
     
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
@@ -940,11 +943,10 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = requireTenantId(c);
 
-    let query = supabase.from('student_applicants').select('*').eq('id', id);
-    if (schoolId) query = query.eq('school_id', schoolId);
+    let query = supabase.from('student_applicants').select('*').eq('id', id)
+      .eq('school_id', schoolId);
     const { data: applicant } = await query.single();
 
     if (!applicant) {
@@ -968,8 +970,8 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
       updateData.alasan_ditolak = null;
     }
 
-    let updateQuery = supabase.from('student_applicants').update(updateData).eq('id', id);
-    if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
+    let updateQuery = supabase.from('student_applicants').update(updateData).eq('id', id)
+      .eq('school_id', schoolId);
     
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
@@ -1000,17 +1002,13 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
     const permanent = c.req.query('permanent') === 'true';
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = requireTenantId(c);
 
     if (permanent) {
-      let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id);
-      if (schoolId) saDeleteQuery = saDeleteQuery.eq('school_id', schoolId);
+      let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id).eq('school_id', schoolId);
       await saDeleteQuery;
 
-      let csDeleteQuery = supabase.from('student_applicants').delete().eq('id', id);
-      if (schoolId) csDeleteQuery = csDeleteQuery.eq('school_id', schoolId);
+      let csDeleteQuery = supabase.from('student_applicants').delete().eq('id', id).eq('school_id', schoolId);
       await csDeleteQuery;
 
       broadcast({ event: 'APPLICANT_DELETED', data: { id } });
@@ -1019,12 +1017,10 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
       const admin = (c as any).get('admin');
       const adminName = admin ? (admin.nama || admin.username) : 'Sistem';
 
-      let csUpdateQuery = supabase.from('student_applicants').update({ deleted_at: new Date().toISOString(), deleted_by: adminName }).eq('id', id);
-      if (schoolId) csUpdateQuery = csUpdateQuery.eq('school_id', schoolId);
+      let csUpdateQuery = supabase.from('student_applicants').update({ deleted_at: new Date().toISOString(), deleted_by: adminName }).eq('id', id).eq('school_id', schoolId);
       await csUpdateQuery;
 
-      let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id);
-      if (schoolId) saDeleteQuery = saDeleteQuery.eq('school_id', schoolId);
+      let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id).eq('school_id', schoolId);
       await saDeleteQuery;
 
       broadcast({ event: 'APPLICANT_DELETED', data: { id } });
@@ -1043,8 +1039,7 @@ appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
     const { verified, checklist } = await c.req.json();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = requireTenantId(c);
     const adminName = admin ? (admin.nama || admin.username) : 'Admin';
 
     let isVerified = Boolean(verified);
@@ -1064,8 +1059,7 @@ appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
       updateData.physical_docs_checklist = finalChecklist;
     }
 
-    let query = supabase.from('student_applicants').update(updateData).eq('id', id);
-    if (schoolId) query = query.eq('school_id', schoolId);
+    let query = supabase.from('student_applicants').update(updateData).eq('id', id).eq('school_id', schoolId);
     
     const { data: updatedRecord, error } = await query.select().single();
     if (error) throw error;

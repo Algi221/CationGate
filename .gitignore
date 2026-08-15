@@ -63,3 +63,5 @@ frontend/public/assets/*/uploads/
 /public/assets/sekolah/uploads/
 /frontend/public/assets/jurusan/uploads/
 /frontend/public/assets/sekolah/uploads/
+# Developer utility scripts
+.scripts/

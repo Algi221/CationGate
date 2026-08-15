@@ -16,6 +16,7 @@ import { CinematicFooter } from "@/components/ui/motion-footer";
 import { VideoModal } from "@/components/landing/VideoModal";
 import { FloatingVideoWidget } from "@/components/landing/FloatingVideoWidget";
 import LoadingScreen from "@/components/landing/LoadingScreen";
+import { ContactScreen } from "@/components/landing/ContactScreen";
 
 const VIDEO_COLLECTION = {
   trailerAnime: "https://www.youtube-nocookie.com/embed/1FcVJxxPWh4",
@@ -33,23 +34,12 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* <ScrollExpandSection/> */}
-        <HeroPPDB/>
-        {/* <HeroSection onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.trailerAnime)} /> */}
-        {/* <HeroSection
-          onOpenVideo={() => setActiveVideoUrl(VIDEO_COLLECTION.rickroll)}
-        /> */}
-        {/* <PartnersSection /> */}
-        {/* <FeaturesShowcase /> */}
-        {/* <SystemFlowSection /> */}
-        {/* <RegionalStatsSection /> */}
-
-        {/* UBAH DISINI JUGA JIKA INGIN RICKROLL: Ganti videoLama menjadi rickroll */}
-        {/* <FeaturesShowcase /> */}
+        <HeroPPDB />
         <SystemFlowSection />
-        <SimGymSection /> {/* PANGGIL KOMPONEN SIMGYM DI SINI */}
         <TestimonialsSection />
         <PricingSection />
         <FaqSection />
+        <ContactScreen /> 
       </main>
 
       <CinematicFooter />

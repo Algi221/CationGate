@@ -15,6 +15,7 @@ import { FaqSection } from "@/components/landing/FaqSection";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import { VideoModal } from "@/components/landing/VideoModal";
 import { FloatingVideoWidget } from "@/components/landing/FloatingVideoWidget";
+import LoadingScreen from "@/components/landing/LoadingScreen";
 
 const VIDEO_COLLECTION = {
   trailerAnime: "https://www.youtube-nocookie.com/embed/1FcVJxxPWh4",
@@ -27,6 +28,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white flex flex-col relative overflow-x-clip">
+      <LoadingScreen />
       <Navbar />
 
       <main className="flex-1">

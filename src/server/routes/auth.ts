@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '../db/supabase';
-import { adminAuth } from '../middleware/auth';
+import { adminAuth, requireTenantId, TenantError } from '../middleware/auth';
 import { sendTelegramNotification } from '../utils/telegram';
 import { loginSchema, changePasswordSchema } from '../validations/auth';
 import { rateLimiter } from '../middleware/rate-limiter';
@@ -213,10 +213,10 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
     const { currentPassword, newPassword } = result.data;
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = await requireTenantId(c);
 
-    let query = supabase.from('admin_users').select('*').eq('id', admin.id);
-    if (schoolId) query = query.eq('school_id', schoolId);
+    let query = supabase.from('admin_users').select('*').eq('id', admin.id)
+      .eq('school_id', schoolId);
     const { data: adminUser } = await query.single();
 
     if (!adminUser) {
@@ -235,8 +235,8 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
     }
 
     const newHash = bcrypt.hashSync(newPassword, 10);
-    let updateQuery = supabase.from('admin_users').update({ password_hash: newHash }).eq('id', admin.id);
-    if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
+    let updateQuery = supabase.from('admin_users').update({ password_hash: newHash }).eq('id', admin.id)
+      .eq('school_id', schoolId);
     
     await updateQuery;
 
@@ -265,10 +265,10 @@ authRouter.patch('/profile', adminAuth, async (c) => {
     };
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const schoolId = await requireTenantId(c);
 
-    let query = supabase.from('admin_users').select('*').eq('id', admin.id);
-    if (schoolId) query = query.eq('school_id', schoolId);
+    let query = supabase.from('admin_users').select('*').eq('id', admin.id)
+      .eq('school_id', schoolId);
     const { data: existing } = await query.single();
 
     if (!existing) {
@@ -276,8 +276,8 @@ authRouter.patch('/profile', adminAuth, async (c) => {
     }
 
     if (username && username !== existing.username) {
-      let duplicateQuery = supabase.from('admin_users').select('id').eq('username', username);
-      if (schoolId) duplicateQuery = duplicateQuery.eq('school_id', schoolId);
+      let duplicateQuery = supabase.from('admin_users').select('id').eq('username', username)
+        .eq('school_id', schoolId);
       const { data: duplicate } = await duplicateQuery.maybeSingle();
       if (duplicate) {
         return c.json({ success: false, message: 'Username sudah digunakan akun lain.' }, 400);
@@ -289,8 +289,8 @@ authRouter.patch('/profile', adminAuth, async (c) => {
     if (username && username.trim()) dataToUpdate.username = username.trim();
     if (foto_profil !== undefined) dataToUpdate.foto_profil = foto_profil;
 
-    let updateQuery = supabase.from('admin_users').update(dataToUpdate).eq('id', admin.id);
-    if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
+    let updateQuery = supabase.from('admin_users').update(dataToUpdate).eq('id', admin.id)
+      .eq('school_id', schoolId);
     const { data: updated, error } = await updateQuery.select('id, username, nama_lengkap, role, foto_profil').single();
 
     if (error) throw error;

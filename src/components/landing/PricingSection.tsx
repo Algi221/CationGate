@@ -27,12 +27,22 @@ export function PricingSection() {
     const fetchPlans = async () => {
       try {
         const res = await fetch("/api/saas/plans");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Response is not JSON");
+        }
         const json = await res.json();
         if (json.success) {
           setPlans(json.data || []);
         }
       } catch (err) {
-        console.error("Failed to fetch plans:", err);
+        if (err instanceof Error && err.message.includes("404")) {
+          // Suppress 404 errors as we have a graceful static fallback
+          console.warn("Pricing API not available, using fallback plans.");
+        } else {
+          console.warn("Failed to fetch plans, using fallback:", err);
+        }
       } finally {
         setLoading(false);
       }

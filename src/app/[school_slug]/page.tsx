@@ -373,7 +373,11 @@ export default function Home() {
         const localAlur = localStorage.getItem("ppdb_alur_config");
         if (localAlur) {
           try {
+          try {
             setAlurList(JSON.parse(localAlur));
+          } catch (e) {
+            console.error("Invalid localAlur:", localAlur);
+          }
           } catch (e) {
             console.error("Gagal parse alur dari localStorage", e);
           }
@@ -382,7 +386,11 @@ export default function Home() {
         const localFaq = localStorage.getItem("ppdb_faq_config");
         if (localFaq) {
           try {
+          try {
             setFaqList(JSON.parse(localFaq));
+          } catch (e) {
+            console.error("Invalid localFaq:", localFaq);
+          }
           } catch (e) {
             console.error("Gagal parse FAQ dari localStorage", e);
           }
@@ -548,7 +556,7 @@ export default function Home() {
                       {majors.map((major, idx) => (
                         <li key={idx}>
                           <NavigationMenuLink
-                            render={<Link href={`/${schoolSlug}/jurusan/${major.code.toLowerCase()}`} className="flex flex-col gap-1 p-3 rounded-lg hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-800 transition-colors group/sub" />}
+                            render={<Link href={`/${schoolSlug}/jurusan/${encodeURIComponent(major.code.toLowerCase())}`} className="flex flex-col gap-1 p-3 rounded-lg hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-800 transition-colors group/sub" />}
                           >
                             <div className="text-sm font-bold text-slate-900 dark:text-white transition-colors truncate">
                               {major.title || major.code}
@@ -732,7 +740,7 @@ export default function Home() {
             const animDelay = `-${(index % 5) * 1}s`;
 
             // Map code to route link
-            const routeCode = m.code.toLowerCase() === 'anm' ? 'an' : m.code.toLowerCase();
+            const routeCode = encodeURIComponent(m.code.toLowerCase() === 'anm' ? 'an' : m.code.toLowerCase());
             const routeLink = `/${schoolSlug}/jurusan/${routeCode}`;
 
             // Map standard code aliases for display
@@ -1058,7 +1066,7 @@ export default function Home() {
           {majors.map((major, index) => {
             return (
               <Link
-                href={`/${schoolSlug}/jurusan/${major.code.toLowerCase()}`}
+                href={`/${schoolSlug}/jurusan/${encodeURIComponent(major.code.toLowerCase())}`}
                 key={major.code}
                 className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
                 style={{ transitionDelay: `${index * 150}ms` }}

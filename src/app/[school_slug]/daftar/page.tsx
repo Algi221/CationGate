@@ -2268,7 +2268,7 @@ export default function DaftarPage() {
                               {manualReceiptBase64.startsWith("data:application/pdf") ? (
                                 <FileText size={32} className="text-red-500" />
                               ) : (
-                                <img src={manualReceiptBase64} alt="Preview Bukti Bayar" className="w-full h-full object-cover" />
+                                <img src={manualReceiptBase64.startsWith('data:image/') ? sanitizeUrl(manualReceiptBase64) : ''} alt="Preview Bukti Bayar" className="w-full h-full object-cover" />
                               )}
                             </div>
                             <div className="space-y-0.5 overflow-hidden w-full md:w-auto">

@@ -63,6 +63,12 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
         .then((data) => {
           if (data && data.success && data.data && data.data.ppdb_school_theme_color) {
             const themeColor = data.data.ppdb_school_theme_color;
+            // SECURITY: Validate color format to prevent XSS injection via malicious DB values
+            const SAFE_COLOR_RE = /^(#[0-9a-fA-F]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)|hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*\))$/;
+            if (!SAFE_COLOR_RE.test(themeColor)) {
+              console.warn("Invalid theme color rejected:", themeColor);
+              return;
+            }
             const styleId = "ppdb-school-theme";
             let styleEl = document.getElementById(styleId);
             if (!styleEl) {
@@ -70,7 +76,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
               styleEl.id = styleId;
               document.head.appendChild(styleEl);
             }
-            styleEl.innerHTML = `
+            styleEl.textContent = `
               :where(:not(.dark *)):where(:not([data-dashboard] *)) .text-primary { color: ${themeColor} !important; }
               :where(:not(.dark *)):where(:not([data-dashboard] *)) .bg-primary { background-color: ${themeColor} !important; }
               :where(:not(.dark *)):where(:not([data-dashboard] *)) .border-primary { border-color: ${themeColor} !important; }

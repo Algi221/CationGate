@@ -60,8 +60,17 @@ function GatekeeperSchoolManagementContent() {
         setSchools([]);
         return;
       }
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (parseError) {
+        console.error("Invalid JSON from API:", text.substring(0, 150));
+        setSchools([]);
+        return;
+      }
+      
+      if (json && json.success && Array.isArray(json.data)) {
         setSchools(json.data);
       } else {
         setSchools([]);

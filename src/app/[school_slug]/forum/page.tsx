@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { 
   Search, 
   Megaphone,
@@ -88,6 +89,7 @@ const parseMedia = (raw: string | null | undefined) => {
 };
 
 export default function ForumPage() {
+  const params = useParams();
   const { ppdbLogo, ppdbTitle } = usePPDB();
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -202,8 +204,8 @@ export default function ForumPage() {
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <Link href="/daftar" className="btn-primary-pill !hidden md:!inline-flex">
-              Daftar
+            <Link href={`/${params.school_slug}/daftar`} className="btn-primary-pill !hidden md:!inline-flex">
+              Daftar Sekarang
             </Link>
 
             {/* Hamburger Button visible only on mobile/tablet */}
@@ -268,9 +270,9 @@ export default function ForumPage() {
 
             <div className="w-full flex flex-col gap-3 mt-8">
               <Link
-                href="/daftar"
+                href={`/${params.school_slug}/daftar`}
+                className="w-full btn-primary-pill flex items-center justify-center py-3"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98]"
               >
                 Daftar Sekarang
               </Link>
@@ -476,8 +478,8 @@ export default function ForumPage() {
             <div className="relative z-10">
               <span className="text-[9px] font-black uppercase tracking-widest text-blue-200">PPDB {schoolPeriod.includes("-") ? schoolPeriod.split("-")[0] : schoolPeriod}</span>
               <h3 className="text-lg font-bold leading-snug mt-1 mb-4">Pendaftaran Siswa Baru Telah Dibuka</h3>
-              <Link href="/daftar" className="inline-block bg-white dark:bg-[#0f172a] text-blue-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
-                Daftar Sekarang
+              <Link href={`/${params.school_slug}/daftar`} className="inline-block bg-white dark:bg-[#0f172a] text-blue-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
+                PPDB 2026 Dibuka
               </Link>
             </div>
           </motion.div>

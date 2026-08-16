@@ -724,7 +724,7 @@ export default function MajorPage() {
 
                     <div className="relative group/btn">
                       <Link 
-                        href={isFull ? "#" : "/daftar"} 
+                        href={isFull ? "#" : `/${params.school_slug}/daftar`} 
                         className={`btn-primary-pill py-3.5 px-8 flex items-center gap-2 rounded-2xl ${isFull ? 'opacity-50 cursor-not-allowed pointer-events-none grayscale' : ''}`}
                       >
                         {isFull ? "Pendaftaran Ditutup" : "Daftar Jurusan Ini"} <ArrowRight size={18} />
@@ -994,8 +994,8 @@ export default function MajorPage() {
             </p>
 
             <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
-              <Link href="/daftar" className="bg-[#ffffff] text-slate-900 hover:bg-[#f8fafc] text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto">
-                Daftar Jurusan Ini
+              <Link href={`/${params.school_slug}/daftar`} className="bg-[#ffffff] text-slate-900 hover:bg-[#f8fafc] text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto">
+                Daftar Sekarang
               </Link>
               <Link href="/" className="border border-white/30 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
                 Kembali Ke Beranda
@@ -1117,7 +1117,7 @@ export default function MajorPage() {
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Portal PPDB</h4>
               <ul className="space-y-2 text-xs font-semibold">
-                <li><Link href="/daftar" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Pendaftaran Online</Link></li>
+                <li><Link href={`/${params.school_slug}/daftar`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Pendaftaran Online</Link></li>
                 <li><Link href="/#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Alur &amp; Prosedur</Link></li>
                 <li><Link href="/#majors" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Kompetensi</Link></li>
                 <li><Link href="/#kemitraan" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Kerjasama Industri</Link></li>

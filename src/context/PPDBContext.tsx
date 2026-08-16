@@ -368,7 +368,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const supabase = createClient(supabaseUrl, supabaseKey);
       const channel = supabase
         .channel(`public:applicants:school_id=eq.${schoolId}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'applicants', filter: `school_id=eq.${schoolId}` }, (payload) => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'student_applicants', filter: `school_id=eq.${schoolId}` }, (payload) => {
           console.log('Real-Time Supabase Change Received (Applicants):', payload);
           fetchPublicApplicants();
           if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) fetchAdminApplicants();

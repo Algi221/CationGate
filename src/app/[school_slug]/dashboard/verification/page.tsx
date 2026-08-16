@@ -47,7 +47,7 @@ export default function SchoolVerificationPage() {
             onSuccess: async function () {
               await fetch("/api/saas/activate", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("ppdb_admin_token")}` },
                 body: JSON.stringify({ school_id: schoolId }),
               });
               Swal.fire({
@@ -659,7 +659,7 @@ export default function SchoolVerificationPage() {
                       try {
                         const res = await fetch("/api/saas/activate", {
                           method: "POST",
-                          headers: { "Content-Type": "application/json" },
+                          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("ppdb_admin_token")}` },
                           body: JSON.stringify({ slug: schoolSlug, school_id: schoolId }),
                         });
                         const data = await res.json();

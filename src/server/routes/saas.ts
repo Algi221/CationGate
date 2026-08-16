@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { adminAuth } from '../middleware/auth';
 import bcrypt from 'bcryptjs';
 import { getSupabaseClient } from '../db/supabase';
 import { pool } from '../db/client';
@@ -350,7 +351,7 @@ saasRouter.post('/register', async (c) => {
 });
 
 // Endpoint untuk mengaktifkan sekolah setelah pembayaran Midtrans (Sandbox Simulation / Webhook / Callback)
-saasRouter.post('/activate', async (c) => {
+saasRouter.post('/activate', adminAuth, async (c) => {
   try {
     const body = await c.req.json();
     const { school_id, slug, order_id } = body;

@@ -566,10 +566,11 @@ export default function DaftarPage() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                nisn: nisn,
-                bukti_bayar: null,
-                metode_pembayaran: "Payment Gateway"
-              })
+                              nisn: nisn,
+                              bukti_bayar: null,
+                              metode_pembayaran: "Payment Gateway",
+                              school_slug: (params as any)?.school_slug as string
+                            })
             });
             const data = await res.json();
             localStorage.removeItem('ppdb_active_checkout');
@@ -904,7 +905,7 @@ export default function DaftarPage() {
         }
       }
       finalData.periode = calculatedPeriod;
-      (finalData as any).school_slug = params?.school_slug as string || 'smk';
+      (finalData as any).school_slug = (params as any)?.school_slug as string || 'smk';
 
       try {
         const res = await registerApplicant(finalData);
@@ -1862,10 +1863,11 @@ export default function DaftarPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            nisn: submittedCandidate.nisn,
-            bukti_bayar: receiptBase64 || null,
-            metode_pembayaran: metode
-          })
+                      nisn: submittedCandidate.nisn,
+                      bukti_bayar: receiptBase64 || null,
+                      metode_pembayaran: metode,
+                      school_slug: (params as any)?.school_slug as string
+                    })
         });
         const data = await res.json();
         if (data.success) {

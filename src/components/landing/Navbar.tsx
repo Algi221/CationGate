@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu,
   X,
@@ -36,6 +37,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [activeMobileDropdown, setActiveMobileDropdown] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -55,6 +57,23 @@ export function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    // Notify other components (like FloatingVideo) that menu is open
+    const event = new CustomEvent('mobileMenuToggle', { detail: mobileMenuOpen });
+    window.dispatchEvent(event);
+
+    // Prevent background scrolling when mobile menu is open
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   const navItems = [
     { label: "Beranda", href: "/", color: "#45C06B" },
@@ -108,7 +127,7 @@ export function Navbar() {
   ];
 
   return (
-    <header className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 transition-all duration-500">
+    <header className="fixed top-4 inset-x-0 z-[100] flex justify-center px-4 transition-all duration-500">
       <div
         className={`transition-all duration-500 rounded-2xl border shadow-2xl px-5 sm:px-6 ${
           scrolled
@@ -283,73 +302,117 @@ export function Navbar() {
       </div>
 
       {/* Mobile Navigation Drawer */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] bg-white dark:bg-[#0F0F11] flex flex-col pt-24 px-6 md:hidden animate-in slide-in-from-bottom-8 duration-300">
-          <button 
-            onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white transition-colors"
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] bg-white dark:bg-[#0F0F11] flex flex-col pt-24 px-6 md:hidden"
           >
-            <X className="w-6 h-6" />
-          </button>
-          
-          <div className="flex-1 overflow-y-auto pb-32">
-            <div className="flex flex-col space-y-6">
-              {navItems.map((item) => (
-                <div key={item.label} className="flex flex-col">
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-2xl font-extrabold text-slate-900 dark:text-white hover:opacity-70 transition-opacity"
-                  >
-                    {item.label}
-                  </Link>
-                  
-                  {/* Dropdown Array */}
-                  {item.dropdown && (
-                    <div className="mt-3 ml-1 flex flex-col space-y-4 border-l-2 border-slate-100 dark:border-white/10 pl-5">
-                      {item.dropdown.map((sub) => (
-                        <Link
-                          key={sub.title}
-                          href={sub.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="text-base font-semibold text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
-                        >
-                          {sub.title}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
 
-                  {/* Bento Dropdown */}
-                  {item.dropdownType === "bento" && item.bentoConfig && (
-                    <div className="mt-3 ml-1 flex flex-col space-y-4 border-l-2 border-slate-100 dark:border-white/10 pl-5">
-                      {item.bentoConfig.gridItems.map((sub: any) => (
-                        <Link
-                          key={sub.title}
-                          href={sub.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="text-base font-semibold text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
-                        >
-                          {sub.title}
-                        </Link>
-                      ))}
+            <div className="flex-1 overflow-y-auto pb-32">
+              <div className="flex flex-col space-y-4">
+                {navItems.map((item) => {
+                  const hasDropdown = item.dropdown || item.bentoConfig;
+                  const isDropdownActive = activeMobileDropdown === item.label;
+
+                  return (
+                    <div key={item.label} className="flex flex-col border-b border-slate-100 dark:border-white/5 pb-4">
+                      <div 
+                        className="flex items-center justify-between cursor-pointer"
+                        onClick={() => {
+                          if (hasDropdown) {
+                            setActiveMobileDropdown(isDropdownActive ? null : item.label);
+                          } else {
+                            setMobileMenuOpen(false);
+                          }
+                        }}
+                      >
+                        {hasDropdown ? (
+                          <span className="text-2xl font-extrabold text-slate-900 dark:text-white hover:opacity-70 transition-opacity">
+                            {item.label}
+                          </span>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-2xl font-extrabold text-slate-900 dark:text-white hover:opacity-70 transition-opacity w-full"
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+                        
+                        {hasDropdown && (
+                          <motion.div
+                            animate={{ rotate: isDropdownActive ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <ChevronDown className="w-6 h-6 text-slate-500" />
+                          </motion.div>
+                        )}
+                      </div>
+
+                      <AnimatePresence>
+                        {hasDropdown && isDropdownActive && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-4 ml-2 flex flex-col space-y-4 border-l-2 border-slate-100 dark:border-white/10 pl-5">
+                              {item.dropdown && item.dropdown.map((sub) => (
+                                <Link
+                                  key={sub.title}
+                                  href={sub.href}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className="text-base font-semibold text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-2"
+                                >
+                                  {sub.icon && <sub.icon className="w-4 h-4 opacity-50" />}
+                                  {sub.title}
+                                </Link>
+                              ))}
+
+                              {item.dropdownType === "bento" && item.bentoConfig && item.bentoConfig.gridItems.map((sub: any) => (
+                                <Link
+                                  key={sub.title}
+                                  href={sub.href}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className="text-base font-semibold text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-2"
+                                >
+                                  {sub.icon && <sub.icon className="w-4 h-4 opacity-50" />}
+                                  {sub.title}
+                                </Link>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  )}
-                </div>
-              ))}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-          
-          {/* Sticky Bottom Action */}
-          <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white dark:from-[#0F0F11] dark:via-[#0F0F11] to-transparent">
-            <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
-              <InteractiveHoverButton className="w-full justify-center bg-[#FFD33B] text-[#2A1B1D] font-bold text-base rounded-2xl h-14">
-                Daftar Sekolah Sekarang
-              </InteractiveHoverButton>
-            </Link>
-          </div>
-        </div>
-      )}
+
+            {/* Sticky Bottom Action */}
+            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white dark:from-[#0F0F11] dark:via-[#0F0F11] to-transparent">
+              <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
+                <InteractiveHoverButton className="w-full justify-center bg-[#FFD33B] text-[#2A1B1D] font-bold text-base rounded-2xl h-14">
+                  Daftar Sekolah Sekarang
+                </InteractiveHoverButton>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

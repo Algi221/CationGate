@@ -32,6 +32,8 @@ export function GatekeeperSidebar({
     if (pathname) {
       if (pathname.startsWith("/gatekeeper/dashboard/schools")) {
         setOpenDropdowns((prev) => ({ ...prev, "/gatekeeper/dashboard/schools": true }));
+      } else if (pathname.startsWith("/gatekeeper/dashboard/plans")) {
+        setOpenDropdowns((prev) => ({ ...prev, "/gatekeeper/dashboard/plans": true }));
       } else if (pathname.startsWith("/gatekeeper/dashboard/billing")) {
         setOpenDropdowns((prev) => ({ ...prev, "/gatekeeper/dashboard/billing": true }));
       } else if (pathname.startsWith("/gatekeeper/dashboard/services")) {
@@ -58,10 +60,9 @@ export function GatekeeperSidebar({
           subItems: [
             { label: "Sekolah Aktif (Verified)", href: "/gatekeeper/dashboard/schools?filter=FULL_VERIFIED" },
             { label: "Menunggu Verifikasi", href: "/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION" },
-            { label: "Pendaftar Baru", href: "/gatekeeper/dashboard/schools?filter=UNVERIFIED" },
-            { label: "Ditangguhkan", href: "/gatekeeper/dashboard/schools?filter=TAKEDOWN" }
+            { label: "Takedown / Suspended", href: "/gatekeeper/dashboard/schools?filter=TAKEDOWN" },
           ]
-        },
+        }
       ]
     },
     {
@@ -72,7 +73,7 @@ export function GatekeeperSidebar({
           icon: <Wallet size={18} />,
           label: "Billing & Paket",
           subItems: [
-            { label: "Kelola Paket", href: "/gatekeeper/dashboard/billing/packages" },
+            { label: "Manajemen Paket", href: "/gatekeeper/dashboard/plans" },
             { label: "Riwayat Transaksi", href: "/gatekeeper/dashboard/billing/transactions" },
           ]
         }

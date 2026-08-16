@@ -178,7 +178,7 @@ function ActiveStudentsDirectoryContent() {
     router.push(`/dashboard/siswa-aktif?tab=${tab}`);
   };
 
-  const { activeStudents, addToast, fetchActiveStudents, updateActiveStudent } = usePPDB();
+  const { activeStudents, addToast, fetchActiveStudents, updateActiveStudent, isDemoMode } = usePPDB();
 
   useEffect(() => {
     if (typeof fetchActiveStudents === "function") {
@@ -577,6 +577,15 @@ function ActiveStudentsDirectoryContent() {
   };
 
   const handleExportExcel = async (students: Applicant[], fileNameSuffix: string) => {
+    if (isDemoMode) {
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil Diekspor",
+        text: "Data siswa aktif berhasil diekspor ke Excel (Demo Mode).",
+        confirmButtonColor: "#2563eb",
+      });
+      return;
+    }
     if (students.length === 0) return;
 
     const workbook = new ExcelJS.Workbook();

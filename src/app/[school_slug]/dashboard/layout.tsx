@@ -221,15 +221,50 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminToken, pathname]);
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    if (!isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("ppdb-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("ppdb-theme", "light");
+  const toggleTheme = async () => {
+    const nextIsDark = !isDark;
+    
+    // Check if View Transitions API is supported
+    if (!document.startViewTransition) {
+      setIsDark(nextIsDark);
+      if (nextIsDark) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("ppdb-theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("ppdb-theme", "light");
+      }
+      return;
     }
+
+    const transition = document.startViewTransition(() => {
+      setIsDark(nextIsDark);
+      if (nextIsDark) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("ppdb-theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("ppdb-theme", "light");
+      }
+    });
+
+    transition.ready.then(() => {
+      const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
+      
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at 0% 0%)`,
+            `circle(${endRadius}px at 0% 0%)`
+          ]
+        },
+        {
+          duration: 400,
+          easing: "ease-in",
+          pseudoElement: nextIsDark ? "::view-transition-new(root)" : "::view-transition-old(root)"
+        }
+      );
+    });
   };
 
   const handleLogout = () => {

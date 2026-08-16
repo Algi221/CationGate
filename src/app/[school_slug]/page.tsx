@@ -733,8 +733,8 @@ export default function Home() {
             const isEven = index % 2 === 0;
             const sideIndex = Math.floor(index / 2);
             // Balance left & right positions flanking the screen
-            const topPos = isEven ? (130 + sideIndex * 120) : (130 + sideIndex * 160);
-            const horizPos = isEven ? (5 + (sideIndex % 3) * 3) : (2 + (sideIndex % 3) * 2);
+            const topPos = isEven ? (100 + sideIndex * 150) : (110 + sideIndex * 180);
+            const horizPos = isEven ? (2 + (sideIndex % 3) * 2) : (1 + (sideIndex % 3) * 1.5);
             const animName = `float${(index % 4) + 1}`;
             const animDuration = `${6 + (index % 3) * 1.5}s`;
             const animDelay = `-${(index % 5) * 1}s`;
@@ -829,7 +829,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1 flex justify-center">
                     <div className="bg-slate-900/80 text-slate-400 text-[9px] md:text-[10px] font-medium px-4 md:px-6 py-1 md:py-1.5 rounded-md flex items-center justify-center min-w-[120px] md:min-w-[200px] shadow-inner border border-slate-800 truncate max-w-[150px] md:max-w-none">
-                      ppdb.{schoolSlug}.sch.id/dashboard
+                      cationgate/{schoolSlug}
                     </div>
                   </div>
                   <div className="w-12 md:w-20"></div> {/* Spacer for perfect centering */}

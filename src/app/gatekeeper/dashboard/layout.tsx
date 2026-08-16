@@ -66,7 +66,7 @@ function GatekeeperBreadcrumbs({ pathname }: { pathname: string }) {
 
 // ─── Main Layout ──────────────────────────────────────────────────────────────
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
-  const { adminToken, adminUser, logoutAdmin } = usePPDB();
+  const { gatekeeperToken, gatekeeperUser, logoutGatekeeper } = usePPDB();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -136,20 +136,20 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
-      const token = localStorage.getItem("ppdb_admin_token");
-      const lastActive = localStorage.getItem("ppdb_admin_last_active");
+      const token = localStorage.getItem("gatekeeper_token");
+      const lastActive = localStorage.getItem("gatekeeper_last_active");
       if (token && lastActive) {
         const elapsed = Date.now() - parseInt(lastActive, 10);
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
-          logoutAdmin();
+          logoutGatekeeper();
           router.push(`/gatekeeper/auth/login?expired=true`);
           return;
         }
       }
-      if (!adminToken) {
+      if (!gatekeeperToken) {
         // Allow PPDBContext hydration to complete if token is in localStorage
-        if (localStorage.getItem("ppdb_admin_token")) {
+        if (localStorage.getItem("gatekeeper_token")) {
            return;
         }
         router.push(`/gatekeeper/auth/login`);
@@ -157,7 +157,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       }
       
       // Ensure role is gatekeeper or superadmin
-      if (adminUser && adminUser.role !== 'gatekeeper' && adminUser.role !== 'superadmin') {
+      if (gatekeeperUser && gatekeeperUser.role !== 'gatekeeper' && gatekeeperUser.role !== 'superadmin') {
          Swal.fire({
             title: "Akses Ditolak",
             text: "Anda tidak memiliki hak akses sebagai Gatekeeper (Superadmin).",
@@ -167,22 +167,22 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminToken, mounted, adminUser]);
+  }, [gatekeeperToken, mounted, gatekeeperUser]);
 
   useEffect(() => {
-    if (!adminToken) return;
+    if (!gatekeeperToken) return;
     let timeoutId: NodeJS.Timeout;
     let lastStorageUpdate = Date.now();
     const resetTimer = () => {
       clearTimeout(timeoutId);
       const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
-        logoutAdmin();
+        logoutGatekeeper();
         router.push("/gatekeeper/auth/login?expired=true");
       }, limit);
       const now = Date.now();
       if (now - lastStorageUpdate > 10000) {
-        localStorage.setItem("ppdb_admin_last_active", now.toString());
+        localStorage.setItem("gatekeeper_last_active", now.toString());
         lastStorageUpdate = now;
       }
     };
@@ -194,7 +194,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       events.forEach((ev) => window.removeEventListener(ev, resetTimer));
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminToken, pathname]);
+  }, [gatekeeperToken, pathname]);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -213,14 +213,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   const confirmLogout = () => {
-    logoutAdmin();
+    logoutGatekeeper();
     setShowLogoutConfirm(false);
     router.push("/gatekeeper/auth/login");
   };
 
   if (!mounted) return null;
   
-  if (!adminToken || (adminUser && adminUser.role !== 'gatekeeper' && adminUser.role !== 'superadmin')) {
+  if (!gatekeeperToken || (gatekeeperUser && gatekeeperUser.role !== 'gatekeeper' && gatekeeperUser.role !== 'superadmin')) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-white transition-colors duration-300">
         <div className="flex flex-col items-center gap-3">
@@ -234,7 +234,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "G";
+  const userInitial = gatekeeperUser?.nama ? gatekeeperUser.nama.charAt(0).toUpperCase() : "G";
 
   return (
     <div data-dashboard className="h-screen bg-slate-50 dark:bg-slate-950 flex font-sans overflow-hidden transition-colors duration-300">
@@ -294,12 +294,19 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                     className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden z-50 origin-top-right"
                   >
                     <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                        {adminUser?.nama || "Superadmin"}
-                      </p>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5 truncate">
-                        Gatekeeper
-                      </p>
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="h-9 w-9 bg-gradient-to-tr from-blue-600 to-cyan-500 rounded-full border-2 border-white dark:border-slate-800 shadow-md flex items-center justify-center shrink-0">
+                          <UserCircle className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
+                            {gatekeeperUser?.nama_lengkap || "Gatekeeper CationGate"}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                            {gatekeeperUser?.username || "Admin Utama"}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     <div className="p-2 space-y-1">
                       <Link

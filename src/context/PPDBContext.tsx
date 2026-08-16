@@ -33,6 +33,9 @@ interface PPDBContextType {
   loginAdmin: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   loginGatekeeper: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logoutAdmin: () => void;
+  logoutGatekeeper: () => void;
+  gatekeeperToken: string | null;
+  gatekeeperUser: any | null;
   // School (proxied from SchoolContext)
   schoolId: string;
   schoolStatus: string;
@@ -93,7 +96,8 @@ function generateDemoApplicants() {
     const school = SCHOOLS_ORIGIN[i % SCHOOLS_ORIGIN.length];
     const daysAgo = (i % 7);
     const dateStr = new Date(now - daysAgo * dayMs - (i * 3600000)).toISOString();
-    result.push({ id: i, nama: `${fn} ${ln}`, nisn, sekolah_asal: school, jurusan_1: major, status, tgl_daftar: dateStr, alasan_ditolak: status === "Rejected" ? "Berkas administrasi tidak memenuhi kelengkapan NISN" : null });
+    const gender = (i % 2 === 0) ? "L" : "P";
+    result.push({ id: i, nama: `${fn} ${ln}`, nisn, sekolah_asal: school, jurusan_1: major, status, tgl_daftar: dateStr, jenis_kelamin: gender, jenisKelamin: gender, alasan_ditolak: status === "Rejected" ? "Berkas administrasi tidak memenuhi kelengkapan NISN" : null });
   }
   return result;
 }
@@ -110,7 +114,8 @@ function generateDemoActiveStudents() {
       const major = MAJORS_LIST[i % MAJORS_LIST.length];
       const kelasGrade = pIdx === 0 ? "XII" : pIdx === 1 ? "XI" : "X";
       const kelasCode = major === "Rekayasa Perangkat Lunak" ? "RPL" : major.slice(0, 4).toUpperCase();
-      result.push({ id: idCounter, nama: `${fn} ${ln}`, nisn, periode, kelas: `${kelasGrade} ${kelasCode} ${(i % 3) + 1}`, jurusan_1: major, sekolah_asal: SCHOOLS_ORIGIN[i % SCHOOLS_ORIGIN.length], status: "Approved", tgl_daftar: "2025-07-15T08:00:00.000Z" });
+      const gender = (i % 2 === 0) ? "P" : "L";
+      result.push({ id: idCounter, nama: `${fn} ${ln}`, nisn, periode, kelas: `${kelasGrade} ${kelasCode} ${(i % 3) + 1}`, jurusan_1: major, sekolah_asal: SCHOOLS_ORIGIN[i % SCHOOLS_ORIGIN.length], status: "Approved", jenis_kelamin: gender, jenisKelamin: gender, tgl_daftar: "2025-07-15T08:00:00.000Z" });
       idCounter++;
     }
   });
@@ -122,7 +127,7 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
 
 // ─── Inner Provider (has access to sub-contexts) ──────────────────────────────
 function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
-  const { adminToken, adminUser, setAdminUser, loginAdmin, loginGatekeeper, logoutAdmin } = useAuth();
+  const { adminToken, adminUser, setAdminUser, loginAdmin, loginGatekeeper, logoutAdmin, logoutGatekeeper, gatekeeperToken, gatekeeperUser } = useAuth();
   const { schoolId, schoolStatus, isDemoMode, isSchoolNotFound, ppdbLogo, ppdbTitle, profilSekolah, setProfilSekolah, fetchConfigs } = useSchool();
   const { toasts, addToast } = useToast();
 
@@ -459,7 +464,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         simulationActive, setSimulationActive,
         registerApplicant, verifyApplicant, rejectApplicant, deleteApplicant,
         updateApplicant, updateActiveStudent, deleteActiveStudent,
-        loginAdmin, loginGatekeeper, logoutAdmin,
+        loginAdmin, loginGatekeeper, logoutAdmin, logoutGatekeeper,
+        gatekeeperToken, gatekeeperUser,
         fetchPublicApplicants, fetchAdminApplicants, fetchActiveStudents,
         simulateRegistration, addToast, checkPaymentStatus,
         ppdbLogo, ppdbTitle, profilSekolah, setProfilSekolah, fetchConfigs,

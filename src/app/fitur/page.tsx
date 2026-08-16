@@ -3,58 +3,58 @@
 import React from "react";
 import { Navbar } from "@/components/landing/Navbar";
 import { CinematicFooter } from "@/components/ui/motion-footer";
-import { Sparkles, FileCheck, Cpu, BarChart3, CheckCircle2, ArrowRight } from "lucide-react";
+import { Users, Layers, GraduationCap, Megaphone, Palette, Paintbrush, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function FeaturesPage() {
   const features = [
     {
-      id: "ppdb",
-      title: "Sistem Penerimaan Murid Baru (PPDB Online)",
-      desc: "Formulir pendaftaran multi-step dinamis, verifikasi NISN/NIK otomatis, pengunggahan berkas digital, dan penerbitan kartu ujian secara instan.",
-      icon: Sparkles,
+      id: "data-calon-siswa",
+      title: "Data Calon Siswa",
+      desc: "Kelola data pendaftar, status seleksi, verifikasi berkas, dan informasi calon siswa secara terpusat dari dashboard.",
+      icon: Users,
       color: "bg-blue-500",
       gradient: "from-blue-500/20 to-cyan-500/5",
     },
     {
-      id: "cbt",
-      title: "Asesmen & Ujian Online (CBT Pintar)",
-      desc: "Pelaksanaan tes akademik berbasis komputer bebas kecurangan, acak soal & opsi otomatis, timer pintar, serta pengolahan nilai real-time.",
-      icon: FileCheck,
-      color: "bg-emerald-500",
-      gradient: "from-emerald-500/20 to-teal-500/5",
-    },
-    {
-      id: "manajemen",
-      title: "Manajemen Siswa & Data",
-      desc: "Kontrol penuh data akademik siswa, riwayat profil, dokumen persyaratan, serta pencetakan buku induk siswa secara massal.",
-      icon: Cpu,
-      color: "bg-purple-500",
-      gradient: "from-purple-500/20 to-fuchsia-500/5",
-    },
-    {
-      id: "kelas",
-      title: "Automasi Pembagian Kelas",
-      desc: "Fitur cerdas untuk mem-plot siswa baru ke kelas yang sesuai berdasarkan kuota jurusan, skor ujian masuk, dan preferensi.",
-      icon: CheckCircle2,
+      id: "pembagian-kelas",
+      title: "Pembagian Kelas",
+      desc: "Atur pembagian siswa ke kelas atau rombel sesuai kebutuhan sekolah, kapasitas, dan alur administrasi internal.",
+      icon: Layers,
       color: "bg-indigo-500",
       gradient: "from-indigo-500/20 to-blue-500/5",
     },
     {
-      id: "excel",
-      title: "Import & Export Excel",
-      desc: "Sistem terintegrasi untuk menarik data massal siswa, rekap nilai ujian, dan laporan keuangan dalam format Excel (XLSX).",
-      icon: BarChart3,
-      color: "bg-amber-500",
-      gradient: "from-amber-500/20 to-orange-500/5",
+      id: "siswa-aktif",
+      title: "Siswa Aktif",
+      desc: "Pantau dan kelola daftar siswa aktif yang sudah diterima agar data akademik dan administrasi tetap rapi.",
+      icon: GraduationCap,
+      color: "bg-emerald-500",
+      gradient: "from-emerald-500/20 to-teal-500/5",
     },
     {
-      id: "validasi",
-      title: "Validasi Berkas Multi-layer",
-      desc: "Alur kerja verifikasi dokumen pendaftar oleh tim admin (Gatekeeper) untuk memastikan keaslian ijazah, SKHUN, dan bukti bayar.",
-      icon: FileCheck,
+      id: "kelola-informasi",
+      title: "Kelola Informasi",
+      desc: "Buat, ubah, dan publikasikan pengumuman, berita, atau informasi penting sekolah ke halaman publik.",
+      icon: Megaphone,
       color: "bg-rose-500",
       gradient: "from-rose-500/20 to-pink-500/5",
+    },
+    {
+      id: "kelola-ui-data",
+      title: "Kelola UI/Data",
+      desc: "Sesuaikan isi portal, data profil sekolah, konten pendukung, dan pengaturan informasi yang tampil ke pengguna.",
+      icon: Palette,
+      color: "bg-purple-500",
+      gradient: "from-purple-500/20 to-fuchsia-500/5",
+    },
+    {
+      id: "tema-tampilan",
+      title: "Tema dan Tampilan",
+      desc: "Atur tema visual, warna, logo, dan tampilan antarmuka agar portal sekolah terlihat konsisten dan sesuai identitas.",
+      icon: Paintbrush,
+      color: "bg-amber-500",
+      gradient: "from-amber-500/20 to-orange-500/5",
     },
   ];
 
@@ -65,13 +65,13 @@ export default function FeaturesPage() {
       <main className="pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-16 flex-1">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <span className="px-4 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-extrabold uppercase tracking-wider">
-            Fitur Unggulan
+Menu Dashboard
           </span>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight">
-            Solusi Lengkap untuk Seluruh Kebutuhan Sekolah
+Isi Fitur Mengikuti Menu yang Ada di Dashboard
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg">
-            Dirancang khusus untuk memenuhi standar administrasi sekolah di Indonesia dengan antarmuka yang bersih dan cepat.
+Seluruh isi di bawah ini mengikuti menu yang sudah tersedia di halaman dashboard demo, tanpa mengubah layout atau desain halaman.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export default function FeaturesPage() {
                     href="/daftar"
                     className="w-full py-3 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-slate-200 dark:border-slate-700"
                   >
-                    <span>Coba Sekarang</span>
+                      <span>Lihat Detail</span>
                     <ArrowRight size={16} />
                   </Link>
                 </div>

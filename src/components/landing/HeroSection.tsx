@@ -46,7 +46,7 @@ export default function HeroPPDB() {
           transition={{ delay: 0.3 }}
           className="text-center max-w-3xl mx-auto my-1 space-y-4"
         >
-          <h3 className="text-xl sm:text-2xl font-black text-heading tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-black text-heading tracking-tight mt-20 lg:pt-0">
             "Satu Platform Terpadu Untuk Transformasi Digital Sekolah Anda"
           </h3>
 

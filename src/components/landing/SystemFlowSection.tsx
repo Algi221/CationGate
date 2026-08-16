@@ -73,7 +73,7 @@ export function SystemFlowSection() {
           return (
             <div
               key={index}
-              className={`sticky w-full h-[100dvh] flex flex-col justify-center px-6 sm:px-12 md:px-24 overflow-hidden rounded-t-[2.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.12)] ${step.bg} ${step.text}`}
+              className={`sticky w-full h-[100dvh] flex flex-col justify-center px-6 sm:px-12 md:px-24 overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.12)] ${step.bg} ${step.text}`}
               style={{
                 top: `${index * 40}px`,
                 height: `calc(100dvh - ${index * 40}px)`,

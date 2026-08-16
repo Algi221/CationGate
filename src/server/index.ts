@@ -45,7 +45,7 @@ app.use('*', async (c, next) => {
 // Logger & CORS Middlewares
 app.use('*', logger());
 app.use('*', cors({
-  origin: (origin) => origin || '*',
+  origin: (origin) => ['https://cationgate.site', 'https://www.cationgate.site'].includes(origin || '') ? origin : 'https://cationgate.site',
   allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposeHeaders: ['Content-Length'],

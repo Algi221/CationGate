@@ -21,10 +21,10 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
   const schoolDisplayName = ppdbTitle || schoolSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   return (
-    <footer className="bg-[#0f172a] text-slate-400 dark:bg-[#0a0a0a] dark:text-slate-500 py-16 sm:py-24 relative overflow-hidden">
+    <footer className="bg-slate-50 text-slate-600 dark:bg-[#0a0a0a] dark:text-slate-500 py-16 sm:py-24 relative overflow-hidden border-t border-slate-200 dark:border-transparent">
       {/* Background glow & Grid Pattern */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-900/50 dark:via-blue-500/20 to-transparent"></div>
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-10 dark:opacity-[0.05]"></div>
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-200 dark:via-blue-500/20 to-transparent"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 dark:opacity-[0.05]"></div>
       <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -35,7 +35,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
               <div className="relative h-12 w-12 shrink-0 bg-white/10 dark:bg-white/5 rounded-xl p-2 backdrop-blur-md border border-white/10">
                 <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
               </div>
-              <span className="text-xl font-extrabold text-white tracking-tight group-hover:text-blue-400 transition-colors">
+              <span className="text-xl font-extrabold text-slate-900 dark:text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {schoolDisplayName}
               </span>
             </Link>
@@ -96,7 +96,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
 
           {/* Col 2 */}
           <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-white">Program Keahlian</h4>
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-slate-900 dark:text-white">Program Keahlian</h4>
             <ul className="space-y-2 text-xs font-semibold">
               <li><Link href={`/${schoolSlug}/jurusan/rpl`} className="hover:text-blue-500 transition-colors">Rekayasa Perangkat Lunak</Link></li>
               <li><Link href={`/${schoolSlug}/jurusan/tjkt`} className="hover:text-blue-500 transition-colors">Teknik Komputer Jaringan</Link></li>
@@ -107,7 +107,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
 
           {/* Col 3 */}
           <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-white">Link Terkait</h4>
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-slate-900 dark:text-white">Link Terkait</h4>
             <ul className="space-y-2 text-xs font-semibold">
               <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-500 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
               <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-500 transition-colors">Syarat Pendaftaran</Link></li>
@@ -118,7 +118,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
 
           {/* Col 4 */}
           <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-white">Sekretariat PPDB</h4>
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-slate-900 dark:text-white">Sekretariat PPDB</h4>
             <p className="text-xs leading-relaxed font-semibold text-slate-400">
               {address}
             </p>

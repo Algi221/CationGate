@@ -143,7 +143,24 @@ async function processMajorsConfig(majors: any[]): Promise<any[]> {
 configRouter.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    let schoolId = c.req.query('school_id') || null;
+    const schoolSlug = c.req.query('school_slug');
+
+    // If school_slug is provided, resolve it to school_id
+    if (schoolSlug && !schoolId) {
+      const { data: tenantData } = await supabase
+        .from('saas_tenants')
+        .select('id')
+        .eq('domain_slug', schoolSlug)
+        .single();
+      if (tenantData) {
+        schoolId = tenantData.id;
+      } else {
+        // Return empty if slug not found
+        return c.json({ success: true, data: {} });
+      }
+    }
+
     const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
     
     // 1. Try to get from Redis Cache first

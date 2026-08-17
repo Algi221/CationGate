@@ -1153,7 +1153,7 @@ export default function KelolaUserInterface() {
           </div>
         ) : (
           <>
-            {/* TAB 1: Hero & Kontak */}
+            {/* TAB 1: General / Umum */}
             {activeTab === "hero" && (
               <div className="space-y-6">
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-6">
@@ -1451,7 +1451,7 @@ export default function KelolaUserInterface() {
                   </div>
                 </div>
 
-                {/* CONSOLDATION: Gelombang Pendaftaran Section inside Hero & Kontak */}
+                {/* CONSOLDATION: Gelombang Pendaftaran Section inside General / Umum */}
                 <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8 pb-4 mb-4">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Calendar size={18} className="text-indigo-600 dark:text-indigo-500" />

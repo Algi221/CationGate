@@ -95,7 +95,7 @@ export function AdminSidebar({
           lockedIfUnverified: true,
           subItems: [
             { label: "Profil Sekolah", href: `/${schoolSlug}/dashboard/profil-sekolah` },
-            { label: "Hero & Kontak", href: `/${schoolSlug}/dashboard/kelola-ui?tab=hero` },
+            { label: "General / Umum", href: `/${schoolSlug}/dashboard/kelola-ui?tab=hero` },
             { label: "Program Keahlian", href: `/${schoolSlug}/dashboard/kelola-ui?tab=majors` },
             { label: "Alur Pendaftaran", href: `/${schoolSlug}/dashboard/kelola-ui?tab=alur` },
             { label: "Form & Panduan", href: `/${schoolSlug}/dashboard/kelola-ui?tab=form` },

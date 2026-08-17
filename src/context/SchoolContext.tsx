@@ -12,6 +12,7 @@ interface SchoolContextType {
   isSchoolNotFound: boolean;
   ppdbLogo: string;
   ppdbTitle: string;
+  ppdbFooterDesc: string;
   profilSekolah: any;
   setProfilSekolah: React.Dispatch<React.SetStateAction<any>>;
   fetchConfigs: () => Promise<void>;
@@ -30,6 +31,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   const [isSchoolNotFound, setIsSchoolNotFound] = useState<boolean>(false);
   const [ppdbLogo, setPpdbLogo] = useState<string>("");
   const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB SMK TB");
+  const [ppdbFooterDesc, setPpdbFooterDesc] = useState<string>("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
   const [profilSekolah, setProfilSekolah] = useState<any>(null);
 
   // ── Fetch global config (logo, title, profil) ──────────────────────────────
@@ -42,12 +44,13 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       if (data.success && data.data) {
         if (data.data.ppdb_logo_url) setPpdbLogo(data.data.ppdb_logo_url);
         if (data.data.ppdb_title) setPpdbTitle(data.data.ppdb_title);
+        if (data.data.ppdb_footer_desc) setPpdbFooterDesc(data.data.ppdb_footer_desc);
         if (data.data.ppdb_profil_sekolah) setProfilSekolah(data.data.ppdb_profil_sekolah);
       }
     } catch (err) {
       console.error("Gagal mengambil config:", err);
     }
-  }, []);
+  }, [slug]);
 
   useEffect(() => {
     fetchConfigs();
@@ -132,6 +135,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
         isSchoolNotFound,
         ppdbLogo,
         ppdbTitle,
+        ppdbFooterDesc,
         profilSekolah,
         setProfilSekolah,
         fetchConfigs,

@@ -440,6 +440,7 @@ export default function KelolaUserInterface() {
   const [mapTitle, setMapTitle] = useState("Kunjungi Kampus Kami");
   const [schoolLogo, setSchoolLogo] = useState("");
   const [schoolTitle, setSchoolTitle] = useState("Portal PPDB");
+  const [footerDesc, setFooterDesc] = useState("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
 
   const [gelombangConfig, setGelombangConfig] = useState({
     gelombang1: { start: "2026-06-03", end: "2026-07-24" },
@@ -536,6 +537,7 @@ export default function KelolaUserInterface() {
       ppdb_partners_config: partnersList,
       ppdb_logo_url: schoolLogo,
       ppdb_title: schoolTitle,
+      ppdb_footer_desc: footerDesc,
     };
 
     localStorage.setItem(draftKey, JSON.stringify(draft));
@@ -611,6 +613,7 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_logo_url) setSchoolLogo(activeConfig.ppdb_logo_url);
       
       if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
+      if (activeConfig.ppdb_footer_desc) setFooterDesc(activeConfig.ppdb_footer_desc);
       else if (!draft) setSchoolTitle(`PPDB ${ppdbTitle || 'Sekolah'}`);
       
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
@@ -856,6 +859,7 @@ export default function KelolaUserInterface() {
         ppdb_partners_config: partnersList,
         ppdb_logo_url: schoolLogo,
         ppdb_title: schoolTitle,
+      ppdb_footer_desc: footerDesc,
         ppdb_fields_config: fieldsConfigUI
       };
 
@@ -1427,6 +1431,17 @@ export default function KelolaUserInterface() {
                       className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
                   </div>
+                  <div className="space-y-2 md:col-span-3">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Deskripsi Singkat Footer</label>
+                    <textarea
+                      value={footerDesc}
+                      onChange={(e) => setFooterDesc(e.target.value)}
+                      rows={2}
+                      placeholder="Pionir pendidikan kejuruan teknologi informasi..."
+                      className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors resize-y"
+                    />
+                  </div>
+
 
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Link Grup WhatsApp PPDB Calon Siswa</label>

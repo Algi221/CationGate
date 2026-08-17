@@ -93,6 +93,7 @@ export const configSaveSchema = z.object({
     ppdb_session_timeout: z.string().max(20).optional(),
     ppdb_logo_url: z.string().optional(),
     ppdb_title: z.string().optional(),
+    ppdb_footer_desc: z.string().optional(),
     ppdb_map_title: z.string().optional(),
     ppdb_map_url: z.string().optional(),
   }).passthrough(),
@@ -125,6 +126,7 @@ export const singleConfigSchema = z.object({
     'ppdb_session_timeout',
     'ppdb_logo_url',
     'ppdb_title',
+    'ppdb_footer_desc',
     'ppdb_map_title',
     'ppdb_map_url'
   ]),

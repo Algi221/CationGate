@@ -10,7 +10,7 @@ interface SchoolFooterProps {
 }
 
 export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
-  const { ppdbLogo, ppdbTitle, profilSekolah } = usePPDB();
+  const { ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah } = usePPDB();
 
   // Ambil data identitas sekolah
   const identitas = profilSekolah?.identitas || {};
@@ -40,7 +40,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
               </span>
             </Link>
             <p className="text-xs font-semibold leading-relaxed max-w-xs">
-              Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.
+              {ppdbFooterDesc || "Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global."}
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a

@@ -84,7 +84,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
       }
     };
 
-    if (schoolSlug && schoolSlug !== "sekolah") {
+    if (schoolSlug && schoolSlug !== "sekolah" && schoolSlug !== "demo") {
       loadMajors();
     }
   }, [schoolSlug]);

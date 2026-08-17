@@ -34,8 +34,9 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
 
   // ── Fetch global config (logo, title, profil) ──────────────────────────────
   const fetchConfigs = useCallback(async () => {
+    if (isDemoMode) return;
     try {
-      const res = await fetch(`/api/config`);
+      const res = await fetch(`/api/config?school_slug=${slug}`);
       if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
       const data = await res.json();
       if (data.success && data.data) {

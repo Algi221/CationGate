@@ -398,7 +398,8 @@ export default function Home() {
           }
         }
 
-        const res = await fetch("/api/config");
+        if (schoolSlug === 'demo') return;
+        const res = await fetch(`/api/config?school_slug=${schoolSlug}`);
         const data = await res.json();
 
         if (data.success && data.data) {

@@ -146,7 +146,7 @@ export default function ForgotPassword() {
           <div className="flex items-center gap-3 pt-2">
             <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center overflow-hidden">
               {ppdbLogo ? (
-                <img src={ppdbLogo} alt="Logo" className="w-8 h-8 object-contain" />
+                <img src={ppdbLogo || undefined} alt="Logo" className="w-8 h-8 object-contain" />
               ) : (
                 <ShieldCheck className="w-6 h-6 text-white" />
               )}

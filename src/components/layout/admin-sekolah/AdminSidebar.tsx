@@ -332,7 +332,7 @@ export function AdminSidebar({
           <Link href={schoolSlug ? `/${schoolSlug}/dashboard` : "/dashboard"} className="flex items-center group">
             {ppdbLogo && (
               <img
-                src={ppdbLogo}
+                src={ppdbLogo || undefined}
                 alt="Logo Sekolah"
                 className="w-9 h-9 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
               />

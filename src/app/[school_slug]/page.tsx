@@ -501,7 +501,7 @@ export default function Home() {
           <div className="flex items-center shrink-0 min-w-0">
             <Link href="/" className="flex items-center gap-3 overflow-visible group min-w-0">
               <div className="relative h-10 w-10 shrink-0 overflow-visible">
-                <SafeImage src={ppdbLogo} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
+                <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
               </div>
               <span className="text-xl font-extrabold text-slate-900 dark:text-white truncate max-w-[180px] sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {ppdbTitle}
@@ -637,7 +637,7 @@ export default function Home() {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              {ppdbLogo && <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />}
+              {ppdbLogo && <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />}
               <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
             </Link>
 
@@ -1410,7 +1410,7 @@ export default function Home() {
             {/* Col 1 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
+                <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
                 <div>
                   <span className="logo-text font-black text-slate-800 dark:text-white text-lg">{ppdbTitle}</span>
                   <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase mt-0.5">SMK Taruna Bhakti</span>

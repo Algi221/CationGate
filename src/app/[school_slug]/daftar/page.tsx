@@ -1649,7 +1649,7 @@ export default function DaftarPage() {
 
             {/* School Letterhead */}
             <div className="flex items-center gap-4 border-b-4 border-double border-slate-800 pb-4 mb-6">
-              {ppdbLogo && <img src={ppdbLogo} alt="Logo Sekolah" className="w-14 h-14 object-contain" onError={(e:any) => e.target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"} />}
+              {ppdbLogo && <img src={ppdbLogo || undefined} alt="Logo Sekolah" className="w-14 h-14 object-contain" onError={(e:any) => e.target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"} />}
               <div className="text-left">
                 <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5">Panitia Penerimaan Peserta Didik Baru</h4>
                 <h2 className="text-lg font-black text-slate-900 leading-tight">

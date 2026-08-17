@@ -183,7 +183,7 @@ export default function ForumPage() {
         <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
           <div className="nav-left">
             <Link href="/" className="logo-container">
-              <img src={ppdbLogo} alt="Logo Sekolah" className="w-9 h-9 object-contain" />
+              <img src={ppdbLogo || undefined} alt="Logo Sekolah" className="w-9 h-9 object-contain" />
               <span className="logo-text font-extrabold">{ppdbTitle}</span>
             </Link>
           </div>
@@ -228,7 +228,7 @@ export default function ForumPage() {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <img src={ppdbLogo} alt="Logo Sekolah" className="w-12 h-12 object-contain" />
+              <img src={ppdbLogo || undefined} alt="Logo Sekolah" className="w-12 h-12 object-contain" />
               <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
             </Link>
 

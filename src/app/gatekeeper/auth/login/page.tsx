@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { LottiePlaceholder } from "@/components/ui/LottiePlaceholder";
 
 export default function GatekeeperLogin() {
-  const { loginGatekeeper, adminToken } = usePPDB();
+  const { loginGatekeeper, gatekeeperToken } = usePPDB();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -20,8 +20,8 @@ export default function GatekeeperLogin() {
 
   useEffect(() => {
     setMounted(true);
-    if (adminToken) window.location.href = "/gatekeeper/dashboard";
-  }, [adminToken, router]);
+    if (gatekeeperToken) window.location.href = "/gatekeeper/dashboard";
+  }, [gatekeeperToken, router]);
 
   const handleSubmit = async (e?: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
     if (e) {

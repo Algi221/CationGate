@@ -73,7 +73,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const params = useParams();
-  const schoolSlug = params?.school_slug as string;
+  const schoolSlugRaw = params?.school_slug as string;
+  const schoolSlug = schoolSlugRaw ? schoolSlugRaw.replace(/[^a-zA-Z0-9-]/g, '') : "";
 
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -84,11 +85,36 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // ── Close user dropdown on outside click ─────────────────────────────────
+  // Search State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchRef = React.useRef<HTMLDivElement>(null);
+
+  const searchableMenus = [
+    { title: "Beranda", desc: "Ringkasan & Metrik", href: `/${schoolSlug}/dashboard` },
+    { title: "Verifikasi Berkas", desc: "Periksa kelengkapan berkas fisik", href: `/${schoolSlug}/dashboard/verifikasi-berkas` },
+    { title: "Data Pendaftar", desc: "Daftar semua calon siswa", href: `/${schoolSlug}/dashboard/data-pendaftar` },
+    { title: "Jalur Pendaftaran", desc: "Kelola kuota & afirmasi", href: `/${schoolSlug}/dashboard/jalur-pendaftaran` },
+    { title: "Daftar Ulang", desc: "Kelola status daftar ulang", href: `/${schoolSlug}/dashboard/daftar-ulang` },
+    { title: "Kelola Informasi", desc: "Pengumuman & Berita", href: `/${schoolSlug}/dashboard/informasi` },
+    { title: "Kelola UI/Data", desc: "Tampilan Landing Page", href: `/${schoolSlug}/dashboard/kelola-ui` },
+    { title: "Kelola Subscription", desc: "Tagihan & Paket", href: `/${schoolSlug}/dashboard/subscription` },
+    { title: "Pengaturan", desc: "Keamanan, Tema, General", href: `/${schoolSlug}/dashboard/settings` },
+  ];
+
+  const searchResults = searchableMenus.filter(
+    m => m.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         m.desc.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // ── Close dropdowns on outside click ─────────────────────────────────
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
         setShowUserDropdown(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setIsSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -195,15 +221,50 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminToken, pathname]);
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    if (!isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("ppdb-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("ppdb-theme", "light");
+  const toggleTheme = async () => {
+    const nextIsDark = !isDark;
+    
+    // Check if View Transitions API is supported
+    if (!document.startViewTransition) {
+      setIsDark(nextIsDark);
+      if (nextIsDark) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("ppdb-theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("ppdb-theme", "light");
+      }
+      return;
     }
+
+    const transition = document.startViewTransition(() => {
+      setIsDark(nextIsDark);
+      if (nextIsDark) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("ppdb-theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("ppdb-theme", "light");
+      }
+    });
+
+    transition.ready.then(() => {
+      const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
+      
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at 0% 0%)`,
+            `circle(${endRadius}px at 0% 0%)`
+          ]
+        },
+        {
+          duration: 400,
+          easing: "ease-in",
+          pseudoElement: nextIsDark ? "::view-transition-new(root)" : "::view-transition-old(root)"
+        }
+      );
+    });
   };
 
   const handleLogout = () => {
@@ -285,15 +346,59 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
           >
             {/* Global Search Bar */}
-            <div className="relative hidden md:flex items-center mr-2">
+            <div className="relative hidden md:flex items-center mr-2 z-50" ref={searchRef}>
               <div className="absolute left-3 text-slate-400">
                 <Search size={14} />
               </div>
               <input 
                 type="text" 
                 placeholder="Cari menu (Ctrl+K)" 
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setIsSearchOpen(true);
+                }}
+                onFocus={() => setIsSearchOpen(true)}
                 className="w-48 lg:w-56 h-9 pl-9 pr-3 text-xs font-bold bg-slate-100 dark:bg-[#1e293b]/80 border border-slate-200 dark:border-slate-700/60 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/20 text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400"
               />
+              <AnimatePresence>
+                {isSearchOpen && searchQuery.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-12 left-0 w-64 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-xl shadow-xl overflow-hidden z-[100]"
+                  >
+                    <div className="max-h-64 overflow-y-auto p-2">
+                      {searchResults.length > 0 ? (
+                        searchResults.map((item, idx) => (
+                          <Link
+                            key={idx}
+                            href={encodeURI(item.href)}
+                            onClick={() => {
+                              setIsSearchOpen(false);
+                              setSearchQuery("");
+                            }}
+                            className="flex flex-col px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors group"
+                          >
+                            <span className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                              {item.title}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {item.desc}
+                            </span>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="px-3 py-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                          Tidak ditemukan "{searchQuery}"
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Theme toggle */}
@@ -363,14 +468,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                     >
                       <UserCircle size={15} className="text-slate-400 shrink-0" />
                       <span className="text-xs font-semibold">Profil Saya</span>
-                    </Link>
-                    <Link
-                      href={schoolSlug ? `/${schoolSlug}/dashboard/settings` : "/dashboard/settings"}
-                      onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-white dark:bg-[#0f172a]/5 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors"
-                    >
-                      <Settings size={15} className="text-slate-400 shrink-0" />
-                      <span className="text-xs font-semibold">Pengaturan</span>
                     </Link>
                     <Link
                       href={schoolSlug ? `/${schoolSlug}` : "/"}

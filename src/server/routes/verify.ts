@@ -4,6 +4,7 @@ import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 import crypto from 'crypto';
 import { gatekeeperAuth } from '../middleware/auth';
+import { rateLimiter } from '../middleware/rate-limiter';
 
 const verifyRouter = new Hono();
 
@@ -13,7 +14,7 @@ function generateOTP(): string {
 }
 
 // Submit verification data (NPSN, Dapodik, Social Media) and send OTP
-verifyRouter.post('/submit-data', async (c) => {
+verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3 }), async (c) => {
   try {
     const body = await c.req.json();
     const {

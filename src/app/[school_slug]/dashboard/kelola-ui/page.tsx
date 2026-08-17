@@ -350,7 +350,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
 ];
 
 export default function KelolaUserInterface() {
-  const { adminToken, fetchConfigs, ppdbTitle } = usePPDB();
+  const { adminToken, fetchConfigs, ppdbTitle, isDemoMode } = usePPDB();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
   const searchParams = useSearchParams();
@@ -860,6 +860,18 @@ export default function KelolaUserInterface() {
       };
 
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
+      
+      if (isDemoMode) {
+        setLoading(false);
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil Disimpan!",
+          text: "Konfigurasi UI berhasil diperbarui (Demo Mode).",
+          confirmButtonColor: "#2563eb",
+        });
+        return;
+      }
+
       const res = await fetch("/api/config/save-all", {
         method: "POST",
         headers: {

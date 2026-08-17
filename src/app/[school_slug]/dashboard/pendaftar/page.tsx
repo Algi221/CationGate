@@ -215,7 +215,7 @@ function buildKey(a: Applicant): string {
 }
 
 function ApplicantsDirectoryContent() {
-  const { applicants, setApplicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant, fetchAdminApplicants, addToast } = usePPDB();
+  const { applicants, setApplicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant, fetchAdminApplicants, addToast, isDemoMode } = usePPDB();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
@@ -506,6 +506,15 @@ function ApplicantsDirectoryContent() {
   }, [syncStatus]);
 
   const exportToExcel = async () => {
+    if (isDemoMode) {
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil Diekspor",
+        text: "Data pendaftar berhasil diekspor ke Excel (Demo Mode).",
+        confirmButtonColor: "#2563eb",
+      });
+      return;
+    }
     try {
       const token = localStorage.getItem("ppdb_admin_token") || localStorage.getItem("ppdb_token");
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "/api";

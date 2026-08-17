@@ -8,9 +8,13 @@ interface AuthContextType {
   adminToken: string | null;
   adminUser: any | null;
   setAdminUser: React.Dispatch<React.SetStateAction<any | null>>;
+  gatekeeperToken: string | null;
+  gatekeeperUser: any | null;
+  setGatekeeperUser: React.Dispatch<React.SetStateAction<any | null>>;
   loginAdmin: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   loginGatekeeper: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logoutAdmin: () => void;
+  logoutGatekeeper: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -20,10 +24,13 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
   const { addToast } = useToast();
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [adminUser, setAdminUser] = useState<any | null>(null);
+  const [gatekeeperToken, setGatekeeperToken] = useState<string | null>(null);
+  const [gatekeeperUser, setGatekeeperUser] = useState<any | null>(null);
 
   // Restore token & user from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // 1. Restore Admin Session
       const token = localStorage.getItem("ppdb_admin_token");
       if (token && !token.includes('.')) {
         localStorage.removeItem("ppdb_admin_token");
@@ -53,6 +60,37 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
           // ignore
         }
       }
+
+      // 2. Restore Gatekeeper Session
+      const gkToken = localStorage.getItem("gatekeeper_token");
+      if (gkToken && !gkToken.includes('.')) {
+        localStorage.removeItem("gatekeeper_token");
+        localStorage.removeItem("gatekeeper_user");
+        localStorage.removeItem("gatekeeper_last_active");
+      } else {
+        const gkLastActive = localStorage.getItem("gatekeeper_last_active");
+        if (gkToken && gkLastActive) {
+          const elapsed = Date.now() - parseInt(gkLastActive, 10);
+          if (elapsed > 60 * 60 * 1000) {
+            localStorage.removeItem("gatekeeper_token");
+            localStorage.removeItem("gatekeeper_user");
+            localStorage.removeItem("gatekeeper_last_active");
+          } else {
+            setGatekeeperToken(gkToken);
+          }
+        } else if (gkToken) {
+          setGatekeeperToken(gkToken);
+        }
+      }
+
+      const savedGkUser = localStorage.getItem("gatekeeper_user");
+      if (savedGkUser) {
+        try {
+          setGatekeeperUser(JSON.parse(savedGkUser));
+        } catch (e) {
+          // ignore
+        }
+      }
     }
   }, []);
 
@@ -62,6 +100,14 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
     localStorage.removeItem("ppdb_admin_token");
     localStorage.removeItem("ppdb_admin_user");
     localStorage.removeItem("ppdb_admin_last_active");
+  }, []);
+
+  const logoutGatekeeper = useCallback(() => {
+    setGatekeeperToken(null);
+    setGatekeeperUser(null);
+    localStorage.removeItem("gatekeeper_token");
+    localStorage.removeItem("gatekeeper_user");
+    localStorage.removeItem("gatekeeper_last_active");
   }, []);
 
   const loginAdmin = useCallback(async (username: string, password: string) => {
@@ -110,11 +156,11 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
 
       const data = await res.json();
       if (data && data.success) {
-        setAdminToken(data.token);
-        setAdminUser(data.gatekeeper);
-        localStorage.setItem("ppdb_admin_token", data.token);
-        localStorage.setItem("ppdb_admin_user", JSON.stringify(data.gatekeeper));
-        localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
+        setGatekeeperToken(data.token);
+        setGatekeeperUser(data.gatekeeper);
+        localStorage.setItem("gatekeeper_token", data.token);
+        localStorage.setItem("gatekeeper_user", JSON.stringify(data.gatekeeper));
+        localStorage.setItem("gatekeeper_last_active", Date.now().toString());
         addToast("Login Gatekeeper Berhasil", `Selamat datang, ${data.gatekeeper?.nama_lengkap || username}!`, "success");
         return { success: true };
       } else {
@@ -127,7 +173,10 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
   }, [addToast]);
 
   return (
-    <AuthContext.Provider value={{ adminToken, adminUser, setAdminUser, loginAdmin, loginGatekeeper, logoutAdmin }}>
+    <AuthContext.Provider value={{ 
+      adminToken, adminUser, setAdminUser, loginAdmin, logoutAdmin,
+      gatekeeperToken, gatekeeperUser, setGatekeeperUser, loginGatekeeper, logoutGatekeeper
+    }}>
       {children}
     </AuthContext.Provider>
   );

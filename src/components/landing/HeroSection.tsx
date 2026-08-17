@@ -27,7 +27,7 @@ export default function HeroPPDB() {
   ];
 
   return (
-    <div className="w-full min-h-screen p-4 sm:p-8 md:p-12 flex flex-col items-center justify-center font-sans text-heading relative overflow-hidden">
+    <div className="w-full min-h-screen pt-32 pb-12 px-4 sm:p-8 md:p-12 flex flex-col items-center justify-center font-sans text-heading relative overflow-hidden">
       
       {/* Background Dot Pattern */}
       <div 
@@ -76,7 +76,7 @@ export default function HeroPPDB() {
             initial={{ opacity: 0, scale: 0.9, y: "-50%", x: "-50%" }}
             animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
             transition={{ delay: 0.35 }}
-            className="hidden md:flex absolute top-10/12 left-2/3 ml-6 -translate-x-10/12 -translate-y-1/2 z-30 items-center justify-center gap-3 py-2 px-4 rounded-full border border-border shadow-xl backdrop-blur-md pointer-events-auto"
+            className="absolute top-[38%] left-[50%] md:top-10/12 md:left-2/3 ml-0 md:ml-6 -translate-x-1/2 md:-translate-x-10/12 -translate-y-1/2 z-30 flex items-center justify-center gap-2 md:gap-3 py-2 px-3 md:px-4 rounded-full border border-border shadow-2xl backdrop-blur-xl bg-white/80 dark:bg-[#0f172a]/80 pointer-events-auto scale-90 md:scale-100"
           >
             {/* Stack Avatar */}
             <div className="flex items-center -space-x-2.5 overflow-hidden p-0.5">

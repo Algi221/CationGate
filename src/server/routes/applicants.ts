@@ -602,9 +602,7 @@ appRouter.get('/trashed', adminAuth, async (c: Context) => {
 appRouter.get('/export', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = await requireTenantId(c);
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Data Calon Siswa');
@@ -645,9 +643,8 @@ appRouter.get('/export', adminAuth, async (c: Context) => {
             .select('*')
             .is('deleted_at', null)
             .order('tgl_daftar', { ascending: false })
+            .eq('school_id', schoolId)
             .range(offset, offset + BATCH_SIZE - 1);
-
-          if (schoolId) query = query.eq('school_id', schoolId);
 
           const { data, error } = await query;
           if (error) {
@@ -707,9 +704,7 @@ appRouter.post('/:id/restore', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = await requireTenantId(c);
 
     let query = supabase.from('student_applicants').select('*').eq('id', id)
       .eq('school_id', schoolId);
@@ -740,9 +735,7 @@ appRouter.get('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = await requireTenantId(c);
 
     let query = supabase.from('student_applicants').select('*').eq('id', id)
       .eq('school_id', schoolId);
@@ -776,9 +769,7 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
     const validated = result.data as any;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const admin = c.get('admin') as any;
-    const schoolIdRaw = admin.school_id;
-    const schoolId = await resolveSchoolUUID(String(schoolIdRaw || ''), fontInMemSchools);
+    const schoolId = await requireTenantId(c);
 
     let query = supabase.from('student_applicants').select('*').eq('id', id)
       .eq('school_id', schoolId);
@@ -943,7 +934,7 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = requireTenantId(c);
+    const schoolId = await requireTenantId(c);
 
     let query = supabase.from('student_applicants').select('*').eq('id', id)
       .eq('school_id', schoolId);
@@ -1002,7 +993,7 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
     const permanent = c.req.query('permanent') === 'true';
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = requireTenantId(c);
+    const schoolId = await requireTenantId(c);
 
     if (permanent) {
       let saDeleteQuery = supabase.from('active_students').delete().eq('calon_siswa_id', id).eq('school_id', schoolId);
@@ -1039,7 +1030,7 @@ appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
     const { verified, checklist } = await c.req.json();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const admin = c.get('admin') as any;
-    const schoolId = requireTenantId(c);
+    const schoolId = await requireTenantId(c);
     const adminName = admin ? (admin.nama || admin.username) : 'Admin';
 
     let isVerified = Boolean(verified);

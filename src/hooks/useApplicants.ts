@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { APP_CONFIG } from "@/config/constants";
+import { useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
 
 export type Applicant = {
   id: number;
@@ -27,15 +28,49 @@ const fetchApplicants = async (schoolId: string): Promise<Applicant[]> => {
   }
 };
 
-// Hook for fetching data with Focus-based Polling
+// Hook for fetching data with Supabase Realtime (no polling)
 export const useApplicants = (schoolId: string) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ["applicants", schoolId],
     queryFn: () => fetchApplicants(schoolId),
-    refetchInterval: APP_CONFIG.POLLING_INTERVAL.APPLICANTS,
     enabled: !!schoolId,
-    // Note: refetchOnWindowFocus is globally set to true in query-provider
+    // Removed refetchInterval — Supabase Realtime handles updates
+    refetchOnWindowFocus: true,
   });
+
+  // Subscribe to Supabase Realtime changes on student_applicants table
+  useEffect(() => {
+    if (!schoolId) return;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) return;
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const channel = supabase
+      .channel(`dashboard:applicants:${schoolId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "student_applicants",
+          filter: `school_id=eq.${schoolId}`,
+        },
+        () => {
+          // Invalidate cache → TanStack Query refetches automatically
+          queryClient.invalidateQueries({ queryKey: ["applicants", schoolId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [schoolId, queryClient]);
+
+  return query;
 };
 
 // Hook for Optimistic Status Update

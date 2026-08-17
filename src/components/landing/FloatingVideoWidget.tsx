@@ -100,7 +100,17 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
     }
   };
 
-  if (!isVisible) return null;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleMenuToggle = (e: Event) => {
+      setIsMenuOpen((e as CustomEvent).detail);
+    };
+    window.addEventListener('mobileMenuToggle', handleMenuToggle);
+    return () => window.removeEventListener('mobileMenuToggle', handleMenuToggle);
+  }, []);
+
+  if (!isVisible || isMenuOpen) return null;
 
   return (
     <div
@@ -119,7 +129,7 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
           e.stopPropagation();
           setIsVisible(false);
         }}
-        className="close-btn absolute top-2 right-2 z-30 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-red-500/90 text-white rounded-full transition-colors duration-200 backdrop-blur-md opacity-0 group-hover:opacity-100"
+        className="close-btn absolute top-2 right-2 z-30 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-red-500/90 text-white rounded-full transition-colors duration-200 backdrop-blur-md opacity-100 md:opacity-0 md:group-hover:opacity-100"
         title="Close Video"
       >
         <svg

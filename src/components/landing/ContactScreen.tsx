@@ -15,7 +15,7 @@ import {
   Phone,
   ArrowRight,
 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence, Transition } from 'framer-motion';
 
 // ==========================================
 // 1. CONTEXT & HOOKS (Logika State)
@@ -127,12 +127,13 @@ function ContactContent() {
   const { isExpanded, collapse, layoutId } = useExpandableScreen();
 
   // Konfigurasi physics spring agar perpindahan dari tombol ke modal sangat empuk dan natural
-  const springTransition = {
+  const springTransition: Transition = {
     type: "spring",
     damping: 30,
     stiffness: 250,
     mass: 1,
   };
+
 
   return (
     <AnimatePresence>

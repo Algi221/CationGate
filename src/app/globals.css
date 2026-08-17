@@ -666,3 +666,22 @@ html.dark .badge-info span {
 
 
 @media (max-width: 768px) { .badges-container { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; } .floating-badge { position: relative !important; top: auto !important; left: auto !important; right: auto !important; transform: none !important; animation: none !important; } .hero { padding-top: 60px; } }
+
+/* Custom View Transition for Theme Toggle */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
+.dark::view-transition-old(root) {
+  z-index: 2147483646;
+}
+.dark::view-transition-new(root) {
+  z-index: 1;
+}

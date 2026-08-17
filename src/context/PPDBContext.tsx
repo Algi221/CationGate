@@ -41,6 +41,7 @@ interface PPDBContextType {
   schoolStatus: string;
   isDemoMode: boolean;
   isSchoolNotFound: boolean;
+  isConfigLoaded: boolean;
   ppdbLogo: string;
   ppdbTitle: string;
   ppdbFooterDesc: string;
@@ -129,7 +130,7 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
 // ─── Inner Provider (has access to sub-contexts) ──────────────────────────────
 function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const { adminToken, adminUser, setAdminUser, loginAdmin, loginGatekeeper, logoutAdmin, logoutGatekeeper, gatekeeperToken, gatekeeperUser } = useAuth();
-  const { schoolId, schoolStatus, isDemoMode, isSchoolNotFound, ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah, setProfilSekolah, fetchConfigs } = useSchool();
+  const { schoolId, schoolStatus, isDemoMode, isSchoolNotFound, isConfigLoaded, ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah, setProfilSekolah, fetchConfigs } = useSchool();
   const { toasts, addToast } = useToast();
 
   const [isLoaded, setIsLoaded] = useState(false);
@@ -470,7 +471,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         fetchPublicApplicants, fetchAdminApplicants, fetchActiveStudents,
         simulateRegistration, addToast, checkPaymentStatus,
         ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah, setProfilSekolah, fetchConfigs,
-        schoolId, schoolStatus, isDemoMode, isSchoolNotFound
+        schoolId, schoolStatus, isDemoMode, isSchoolNotFound, isConfigLoaded
       }}
     >
       {children}

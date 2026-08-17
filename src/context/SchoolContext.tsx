@@ -10,6 +10,7 @@ interface SchoolContextType {
   schoolStatus: string;
   isDemoMode: boolean;
   isSchoolNotFound: boolean;
+  isConfigLoaded: boolean;
   ppdbLogo: string;
   ppdbTitle: string;
   ppdbFooterDesc: string;
@@ -31,6 +32,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   const [isSchoolNotFound, setIsSchoolNotFound] = useState<boolean>(false);
   const [ppdbLogo, setPpdbLogo] = useState<string>("");
   const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB SMK TB");
+  const [isConfigLoaded, setIsConfigLoaded] = useState<boolean>(false);
   const [ppdbFooterDesc, setPpdbFooterDesc] = useState<string>("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
   const [profilSekolah, setProfilSekolah] = useState<any>(null);
 
@@ -47,8 +49,10 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
         if (data.data.ppdb_footer_desc) setPpdbFooterDesc(data.data.ppdb_footer_desc);
         if (data.data.ppdb_profil_sekolah) setProfilSekolah(data.data.ppdb_profil_sekolah);
       }
+      setIsConfigLoaded(true);
     } catch (err) {
       console.error("Gagal mengambil config:", err);
+      setIsConfigLoaded(true);
     }
   }, [slug]);
 
@@ -133,6 +137,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
         schoolStatus,
         isDemoMode,
         isSchoolNotFound,
+        isConfigLoaded,
         ppdbLogo,
         ppdbTitle,
         ppdbFooterDesc,

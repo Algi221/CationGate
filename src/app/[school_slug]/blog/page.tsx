@@ -51,21 +51,13 @@ export default function BlogPage({ params }: { params: Promise<{ school_slug: st
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] selection:bg-blue-500/30 font-sans flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] selection:bg-blue-500/30 font-sans flex flex-col">
       <SchoolNavbar schoolSlug={schoolSlug} />
 
       <main className="flex-1 pt-28 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="mb-12">
-            <Link 
-              href={`/${schoolSlug}`}
-              className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors mb-6"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Beranda
-            </Link>
-            
             <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-4">
               Blog & Artikel
             </h1>

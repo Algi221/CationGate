@@ -1112,7 +1112,7 @@ export default function KelolaUserInterface() {
       {/* Navigation Tabs */}
       <div className="bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/70 dark:border-slate-800/40 flex flex-wrap gap-1 mb-6 transition-all duration-300">
         {[
-          { id: "hero", label: "Hero, Kontak & Gelombang", icon: FileText },
+          { id: "hero", label: "General/Umum", icon: FileText },
           { id: "majors", label: "Program Keahlian (Jurusan)", icon: GraduationCap },
           { id: "alur", label: "Alur Pendaftaran", icon: Settings },
           { id: "form", label: "Form & Panduan", icon: Info },

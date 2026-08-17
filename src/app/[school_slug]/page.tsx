@@ -180,13 +180,12 @@ const DEFAULT_ALUR: AlurItem[] = [
 ];
 
 export default function Home() {
-  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle, isSchoolNotFound } = usePPDB();
+  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle, isSchoolNotFound, isConfigLoaded: isGlobalConfigLoaded } = usePPDB();
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "sekolah";
 
-  if (isSchoolNotFound) {
-    return <SchoolNotFound slug={schoolSlug} />;
-  }
+
   
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -444,13 +443,36 @@ export default function Home() {
             setMajors(mapped);
           }
         }
+        setIsConfigLoaded(true);
       } catch (e) {
         console.log("Failed to load dynamic configuration from backend:", e);
+        setIsConfigLoaded(true);
       }
     };
 
     loadDynamicConfig();
   }, []);
+
+  // Scroll restoration mechanism to handle dynamic heights after config loads
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem(`scrollPos-${schoolSlug}`, window.scrollY.toString());
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [schoolSlug]);
+
+  useEffect(() => {
+    if (isConfigLoaded) {
+      const savedScroll = sessionStorage.getItem(`scrollPos-${schoolSlug}`);
+      if (savedScroll) {
+        setTimeout(() => {
+          window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' });
+          sessionStorage.removeItem(`scrollPos-${schoolSlug}`);
+        }, 150); // slight delay to allow React to paint the fetched data (majors, etc)
+      }
+    }
+  }, [isConfigLoaded, schoolSlug]);
 
   const toggleDark = () => {
     const next = !isDark;
@@ -495,8 +517,12 @@ export default function Home() {
     };
   }, []);
 
+  if (isSchoolNotFound) {
+    return <SchoolNotFound slug={schoolSlug} />;
+  }
+
   return (
-    <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-800/50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white dark:bg-[#111111] dark:text-[#f6f5f4]">
+    <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-800/50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white dark:bg-[#0f172a] dark:text-[#f6f5f4]">
 
       {/* FLOATING NAVBAR */}
       <header className="sticky top-0 z-50 w-full bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800">
@@ -675,19 +701,21 @@ export default function Home() {
           </div>
 
           <h1 className="hero-title relative z-10">
-            {heroTitle} <br />
-            <ShinyText 
-              text={heroTitleSub} 
-              speed={3} 
-              delay={1} 
-              color="var(--heading)" 
-              shineColor="#0ea5e9" 
-              spread={135} 
-            />
+            {isConfigLoaded ? heroTitle : "\u00A0"} <br />
+            {isConfigLoaded ? (
+              <ShinyText 
+                text={heroTitleSub} 
+                speed={3} 
+                delay={1} 
+                color="var(--heading)" 
+                shineColor="#0ea5e9" 
+                spread={135} 
+              />
+            ) : "\u00A0"}
           </h1>
 
           <p className="hero-subtitle relative z-10">
-            {heroSubtitle}
+            {isConfigLoaded ? heroSubtitle : "\u00A0"}
           </p>
 
           <div className="hero-action">

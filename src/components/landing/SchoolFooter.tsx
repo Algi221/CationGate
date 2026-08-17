@@ -22,10 +22,6 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
 
   return (
     <footer className="bg-slate-50 text-slate-600 dark:bg-[#0a0a0a] dark:text-slate-500 py-16 sm:py-24 relative overflow-hidden border-t border-slate-200 dark:border-transparent">
-      {/* Background glow & Grid Pattern */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-200 dark:via-blue-500/20 to-transparent"></div>
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 dark:opacity-[0.05]"></div>
-      <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">

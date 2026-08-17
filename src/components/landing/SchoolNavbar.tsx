@@ -35,7 +35,7 @@ interface SchoolNavbarProps {
 }
 
 export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
-  const { ppdbLogo, ppdbTitle } = usePPDB();
+  const { ppdbLogo, ppdbTitle, isConfigLoaded: isGlobalConfigLoaded } = usePPDB();
   const [isDark, setIsDark] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [majors, setMajors] = useState<any[]>([]);
@@ -110,8 +110,8 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
               <div className="relative h-10 w-10 shrink-0 overflow-visible">
                 <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
               </div>
-              <span className="text-xl font-extrabold text-slate-900 dark:text-white truncate max-w-[180px] sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                {ppdbTitle}
+              <span className="text-xl font-extrabold text-slate-900 dark:text-white truncate max-w-[180px] sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                {isGlobalConfigLoaded ? ppdbTitle : "\u00A0"}
               </span>
             </Link>
           </div>
@@ -251,7 +251,9 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href={`/${schoolSlug}`} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
               {ppdbLogo && <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />}
-              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{ppdbTitle}</span>
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                {isGlobalConfigLoaded ? ppdbTitle : "\u00A0"}
+              </span>
             </Link>
 
             <div className="flex flex-col w-full gap-2">

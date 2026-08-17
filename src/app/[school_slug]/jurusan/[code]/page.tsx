@@ -536,7 +536,7 @@ export default function MajorPage() {
           <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">
             Program keahlian yang Anda cari tidak terdaftar atau telah diupdate. Silakan kembali ke beranda untuk melihat list jurusan lengkap.
           </p>
-          <Link href="/" className="btn-primary-pill w-full flex gap-2">
+          <Link href={`/${params.school_slug}`} className="btn-primary-pill w-full flex gap-2">
             <ArrowLeft size={16} /> Kembali ke Beranda
           </Link>
         </div>
@@ -623,7 +623,7 @@ export default function MajorPage() {
       {/* Floating Action Buttons */}
       <div className="fixed top-6 left-6 z-50">
         <Link 
-          href="/" 
+          href={`/${params.school_slug}`} 
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
@@ -718,7 +718,7 @@ export default function MajorPage() {
                 <div className="flex flex-col w-full gap-5 mt-2">
                   <div className="flex flex-wrap items-center gap-4">
 
-                    <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 backdrop-blur-md">
+                    <Link href={`/${params.school_slug}`} className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 backdrop-blur-md">
                       <ArrowLeft size={16} /> Lihat Jurusan Lain
                     </Link>
 
@@ -997,7 +997,7 @@ export default function MajorPage() {
               <Link href={`/${params.school_slug}/daftar`} className="bg-[#ffffff] text-slate-900 hover:bg-[#f8fafc] text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto">
                 Daftar Sekarang
               </Link>
-              <Link href="/" className="border border-white/30 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
+              <Link href={`/${params.school_slug}`} className="border border-white/30 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
                 Kembali Ke Beranda
               </Link>
             </div>
@@ -1104,23 +1104,23 @@ export default function MajorPage() {
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Program Keahlian</h4>
               <ul className="space-y-2 text-xs font-semibold">
-                <li><Link href="/jurusan/rpl" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Rekayasa Perangkat Lunak (PPLG)</Link></li>
-                <li><Link href="/jurusan/tjkt" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Jaringan Komputer &amp; Telkom (TJKT)</Link></li>
-                <li><Link href="/jurusan/dkv" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Desain Komunikasi Visual (DKV)</Link></li>
-                <li><Link href="/jurusan/bc" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Broadcasting &amp; Perfilman (BC)</Link></li>
-                <li><Link href="/jurusan/an" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Animasi (AN)</Link></li>
-                <li><Link href="/jurusan/te" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Elektronika (TE)</Link></li>
+                <li><Link href={`/${params.school_slug}/jurusan/rpl`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Rekayasa Perangkat Lunak (PPLG)</Link></li>
+                <li><Link href={`/${params.school_slug}/jurusan/tjkt`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Jaringan Komputer &amp; Telkom (TJKT)</Link></li>
+                <li><Link href={`/${params.school_slug}/jurusan/dkv`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Desain Komunikasi Visual (DKV)</Link></li>
+                <li><Link href={`/${params.school_slug}/jurusan/bc`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Broadcasting &amp; Perfilman (BC)</Link></li>
+                <li><Link href={`/${params.school_slug}/jurusan/an`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Animasi (AN)</Link></li>
+                <li><Link href={`/${params.school_slug}/jurusan/te`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Elektronika (TE)</Link></li>
               </ul>
             </div>
 
             {/* Col 3 */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Portal PPDB</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Link Terkait</h4>
               <ul className="space-y-2 text-xs font-semibold">
                 <li><Link href={`/${params.school_slug}/daftar`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Pendaftaran Online</Link></li>
-                <li><Link href="/#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Alur &amp; Prosedur</Link></li>
-                <li><Link href="/#majors" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Kompetensi</Link></li>
-                <li><Link href="/#kemitraan" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Kerjasama Industri</Link></li>
+                <li><Link href={`/${params.school_slug}#alur`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Alur &amp; Prosedur</Link></li>
+                <li><Link href={`/${params.school_slug}#majors`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Kompetensi</Link></li>
+                <li><Link href={`/${params.school_slug}#kemitraan`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Kerjasama Industri</Link></li>
                 <li><Link href={`/${(params as any)?.school_slug || ''}/dashboard`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dashboard Seleksi Admin</Link></li>
               </ul>
             </div>

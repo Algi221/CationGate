@@ -1475,12 +1475,12 @@ export default function Home() {
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Program Keahlian</h4>
               <ul className="space-y-2 text-xs font-semibold">
-                <li><Link href="/jurusan/rpl" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Rekayasa Perangkat Lunak (PPLG)</Link></li>
-                <li><Link href="/jurusan/tjkt" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Jaringan Komputer &amp; Telkom (TJKT)</Link></li>
-                <li><Link href="/jurusan/dkv" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Desain Komunikasi Visual (DKV)</Link></li>
-                <li><Link href="/jurusan/bc" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Broadcasting &amp; Perfilman (BC)</Link></li>
-                <li><Link href="/jurusan/an" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Animasi (AN)</Link></li>
-                <li><Link href="/jurusan/te" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Elektronika (TE)</Link></li>
+                <li><Link href={`/${schoolSlug}/jurusan/rpl`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Rekayasa Perangkat Lunak (PPLG)</Link></li>
+                <li><Link href={`/${schoolSlug}/jurusan/tjkt`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Jaringan Komputer &amp; Telkom (TJKT)</Link></li>
+                <li><Link href={`/${schoolSlug}/jurusan/dkv`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Desain Komunikasi Visual (DKV)</Link></li>
+                <li><Link href={`/${schoolSlug}/jurusan/bc`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Broadcasting &amp; Perfilman (BC)</Link></li>
+                <li><Link href={`/${schoolSlug}/jurusan/an`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Animasi (AN)</Link></li>
+                <li><Link href={`/${schoolSlug}/jurusan/te`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Elektronika (TE)</Link></li>
               </ul>
             </div>
 
@@ -1488,9 +1488,9 @@ export default function Home() {
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Link Terkait</h4>
               <ul className="space-y-2 text-xs font-semibold">
-                <li><Link href="#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
-                <li><Link href="#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Pendaftaran</Link></li>
-                <li><Link href="/forum" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Forum Informasi</Link></li>
+                <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
+                <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Pendaftaran</Link></li>
+                <li><Link href={`/${schoolSlug}/forum`} className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Forum Informasi</Link></li>
                 <li><a href="https://smktarunabhakti.sch.id/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Company Profil Sekolah</a></li>
               </ul>
             </div>

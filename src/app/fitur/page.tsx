@@ -5,6 +5,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import { Users, Layers, GraduationCap, Megaphone, Palette, Paintbrush, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function FeaturesPage() {
   const features = [
@@ -15,6 +16,7 @@ export default function FeaturesPage() {
       icon: Users,
       color: "bg-blue-500",
       gradient: "from-blue-500/20 to-cyan-500/5",
+      image: "/assets/landing/calonsiswa.png", 
     },
     {
       id: "pembagian-kelas",
@@ -23,6 +25,7 @@ export default function FeaturesPage() {
       icon: Layers,
       color: "bg-indigo-500",
       gradient: "from-indigo-500/20 to-blue-500/5",
+      image: "/assets/landing/pembagiankelas.png",
     },
     {
       id: "siswa-aktif",
@@ -31,6 +34,7 @@ export default function FeaturesPage() {
       icon: GraduationCap,
       color: "bg-emerald-500",
       gradient: "from-emerald-500/20 to-teal-500/5",
+      image: "/assets/landing/imageDashboard.png", 
     },
     {
       id: "kelola-informasi",
@@ -39,6 +43,7 @@ export default function FeaturesPage() {
       icon: Megaphone,
       color: "bg-rose-500",
       gradient: "from-rose-500/20 to-pink-500/5",
+      image: "/assets/landing/mockup.png", 
     },
     {
       id: "kelola-ui-data",
@@ -47,6 +52,7 @@ export default function FeaturesPage() {
       icon: Palette,
       color: "bg-purple-500",
       gradient: "from-purple-500/20 to-fuchsia-500/5",
+      image: "/assets/landing/imageDashboard.png",
     },
     {
       id: "tema-tampilan",
@@ -55,6 +61,7 @@ export default function FeaturesPage() {
       icon: Paintbrush,
       color: "bg-amber-500",
       gradient: "from-amber-500/20 to-orange-500/5",
+      image: "/assets/landing/mockup.png",
     },
   ];
 
@@ -65,13 +72,13 @@ export default function FeaturesPage() {
       <main className="pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-16 flex-1">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <span className="px-4 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-extrabold uppercase tracking-wider">
-Menu Dashboard
+            Menu Dashboard
           </span>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight">
-Isi Fitur Mengikuti Menu yang Ada di Dashboard
+            Isi Fitur Mengikuti Menu yang Ada di Dashboard
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg">
-Seluruh isi di bawah ini mengikuti menu yang sudah tersedia di halaman dashboard demo, tanpa mengubah layout atau desain halaman.
+            Seluruh isi di bawah ini mengikuti menu yang sudah tersedia di halaman dashboard demo, tanpa mengubah layout atau desain halaman.
           </p>
         </div>
 
@@ -88,20 +95,26 @@ Seluruh isi di bawah ini mengikuti menu yang sudah tersedia di halaman dashboard
                 <div className={`w-full h-48 sm:h-64 bg-gradient-to-br ${f.gradient} border-b border-slate-100 dark:border-slate-800 relative overflow-hidden flex items-center justify-center`}>
                   <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
                   
-                  {/* Mockup UI Element Container */}
-                  <div className="relative w-3/4 h-3/4 rounded-t-2xl bg-white dark:bg-slate-950 shadow-2xl border border-slate-200/50 dark:border-slate-700/50 border-b-0 overflow-hidden translate-y-4 group-hover:translate-y-2 transition-transform duration-500">
-                    {/* Fake Browser Toolbar */}
-                    <div className="h-6 w-full bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-3 gap-1.5">
+                  {/* Mockup UI / Terminal Element Container */}
+                  <div className="relative w-3/4 h-3/4 rounded-t-2xl bg-white dark:bg-slate-950 shadow-2xl border border-slate-200/50 dark:border-slate-700/50 border-b-0 overflow-hidden translate-y-4 group-hover:translate-y-2 transition-transform duration-500 flex flex-col">
+                    
+                    {/* Fake Browser Toolbar / Terminal Header */}
+                    <div className="h-6 w-full bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-3 gap-1.5 shrink-0">
                       <div className="w-2 h-2 rounded-full bg-rose-400"></div>
                       <div className="w-2 h-2 rounded-full bg-amber-400"></div>
                       <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
                     </div>
-                    {/* Fake Content Area */}
-                    <div className="p-4 flex flex-col gap-3">
-                      <div className="w-1/3 h-4 rounded-full bg-slate-200 dark:bg-slate-800"></div>
-                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800"></div>
-                      <div className="w-5/6 h-2 rounded-full bg-slate-100 dark:bg-slate-800"></div>
+                    
+                    {/* Image Content Area (Inside Terminal) */}
+                    <div className="relative flex-1 w-full bg-slate-100 dark:bg-slate-950">
+                      <Image
+                        src={f.image}
+                        alt={`Screenshot fitur ${f.title}`}
+                        fill
+                        className="object-cover object-top"
+                      />
                     </div>
+
                   </div>
                 </div>
 

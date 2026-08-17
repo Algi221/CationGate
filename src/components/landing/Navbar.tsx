@@ -315,15 +315,7 @@ export function Navbar() {
                 </Link>
                 <div className="flex w-full text-sm justify-between text-black dark:text-white mt-4">
                   <div className="flex flex-col gap-2">
-                    <span className="text-xs uppercase font-bold tracking-widest opacity-50">Socials</span>
-                    <div className="flex gap-4">
-                      <a href="#" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-                        <Globe size={20} />
-                      </a>
-                      <a href="#" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-                        <Mail size={20} />
-                      </a>
-                    </div>
+                    
                   </div>
                 </div>
               </div>

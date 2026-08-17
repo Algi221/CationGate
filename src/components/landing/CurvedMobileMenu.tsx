@@ -30,29 +30,7 @@ const MENU_SLIDE_ANIMATION = {
   },
 };
 
-const CustomFooter: React.FC = () => {
-  return (
-    <div className="flex w-full text-sm justify-between text-black dark:text-white px-10 md:px-24 py-8 pb-12">
-      <div className="flex flex-col gap-2">
-        <span className="text-xs uppercase font-bold tracking-widest opacity-50">Socials</span>
-        <div className="flex gap-4">
-          <a href="#" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-            <Globe size={20} />
-          </a>
-          <a href="#" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-            <Mail size={20} />
-          </a>
-          <a href="#" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-            <MessageCircle size={20} />
-          </a>
-          <a href="#" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-            <Smartphone size={20} />
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};
+const CustomFooter: React.FC = () => null;
 
 const NavLink: React.FC<iNavLinkProps> = ({ heading, href, subItems, setIsActive, index }) => {
   const ref = useRef<HTMLAnchorElement | null>(null);
@@ -86,10 +64,6 @@ const NavLink: React.FC<iNavLinkProps> = ({ heading, href, subItems, setIsActive
       >
         <Link ref={ref} onMouseMove={handleMouseMove} href={href} onClick={handleClick} className="w-full">
           <div className="relative flex items-center justify-between w-full">
-            <div className="flex items-start">
-              <span className="text-black dark:text-white transition-colors duration-500 text-3xl md:text-4xl font-thin mr-4">
-                0{index}.
-              </span>
               <div className="flex flex-row gap-2">
                 <motion.span
                   variants={{ initial: { x: 0 }, whileHover: { x: -16 } }}
@@ -108,7 +82,6 @@ const NavLink: React.FC<iNavLinkProps> = ({ heading, href, subItems, setIsActive
                   ))}
                 </motion.span>
               </div>
-            </div>
             {subItems && subItems.length > 0 && (
               <motion.div animate={{ rotate: isOpen ? 180 : 0 }} className="text-black dark:text-white">
                 <ChevronDown className="w-6 h-6 opacity-50" />
@@ -184,8 +157,16 @@ export const CurvedNavbar: React.FC<iCurvedNavbarProps & { footer?: React.ReactN
     >
       <div className="h-full pt-20 flex flex-col justify-between overflow-y-auto overflow-x-hidden">
         <div className="flex flex-col gap-3 px-10 md:px-24">
-          <div className="text-black dark:text-white border-b border-black/30 dark:border-white/30 uppercase text-xs font-bold tracking-widest pb-4 mb-2">
-            Navigation
+          <div className="flex items-center justify-between border-b border-black/30 dark:border-white/30 pb-4 mb-2">
+            <div className="text-black dark:text-white uppercase text-xs font-bold tracking-widest">
+              Navigation
+            </div>
+            <button 
+              onClick={() => setIsActive(false)}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-black dark:text-white"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
           </div>
           <section className="bg-transparent mt-0">
             <div className="mx-auto max-w-7xl">

@@ -16,7 +16,7 @@ export default function FeaturesPage() {
       badgeBg: "#FFD33B",       // Yellow
       badgeText: "#23191C",     // Dark Heading
       accentColor: "#FFD33B",   // Accent Yellow
-      image: "/assets/landing/free-landing.png",
+      image: "/assets/landing/imageLanding.png",
     },
     {
       id: "data-calon-siswa",

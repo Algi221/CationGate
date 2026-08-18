@@ -52,7 +52,7 @@
   --body: #cbd5e1;
   --border: #1e293b;
   color-scheme: dark;
-  
+
   --glass-bg: rgba(15, 23, 42, 0.6);
   --glass-border: rgba(30, 41, 59, 0.5);
   --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
@@ -664,7 +664,6 @@ html.dark .badge-info span {
   height: 16px;
 }
 
-
 @media (max-width: 768px) { .badges-container { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; } .floating-badge { position: relative !important; top: auto !important; left: auto !important; right: auto !important; transform: none !important; animation: none !important; } .hero { padding-top: 60px; } }
 
 /* Custom View Transition for Theme Toggle */
@@ -684,4 +683,25 @@ html.dark .badge-info span {
 }
 .dark::view-transition-new(root) {
   z-index: 1;
+}
+
+@theme inline {
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
 }

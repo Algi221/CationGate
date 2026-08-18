@@ -220,7 +220,7 @@ export default function Home() {
   });
 
   const getGelombangStatus = (startStr: string, endStr: string) => {
-    if (!startStr || !endStr) return { label: "Belum Diatur", color: "bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700", active: false };
+    if (!startStr || !endStr) return { label: "Belum Diatur", color: "bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700", active: false };
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -580,7 +580,7 @@ export default function Home() {
               FAQ
             </a>
             <Link
-              href="/forum"
+              href={`/${params.school_slug}/forum`}
               onClick={() => setMobileMenuOpen(false)}
               className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
             >
@@ -762,7 +762,7 @@ export default function Home() {
       {/* JADWAL GELOMBANG PENDAFTARAN */}
       <section id="gelombang" className="py-20 max-w-6xl mx-auto px-6 relative z-10">
         <div className="text-center mb-12">
-          <span className="inline-block mb-2 text-blue-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">
+          <span className="inline-block mb-2 text-blue-600 dark:text-blue-300 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-500/10 border border-blue-100/50 dark:border-blue-400/20 px-3.5 py-1.5 rounded-full">
             Jadwal Penerimaan · TP. {schoolPeriod}
           </span>
           <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white mt-3 mb-3">
@@ -794,12 +794,14 @@ export default function Home() {
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-[#020617] p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
-                    <Calendar size={18} className="text-blue-500 shrink-0" />
+                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-800/50 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                    <Calendar size={18} className="text-blue-500 dark:text-blue-400 shrink-0" />
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Tanggal Pendaftaran</span>
-                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
-                        {gelombangConfig.gelombang1.start ? formatDate(gelombangConfig.gelombang1.start) : "Belum diatur"} - {gelombangConfig.gelombang1.end ? formatDate(gelombangConfig.gelombang1.end) : "Belum diatur"}
+                      <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-300 block tracking-wider">Tanggal Pendaftaran</span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
+                        {gelombangConfig.gelombang1.start && gelombangConfig.gelombang1.end 
+                          ? `${new Date(gelombangConfig.gelombang1.start).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${new Date(gelombangConfig.gelombang1.end).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                          : 'Belum diatur'}
                       </span>
                     </div>
                   </div>
@@ -828,12 +830,14 @@ export default function Home() {
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-[#020617] p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
-                    <Calendar size={18} className="text-blue-500 shrink-0" />
+                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-800/50 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                    <Calendar size={18} className="text-blue-500 dark:text-blue-400 shrink-0" />
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Tanggal Pendaftaran</span>
-                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
-                        {gelombangConfig.gelombang2.start ? formatDate(gelombangConfig.gelombang2.start) : "Belum diatur"} - {gelombangConfig.gelombang2.end ? formatDate(gelombangConfig.gelombang2.end) : "Belum diatur"}
+                      <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-300 block tracking-wider">Tanggal Pendaftaran</span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
+                        {gelombangConfig.gelombang2.start && gelombangConfig.gelombang2.end 
+                          ? `${new Date(gelombangConfig.gelombang2.start).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${new Date(gelombangConfig.gelombang2.end).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                          : 'Belum diatur'}
                       </span>
                     </div>
                   </div>

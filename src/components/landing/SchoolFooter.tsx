@@ -108,7 +108,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
               <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-500 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
               <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-500 transition-colors">Syarat Pendaftaran</Link></li>
               <li><Link href={`/${schoolSlug}/forum`} className="hover:text-blue-500 transition-colors">Forum Informasi</Link></li>
-              <li><a href="#" className="hover:text-blue-500 transition-colors">Company Profil Sekolah</a></li>
+              <li><Link href={`/${schoolSlug}/profil`} className="hover:text-blue-500 transition-colors">Company Profil Sekolah</Link></li>
             </ul>
           </div>
 

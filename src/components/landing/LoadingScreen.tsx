@@ -5,11 +5,9 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const LOADING_KEY = "cationgate_loading_session";
 
-// Shared gate so NumberTicker knows whether a loading session is in progress.
 // Evaluated once at module load.
-let loadingActive =
-  typeof window !== "undefined" &&
-  sessionStorage.getItem(LOADING_KEY) === null;
+let hasShownLoading = false;
+let loadingActive = true;
 
 export function isActiveLoading() {
   return loadingActive;
@@ -22,17 +20,14 @@ export default function LoadingScreen() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Check if this is a fresh session (no active loading session)
-    const hasActiveSession = sessionStorage.getItem(LOADING_KEY);
-
-    // If session already active, don't show loading
-    if (hasActiveSession) {
+    // If already shown in this SPA session (but resets on hard refresh)
+    if (hasShownLoading) {
       setTimeout(() => setIsMounted(false), 0);
       return;
     }
 
     // This is a fresh load (hard refresh or first visit)
-    sessionStorage.setItem(LOADING_KEY, "active");
+    hasShownLoading = true;
     loadingActive = false;
     document.body.style.overflow = "hidden";
 

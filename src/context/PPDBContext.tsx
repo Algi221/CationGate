@@ -227,7 +227,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const registerApplicant = useCallback(async (formData: any) => {
     try {
       if (isDemoMode) throw new Error("Demo Mode");
-      const res = await fetch(`${BACKEND_URL}/applicants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
+      const res = await fetch(`${BACKEND_URL}/applicants?school_slug=${formData.school_slug || 'smk'}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
       const data = await res.json();
       if (data.success) { await fetchPublicApplicants(); return { success: true, data: data.data }; }
       else { return { success: false, message: data.message }; }

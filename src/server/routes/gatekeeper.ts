@@ -6,6 +6,7 @@ import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 import { broadcast } from '../ws/handler';
 import { gatekeeperAuth } from '../middleware/auth';
+import { authLimiter } from '../middleware/rate-limiter';
 
 const gatekeeperRouter = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -16,7 +17,7 @@ if (!JWT_SECRET || !GATEKEEPER_USERNAME || !GATEKEEPER_PASSWORD) {
 }
 
 
-gatekeeperRouter.post('/login', async (c) => {
+gatekeeperRouter.post('/login', authLimiter, async (c) => {
   try {
     const { username, password } = await c.req.json();
     if (!username || !password) {

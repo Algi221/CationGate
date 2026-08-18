@@ -251,6 +251,9 @@ export default function DaftarPage() {
     tahunMulaiBeasiswa: "",
     tahunSelesaiBeasiswa: "",
     namaAyah: "",
+    nikAyah: "",
+    tahunLahirAyah: "",
+    whatsappAyah: "",
     tempatLahirAyah: "",
     tglLahirAyah: "",
     agamaAyah: "",
@@ -265,6 +268,9 @@ export default function DaftarPage() {
     kodePosAyah: "",
     statusAyah: "Masih Hidup",
     namaIbu: "",
+    nikIbu: "",
+    tahunLahirIbu: "",
+    whatsappIbu: "",
     tempatLahirIbu: "",
     tglLahirIbu: "",
     agamaIbu: "",
@@ -294,10 +300,12 @@ export default function DaftarPage() {
     statusWali: "Masih Hidup",
     teleponOrtu: "",
     sekolahAsal: "",
+    npsnSekolahAsal: "",
     tglLulus: "",
     noIjazah: "",
     noSKHUN: "",
     noPesertaUN: "",
+    deklarasi: false,
     lamaBelajar: "",
     pindahanDari: "",
     alasanPindah: "",
@@ -801,6 +809,62 @@ export default function DaftarPage() {
     });
 
     return errors;
+  };
+
+  const fillDummyDataAndSkip = () => {
+    setFormData({
+      ...formData,
+      nama: "Ahmad Bintang Pratama",
+      nisn: "0012345678",
+      nik: "3276012345678901",
+      tempatLahir: "Depok",
+      tglLahir: "2010-05-15",
+      jenisKelamin: "L",
+      agama: "Islam",
+      kewarganegaraan: "WNI",
+      alamat: "Jl. Raya Bogor Km 30",
+      rtRw: "01/02",
+      kelurahan: "Mekarsari",
+      kecamatan: "Cimanggis",
+      kodePos: "16452",
+      whatsapp: "081234567890",
+      email: "ahmad@example.com",
+      tinggalDengan: "Orang Tua",
+      transportasi: "Motor",
+      tinggiBadan: "165",
+      beratBadan: "55",
+      jarakSekolah: "Kurang dari 1 km",
+      jarakKm: "1",
+      waktuJam: "0",
+      waktuMenit: "15",
+      jumlahSaudara: "2",
+      golonganDarah: "O",
+      penyakitDiderita: "Tidak ada",
+      kebutuhanKhusus: [],
+      namaAyah: "Budi Santoso",
+      nikAyah: "3276012345678902",
+      tahunLahirAyah: "1980",
+      pendidikanAyah: "S1",
+      pekerjaanAyah: "Karyawan Swasta",
+      penghasilanAyah: "Rp 5.000.000 - Rp 20.000.000",
+      whatsappAyah: "081234567891",
+      namaIbu: "Siti Aminah",
+      nikIbu: "3276012345678903",
+      tahunLahirIbu: "1985",
+      pendidikanIbu: "S1",
+      pekerjaanIbu: "Ibu Rumah Tangga",
+      penghasilanIbu: "Kurang dari Rp 500.000",
+      whatsappIbu: "081234567892",
+      sekolahAsal: "SMPN 1 Depok",
+      npsnSekolahAsal: "20228123",
+      teleponOrtu: "081234567891",
+      diterimaKelas: "X (Sepuluh)",
+      tglLulus: "2026-06-10",
+      lamaBelajar: "3",
+      deklarasi: true
+    });
+    setFurthestStep(14);
+    setWizardStep(14);
   };
 
   const nextStep = async () => {
@@ -2388,8 +2452,8 @@ export default function DaftarPage() {
       </div>
 
       <div className="mb-10 text-center mt-12 relative z-10 flex flex-col items-center">
-        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/5 dark:bg-blue-950/60 border border-blue-100/50 dark:border-blue-900/50 text-primary dark:text-sky-400 text-xs font-bold shadow-sm shadow-blue-500/5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-sky-400 animate-pulse"></span>
+        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-100/50 dark:border-blue-400/20 text-blue-700 dark:text-blue-300 text-xs font-bold shadow-sm shadow-blue-500/5">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"></span>
           Tahap {wizardStep} dari 14
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mb-2 drop-shadow-sm">Formulir Pendaftaran PPDB</h1>
@@ -2968,8 +3032,14 @@ export default function DaftarPage() {
                     const majorDetails = getMajorDetails(major.title || major.code);
                     
                     let isFull = false;
-                    if (kuotaData) {
-                      const k = kuotaData.find((k: any) => k.key === major.title);
+                    if (kuotaData && Array.isArray(kuotaData)) {
+                      let k = null;
+                      for (let i = 0; i < kuotaData.length; i++) {
+                        if (kuotaData[i] && kuotaData[i].key === major.title) {
+                          k = kuotaData[i];
+                          break;
+                        }
+                      }
                       if (k && k.target > 0) {
                         isFull = k.jumlah >= k.target;
                       }

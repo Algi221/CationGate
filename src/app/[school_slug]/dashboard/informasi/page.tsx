@@ -601,7 +601,7 @@ export default function KelolaInformasi() {
 
                 <div>
                   {/* Image Section */}
-                  <div className="h-48 bg-slate-100 dark:bg-slate-955 overflow-hidden relative border-b border-slate-150 dark:border-white/5">
+                  <div className="h-48 bg-slate-100 dark:bg-slate-955 overflow-hidden relative border-b border-slate-200 dark:border-white/5">
                     {media.foto ? (
                       <img 
                         src={sanitizeSrc(media.foto)} 
@@ -629,7 +629,7 @@ export default function KelolaInformasi() {
                 </div>
 
                 {/* Action Bar Footer */}
-                <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-955/20 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-20" onClick={(e) => e.stopPropagation()}>
+                <div className="px-6 py-4 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-955/20 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-20" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => handleOpenPreview(item)}
                     className="text-[11px] font-extrabold uppercase tracking-wide text-blue-550 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-1 active:scale-[0.98] transition-all"
@@ -679,7 +679,7 @@ export default function KelolaInformasi() {
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
+            <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
               <div>
                 <h3 className="text-lg font-black text-slate-850 dark:text-white uppercase tracking-wide flex items-center gap-2">
                   <Megaphone size={18} className="text-blue-600 dark:text-blue-400" />
@@ -796,7 +796,7 @@ export default function KelolaInformasi() {
                 </div>
 
                 {/* Additional Media Uploaders */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-150 dark:border-white/5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-200 dark:border-white/5">
                   {/* Video Uploader */}
                   <div className="space-y-2 text-left">
                     <label className="text-slate-650 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">Video Informasi (Maks 10MB)</label>
@@ -881,7 +881,7 @@ export default function KelolaInformasi() {
               </div>
 
               {/* Modal Action Buttons Footer */}
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-end gap-3">
+              <div className="p-6 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 border-t border-slate-200 dark:border-white/5 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsOpenModal(false)}
@@ -919,7 +919,7 @@ export default function KelolaInformasi() {
               
               {/* Poster Header */}
               {media.foto ? (
-                <div className="h-80 relative border-b border-slate-150 dark:border-white/5">
+                <div className="h-80 relative border-b border-slate-200 dark:border-white/5">
                   <img src={sanitizeSrc(media.foto)} alt={previewItem.judul} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
                   
@@ -937,7 +937,7 @@ export default function KelolaInformasi() {
                   </button>
                 </div>
               ) : (
-                <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
+                <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
                   <div className="px-3 py-1.5 bg-blue-100 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-sm">
                     <Calendar size={11} />
                     <span>{formatDate(previewItem.tanggal)}</span>
@@ -963,7 +963,7 @@ export default function KelolaInformasi() {
 
                 {/* Additional Media in Preview */}
                 {(media.video || media.dokumen) && (
-                  <div className="pt-6 border-t border-slate-150 dark:border-white/5 space-y-6">
+                  <div className="pt-6 border-t border-slate-200 dark:border-white/5 space-y-6">
                     <h5 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest text-left">Lampiran Media Forum</h5>
                     
                     <div className="space-y-6">
@@ -1018,7 +1018,7 @@ export default function KelolaInformasi() {
               </div>
 
             {/* Detail Actions Footer */}
-            <div className="p-6 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-955/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-between">
+            <div className="p-6 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-955/15 border-t border-slate-200 dark:border-white/5 flex items-center justify-between">
               <div className="text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider">
                 ID Publikasi: #{previewItem.id}
               </div>

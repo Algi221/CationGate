@@ -50,7 +50,7 @@ import {
   FileSpreadsheet
 } from "lucide-react";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Suspense } from "react";
 import KuotaTab from "@/components/KuotaTab";
 import Swal from 'sweetalert2';
@@ -171,11 +171,13 @@ function ActiveStudentsDirectoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activePageTab = searchParams.get("tab") || "active";
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || '';
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
 
   const handleTabChange = (tab: "active" | "kuota") => {
-    router.push(`/dashboard/siswa-aktif?tab=${tab}`);
+    router.push(`/${schoolSlug}/dashboard/siswa-aktif?tab=${tab}`);
   };
 
   const { activeStudents, addToast, fetchActiveStudents, updateActiveStudent, isDemoMode } = usePPDB();
@@ -865,7 +867,7 @@ function ActiveStudentsDirectoryContent() {
                 {/* Accordion Trigger Header */}
                 <div 
                   onClick={() => togglePeriod(period)}
-                  className="px-6 py-5 flex items-center justify-between cursor-pointer select-none bg-slate-50 dark:bg-slate-800/50/40 dark:bg-slate-950/15 border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50 dark:bg-slate-800/50/80 dark:hover:bg-slate-950/25"
+                  className="px-6 py-5 flex items-center justify-between cursor-pointer select-none bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50 dark:bg-slate-950/25 dark:hover:bg-slate-950/25"
                 >
                   <div className="flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100/50 dark:border-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
@@ -982,7 +984,7 @@ function ActiveStudentsDirectoryContent() {
                             {students.map((student, idx) => (
                               <tr 
                                 key={student.id}
-                                className="border-b border-slate-100 dark:border-slate-800/50 dark:border-white/5 hover:bg-slate-50 dark:bg-slate-800/50/30 dark:hover:bg-slate-950/10 transition-colors"
+                                className="border-b border-slate-100 dark:border-slate-800/50 dark:border-white/5 hover:bg-slate-50 dark:bg-slate-950/30 dark:hover:bg-slate-950/10 transition-colors"
                               >
                                 <td className="py-3.5 px-3 text-slate-400 dark:text-slate-600 dark:text-slate-300 font-mono">{idx + 1}</td>
                                 <td className="py-3.5 px-4 font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
@@ -1399,7 +1401,7 @@ function ActiveStudentsDirectoryContent() {
       {isAddPeriodModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-sm flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
               <h3 className="text-lg font-black text-slate-850 dark:text-white uppercase tracking-wide">
                 Tambah Periode Angkatan
               </h3>
@@ -1429,7 +1431,7 @@ function ActiveStudentsDirectoryContent() {
                   required
                 />
               </div>
-              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 flex items-center justify-end gap-3">
+              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsAddPeriodModalOpen(false)}
@@ -1475,7 +1477,7 @@ function ActiveStudentsDirectoryContent() {
             </div>
 
             {/* Body — scrollable form */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 hide-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 hide-scrollbar">
               {[
                 {
                   section: "Identitas Diri", icon: <User size={14} />, fields: [
@@ -1564,7 +1566,7 @@ function ActiveStudentsDirectoryContent() {
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/25 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
               <button
                 onClick={() => setEditApplicant(null)}
                 className="px-6 py-3 bg-white dark:bg-[#0f172a] hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"

@@ -484,7 +484,7 @@ export default function ForumPage() {
               )}
               
               <div className="flex-1 flex flex-col min-w-0 h-auto md:h-full overflow-visible md:overflow-y-auto">
-                <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 sticky top-0 z-20 backdrop-blur-md">
+                <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 sticky top-0 z-20 backdrop-blur-md">
                   <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-900">
                     <Calendar size={11} />
                     {formatDate(selectedPost.tanggal)}
@@ -568,7 +568,7 @@ export default function ForumPage() {
                   )}
                 </div>
 
-                <div className="p-5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 border-t border-slate-100 dark:border-white/5 flex justify-end sticky bottom-0 z-20 backdrop-blur-md">
+                <div className="p-5 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 border-t border-slate-100 dark:border-white/5 flex justify-end sticky bottom-0 z-20 backdrop-blur-md">
                   <button
                     onClick={() => setSelectedPost(null)}
                     className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all cursor-pointer"

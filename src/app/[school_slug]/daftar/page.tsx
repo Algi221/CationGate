@@ -1738,7 +1738,7 @@ export default function DaftarPage() {
             </div>
 
             {/* Payment Details footer and official approval stamp */}
-            <div className="flex justify-between items-center text-[9px] text-slate-500 dark:text-slate-400 leading-normal border-t border-slate-150 pt-4 mb-8 print:hidden">
+            <div className="flex justify-between items-center text-[9px] text-slate-500 dark:text-slate-400 leading-normal border-t border-slate-200 pt-4 mb-8 print:hidden">
               <div className="flex gap-4">
                 <div>
                   <span className="font-black">Metode Bayar:</span> <span className="text-slate-800 dark:text-white font-bold uppercase">
@@ -2113,11 +2113,11 @@ export default function DaftarPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-350">
-                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
+                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">Nama Lengkap:</span>
                       <span className="text-slate-850 dark:text-white uppercase truncate max-w-[150px]">{submittedCandidate?.nama}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
+                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">NISN Pendaftar:</span>
                       <span className="text-slate-850 dark:text-white font-mono tracking-wider">{submittedCandidate?.nisn}</span>
                     </div>
@@ -2243,7 +2243,7 @@ export default function DaftarPage() {
                       
                       {/* File Upload Zone / Area */}
                       {!manualReceiptBase64 ? (
-                        <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-[1.5rem] py-10 px-6 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
+                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-[1.5rem] py-10 px-6 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
                           <input
                             type="file"
                             accept="image/*,application/pdf"
@@ -3659,7 +3659,7 @@ export default function DaftarPage() {
               
               {/* Card 1: Identitas Diri */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <User size={16} className="text-blue-500" />
                     Identitas Diri
@@ -3681,7 +3681,7 @@ export default function DaftarPage() {
 
               {/* Card 2: Alamat & Kontak */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <Home size={16} className="text-blue-500" />
                     Alamat &amp; Kontak
@@ -3703,7 +3703,7 @@ export default function DaftarPage() {
 
               {/* Card 3: Pendidikan & Peminatan */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <School size={16} className="text-blue-500" />
                     Pendidikan &amp; Jurusan
@@ -3722,7 +3722,7 @@ export default function DaftarPage() {
 
               {/* Card 4: Data Orang Tua / Wali */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <Users size={16} className="text-blue-500" />
                     Keluarga &amp; Orang Tua
@@ -3742,7 +3742,7 @@ export default function DaftarPage() {
 
               {/* Card 5: Nilai US & Minat */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <FileText size={16} className="text-blue-500" />
                     Nilai &amp; Akademik
@@ -3762,7 +3762,7 @@ export default function DaftarPage() {
 
               {/* Card 6: Kebribadian & Kebiasaan */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <AlertCircle size={16} className="text-blue-500" />
                     Kedisiplinan &amp; Keuangan

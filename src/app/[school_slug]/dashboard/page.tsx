@@ -766,7 +766,7 @@ export default function DashboardOverview() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
-                    className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-all"
+                    className="hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-all"
                   >
                     <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[130px] truncate">{a.nama}</td>
                     <td className="py-2.5 truncate max-w-[110px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>

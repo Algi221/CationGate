@@ -346,6 +346,7 @@ export default function DaftarPage() {
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [regCost, setRegCost] = useState(250000);
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
+  const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [bankConfigList, setBankConfigList] = useState<Array<{ bankName: string; accountNumber: string; accountHolder: string }>>([
     { bankName: "Bank Mandiri", accountNumber: "157-00-0174092-2", accountHolder: "Yayasan Taruna Bhakti" }
   ]);
@@ -452,6 +453,10 @@ export default function DaftarPage() {
             if (config.ppdb_wa_group_url) {
               setWaGroupUrl(config.ppdb_wa_group_url);
               localStorage.setItem('ppdb_wa_group_url', config.ppdb_wa_group_url);
+            }
+            if (config.ppdb_wa_admin) {
+              setWaAdmin(config.ppdb_wa_admin);
+              localStorage.setItem('ppdb_wa_admin', config.ppdb_wa_admin);
             }
             if (config.ppdb_portal_status) {
               setPortalStatus(config.ppdb_portal_status);
@@ -1252,7 +1257,7 @@ export default function DaftarPage() {
             <Link href={`/invoice?nisn=${successData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]">
               Lihat &amp; Cetak Invoice
             </Link>
-            <Link href="/" className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
+            <Link href={`/${(params as any)?.school_slug || ''}`} className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
               Kembali ke Beranda
             </Link>
             <button
@@ -1477,7 +1482,7 @@ export default function DaftarPage() {
                 Cetak Invoice Resmi (PDF)
               </button>
 
-              <Link href="/" className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
+              <Link href={`/${(params as any)?.school_slug || ''}`} className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
                 <Home size={13} />
                 Kembali ke Beranda
               </Link>
@@ -2050,7 +2055,7 @@ export default function DaftarPage() {
               {/* Tombol Bantuan Pembayaran */}
               <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/50 dark:border-slate-800/80">
                 <a
-                  href="https://wa.me/6281234567890?text=Halo%20Panitia%20PPDB%20SMK%20Taruna%20Bhakti,%20saya%20butuh%20bantuan%20terkait%20pembayaran..."
+                  href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Panitia%20PPDB,%20saya%20butuh%20bantuan%20terkait%20pembayaran...`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-background dark:hover:bg-slate-850 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"

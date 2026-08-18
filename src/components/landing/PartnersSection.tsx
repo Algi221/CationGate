@@ -40,6 +40,7 @@ export function PartnersSection() {
                 alt={partner.alt}
                 fill
                 className="object-contain"
+                unoptimized
               />
             </div>
           ))}

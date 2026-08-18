@@ -735,7 +735,10 @@ saasRouter.get('/plans', async (c) => {
       .eq('is_active', true)
       .order('id', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.warn('Plans table missing, returning empty array');
+      return c.json({ success: true, data: [] });
+    }
     return c.json({ success: true, data: data || [] });
   } catch (err: any) {
     console.error('Fetch SaaS plans error:', err?.message);

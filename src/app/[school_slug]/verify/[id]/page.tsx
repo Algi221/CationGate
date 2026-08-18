@@ -307,7 +307,7 @@ export default function VerificationPage() {
           </Link>
           
           <a
-            href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Admin%20PPDB%20SMK%20Taruna%20Bhakti.%20Saya%20ingin%20bertanya%20terkait%20status%20pendaftaran%20atas%20nama%20${encodeURIComponent(data.nama)}`}
+            href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Admin%20PPDB.%20Saya%20ingin%20bertanya%20terkait%20status%20pendaftaran%20atas%20nama%20${encodeURIComponent(data.nama)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white text-xs font-black uppercase tracking-wider text-[#075E54] dark:text-[#25D366] transition-all shadow-sm w-full sm:w-auto"

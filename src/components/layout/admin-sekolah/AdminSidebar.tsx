@@ -205,7 +205,7 @@ export function AdminSidebar({
                 ? "opacity-50 text-slate-400 dark:text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-800/20 cursor-not-allowed"
                 : isActive && (!hasSub || isCollapsed)
                 ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold border-transparent"
-                : "border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-[#1e293b]/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                : "border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
             }`}
           title={isCollapsed ? (isLocked ? `${item.label} (Terkunci 🔒)` : item.label) : undefined}
         >
@@ -275,7 +275,7 @@ export function AdminSidebar({
                           className={`relative z-10 group flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-sm font-medium transition-colors duration-200 border ${
                             isSubActive
                               ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-semibold border-transparent"
-                              : "border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-[#1e293b]/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                              : "border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                           }`}
                         >
                           <span className="truncate">{sub.label}</span>

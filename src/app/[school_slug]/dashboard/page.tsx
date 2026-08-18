@@ -313,6 +313,25 @@ export default function DashboardOverview() {
   const [counterTrigger, setCounterTrigger] = useState(false);
 
   const isVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || isDemoMode;
+  
+  if (!isVerified) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center bg-white dark:bg-[#0f172a] rounded-3xl border border-slate-200 dark:border-slate-800">
+        <div className="w-20 h-20 bg-amber-50 dark:bg-amber-950/20 rounded-full flex items-center justify-center mb-6 border border-amber-200 dark:border-amber-900">
+          <Lock className="w-10 h-10 text-amber-500" />
+        </div>
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">Dashboard Terkunci</h2>
+        <p className="text-slate-500 dark:text-slate-400 max-w-sm mb-8 text-sm">
+          Sekolah Anda sedang dalam peninjauan legalitas oleh Gatekeeper. Silakan lengkapi data verifikasi agar fitur dashboard terbuka.
+        </p>
+        <Link href={`/${schoolSlug}/dashboard/verification`}>
+          <div className="inline-flex items-center justify-center px-8 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl gap-2 transition-all">
+            Lanjutkan Verifikasi <ArrowRight className="w-4 h-4" />
+          </div>
+        </Link>
+      </div>
+    );
+  }
 
   const [majorsList, setMajorsList] = useState<MajorItem[]>([
     { name: "PPLG", dbName: "Rekayasa Perangkat Lunak", color: "#2E7CF6" },

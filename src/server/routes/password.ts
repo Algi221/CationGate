@@ -2,9 +2,11 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { getSupabaseClient } from '../db/supabase';
 
+import { authLimiter } from '../middleware/rate-limiter';
+
 const passwordRouter = new Hono();
 
-passwordRouter.post('/reset', async (c) => {
+passwordRouter.post('/reset', authLimiter, async (c) => {
   try {
     const { email, otp, newPassword } = await c.req.json();
 

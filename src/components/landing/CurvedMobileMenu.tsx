@@ -155,7 +155,7 @@ export const CurvedNavbar: React.FC<iCurvedNavbarProps & { footer?: React.ReactN
       exit="exit"
       className="h-[100dvh] w-screen max-w-screen-sm fixed right-0 top-0 z-[100] bg-white dark:bg-[#0F0F11]"
     >
-      <div className="h-full pt-20 flex flex-col justify-between overflow-y-auto overflow-x-hidden">
+      <div className="h-full pt-32 flex flex-col justify-between overflow-y-auto overflow-x-hidden">
         <div className="flex flex-col gap-3 px-10 md:px-24">
           <div className="flex items-center justify-between border-b border-black/30 dark:border-white/30 pb-4 mb-2">
             <div className="text-black dark:text-white uppercase text-xs font-bold tracking-widest">

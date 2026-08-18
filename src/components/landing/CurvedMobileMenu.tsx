@@ -155,18 +155,12 @@ export const CurvedNavbar: React.FC<iCurvedNavbarProps & { footer?: React.ReactN
       exit="exit"
       className="h-[100dvh] w-screen max-w-screen-sm fixed right-0 top-0 z-[100] bg-white dark:bg-[#0F0F11]"
     >
-      <div className="h-full pt-20 flex flex-col justify-between overflow-y-auto overflow-x-hidden">
+      <div className="h-full pt-32 flex flex-col justify-between overflow-y-auto overflow-x-hidden">
         <div className="flex flex-col gap-3 px-10 md:px-24">
           <div className="flex items-center justify-between border-b border-black/30 dark:border-white/30 pb-4 mb-2">
             <div className="text-black dark:text-white uppercase text-xs font-bold tracking-widest">
               Navigation
             </div>
-            <button 
-              onClick={() => setIsActive(false)}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-black dark:text-white"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
           </div>
           <section className="bg-transparent mt-0">
             <div className="mx-auto max-w-7xl">

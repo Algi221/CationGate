@@ -39,11 +39,23 @@ export const rateLimiter = (config: RateLimitConfig) => {
 };
 
 // Cleanup routine to prevent memory leak
-// setInterval(() => {
-//   const now = Date.now();
-//   for (const [ip, data] of ipRequestCounts.entries()) {
-//     if (now > data.resetTime) {
-//       ipRequestCounts.delete(ip);
-//     }
-//   }
-// }, 60000); // clean up every minute
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of ipRequestCounts.entries()) {
+    if (now > data.resetTime) {
+      ipRequestCounts.delete(ip);
+    }
+  }
+}, 60000); // clean up every minute
+
+export const authLimiter = rateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: 'Terlalu banyak percobaan login/reset dari IP ini. Silakan coba lagi setelah 15 menit.'
+});
+
+export const registerLimiter = rateLimiter({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // limit each IP to 3 registrations per windowMs
+  message: 'Terlalu banyak percobaan pendaftaran dari IP ini. Silakan coba lagi setelah 1 jam.'
+});

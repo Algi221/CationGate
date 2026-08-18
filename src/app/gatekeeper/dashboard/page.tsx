@@ -34,6 +34,11 @@ export default function GatekeeperOverviewPage() {
   const [schools, setSchools] = useState<SchoolTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const fetchSchools = async () => {
     try {
@@ -289,7 +294,7 @@ export default function GatekeeperOverviewPage() {
           </div>
         </div>
         <div className="h-[280px] w-full">
-          {typeof window !== 'undefined' && (
+          {isMounted && (
             <Chart
               options={{
                 chart: {
@@ -530,7 +535,7 @@ export default function GatekeeperOverviewPage() {
             </h3>
             
             <div className="relative pt-4">
-              {typeof window !== 'undefined' && (
+              {isMounted && (
                 <Chart options={chartOptions} series={chartSeries} type="donut" height="240" />
               )}
             </div>

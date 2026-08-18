@@ -132,7 +132,7 @@ export function Navbar() {
   return (
     <header className="fixed top-4 inset-x-0 z-[100] flex justify-center px-4 transition-all duration-500">
       <div
-        className={`transition-all duration-500 rounded-2xl border shadow-2xl px-5 sm:px-6 ${
+        className={`relative z-[110] transition-all duration-500 rounded-2xl border shadow-2xl px-5 sm:px-6 ${
           scrolled
             ? "w-full max-w-5xl bg-[#FFFFFF]/90 text-[#1A1A1A] border-rose-200/50 backdrop-blur-md py-2 shadow-lg"
             : "w-full max-w-7xl bg-[#FFFFFF] text-[#1A1A1A] border-white/10 py-3"

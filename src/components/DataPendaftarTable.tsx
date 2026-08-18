@@ -146,7 +146,7 @@ export default function DataPendaftarTable() {
               </span>
             </div>
             
-            <h2 className="text-4xl md:text-6xl font-black text-slate-800 dark:text-white uppercase tracking-tight leading-[1.1] mb-12 max-w-sm break-words">
+            <h2 className="text-4xl md:text-6xl font-black text-slate-800 dark:text-white uppercase tracking-tight leading-[1.1] mb-12 max-w-sm text-balance">
               {selectedStudent.nama}
             </h2>
             

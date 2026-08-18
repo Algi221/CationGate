@@ -707,8 +707,14 @@ export default function MajorPage() {
               let remaining = -1;
               let target = 0;
               let jumlah = 0;
-              if (kuotaData && major) {
-                const k = kuotaData.find((k: any) => k.key === major.title);
+              if (kuotaData && Array.isArray(kuotaData) && major) {
+                let k = null;
+                for (let i = 0; i < kuotaData.length; i++) {
+                  if (kuotaData[i] && kuotaData[i].key === major.title) {
+                    k = kuotaData[i];
+                    break;
+                  }
+                }
                 if (k && k.target > 0) {
                   isFull = k.jumlah >= k.target;
                   remaining = k.target - k.jumlah;

@@ -400,7 +400,7 @@ export function CinematicFooter() {
                 <ul className="space-y-2 text-xs text-zinc-600">
                   <li>
                     <a
-                      href="#"
+                      href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Pusat Bantuan
@@ -408,7 +408,7 @@ export function CinematicFooter() {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Dokumentasi API
@@ -416,7 +416,7 @@ export function CinematicFooter() {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Kebijakan Privasi
@@ -424,7 +424,7 @@ export function CinematicFooter() {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Syarat & Ketentuan
@@ -432,7 +432,7 @@ export function CinematicFooter() {
                   </li>
                   <li>
                     <a
-                      href="#"
+                      href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Status Sistem (Online)

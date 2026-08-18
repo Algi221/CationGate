@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { CheckCircle2, PhoneCall } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Plan {
@@ -15,12 +15,10 @@ interface Plan {
 }
 
 const formatRupiah = (num: number) => {
-  return `Rp ${(num / 1000).toFixed(0)}k`;
+  return `Rp ${num.toLocaleString('id-ID')}`;
 };
 
 export function PricingSection() {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
-
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,108 +42,88 @@ export function PricingSection() {
   }, []);
 
   return (
-    <section className="py-12 w-full font-sans bg-white">
+    <section className="py-16 w-full font-sans bg-white dark:bg-slate-950 transition-colors border-t border-slate-200 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#23191C] mb-4 tracking-tight">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="px-4 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-extrabold uppercase tracking-wider mb-4 inline-block">
+            Paket & Biaya
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
             Paket Fleksibel untuk Kebutuhan Sekolah Anda
           </h2>
-          <p className="text-[#58504E] text-base">
-            Pilih paket yang sesuai untuk digitalisasi sistem pendaftaran dan manajemen sekolah Anda.
+          <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed">
+            Pilih paket yang sesuai untuk digitalisasi sistem pendaftaran dan manajemen sekolah Anda. Semua paket berlangganan berlaku tahunan.
           </p>
-
-          {/* Toggle Billing */}
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <span
-              className={`text-xs font-bold tracking-wider ${
-                billingCycle === "monthly" ? "text-[#23191C]" : "text-[#58504E]"
-              }`}
-            >
-              BULANAN
-            </span>
-
-            <button
-              onClick={() =>
-                setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")
-              }
-              className="w-12 h-6 rounded-full bg-[#45C06B] relative transition-colors duration-200 focus:outline-none cursor-pointer flex items-center px-1"
-              aria-label="Toggle billing cycle"
-            >
-              <div
-                className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
-                  billingCycle === "yearly" ? "translate-x-6" : "translate-x-0"
-                }`}
-              />
-            </button>
-
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-xs font-bold tracking-wider ${
-                  billingCycle === "yearly" ? "text-[#23191C]" : "text-[#58504E]"
-                }`}
-              >
-                TAHUNAN
-              </span>
-              <span className="bg-[#8EC9F6]/20 text-[#2563EB] text-[10px] font-bold px-2 py-0.5 rounded">
-                HEMAT 20%
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Cards Wrapper */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:max-w-4xl lg:mx-auto gap-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:max-w-4xl lg:mx-auto gap-8 items-stretch">
           {loading ? (
-            <div className="col-span-1 md:col-span-2 py-12 flex justify-center text-[#58504E]">
+            <div className="col-span-1 md:col-span-2 py-12 flex justify-center text-slate-500 dark:text-slate-400 animate-pulse font-medium">
               Memuat harga paket...
             </div>
           ) : plans.length === 0 ? (
-            <div className="col-span-1 md:col-span-2 py-12 flex justify-center text-[#58504E]">
+            <div className="col-span-1 md:col-span-2 py-12 flex justify-center text-slate-500 dark:text-slate-400 font-medium">
               Belum ada paket yang tersedia.
             </div>
           ) : (
             plans.map((plan, index) => (
               <div
                 key={plan.id}
-                className="bg-white rounded-xl border border-gray-200 p-6 md:p-8 flex flex-col justify-between space-y-8 hover:shadow-lg transition-shadow"
+                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 flex flex-col justify-between space-y-8 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group"
               >
-                <div className="w-full shrink-0 flex flex-col items-start gap-2 border-b border-gray-100 pb-6">
-                  <span className="px-2.5 py-1 bg-gray-100 rounded text-xs font-bold text-[#58504E] uppercase tracking-wider">
+                {/* Popular Badge (Optional, can be based on index or property) */}
+                {index === 1 && (
+                  <div className="absolute top-0 right-8 bg-blue-600 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-b-lg uppercase tracking-widest shadow-md">
+                    Terpopuler
+                  </div>
+                )}
+                
+                <div className="w-full shrink-0 flex flex-col items-start gap-4 border-b border-slate-100 dark:border-slate-800 pb-8 relative z-10">
+                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
                     {plan.name}
-                  </span>
-                  <div className="flex items-baseline gap-1 my-1">
-                    <span className="text-3xl font-extrabold text-[#23191C] tracking-tight">
-                      {billingCycle === "yearly"
-                        ? formatRupiah(plan.price_yearly)
-                        : formatRupiah(plan.price_monthly)}
-                    </span>
-                    <span className="text-[#58504E] text-sm font-medium">
-                      /Bulan
+                  </h3>
+                  <div className="flex flex-col gap-1 my-2">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-black text-blue-600 dark:text-blue-500 tracking-tight">
+                        {formatRupiah(plan.price_yearly)}
+                      </span>
+                    </div>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                      / Tahun
                     </span>
                   </div>
-                  <Link href="/daftar" className="w-full mt-2">
-                    <Button className="w-full bg-[#8EC9F6] hover:bg-[#7DB8E5] text-[#2A1B1D] font-bold py-2.5 rounded-md transition-all">
-                      {index === 0 ? "Mulai Sekarang" : "Pilih Paket Pro"}
+                  <Link href="/daftar" className="w-full mt-4">
+                    <Button className={`w-full font-bold py-6 rounded-xl transition-all ${index === 1 ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white'}`}>
+                      {index === 0 ? "Mulai Sekarang" : "Pilih Paket Ini"}
                     </Button>
                   </Link>
                 </div>
 
-                <div className="flex-1 space-y-3 pt-2">
+                <div className="flex-1 space-y-4 pt-4 relative z-10">
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
+                    Termasuk Semua Fitur:
+                  </p>
                   {plan.features.map((feat: string, idx: number) => (
                     <div key={idx} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span className="text-sm text-[#23191C] leading-snug">{feat}</span>
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" strokeWidth={2.5} />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">{feat}</span>
                     </div>
                   ))}
                 </div>
+                
+                {/* Background Decor */}
+                {index === 1 && (
+                  <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-[80px] opacity-10 dark:opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                )}
               </div>
             ))
           )}
         </div>
 
         {/* Footer Note */}
-        <div className="text-center mt-8 text-[#58504E] text-sm">
+        <div className="text-center mt-12 text-slate-500 dark:text-slate-400 text-sm font-medium">
           Semua paket sudah termasuk update sistem berkala dan jaminan keamanan data.
         </div>
       </div>

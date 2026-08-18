@@ -6,14 +6,16 @@ import { pool } from '../db/client';
 import { redis } from '../../utils/redis';
 // @ts-ignore
 import midtransClient from 'midtrans-client';
+import crypto from 'crypto';
+import { registerLimiter } from '../middleware/rate-limiter';
 
 const saasRouter = new Hono();
 
 // Midtrans Core Config
 const snap = new midtransClient.Snap({
   isProduction: false,
-  serverKey: process.env.MIDTRANS_SERVER_KEY || 'Mid-server-OuI5I5rbJs8R2HAmAFoWBlTX',
-  clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-lwrX66vs4ssU0E8r'
+  serverKey: process.env.MIDTRANS_SERVER_KEY || '',
+    clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || '',
 });
 
 // In-Memory store for registered schools fallback (HMR Refreshed)
@@ -100,11 +102,11 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
       return c.json({ success: true, data: candidateData });
     }
 
-    // 3. Check in-memory fallback map
+    // 3. Check in-memory fallback map (Clone to prevent cross-tenant memory leak)
     const localSchool = fontInMemSchools.get(slug);
     if (localSchool) {
       checkThreeDayTakedown(localSchool);
-      return c.json({ success: true, data: localSchool });
+      return c.json({ success: true, data: { ...localSchool } });
     }
 
     // Default Seed Fallback ONLY for smktarunabhakti or demo
@@ -176,7 +178,7 @@ saasRouter.post('/check-email', async (c) => {
 });
 
 // Register new school from Landing Page
-saasRouter.post('/register', async (c) => {
+saasRouter.post('/register', registerLimiter, async (c) => {
   try {
     const { school_name, slug, email, phone, address, plan_type, admin_name, admin_username, admin_password, admin_email } = await c.req.json();
     
@@ -279,7 +281,10 @@ saasRouter.post('/register', async (c) => {
           insertedSchoolId = pgRes.rows[0].id;
           newSchoolObj.id = insertedSchoolId;
         }
-      } catch (pgErr: any) {}
+      } catch (pgErr: any) {
+        console.error('PG Insert error during SaaS registration fallback:', pgErr.message);
+        return c.json({ success: false, message: 'Gagal menyimpan data pendaftaran ke database' }, 500);
+      }
     }
 
     // Store the generated UUID in the school object for login resolution
@@ -632,6 +637,18 @@ saasRouter.post('/payment/student-form-token', async (c) => {
 saasRouter.post('/midtrans-webhook', async (c) => {
   try {
     const notificationJson = await c.req.json();
+    
+    // Security: Signature Verification
+    const serverKey = process.env.MIDTRANS_SERVER_KEY || '';
+    const hash = crypto.createHash('sha512')
+      .update(`${notificationJson.order_id}${notificationJson.status_code}${notificationJson.gross_amount}${serverKey}`)
+      .digest('hex');
+      
+    if (notificationJson.signature_key !== hash) {
+      console.warn(`[Midtrans Webhook] Invalid signature for OrderId: ${notificationJson.order_id}`);
+      return c.json({ success: false, message: 'Invalid signature' }, 403);
+    }
+
     const statusResponse = await snap.transaction.notification(notificationJson);
 
     const orderId = statusResponse.order_id;

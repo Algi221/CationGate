@@ -17,6 +17,7 @@ import { VideoModal } from "@/components/landing/VideoModal";
 import { FloatingVideoWidget } from "@/components/landing/FloatingVideoWidget";
 import LoadingScreen from "@/components/landing/LoadingScreen";
 import { ContactScreen } from "@/components/landing/ContactScreen";
+import { AboutSection } from "@/components/landing/AboutSection";
 
 const VIDEO_COLLECTION = {
   trailerAnime: "https://www.youtube-nocookie.com/embed/1FcVJxxPWh4",
@@ -35,6 +36,8 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* <ScrollExpandSection/> */}
         <HeroPPDB />
+        <PartnersSection/>
+        <AboutSection/>
         <SystemFlowSection />
         <TestimonialsSection />
         <PricingSection />

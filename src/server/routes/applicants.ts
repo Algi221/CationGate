@@ -322,7 +322,6 @@ appRouter.post('/', rateLimiter({
       janji_nama_baik: validated.janjiNamaBaik === 'Sanggup' || validated.janjiNamaBaik === true,
       periode: validated.periode,
       status: 'Pending',
-      physical_doc_verified: false,
       tgl_daftar: new Date().toISOString()
     };
 

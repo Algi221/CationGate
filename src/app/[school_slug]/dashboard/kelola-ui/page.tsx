@@ -438,7 +438,8 @@ export default function KelolaUserInterface() {
   const [email, setEmail] = useState("info@sekolah.sch.id");
   const [address, setAddress] = useState("Alamat Lengkap Sekolah");
   const [mapTitle, setMapTitle] = useState("Kunjungi Kampus Kami");
-  // Logo and Title moved to Profil Sekolah
+  const [schoolLogo, setSchoolLogo] = useState("");
+  const [schoolTitle, setSchoolTitle] = useState("Portal PPDB");
   const [footerDesc, setFooterDesc] = useState("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
 
   const [gelombangConfig, setGelombangConfig] = useState({
@@ -533,10 +534,9 @@ export default function KelolaUserInterface() {
       ppdb_alur_config: alurList,
       ppdb_majors_config: majorsList,
       ppdb_faq_config: faqList,
-      ppdb_faq_title: faqTitle,
-      ppdb_faq_subtitle: faqSubtitle,
       ppdb_partners_config: partnersList,
-
+      ppdb_logo_url: schoolLogo,
+      ppdb_title: schoolTitle,
       ppdb_footer_desc: footerDesc,
     };
 
@@ -564,10 +564,9 @@ export default function KelolaUserInterface() {
     alurList,
     majorsList,
     faqList,
-    faqTitle,
-    faqSubtitle,
     partnersList,
-    footerDesc
+    schoolLogo,
+    schoolTitle,
   ]);
 
   const showToastMsg = (message: string, type: "success" | "error" | "info" = "success") => {
@@ -577,11 +576,8 @@ export default function KelolaUserInterface() {
 
   async function fetchCurrentConfig() {
     try {
-      const token = adminToken || localStorage.getItem("ppdb_admin_token");
-      const res = await fetch(`/api/config?_t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: token ? { "Authorization": `Bearer ${token}` } : {}
-      });
+      setLoading(true);
+      const res = await fetch("/api/config");
       const json = await res.json();
       const config = (json.success && json.data) ? json.data : {};
 
@@ -614,7 +610,11 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(activeConfig.ppdb_wa_admin));
       if (activeConfig.ppdb_form_guideline) setFormGuideline(activeConfig.ppdb_form_guideline);
       if (activeConfig.ppdb_form_fee) setFormFee(activeConfig.ppdb_form_fee);
+      if (activeConfig.ppdb_logo_url) setSchoolLogo(activeConfig.ppdb_logo_url);
+      
+      if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
       if (activeConfig.ppdb_footer_desc) setFooterDesc(activeConfig.ppdb_footer_desc);
+      else if (!draft) setSchoolTitle(`PPDB ${ppdbTitle || 'Sekolah'}`);
       
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
         setAlurList(activeConfig.ppdb_alur_config);
@@ -685,6 +685,7 @@ export default function KelolaUserInterface() {
 
   useEffect(() => {
     if (ppdbTitle && ppdbTitle !== "PPDB SMK TB") {
+      setSchoolTitle(prev => prev === "Portal PPDB" || prev.startsWith("PPDB PPDB") ? `PPDB ${ppdbTitle}` : prev);
       setHeroTitleSub(prev => prev === "Portal PPDB Online" || prev.startsWith("Portal PPDB PPDB") ? `Portal PPDB ${ppdbTitle}` : prev);
     }
   }, [ppdbTitle]);
@@ -853,12 +854,11 @@ export default function KelolaUserInterface() {
         ppdb_alur_config: alurList,
         ppdb_majors_config: finalMajors,
         ppdb_faq_config: faqList,
-        ppdb_faq_title: faqTitle,
-        ppdb_faq_subtitle: faqSubtitle,
         ppdb_gelombang_config: gelombangConfig,
         ppdb_bank_config: bankConfigList,
         ppdb_partners_config: partnersList,
-
+        ppdb_logo_url: schoolLogo,
+        ppdb_title: schoolTitle,
       ppdb_footer_desc: footerDesc,
         ppdb_fields_config: fieldsConfigUI
       };
@@ -926,6 +926,25 @@ export default function KelolaUserInterface() {
     }
   };
 
+
+  const handleSchoolLogoChange = async (file: File) => {
+    try {
+      setCompressing(true);
+      showToastMsg("Mengompresi logo...");
+      const result = await compressImage(file, 400, 400, 0.85);
+      
+      showToastMsg("Mengunggah logo ke cloud...", "info");
+      const compressedFile = base64ToFile(result.base64, file.name);
+      const publicUrl = await uploadFileDirect(compressedFile, 'school_logo');
+      
+      setSchoolLogo(publicUrl);
+      showToastMsg(`✨ Logo berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
+    } catch (e) {
+      showToastMsg("Gagal memproses logo.", "error");
+    } finally {
+      setCompressing(false);
+    }
+  };
 
   const handleHeroMediaFileChange = async (file: File) => {
     try {
@@ -1141,6 +1160,67 @@ export default function KelolaUserInterface() {
             {/* TAB 1: General / Umum */}
             {activeTab === "hero" && (
               <div className="space-y-6">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-6">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Building size={18} className="text-blue-600 dark:text-blue-500" />
+                    <span>Logo &amp; Nama Instansi (Header Website)</span>
+                  </h3>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-8 items-start bg-white dark:bg-[#0f172a] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                  {/* Logo Drag & Drop */}
+                  <div className="flex flex-col items-start gap-3 shrink-0">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Logo Instansi (Header)</label>
+                    <div
+                      className={`w-full md:w-56 h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-300 ${
+                        dragActiveStates["school_logo"]
+                          ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800/50"
+                      }`}
+                      onDragEnter={(e) => handleDragState(e, "school_logo", true)}
+                      onDragOver={(e) => handleDragState(e, "school_logo", true)}
+                      onDragLeave={(e) => handleDragState(e, "school_logo", false)}
+                      onDrop={(e) => {
+                        handleDragState(e, "school_logo", false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) handleSchoolLogoChange(file);
+                      }}
+                    >
+                      {schoolLogo && (schoolLogo.startsWith('data:image/') || schoolLogo.startsWith('https://')) ? (
+                        <img src={schoolLogo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain rounded-lg" />
+                      ) : (
+                        <div className="text-center text-slate-500 dark:text-slate-400">
+                          <Upload size={24} className="mx-auto mb-2 text-slate-400 dark:text-slate-500 dark:text-slate-400" />
+                          <span className="text-xs font-medium">Upload Logo</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleSchoolLogoChange(file);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nama Sekolah / Title */}
+                  <div className="flex-1 space-y-4 text-left w-full">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nama Instansi / Singkatan (Header)</label>
+                      <input
+                        type="text"
+                        value={schoolTitle}
+                        onChange={(e) => setSchoolTitle(e.target.value)}
+                        placeholder="Contoh: PPDB SMK TB"
+                        className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mt-8 mb-6">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <FileText size={18} className="text-blue-600 dark:text-blue-500" />
@@ -1190,7 +1270,7 @@ export default function KelolaUserInterface() {
                         <label className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-wider">Media Background Hero (Foto / Video)</label>
                       </div>
                       <span className="text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-900">
-                        Auto-Compress Enabled
+                        ✨ Auto-Compress Enabled
                       </span>
                     </div>
 
@@ -1573,7 +1653,7 @@ export default function KelolaUserInterface() {
                       <div className="lg:col-span-1 space-y-6">
                         
                         {/* 2.1 Logo Drag & Drop - Custom Adjusted Size as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Logo Kompetensi</span>
@@ -1634,7 +1714,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.2 Banner Image Drag & Drop - Custom Backdrop cue */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div>
                             <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Banner Utama Unsplash</span>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">Tampil di header visual detail halaman</span>
@@ -1684,7 +1764,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.3 Video Upload Picker - Local File Explorer Uploader + Preview Player as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div>
                             <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Video Profil Jurusan</span>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">Upload dari file explorer (Maks. 15MB MP4/WebM)</span>
@@ -1747,7 +1827,7 @@ export default function KelolaUserInterface() {
                       <div className="lg:col-span-2 space-y-6">
                         
                         {/* 2.4 General Texts */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">Informasi Umum</h4>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1804,7 +1884,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.5 Dynamic Gallery Slots - All 4 unsplash photos are completely editable from File Explorer with faded background cue as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <div>
                             <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">Galeri Aktivitas (4 Foto &amp; Caption)</h4>
                             <span className="text-[8px] text-slate-450 font-bold block mt-1 uppercase">Ganti foto standard Unsplash menggunakan File Explorer Anda secara visual</span>
@@ -1881,7 +1961,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.6 Interactive Careers (4 slots) */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
                             Peluang Kerja / Karir Lulusan (4 Item)
                           </h4>
@@ -1903,7 +1983,7 @@ export default function KelolaUserInterface() {
                                       setEditingMajor({ ...editingMajor, careers: updated });
                                     }}
                                     placeholder="Nama Profesi"
-                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-250 dark:border-white/5 rounded-lg text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
                                   />
                                   <textarea
                                     value={career.desc}
@@ -1915,7 +1995,7 @@ export default function KelolaUserInterface() {
                                     }}
                                     rows={2}
                                     placeholder="Penjelasan profesi..."
-                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-850 dark:text-white font-semibold text-[10px] focus:outline-none resize-none"
+                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-250 dark:border-white/5 rounded-lg text-slate-850 dark:text-white font-semibold text-[10px] focus:outline-none resize-none"
                                   />
                                 </div>
                               );
@@ -1924,7 +2004,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.7 Interactive Laboratory Facilities */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
                             Fasilitas Laboratorium &amp; Sarana Utama
                           </h4>
@@ -2062,7 +2142,7 @@ export default function KelolaUserInterface() {
                             type="text"
                             value={item.title}
                             onChange={(e) => handleUpdateAlur(item.id, "title", e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
                           />
                         </div>
 
@@ -2072,7 +2152,7 @@ export default function KelolaUserInterface() {
                             type="text"
                             value={item.desc}
                             onChange={(e) => handleUpdateAlur(item.id, "desc", e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none"
+                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none"
                           />
                         </div>
                       </div>
@@ -2184,7 +2264,7 @@ export default function KelolaUserInterface() {
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                         {Object.entries(fieldsConfigUI).map(([key, cfg]) => (
-                          <tr key={key} className="hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-colors">
+                          <tr key={key} className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-colors">
                             <td className="px-4 py-2.5">
                               <div>
                                 <span className="font-bold text-slate-800 dark:text-white text-xs">{cfg.label}</span>
@@ -2267,7 +2347,7 @@ export default function KelolaUserInterface() {
                             type="text"
                             value={item.q}
                             onChange={(e) => handleUpdateFaq(idx, "q", e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
                           />
                         </div>
 
@@ -2277,7 +2357,7 @@ export default function KelolaUserInterface() {
                             value={item.a}
                             onChange={(e) => handleUpdateFaq(idx, "a", e.target.value)}
                             rows={3}
-                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none resize-y"
+                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none resize-y"
                           />
                         </div>
                       </div>

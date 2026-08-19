@@ -158,7 +158,7 @@ export default function VerificationPage() {
           <div className="hidden md:block absolute -bottom-3.5 left-[66.67%] -translate-x-1/2 w-7 h-7 rounded-full bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-900 z-20 transition-colors" />
 
           {/* Ticket Top bar */}
-          <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/5 pb-4 mb-4 transition-colors">
+          <div className="flex justify-between items-center border-b border-slate-150 dark:border-white/5 pb-4 mb-4 transition-colors">
             <div className="flex items-center gap-3">
               <img src="/logo_smktb.png" alt="Logo TB" className="w-9 h-9 object-contain" />
               <div>
@@ -244,7 +244,7 @@ export default function VerificationPage() {
           </div>
 
           {/* Ticket Footer */}
-          <div className="border-t border-slate-200 dark:border-white/5 pt-3.5 mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[9px] font-bold text-slate-450 dark:text-slate-400 tracking-wider transition-colors">
+          <div className="border-t border-slate-150 dark:border-white/5 pt-3.5 mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[9px] font-bold text-slate-450 dark:text-slate-400 tracking-wider transition-colors">
             <div></div>
             <span className="text-slate-500 dark:text-slate-400 font-black">TERVERIFIKASI SISTEM PPDB</span>
           </div>
@@ -307,7 +307,7 @@ export default function VerificationPage() {
           </Link>
           
           <a
-            href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Admin%20PPDB%20SMK%20Taruna%20Bhakti.%20Saya%20ingin%20bertanya%20terkait%20status%20pendaftaran%20atas%20nama%20${encodeURIComponent(data.nama)}`}
+            href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Admin%20PPDB.%20Saya%20ingin%20bertanya%20terkait%20status%20pendaftaran%20atas%20nama%20${encodeURIComponent(data.nama)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white text-xs font-black uppercase tracking-wider text-[#075E54] dark:text-[#25D366] transition-all shadow-sm w-full sm:w-auto"

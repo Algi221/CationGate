@@ -40,7 +40,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   const fetchConfigs = useCallback(async () => {
     if (isDemoMode) return;
     try {
-      const res = await fetch(`/api/config?school_slug=${slug}&_t=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(`/api/config?school_slug=${slug}`);
       if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
       const data = await res.json();
       if (data.success && data.data) {
@@ -63,7 +63,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   // ── Fetch school theme color ───────────────────────────────────────────────
   useEffect(() => {
     if (schoolId) {
-      fetch(`/api/config?school_id=${schoolId}&_t=${Date.now()}`, { cache: 'no-store' })
+      fetch(`/api/config?school_id=${schoolId}`)
         .then((res) => {
           if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return null;
           return res.json();
@@ -113,15 +113,14 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
             setIsSchoolNotFound(false);
             setSchoolId(data.data.school_uuid || data.data.id);
             if (data.data.status) setSchoolStatus(data.data.status);
-            
-            setPpdbLogo(prev => prev || data.data.logo_url || "");
-            setPpdbTitle(prev => (prev && prev !== "PPDB SMK TB" && prev !== slug) ? prev : (data.data.name || "PPDB SMK TB"));
+            if (data.data.logo_url) setPpdbLogo(data.data.logo_url);
+            if (data.data.name) setPpdbTitle(data.data.name);
           } else if (slug !== 'smktarunabhakti' && slug !== 'demo') {
             setIsSchoolNotFound(true);
           } else {
             setIsSchoolNotFound(false);
             setSchoolId(slug);
-            setPpdbTitle(prev => (prev && prev !== "PPDB SMK TB") ? prev : (slug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : slug));
+            setPpdbTitle(slug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : slug);
           }
         })
         .catch((err) => {

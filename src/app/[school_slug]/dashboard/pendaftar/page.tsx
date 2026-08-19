@@ -765,7 +765,7 @@ function ApplicantsDirectoryContent() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-355">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
+                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
                   <th className="py-4 px-6 pl-8">No. Pendaftaran</th>
                   <th className="py-4 px-6">Nama Calon Siswa</th>
                   <th className="py-4 px-6 text-center w-20">L/P</th>
@@ -780,7 +780,7 @@ function ApplicantsDirectoryContent() {
                 {paginatedApplicants.map((a: Applicant, idx: number) => (
                   <tr
                     key={a.id || idx}
-                    className="hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-white dark:bg-[#0f172a]/5 transition-all group cursor-pointer"
+                    className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/5 transition-all group cursor-pointer"
                     onDoubleClick={() => handleViewDetail(a)}
                   >
                     <td className="py-4 px-6 pl-8">
@@ -931,7 +931,7 @@ function ApplicantsDirectoryContent() {
 
                 {filteredApplicants.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-slate-400 font-bold uppercase tracking-wider">
+                    <td colSpan={6} className="text-center py-12 text-slate-400 font-bold uppercase tracking-wider">
                       Tidak ditemukan data calon siswa yang cocok.
                     </td>
                   </tr>
@@ -973,7 +973,7 @@ function ApplicantsDirectoryContent() {
                     onDoubleClick={() => handleViewDetail(a)}
                   >
                     {/* Row Index Number */}
-                    <td className="py-2.5 text-center font-mono text-[10px] border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 dark:bg-slate-950/40 text-slate-400 font-bold">
+                    <td className="py-2.5 text-center font-mono text-[10px] border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 text-slate-400 font-bold">
                       {(currentPage - 1) * itemsPerPage + rowIdx + 1}
                     </td>
 
@@ -1066,7 +1066,7 @@ function ApplicantsDirectoryContent() {
 
                 {filteredApplicants.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 font-mono text-slate-450 italic uppercase bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20">
+                    <td colSpan={8} className="text-center py-12 font-mono text-slate-450 italic uppercase bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20">
                       Zero lines of data found. Filter criteria matches nothing.
                     </td>
                   </tr>
@@ -1078,7 +1078,7 @@ function ApplicantsDirectoryContent() {
 
         {/* Pagination Controls */}
         {filteredApplicants.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/20 dark:bg-slate-950/20">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/25 dark:bg-slate-950/20">
             <div className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
               Menampilkan <span className="text-slate-700 dark:text-slate-300">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="text-slate-700 dark:text-slate-300">{Math.min(currentPage * itemsPerPage, filteredApplicants.length)}</span> dari <span className="text-slate-700 dark:text-slate-300">{filteredApplicants.length}</span> Siswa
             </div>
@@ -1114,7 +1114,7 @@ function ApplicantsDirectoryContent() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-355">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
+                  <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
                     <th className="py-4 px-6 pl-8">Nama Calon Siswa</th>
                     <th className="py-4 px-6 text-center w-20">L/P</th>
                     <th className="py-4 px-6">Asal Sekolah</th>
@@ -1125,7 +1125,7 @@ function ApplicantsDirectoryContent() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {trashedApplicants.map((a: Applicant, idx: number) => (
-                    <tr key={a.id || idx} className="hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-white dark:bg-[#0f172a]/5 transition-all">
+                    <tr key={a.id || idx} className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/5 transition-all">
                       <td className="py-4 px-6 pl-8">
                         <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
                         <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
@@ -1282,7 +1282,7 @@ function ApplicantsDirectoryContent() {
             </div>
 
             {/* Modal Tabs Navigation */}
-            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-950/40 dark:bg-slate-950/40 border-b border-slate-100 dark:border-white/5 shrink-0 w-full overflow-hidden">
+            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 border-b border-slate-100 dark:border-white/5 shrink-0 w-full overflow-hidden">
               <div className="flex overflow-x-auto hide-scrollbar bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-1 w-full max-w-full border border-slate-200 dark:border-slate-800/50 dark:border-white/5">
                 {[
                   { id: "biodata", label: "Biodata" },
@@ -1748,7 +1748,7 @@ function ApplicantsDirectoryContent() {
             </div>
 
             {/* Modal Action Controls Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 flex items-center justify-end shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 flex items-center justify-end shrink-0">
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setSelectedApplicant(null)}
@@ -1814,7 +1814,7 @@ function ApplicantsDirectoryContent() {
             </div>
 
             {/* Body — scrollable form */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 hide-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 hide-scrollbar">
               {[
                 {
                   section: "Identitas Diri", icon: <User size={14} />, fields: [
@@ -1911,7 +1911,7 @@ function ApplicantsDirectoryContent() {
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/40 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
               <button
                 onClick={() => setEditApplicant(null)}
                 className="px-6 py-3 bg-white dark:bg-[#0f172a] hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"

@@ -23,9 +23,7 @@ export default function SubscriptionManagementPage() {
   const [isPaying, setIsPaying] = useState(false);
 
   // Default to Free Plan for demo
-  const [currentPlan, setCurrentPlan] = useState("1"); // Use ID "1" or similar
-  const [plans, setPlans] = useState<any[]>([]);
-  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [currentPlan, setCurrentPlan] = useState("FREE_PLAN");
 
   // In a real scenario, fetch subscription from API
   useEffect(() => {
@@ -34,24 +32,6 @@ export default function SubscriptionManagementPage() {
     if (stored) {
       setCurrentPlan(stored);
     }
-    
-    // Fetch dynamic plans from Gatekeeper
-    async function fetchPlans() {
-      try {
-        const res = await fetch("/api/saas/plans");
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success) {
-            setPlans(json.data);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch plans:", err);
-      } finally {
-        setLoadingPlans(false);
-      }
-    }
-    fetchPlans();
   }, []);
 
   const isVerified = schoolStatus === "FULL_VERIFIED" || schoolStatus === "VERIFIED" || schoolStatus === "verified" || isDemoMode;
@@ -163,7 +143,55 @@ export default function SubscriptionManagementPage() {
     );
   }
 
-
+  const packages = [
+    {
+      id: "FREE_PLAN",
+      name: "Basic (Free)",
+      price: "Rp 0",
+      period: "Selamanya",
+      desc: "Cocok untuk sekolah yang baru mencoba sistem PPDB.",
+      benefits: [
+        "Fitur PPDB Basic",
+        "1 Admin Utama (Superadmin)",
+        "Landing Page Pendaftaran",
+        "Tanpa Ekspor Data Excel",
+        "Tanpa Dukungan Support"
+      ],
+      isPopular: false
+    },
+    {
+      id: "PRO_PLAN",
+      name: "Pro",
+      price: "Rp 750.000",
+      amount: 750000,
+      period: "per Tahun",
+      desc: "Standar operasional untuk mengelola PPDB secara efektif.",
+      benefits: [
+        "Semua fitur Basic",
+        "Multi-Admin (Bisa Tambah Admin)",
+        "Ekspor Data Pendaftar (Excel)",
+        "Laporan Statistik Lengkap",
+        "Dukungan Support via Email"
+      ],
+      isPopular: true
+    },
+    {
+      id: "PROMAX_PLAN",
+      name: "Pro Max",
+      price: "Rp 1.000.000",
+      amount: 1000000,
+      period: "per Tahun",
+      desc: "Solusi eksklusif dengan prioritas penuh dan kustomisasi.",
+      benefits: [
+        "Semua fitur Pro",
+        "Custom Domain (sekolah.sch.id)",
+        "Prioritas Server & Performa Cepat",
+        "Dukungan WhatsApp 24/7",
+        "Pelatihan Sistem Online"
+      ],
+      isPopular: false
+    }
+  ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12 font-sans animate-in fade-in zoom-in-95 duration-300">
@@ -239,86 +267,66 @@ export default function SubscriptionManagementPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {loadingPlans ? (
-            <div className="col-span-1 md:col-span-3 py-12 flex justify-center text-slate-500 dark:text-slate-400 animate-pulse font-medium">
-              Memuat harga paket...
-            </div>
-          ) : plans.length === 0 ? (
-            <div className="col-span-1 md:col-span-3 py-12 flex justify-center text-slate-500 dark:text-slate-400 font-medium">
-              Belum ada paket yang tersedia.
-            </div>
-          ) : (
-            plans.map((pkg, index) => {
-              const pkgIdStr = String(pkg.id);
-              const isActive = currentPlan === pkgIdStr;
-              const isPopular = index === 1; // Mark second item as popular
-              const isFree = pkg.price_yearly === 0;
-
-              return (
-                <motion.div
-                  key={pkg.id}
-                  whileHover={{ y: -4 }}
-                  className={`relative flex flex-col bg-white dark:bg-[#0f172a] border-2 rounded-3xl p-6 shadow-sm overflow-hidden ${
-                    isActive ? "border-blue-500 dark:border-blue-500" : isPopular ? "border-slate-300 dark:border-slate-700" : "border-slate-200 dark:border-slate-800"
-                  }`}
-                >
-                  {isActive && (
-                     <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-bl-xl">
-                        Paket Aktif
-                     </div>
+          {packages.map((pkg) => {
+            const isActive = currentPlan === pkg.id;
+            return (
+              <motion.div
+                key={pkg.id}
+                whileHover={{ y: -4 }}
+                className={`relative flex flex-col bg-white dark:bg-[#0f172a] border-2 rounded-3xl p-6 shadow-sm overflow-hidden ${
+                  isActive ? "border-blue-500 dark:border-blue-500" : pkg.isPopular ? "border-slate-300 dark:border-slate-700" : "border-slate-200 dark:border-slate-800"
+                }`}
+              >
+                {isActive && (
+                   <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-bl-xl">
+                      Paket Aktif
+                   </div>
+                )}
+                {pkg.isPopular && !isActive && (
+                   <div className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-bl-xl">
+                      Paling Populer
+                   </div>
+                )}
+                <div className="mb-6">
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white">{pkg.name}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 min-h-[32px]">{pkg.desc}</p>
+                </div>
+                <div className="mb-6 flex items-end gap-1">
+                  <span className="text-3xl font-black text-slate-900 dark:text-white leading-none">{pkg.price}</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{pkg.period}</span>
+                </div>
+                <div className="flex-1">
+                  <ul className="space-y-3">
+                    {pkg.benefits.map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-8">
+                  {isActive ? (
+                    <button disabled className="w-full py-3 rounded-xl bg-slate-100 dark:bg-[#1e293b] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200 dark:border-slate-700">
+                      <CheckCircle2 className="w-4 h-4" /> Sedang Digunakan
+                    </button>
+                  ) : pkg.price === "Rp 0" ? (
+                    <button onClick={() => { localStorage.setItem("ppdb_school_plan", pkg.id); setCurrentPlan(pkg.id); }} className="w-full py-3 rounded-xl bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700">
+                      Gunakan Paket Free
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleUpgradePlan(pkg.id, pkg.amount as number, pkg.name)}
+                      disabled={isPaying}
+                      className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2"
+                    >
+                      {isPaying ? "Memproses..." : "Upgrade Sekarang"}
+                    </button>
                   )}
-                  {isPopular && !isActive && (
-                     <div className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest py-1 px-3 rounded-bl-xl">
-                        Paling Populer
-                     </div>
-                  )}
-                  <div className="mb-6">
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">{pkg.name}</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 min-h-[32px]">
-                      Paket {pkg.name} dengan fitur premium yang dapat diandalkan untuk sekolah Anda.
-                    </p>
-                  </div>
-                  <div className="mb-6 flex items-end gap-1">
-                    <span className="text-3xl font-black text-slate-900 dark:text-white leading-none">
-                      {isFree ? "Rp 0" : `Rp ${Number(pkg.price_yearly).toLocaleString("id-ID")}`}
-                    </span>
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
-                      {isFree ? "/ 20 Hari" : "/ Tahun"}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <ul className="space-y-3">
-                      {pkg.features.map((benefit: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
-                          <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                          <span>{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="mt-8">
-                    {isActive ? (
-                      <button disabled className="w-full py-3 rounded-xl bg-slate-100 dark:bg-[#1e293b] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200 dark:border-slate-700">
-                        <CheckCircle2 className="w-4 h-4" /> Sedang Digunakan
-                      </button>
-                    ) : isFree ? (
-                      <button onClick={() => { localStorage.setItem("ppdb_school_plan", pkgIdStr); setCurrentPlan(pkgIdStr); }} className="w-full py-3 rounded-xl bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all border border-slate-200 dark:border-slate-700">
-                        Gunakan Paket Free
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleUpgradePlan(pkgIdStr, pkg.price_yearly, pkg.name)}
-                        disabled={isPaying}
-                        className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2"
-                      >
-                        {isPaying ? "Memproses..." : "Upgrade Sekarang"}
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })
-          )}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>

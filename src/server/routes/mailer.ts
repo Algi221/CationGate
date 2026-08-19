@@ -59,6 +59,11 @@ mailerRouter.post('/send-otp', async (c) => {
         throw new Error(error.message);
       }
     } else {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('FATAL: RESEND_API_KEY is not configured for production. Email will not be sent.');
+        return c.json({ success: false, message: 'Gagal mengirim email: Konfigurasi server email tidak lengkap.' }, 500);
+      }
+      
       console.warn('⚠️ RESEND_API_KEY not configured, skipping email send. OTP generated:', otp);
       // For local development when Resend is not set up
       return c.json({ success: true, message: 'OTP berhasil digenerate (Mode Dev)', dev_otp: otp });

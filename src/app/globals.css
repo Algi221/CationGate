@@ -13,7 +13,7 @@
 
   --yellow: #FFD33B;
   --yellow-hover: #F3C625;
-  --dark-blue: #2e3749;
+  --dark-brown: #2A1B1D;
 
   --pink: #FF2F8B;
   --green: #45C06B;
@@ -57,11 +57,6 @@
   --glass-border: rgba(30, 41, 59, 0.5);
   --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
   --primary-glow-strong: rgba(255, 211, 59, 0.4);
-}
-
-.dark input[type="date"]::-webkit-calendar-picker-indicator,
-.dark input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) opacity(0.7);
 }
 
 @layer base {
@@ -330,6 +325,9 @@ html.dark body {
 }
 
 .badge-pill {
+  background: rgba(0, 102, 255, 0.08);
+  border: 1px solid rgba(0, 102, 255, 0.15);
+  color: var(--primary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -340,17 +338,12 @@ html.dark body {
   box-shadow: 0 4px 12px rgba(0, 102, 255, 0.02);
 }
 
-.dark .badge-pill {
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
-}
-
 .hero-title {
   font-size: clamp(40px, 5vw, 64px);
   line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.03em;
+  color: var(--heading);
   max-width: 900px;
   margin-bottom: 24px;
   animation: fadeInUp 0.9s ease-out;
@@ -359,6 +352,7 @@ html.dark body {
 }
 
 html.dark .hero-title {
+  color: var(--heading);
   filter: drop-shadow(0px 2px 16px rgba(0, 0, 0, 0.4));
 }
 
@@ -368,6 +362,7 @@ html.dark .hero-title {
 
 .hero-subtitle {
   font-size: 16px;
+  color: var(--dark-muted);
   max-width: 600px;
   line-height: 1.6;
   margin-bottom: 32px;
@@ -376,6 +371,7 @@ html.dark .hero-title {
 }
 
 html.dark .hero-subtitle {
+  color: var(--body);
 }
 
 .hero-action {

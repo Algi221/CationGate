@@ -131,7 +131,7 @@ export function FaqSection() {
                   </div>
                 </div>
 
-                <a href="/kontak" className="mt-2 w-full">
+                <a href="/hubungi-kami" className="mt-2 w-full">
                   <Button className="w-full bg-white text-zinc-900 hover:bg-zinc-200 font-bold h-12 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
                     Hubungi Tim Teknis <ArrowUpRight className="w-4 h-4" />
                   </Button>

@@ -2,16 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { Save, HelpCircle, FileText, School, Target, ListChecks, Check, X, Building2, Upload, Image as ImageIcon } from "lucide-react";
+import { Save, HelpCircle, FileText, School, Target, ListChecks, Check, X, Building2 } from "lucide-react";
 import Swal from "sweetalert2";
-import { uploadFileDirect, base64ToFile } from "@/utils/storage";
-import { compressImage } from "@/utils/mediaCompressor";
 
 export default function ProfilSekolahPage() {
-  const { adminToken, profilSekolah, setProfilSekolah, fetchConfigs, schoolId, isDemoMode, ppdbTitle, ppdbLogo } = usePPDB();
+  const { adminToken, profilSekolah, setProfilSekolah, fetchConfigs, schoolId, isDemoMode } = usePPDB();
 
   const [loading, setLoading] = useState(false);
-  const [logoInput, setLogoInput] = useState("");
   const [identitas, setIdentitas] = useState({
     nama: "",
     akreditasi: "",
@@ -30,15 +27,8 @@ export default function ProfilSekolahPage() {
   const [activeTab, setActiveTab] = useState("identitas");
 
   useEffect(() => {
-    if (ppdbTitle) {
-      setIdentitas(prev => ({ ...prev, nama: ppdbTitle }));
-    }
-    if (ppdbLogo) setLogoInput(ppdbLogo);
-
     if (profilSekolah) {
-      if (profilSekolah.identitas) {
-        setIdentitas(prev => ({ ...prev, ...profilSekolah.identitas }));
-      }
+      if (profilSekolah.identitas) setIdentitas(profilSekolah.identitas);
       if (profilSekolah.sejarah) setSejarah(profilSekolah.sejarah);
       if (profilSekolah.visi_misi) {
         setVisi(profilSekolah.visi_misi.visi || "");
@@ -46,10 +36,15 @@ export default function ProfilSekolahPage() {
       }
       if (profilSekolah.tujuan) setTujuan(profilSekolah.tujuan);
     }
-  }, [profilSekolah, ppdbTitle, ppdbLogo]);
+  }, [profilSekolah]);
 
-  const saveConfig = async (key: string, value: any, showSuccess = false) => {
-    if (isDemoMode) return false;
+  const saveConfig = async (key: string, value: any, label: string) => {
+    if (isDemoMode) {
+      Swal.fire({ icon: 'info', title: 'Mode Demo', text: 'Perubahan tidak disimpan permanen di mode demo.' });
+      return;
+    }
+    
+    setLoading(true);
     try {
       const res = await fetch(`/api/config?school_id=${schoolId}`, {
         method: "POST",
@@ -60,63 +55,33 @@ export default function ProfilSekolahPage() {
         body: JSON.stringify({ key, value })
       });
       const data = await res.json();
-      return data.success;
-    } catch (err) {
-      console.error(err);
-      return false;
+      if (data.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: `${label} berhasil diperbarui!`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        await fetchConfigs(); // Refresh context
+      } else {
+        Swal.fire("Gagal", data.message || `Gagal menyimpan ${label}`, "error");
+      }
+    } catch (err: any) {
+      Swal.fire("Error", err.message || "Terjadi kesalahan sistem.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSaveAll = async () => {
-    if (isDemoMode) {
-      Swal.fire({ icon: 'info', title: 'Mode Demo', text: 'Perubahan tidak disimpan permanen di mode demo.' });
-      return;
-    }
-    
-    setLoading(true);
+  const handleSaveAll = () => {
     const payload = {
       identitas,
       sejarah,
       visi_misi: { visi, misi },
       tujuan
     };
-
-    // Save all configs in parallel
-    const results = await Promise.all([
-      saveConfig("ppdb_profil_sekolah", payload),
-      saveConfig("ppdb_title", identitas.nama),
-      saveConfig("ppdb_logo_url", logoInput)
-    ]);
-
-    setLoading(false);
-    
-    if (results.every(r => r === true)) {
-      Swal.fire({
-        icon: "success",
-        title: "Berhasil",
-        text: "Profil Sekolah, Nama, dan Logo berhasil diperbarui!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      await fetchConfigs(); // Refresh context
-    } else {
-      Swal.fire("Peringatan", "Beberapa pengaturan mungkin gagal disimpan. Coba lagi.", "warning");
-    }
-  };
-
-  const handleSchoolLogoChange = async (file: File) => {
-    try {
-      setLoading(true);
-      const result = await compressImage(file, 400, 400, 0.85);
-      const compressedFile = base64ToFile(result.base64, file.name);
-      const publicUrl = await uploadFileDirect(compressedFile, 'school_logo');
-      setLogoInput(publicUrl);
-    } catch (e) {
-      console.error(e);
-      Swal.fire("Gagal", "Gagal mengunggah logo.", "error");
-    } finally {
-      setLoading(false);
-    }
+    saveConfig("ppdb_profil_sekolah", payload, "Profil Sekolah");
   };
 
   const handleIdentitasChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -135,7 +100,7 @@ export default function ProfilSekolahPage() {
               <Building2 className="w-8 h-8 text-blue-600" />
               Kelola Profil Sekolah
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Atur identitas, nama sekolah, logo, sejarah, visi-misi, dan tujuan.</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Atur identitas, sejarah, visi-misi, dan tujuan sekolah yang akan ditampilkan di landing page.</p>
           </div>
           
           <button
@@ -192,28 +157,6 @@ export default function ProfilSekolahPage() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center gap-6">
-                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden group">
-                      {logoInput ? (
-                        <img src={logoInput} alt="Logo" className="w-full h-full object-contain p-2" />
-                      ) : (
-                        <ImageIcon className="w-8 h-8 text-slate-400 mb-2" />
-                      )}
-                      <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer">
-                        <Upload className="w-6 h-6 text-white mb-1" />
-                        <span className="text-white text-xs font-semibold">Ubah Logo</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleSchoolLogoChange(file);
-                        }} />
-                      </label>
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Logo Resmi Sekolah</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Logo ini akan digunakan pada seluruh halaman portal PPDB, formulir pendaftaran, dan dokumen kelulusan. (Format: PNG transparan, maks 2MB).</p>
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Sekolah</label>
                     <input type="text" name="nama" value={identitas.nama} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: SMK TARUNA BHAKTI" />

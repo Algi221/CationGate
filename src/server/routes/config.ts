@@ -148,21 +148,15 @@ configRouter.get('/', async (c) => {
 
     // If school_slug is provided, resolve it to school_id
     if (schoolSlug && !schoolId) {
-      let tenantData = null;
-      const { data: sData } = await supabase.from('schools').select('id').eq('slug', schoolSlug).maybeSingle();
-      if (sData) tenantData = sData;
-      else {
-        const { data: pData } = await supabase.from('prospective_schools').select('id').eq('slug', schoolSlug).maybeSingle();
-        if (pData) tenantData = pData;
-        else {
-          const { data: cData } = await supabase.from('calon_sekolah').select('id').eq('slug', schoolSlug).maybeSingle();
-          if (cData) tenantData = cData;
-        }
-      }
-
+      const { data: tenantData } = await supabase
+        .from('saas_tenants')
+        .select('id')
+        .eq('domain_slug', schoolSlug)
+        .single();
       if (tenantData) {
         schoolId = tenantData.id;
       } else {
+        // Return empty if slug not found
         return c.json({ success: true, data: {} });
       }
     }
@@ -482,7 +476,7 @@ configRouter.post('/registration_fee', adminAuth, async (c) => {
       .from('landing_page_config')
       .upsert(
         { school_id: schoolId, config_key: 'registration_fee', config_value: configValue, updated_at: new Date().toISOString() },
-        { onConflict: 'config_key' }
+        { onConflict: 'school_id,config_key' }
       )
       .select()
       .single();

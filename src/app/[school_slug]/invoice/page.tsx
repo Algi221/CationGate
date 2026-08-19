@@ -93,7 +93,7 @@ function InvoiceContent() {
 
     const loadLiveCost = async () => {
       try {
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
+        const res = await fetch("/api/config");
         const json = await res.json();
         if (json.success && json.data) {
           if (json.data.ppdb_form_fee) {

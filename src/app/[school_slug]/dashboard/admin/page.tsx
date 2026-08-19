@@ -501,7 +501,7 @@ function AdminManagementPageContent() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {admins.map((adm) => (
-                      <tr key={adm.id} className="hover:bg-slate-50 dark:bg-slate-950/15 dark:hover:bg-slate-800/20 transition-colors">
+                      <tr key={adm.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 dark:hover:bg-slate-800/20 transition-colors">
                         <td className="px-6 py-4">
                           <div className="font-extrabold text-slate-800 dark:text-white">{adm.nama_lengkap}</div>
                           <div className="text-slate-500 dark:text-slate-400 text-[11px] font-mono mt-0.5">@{adm.username}</div>
@@ -572,7 +572,7 @@ function AdminManagementPageContent() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {trashedAdmins.map((adm) => (
-                    <tr key={adm.id} className="hover:bg-slate-50 dark:bg-slate-950/15 dark:hover:bg-slate-800/20 transition-colors">
+                    <tr key={adm.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 dark:hover:bg-slate-800/20 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-extrabold text-slate-800 dark:text-white line-through opacity-70">{adm.nama_lengkap}</div>
                         <div className="text-slate-500 dark:text-slate-400 text-[11px] font-mono">@{adm.username}</div>

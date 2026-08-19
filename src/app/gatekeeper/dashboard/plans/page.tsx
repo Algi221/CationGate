@@ -17,8 +17,8 @@ interface Plan {
 }
 
 /** Format number to "Rp 750.000" style with dots */
-function formatRupiahDisplay(num: number | string): string {
-  return `Rp ${Number(num).toLocaleString('id-ID')}`;
+function formatRupiahDisplay(num: number): string {
+  return `Rp ${num.toLocaleString('id-ID')}`;
 }
 
 /** Parse "750.000" or "750000" back to number */
@@ -28,9 +28,9 @@ function parseRupiahInput(raw: string): number {
 }
 
 /** Format raw number to "750.000" display string for input */
-function formatInputDisplay(num: number | string): string {
-  if (num === '' || num === null || num === undefined) return '';
-  return Number(num).toLocaleString('id-ID');
+function formatInputDisplay(num: number): string {
+  if (num === 0) return '';
+  return num.toLocaleString('id-ID');
 }
 
 export default function GatekeeperPlansPage() {
@@ -51,7 +51,7 @@ export default function GatekeeperPlansPage() {
   const fetchPlans = async () => {
     try {
       setLoading(true);
-      const token = typeof window !== 'undefined' ? (localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token")) : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem("ppdb_admin_token") : null;
       
       const res = await fetch("/api/gatekeeper/plans", {
         headers: {
@@ -96,24 +96,18 @@ export default function GatekeeperPlansPage() {
   };
 
   const handlePriceChange = (rawValue: string) => {
-    const cleaned = rawValue.replace(/[^\d]/g, '');
-    if (!cleaned) {
-      setPriceYearly(0);
-      setPriceYearlyDisplay('');
-      return;
-    }
-    const num = parseInt(cleaned, 10);
+    const num = parseRupiahInput(rawValue);
     setPriceYearly(num);
-    setPriceYearlyDisplay(num.toLocaleString('id-ID'));
+    setPriceYearlyDisplay(num > 0 ? formatInputDisplay(num) : '');
   };
 
   const handleSave = async () => {
-    if (!name || priceYearlyDisplay === '') {
+    if (!name || priceYearly <= 0) {
       Swal.fire("Peringatan", "Mohon lengkapi nama paket dan harga tahunan", "warning");
       return;
     }
 
-    const token = typeof window !== 'undefined' ? (localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token")) : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem("ppdb_admin_token") : null;
     const features = featuresRaw.split("\n").map(f => f.trim()).filter(f => f.length > 0);
 
     const payload = {
@@ -167,7 +161,7 @@ export default function GatekeeperPlansPage() {
 
     if (result.isConfirmed) {
       try {
-      const token = typeof window !== 'undefined' ? (localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token")) : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem("ppdb_admin_token") : null;
         const res = await fetch(`/api/gatekeeper/plans/${id}`, {
           method: "DELETE",
           headers: {

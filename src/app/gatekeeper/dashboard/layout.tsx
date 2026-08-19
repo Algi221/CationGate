@@ -26,6 +26,10 @@ function GatekeeperBreadcrumbs({ pathname }: { pathname: string }) {
     billing: "Billing & Paket",
     transactions: "Riwayat Transaksi",
     packages: "Paket Langganan",
+    services: "Layanan & Log",
+    feedback: "Feedback & Tiket",
+    broadcast: "Broadcast Pengumuman",
+    logs: "Log Aktivitas",
     settings: "Pengaturan Sistem",
     profile: "Profil Gatekeeper",
   };
@@ -39,14 +43,7 @@ function GatekeeperBreadcrumbs({ pathname }: { pathname: string }) {
         Gatekeeper Platform
       </span>
       {paths.map((p, idx) => {
-        let label = labelMap[p] || p;
-        
-        if (p === "schools") {
-          if (filter === "PENDING_VERIFICATION") label = "Verifikasi Sekolah";
-          else if (filter === "TAKEDOWN" || filter === "SUSPENDED") label = "Sekolah Dibekukan";
-          else label = "Sekolah Aktif (Tenants)";
-        }
-
+        const label = labelMap[p] || p;
         const href = "/gatekeeper/" + paths.slice(0, idx + 1).join("/");
         const isLast = idx === paths.length - 1;
 

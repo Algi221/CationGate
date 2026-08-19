@@ -2,7 +2,6 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '../db/supabase';
-import { pool } from '../db/client';
 import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 import { broadcast } from '../ws/handler';
@@ -301,8 +300,14 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
 // GET /api/gatekeeper/plans - List all plans
 gatekeeperRouter.get('/plans', gatekeeperAuth, async (c) => {
   try {
-    const pgRes = await pool.query('SELECT * FROM plans ORDER BY id ASC');
-    return c.json({ success: true, data: pgRes.rows || [] });
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    return c.json({ success: true, data: data || [] });
   } catch (err: any) {
     console.error('Get plans error:', err?.message);
     return c.json({ success: false, message: 'Gagal mengambil data paket' }, 500);
@@ -317,13 +322,15 @@ gatekeeperRouter.post('/plans', gatekeeperAuth, async (c) => {
       return c.json({ success: false, message: 'Nama, harga bulanan, dan harga tahunan wajib diisi' }, 400);
     }
 
-    const pgRes = await pool.query(
-      `INSERT INTO plans (name, price_monthly, price_yearly, features, is_active)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, price_monthly, price_yearly, features || [], is_active !== false]
-    );
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .insert({ name, price_monthly, price_yearly, features: features || [], is_active: is_active !== false })
+      .select()
+      .single();
 
-    return c.json({ success: true, data: pgRes.rows[0] });
+    if (error) throw error;
+    return c.json({ success: true, data });
   } catch (err: any) {
     console.error('Create plan error:', err?.message);
     return c.json({ success: false, message: 'Gagal membuat paket: ' + err?.message }, 500);
@@ -336,27 +343,23 @@ gatekeeperRouter.put('/plans/:id', gatekeeperAuth, async (c) => {
     const planId = Number(c.req.param('id'));
     const updates = await c.req.json();
 
-    // Fetch existing first to handle partial updates cleanly in SQL
-    const existRes = await pool.query('SELECT * FROM plans WHERE id = $1', [planId]);
-    if (existRes.rows.length === 0) {
-      return c.json({ success: false, message: 'Paket tidak ditemukan' }, 404);
-    }
-    const existing = existRes.rows[0];
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .update({
+        ...(updates.name && { name: updates.name }),
+        ...(updates.price_monthly != null && { price_monthly: updates.price_monthly }),
+        ...(updates.price_yearly != null && { price_yearly: updates.price_yearly }),
+        ...(updates.features != null && { features: updates.features }),
+        ...(updates.is_active != null && { is_active: updates.is_active }),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', planId)
+      .select()
+      .single();
 
-    const name = updates.name !== undefined ? updates.name : existing.name;
-    const price_monthly = updates.price_monthly !== undefined ? updates.price_monthly : existing.price_monthly;
-    const price_yearly = updates.price_yearly !== undefined ? updates.price_yearly : existing.price_yearly;
-    const features = updates.features !== undefined ? updates.features : existing.features;
-    const is_active = updates.is_active !== undefined ? updates.is_active : existing.is_active;
-
-    const pgRes = await pool.query(
-      `UPDATE plans 
-       SET name = $1, price_monthly = $2, price_yearly = $3, features = $4, is_active = $5, updated_at = NOW()
-       WHERE id = $6 RETURNING *`,
-      [name, price_monthly, price_yearly, features, is_active, planId]
-    );
-
-    return c.json({ success: true, data: pgRes.rows[0] });
+    if (error) throw error;
+    return c.json({ success: true, data });
   } catch (err: any) {
     console.error('Update plan error:', err?.message);
     return c.json({ success: false, message: 'Gagal mengupdate paket: ' + err?.message }, 500);
@@ -367,8 +370,10 @@ gatekeeperRouter.put('/plans/:id', gatekeeperAuth, async (c) => {
 gatekeeperRouter.delete('/plans/:id', gatekeeperAuth, async (c) => {
   try {
     const planId = Number(c.req.param('id'));
-    await pool.query('DELETE FROM plans WHERE id = $1', [planId]);
+    const supabase = getSupabaseClient();
+    const { error } = await supabase.from('plans').delete().eq('id', planId);
 
+    if (error) throw error;
     return c.json({ success: true, message: 'Paket berhasil dihapus' });
   } catch (err: any) {
     console.error('Delete plan error:', err?.message);

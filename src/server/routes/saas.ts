@@ -728,8 +728,18 @@ saasRouter.post('/midtrans-webhook', async (c) => {
 // Get active pricing plans
 saasRouter.get('/plans', async (c) => {
   try {
-    const pgRes = await pool.query('SELECT * FROM plans WHERE is_active = true ORDER BY id ASC');
-    return c.json({ success: true, data: pgRes.rows || [] });
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('id', { ascending: true });
+
+    if (error) {
+      console.warn('Plans table missing, returning empty array');
+      return c.json({ success: true, data: [] });
+    }
+    return c.json({ success: true, data: data || [] });
   } catch (err: any) {
     console.error('Fetch SaaS plans error:', err?.message);
     return c.json({ success: false, message: 'Gagal mengambil data paket SaaS' }, 500);

@@ -15,7 +15,7 @@ import {
   X, 
   Search, 
   Filter, 
-  Info, 
+  Sparkles, 
   GraduationCap, 
   CheckSquare, 
   MinusSquare, 
@@ -124,11 +124,7 @@ export default function ClassDivisionManagement() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const token = localStorage.getItem("ppdb_admin_token");
-        const res = await fetch(`/api/config?_t=${Date.now()}`, {
-          cache: 'no-store',
-          headers: token ? { "Authorization": `Bearer ${token}` } : {}
-        });
+        const res = await fetch("/api/config");
         const json = await res.json();
         if (json.success && json.data && json.data.ppdb_school_period) {
           setSchoolPeriod(json.data.ppdb_school_period);
@@ -204,11 +200,7 @@ export default function ClassDivisionManagement() {
     setMounted(true);
     const fetchClassesConfig = async () => {
       try {
-        const token = localStorage.getItem("ppdb_admin_token");
-        const res = await fetch(`/api/config?_t=${Date.now()}`, {
-          cache: 'no-store',
-          headers: token ? { "Authorization": `Bearer ${token}` } : {}
-        });
+        const res = await fetch("/api/config");
         const json = await res.json();
         if (json.success && json.data && json.data.ppdb_classes_config) {
           setClasses(json.data.ppdb_classes_config);
@@ -464,6 +456,9 @@ export default function ClassDivisionManagement() {
   const handleAssignSelectedToClass = async (className: string) => {
     if (selectedStudentIds.length === 0) return;
     
+    setIsLoading(true);
+    setLoadingProgress(0);
+    
     const total = selectedStudentIds.length;
     let successCount = 0;
 
@@ -483,16 +478,18 @@ export default function ClassDivisionManagement() {
       if (result?.success) {
         successCount++;
       }
+      
+      setLoadingProgress(Math.round(((i + 1) / total) * 100));
     }
 
+    setIsLoading(false);
     setSelectedStudentIds([]);
-    // await fetchActiveStudents(); (Already handled in background by context)
-    if (successCount === total && total > 0) {
-      showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className || "Belum Ditentukan"}!`, "success");
-    } else if (successCount > 0) {
-      showToast(`Sebagian berhasil: memindahkan ${successCount} dari ${total} siswa ke kelas ${className || "Belum Ditentukan"}.`, "info");
+    await fetchActiveStudents();
+    
+    if (successCount === total) {
+      showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className || "Belum Ditentukan"}!`);
     } else {
-      showToast(`Gagal memindahkan siswa. Pastikan Anda tidak dalam mode demo atau offline.`, "error");
+      showToast(`Berhasil memindahkan ${successCount} dari ${total} siswa ke kelas ${className || "Belum Ditentukan"}.`, "info");
     }
   };
 
@@ -542,11 +539,13 @@ export default function ClassDivisionManagement() {
       const ids: number[] = JSON.parse(dataStr);
       if (!Array.isArray(ids) || ids.length === 0) return;
 
+      setIsLoading(true);
+      setLoadingProgress(0);
+
       const total = ids.length;
       let successCount = 0;
 
-      // Hapus loading bar buat 1 siswa, tetep tampilkan kalau > 10 siswa sekalian (biar gak nge-spam)
-      if (total > 5) showToast(`Memindahkan ${total} siswa ke kelas ${className}...`, "info");
+      showToast(`Memindahkan ${total} siswa ke kelas ${className}...`, "info");
 
       for (let i = 0; i < total; i++) {
         const id = ids[i];
@@ -558,16 +557,17 @@ export default function ClassDivisionManagement() {
         if (result?.success) {
           successCount++;
         }
+        setLoadingProgress(Math.round(((i + 1) / total) * 100));
       }
 
+      setIsLoading(false);
       setSelectedStudentIds([]);
-      // await fetchActiveStudents(); (Already handled in background by context)
-      if (successCount === total && total > 0) {
-        showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className}!`, "success");
-      } else if (successCount > 0) {
-        showToast(`Sebagian berhasil: memindahkan ${successCount} dari ${total} siswa ke kelas ${className}.`, "info");
+      await fetchActiveStudents();
+
+      if (successCount === total) {
+        showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className}!`);
       } else {
-        showToast(`Gagal memindahkan siswa. Pastikan Anda tidak dalam mode demo atau offline.`, "error");
+        showToast(`Berhasil memindahkan ${successCount} dari ${total} siswa ke kelas ${className}.`, "info");
       }
     } catch (err) {
       console.error("Drop error:", err);
@@ -1051,7 +1051,7 @@ export default function ClassDivisionManagement() {
             ? "bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-300 border-rose-250 dark:border-rose-900"
             : "bg-indigo-50 dark:bg-indigo-950/90 text-indigo-600 dark:text-indigo-300 border-indigo-250 dark:border-indigo-900"
         }`}>
-          {toast.type === "success" ? <Check size={16} /> : toast.type === "error" ? <ShieldAlert size={16} /> : <Info size={16} />}
+          {toast.type === "success" ? <Check size={16} /> : toast.type === "error" ? <ShieldAlert size={16} /> : <Sparkles size={16} />}
           <span>{toast.message}</span>
         </div>
       )}
@@ -1116,7 +1116,7 @@ export default function ClassDivisionManagement() {
             className={`flex flex-col items-center justify-center text-center p-6 rounded-3xl transition-all border duration-300 hover:scale-[1.03] group cursor-pointer ${
               selectedMajor === m.code
                 ? "bg-gradient-to-tr from-indigo-600 to-blue-600 border-indigo-600/85 text-white shadow-lg shadow-indigo-500/20 scale-[1.02]"
-                : "bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-800 hover:border-indigo-500/40 hover:bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
+                : "bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-800 hover:border-indigo-500/40 hover:bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
             }`}
           >
             {getMajorLogo(m.code, "w-12 h-12 shadow-md")}
@@ -1180,7 +1180,7 @@ export default function ClassDivisionManagement() {
             </button>
             <button
               onClick={() => setIsAddingClass(!isAddingClass)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-655 dark:text-slate-350 dark:hover:text-white transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-250 dark:border-white/5 text-[10px] uppercase font-bold text-slate-655 dark:text-slate-350 dark:hover:text-white transition-all shadow-sm cursor-pointer"
             >
               {isAddingClass ? <X size={12} /> : <Plus size={12} />}
               <span>{isAddingClass ? "Tutup Form" : "Buat Kelas Baru"}</span>
@@ -1198,7 +1198,7 @@ export default function ClassDivisionManagement() {
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
                 placeholder={`Contoh: X ${selectedMajor} 3`}
-                className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
+                className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
               />
             </div>
 
@@ -1334,7 +1334,7 @@ export default function ClassDivisionManagement() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
+              <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
                 <th className="py-3.5 px-4 text-center w-12 pl-6">
                   <button 
                     onClick={handleSelectAll}
@@ -1369,7 +1369,7 @@ export default function ClassDivisionManagement() {
                     onClick={() => handleSelectStudent(student.id)}
                     draggable={true}
                     onDragStart={(e) => handleDragStart(e, student.id)}
-                    className={`hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-white dark:bg-[#0f172a]/10 transition-all cursor-grab active:cursor-grabbing select-none ${
+                    className={`hover:bg-slate-50 dark:bg-slate-800/50/70 dark:hover:bg-white dark:bg-[#0f172a]/10 transition-all cursor-grab active:cursor-grabbing select-none ${
                       isSelected ? "bg-blue-500/10 dark:bg-blue-500/15 border-l-2 border-blue-500" : ""
                     }`}
                   >
@@ -1441,7 +1441,7 @@ export default function ClassDivisionManagement() {
                             setSelectedStudentIds([student.id]);
                             handleAssignSelectedToClass(e.target.value);
                           }}
-                          className="px-2.5 py-1 text-[9px] uppercase font-black bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-white border border-slate-200 dark:border-white/5 rounded-lg focus:outline-none cursor-pointer"
+                          className="px-2.5 py-1 text-[9px] uppercase font-black bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-white border border-slate-250 dark:border-white/5 rounded-lg focus:outline-none cursor-pointer"
                         >
                           <option value="">Belum Diatur</option>
                           {classesOfSelectedMajor.map(c => (
@@ -1473,7 +1473,7 @@ export default function ClassDivisionManagement() {
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
               <div>
                 <h3 className="text-base font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
                   <span>Daftar Kelas: {selectedClassDetail.name}</span>
@@ -1492,7 +1492,7 @@ export default function ClassDivisionManagement() {
             </div>
 
             {/* Modal Actions & Filter */}
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/5 dark:bg-slate-950/5 flex flex-col sm:flex-row gap-4 items-center justify-between shrink-0">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/20 dark:bg-slate-950/5 flex flex-col sm:flex-row gap-4 items-center justify-between shrink-0">
               <div className="relative w-full sm:max-w-xs">
                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                   <Search size={13} />
@@ -1531,7 +1531,7 @@ export default function ClassDivisionManagement() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {enrolledStudentsInDetail.map((student, idx) => (
-                    <tr key={student.id} className="hover:bg-slate-50 dark:bg-slate-950/15 dark:hover:bg-white dark:bg-[#0f172a]/5 transition-all">
+                    <tr key={student.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 dark:hover:bg-white dark:bg-[#0f172a]/5 transition-all">
                       <td className="py-3 px-3 text-slate-400 font-mono">{idx + 1}</td>
                       <td className="py-3 px-4 text-center font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
                       <td className="py-3 px-4">
@@ -1578,7 +1578,7 @@ export default function ClassDivisionManagement() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 flex justify-end shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/40 dark:bg-slate-950/15 flex justify-end shrink-0">
               <button
                 onClick={() => { setSelectedClassDetail(null); setClassSearchTerm(""); }}
                 className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"

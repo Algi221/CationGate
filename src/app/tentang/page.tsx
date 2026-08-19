@@ -148,7 +148,10 @@ export default function AboutPage() {
           <div className="absolute bottom-10 -right-20 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-3xl floating-img-2"></div>
 
           <div className="max-w-4xl hero-content relative z-10 space-y-6">
-
+            <span className="inline-flex items-center gap-2 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full shadow-sm">
+              <Sparkles size={14} className="text-blue-400" /> Tentang
+              CationGate
+            </span>
             <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tight text-zinc-900 leading-none">
               Membangun Masa Depan <br />{" "}
               <span className="text-yellow-400">Digital Pendidikan</span>

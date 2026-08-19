@@ -92,24 +92,6 @@ const sanitizeSrc = (src: string | undefined | null): string | null => {
   return url;
 };
 
-const transformMapUrl = (url: string | undefined | null): string | null => {
-  if (!url) return null;
-  const iframeMatch = url.match(/src="([^"]+)"/);
-  if (iframeMatch) return iframeMatch[1];
-  if (url.includes("pb=") || url.includes("output=embed")) return url;
-  if (url.includes("/place/")) {
-    try {
-      const placeName = url.split("/place/")[1].split("/")[0];
-      return `https://maps.google.com/maps?q=${placeName}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-    } catch(e) {}
-  }
-  const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (match) {
-    return `https://maps.google.com/maps?q=${match[1]},${match[2]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-  }
-  return url;
-};
-
 const SafeImage = ({ src, alt, width, height, className, onError, fill, priority, sizes, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
   const isDataUrl = src && src.startsWith("data:");
@@ -238,7 +220,7 @@ export default function Home() {
   });
 
   const getGelombangStatus = (startStr: string, endStr: string) => {
-    if (!startStr || !endStr) return { label: "Belum Diatur", color: "bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700", active: false };
+    if (!startStr || !endStr) return { label: "Belum Diatur", color: "bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700", active: false };
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -416,7 +398,7 @@ export default function Home() {
         }
 
         if (schoolSlug === 'demo') return;
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
+        const res = await fetch(`/api/config?school_slug=${schoolSlug}`);
         const data = await res.json();
 
         if (data.success && data.data) {
@@ -647,7 +629,7 @@ export default function Home() {
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
             )}
-            <div className="absolute inset-0 bg-slate-900/60 dark:bg-[#020617]/80 backdrop-blur-[2px] pointer-events-none"></div>
+            <div className="absolute inset-0 bg-white/50 dark:bg-[#020617] backdrop-blur-none pointer-events-none"></div>
           </div>
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[90vh] flex flex-col justify-center">
@@ -700,7 +682,7 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                <div className="badge-info bg-white/10 backdrop-blur-md border-white/20 text-white">
+                <div className="badge-info">
                   <span>{displayAlias}</span>
                 </div>
               </Link>
@@ -711,28 +693,28 @@ export default function Home() {
 
           {/* Hero Copy */}
           <div className="badge-wrapper relative z-10 flex flex-col items-center gap-3">
-            <span className="badge-pill !bg-white/10 !text-white !border-white/20 backdrop-blur-md">SPMB {schoolDisplayName.toUpperCase()}</span>
-            <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold !text-white bg-black/30 px-4 py-2 rounded-full backdrop-blur-md border border-white/20 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-               <MapPin size={14} className="text-blue-400" />
+            <span className="badge-pill">SPMB {schoolDisplayName.toUpperCase()}</span>
+            <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#0f172a] px-4 py-2 rounded-full backdrop-blur-md border border-slate-200 dark:border-slate-800/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+               <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
                <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>
             </div>
           </div>
 
-          <h1 className="hero-title !text-white relative z-10 drop-shadow-2xl">
+          <h1 className="hero-title relative z-10">
             {isConfigLoaded ? heroTitle : "\u00A0"} <br />
             {isConfigLoaded ? (
               <ShinyText 
                 text={heroTitleSub} 
                 speed={3} 
                 delay={1} 
-                color="#f8fafc" 
-                shineColor="#38bdf8" 
+                color="var(--heading)" 
+                shineColor="#0ea5e9" 
                 spread={135} 
               />
             ) : "\u00A0"}
           </h1>
 
-          <p className="hero-subtitle !text-slate-200 relative z-10 drop-shadow-lg font-medium">
+          <p className="hero-subtitle relative z-10">
             {isConfigLoaded ? heroSubtitle : "\u00A0"}
           </p>
 
@@ -780,7 +762,7 @@ export default function Home() {
       {/* JADWAL GELOMBANG PENDAFTARAN */}
       <section id="gelombang" className="py-20 max-w-6xl mx-auto px-6 relative z-10">
         <div className="text-center mb-12">
-          <span className="inline-block mb-2 text-blue-600 dark:text-blue-300 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-500/10 border border-blue-100/50 dark:border-blue-400/20 px-3.5 py-1.5 rounded-full">
+          <span className="inline-block mb-2 text-blue-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">
             Jadwal Penerimaan · TP. {schoolPeriod}
           </span>
           <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white mt-3 mb-3">
@@ -812,14 +794,12 @@ export default function Home() {
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-800/50 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
-                    <Calendar size={18} className="text-blue-500 dark:text-blue-400 shrink-0" />
+                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-[#020617] p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                    <Calendar size={18} className="text-blue-500 shrink-0" />
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-300 block tracking-wider">Tanggal Pendaftaran</span>
-                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
-                        {gelombangConfig.gelombang1.start && gelombangConfig.gelombang1.end 
-                          ? `${new Date(gelombangConfig.gelombang1.start).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${new Date(gelombangConfig.gelombang1.end).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`
-                          : 'Belum diatur'}
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Tanggal Pendaftaran</span>
+                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                        {gelombangConfig.gelombang1.start ? formatDate(gelombangConfig.gelombang1.start) : "Belum diatur"} - {gelombangConfig.gelombang1.end ? formatDate(gelombangConfig.gelombang1.end) : "Belum diatur"}
                       </span>
                     </div>
                   </div>
@@ -848,14 +828,12 @@ export default function Home() {
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-800/50 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
-                    <Calendar size={18} className="text-blue-500 dark:text-blue-400 shrink-0" />
+                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-[#020617] p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                    <Calendar size={18} className="text-blue-500 shrink-0" />
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-300 block tracking-wider">Tanggal Pendaftaran</span>
-                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
-                        {gelombangConfig.gelombang2.start && gelombangConfig.gelombang2.end 
-                          ? `${new Date(gelombangConfig.gelombang2.start).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${new Date(gelombangConfig.gelombang2.end).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`
-                          : 'Belum diatur'}
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Tanggal Pendaftaran</span>
+                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                        {gelombangConfig.gelombang2.start ? formatDate(gelombangConfig.gelombang2.start) : "Belum diatur"} - {gelombangConfig.gelombang2.end ? formatDate(gelombangConfig.gelombang2.end) : "Belum diatur"}
                       </span>
                     </div>
                   </div>
@@ -1242,7 +1220,7 @@ export default function Home() {
         </div>
       </section>
       {/* MAP SECTION */}
-        <section className="w-full bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/50 py-24 relative z-10 transition-colors duration-300">
+        <section className="w-full bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/50 py-24 relative z-10 transition-colors duration-300">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16">
               <ScrollFloat
@@ -1283,7 +1261,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
               
               <iframe
-                src={transformMapUrl(sanitizeUrl(mapUrl)) || undefined}
+                src={sanitizeUrl(mapUrl) || undefined}
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 

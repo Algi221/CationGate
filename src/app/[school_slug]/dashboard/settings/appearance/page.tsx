@@ -33,9 +33,8 @@ export default function AppearanceSettingsPage() {
     if (!adminToken) return;
     try {
       setIsLoading(true);
-      const url = schoolId ? `/api/config?school_id=${schoolId}&_t=${Date.now()}` : `/api/config?_t=${Date.now()}`;
+      const url = schoolId ? `/api/config?school_id=${schoolId}` : `/api/config`;
       const res = await fetch(url, {
-        cache: 'no-store',
         headers: {
           'Authorization': `Bearer ${adminToken}`
         }
@@ -195,7 +194,7 @@ export default function AppearanceSettingsPage() {
             </div>
 
             {/* Preview Box */}
-            <div className="w-full md:w-auto p-6 rounded-3xl border border-slate-200 dark:border-slate-800/80 dark:border-slate-700 flex flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-800/30 backdrop-blur-sm min-w-[220px]">
+            <div className="w-full md:w-auto p-6 rounded-3xl border border-slate-200 dark:border-slate-800/80 dark:border-slate-700 flex flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-800/30 backdrop-blur-sm min-w-[220px]">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Preview Tombol</span>
               <button 
                 className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 active:scale-95 w-full"

@@ -251,9 +251,6 @@ export default function DaftarPage() {
     tahunMulaiBeasiswa: "",
     tahunSelesaiBeasiswa: "",
     namaAyah: "",
-    nikAyah: "",
-    tahunLahirAyah: "",
-    whatsappAyah: "",
     tempatLahirAyah: "",
     tglLahirAyah: "",
     agamaAyah: "",
@@ -268,9 +265,6 @@ export default function DaftarPage() {
     kodePosAyah: "",
     statusAyah: "Masih Hidup",
     namaIbu: "",
-    nikIbu: "",
-    tahunLahirIbu: "",
-    whatsappIbu: "",
     tempatLahirIbu: "",
     tglLahirIbu: "",
     agamaIbu: "",
@@ -300,12 +294,10 @@ export default function DaftarPage() {
     statusWali: "Masih Hidup",
     teleponOrtu: "",
     sekolahAsal: "",
-    npsnSekolahAsal: "",
     tglLulus: "",
     noIjazah: "",
     noSKHUN: "",
     noPesertaUN: "",
-    deklarasi: false,
     lamaBelajar: "",
     pindahanDari: "",
     alasanPindah: "",
@@ -337,6 +329,7 @@ export default function DaftarPage() {
     janjiAkrab: "",
     janjiBelajar: "",
     janjiNamaBaik: "",
+    deklarasi: false,
     periode: "2026-2027",
     berkasFotoOk: false,
     berkasFotoFile: null as File | null,
@@ -353,6 +346,7 @@ export default function DaftarPage() {
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [regCost, setRegCost] = useState(250000);
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
+  const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [bankConfigList, setBankConfigList] = useState<Array<{ bankName: string; accountNumber: string; accountHolder: string }>>([
     { bankName: "Bank Mandiri", accountNumber: "157-00-0174092-2", accountHolder: "Yayasan Taruna Bhakti" }
   ]);
@@ -459,6 +453,10 @@ export default function DaftarPage() {
             if (config.ppdb_wa_group_url) {
               setWaGroupUrl(config.ppdb_wa_group_url);
               localStorage.setItem('ppdb_wa_group_url', config.ppdb_wa_group_url);
+            }
+            if (config.ppdb_wa_admin) {
+              setWaAdmin(config.ppdb_wa_admin);
+              localStorage.setItem('ppdb_wa_admin', config.ppdb_wa_admin);
             }
             if (config.ppdb_portal_status) {
               setPortalStatus(config.ppdb_portal_status);
@@ -808,62 +806,6 @@ export default function DaftarPage() {
     });
 
     return errors;
-  };
-
-  const fillDummyDataAndSkip = () => {
-    setFormData({
-      ...formData,
-      nama: "Ahmad Bintang Pratama",
-      nisn: "0012345678",
-      nik: "3276012345678901",
-      tempatLahir: "Depok",
-      tglLahir: "2010-05-15",
-      jenisKelamin: "L",
-      agama: "Islam",
-      kewarganegaraan: "WNI",
-      alamat: "Jl. Raya Bogor Km 30",
-      rtRw: "01/02",
-      kelurahan: "Mekarsari",
-      kecamatan: "Cimanggis",
-      kodePos: "16452",
-      whatsapp: "081234567890",
-      email: "ahmad@example.com",
-      tinggalDengan: "Orang Tua",
-      transportasi: "Motor",
-      tinggiBadan: "165",
-      beratBadan: "55",
-      jarakSekolah: "Kurang dari 1 km",
-      jarakKm: "1",
-      waktuJam: "0",
-      waktuMenit: "15",
-      jumlahSaudara: "2",
-      golonganDarah: "O",
-      penyakitDiderita: "Tidak ada",
-      kebutuhanKhusus: [],
-      namaAyah: "Budi Santoso",
-      nikAyah: "3276012345678902",
-      tahunLahirAyah: "1980",
-      pendidikanAyah: "S1",
-      pekerjaanAyah: "Karyawan Swasta",
-      penghasilanAyah: "Rp 5.000.000 - Rp 20.000.000",
-      whatsappAyah: "081234567891",
-      namaIbu: "Siti Aminah",
-      nikIbu: "3276012345678903",
-      tahunLahirIbu: "1985",
-      pendidikanIbu: "S1",
-      pekerjaanIbu: "Ibu Rumah Tangga",
-      penghasilanIbu: "Kurang dari Rp 500.000",
-      whatsappIbu: "081234567892",
-      sekolahAsal: "SMPN 1 Depok",
-      npsnSekolahAsal: "20228123",
-      teleponOrtu: "081234567891",
-      diterimaKelas: "X (Sepuluh)",
-      tglLulus: "2026-06-10",
-      lamaBelajar: "3",
-      deklarasi: true
-    });
-    setFurthestStep(14);
-    setWizardStep(14);
   };
 
   const nextStep = async () => {
@@ -1315,7 +1257,7 @@ export default function DaftarPage() {
             <Link href={`/invoice?nisn=${successData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]">
               Lihat &amp; Cetak Invoice
             </Link>
-            <Link href="/" className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
+            <Link href={`/${(params as any)?.school_slug || ''}`} className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
               Kembali ke Beranda
             </Link>
             <button
@@ -1373,9 +1315,6 @@ export default function DaftarPage() {
                     tahunMulaiBeasiswa: "",
                     tahunSelesaiBeasiswa: "",
                     namaAyah: "",
-                    nikAyah: "",
-                    tahunLahirAyah: "",
-                    whatsappAyah: "",
                     tempatLahirAyah: "",
                     tglLahirAyah: "",
                     agamaAyah: "",
@@ -1390,9 +1329,6 @@ export default function DaftarPage() {
                     kodePosAyah: "",
                     statusAyah: "Masih Hidup",
                     namaIbu: "",
-                    nikIbu: "",
-                    tahunLahirIbu: "",
-                    whatsappIbu: "",
                     tempatLahirIbu: "",
                     tglLahirIbu: "",
                     agamaIbu: "",
@@ -1422,7 +1358,6 @@ export default function DaftarPage() {
                     statusWali: "Masih Hidup",
                     teleponOrtu: "",
                     sekolahAsal: "",
-                    npsnSekolahAsal: "",
                     tglLulus: "",
                     noIjazah: "",
                     noSKHUN: "",
@@ -1459,7 +1394,7 @@ export default function DaftarPage() {
                     janjiBelajar: "",
                     janjiNamaBaik: "",
                     deklarasi: false,
-                    periode: "2026-2027",
+                    periode: schoolPeriod,
                     berkasFotoOk: false,
                     berkasFotoFile: null,
                     berkasFotoName: "",
@@ -1547,7 +1482,7 @@ export default function DaftarPage() {
                 Cetak Invoice Resmi (PDF)
               </button>
 
-              <Link href="/" className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
+              <Link href={`/${(params as any)?.school_slug || ''}`} className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
                 <Home size={13} />
                 Kembali ke Beranda
               </Link>
@@ -1607,9 +1542,6 @@ export default function DaftarPage() {
                       tahunMulaiBeasiswa: "",
                       tahunSelesaiBeasiswa: "",
                       namaAyah: "",
-                      nikAyah: "",
-                      tahunLahirAyah: "",
-                      whatsappAyah: "",
                       tempatLahirAyah: "",
                       tglLahirAyah: "",
                       agamaAyah: "",
@@ -1624,9 +1556,6 @@ export default function DaftarPage() {
                       kodePosAyah: "",
                       statusAyah: "Masih Hidup",
                       namaIbu: "",
-                      nikIbu: "",
-                      tahunLahirIbu: "",
-                      whatsappIbu: "",
                       tempatLahirIbu: "",
                       tglLahirIbu: "",
                       agamaIbu: "",
@@ -1656,7 +1585,6 @@ export default function DaftarPage() {
                       statusWali: "Masih Hidup",
                       teleponOrtu: "",
                       sekolahAsal: "",
-                      npsnSekolahAsal: "",
                       tglLulus: "",
                       noIjazah: "",
                       noSKHUN: "",
@@ -1815,7 +1743,7 @@ export default function DaftarPage() {
             </div>
 
             {/* Payment Details footer and official approval stamp */}
-            <div className="flex justify-between items-center text-[9px] text-slate-500 dark:text-slate-400 leading-normal border-t border-slate-200 pt-4 mb-8 print:hidden">
+            <div className="flex justify-between items-center text-[9px] text-slate-500 dark:text-slate-400 leading-normal border-t border-slate-150 pt-4 mb-8 print:hidden">
               <div className="flex gap-4">
                 <div>
                   <span className="font-black">Metode Bayar:</span> <span className="text-slate-800 dark:text-white font-bold uppercase">
@@ -2127,7 +2055,7 @@ export default function DaftarPage() {
               {/* Tombol Bantuan Pembayaran */}
               <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/50 dark:border-slate-800/80">
                 <a
-                  href="https://wa.me/6281234567890?text=Halo%20Panitia%20PPDB%20SMK%20Taruna%20Bhakti,%20saya%20butuh%20bantuan%20terkait%20pembayaran..."
+                  href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Panitia%20PPDB,%20saya%20butuh%20bantuan%20terkait%20pembayaran...`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-background dark:hover:bg-slate-850 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
@@ -2190,11 +2118,11 @@ export default function DaftarPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-350">
-                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850">
+                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">Nama Lengkap:</span>
                       <span className="text-slate-850 dark:text-white uppercase truncate max-w-[150px]">{submittedCandidate?.nama}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850">
+                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">NISN Pendaftar:</span>
                       <span className="text-slate-850 dark:text-white font-mono tracking-wider">{submittedCandidate?.nisn}</span>
                     </div>
@@ -2320,7 +2248,7 @@ export default function DaftarPage() {
                       
                       {/* File Upload Zone / Area */}
                       {!manualReceiptBase64 ? (
-                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-[1.5rem] py-10 px-6 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
+                        <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-[1.5rem] py-10 px-6 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
                           <input
                             type="file"
                             accept="image/*,application/pdf"
@@ -2465,8 +2393,8 @@ export default function DaftarPage() {
       </div>
 
       <div className="mb-10 text-center mt-12 relative z-10 flex flex-col items-center">
-        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-100/50 dark:border-blue-400/20 text-blue-700 dark:text-blue-300 text-xs font-bold shadow-sm shadow-blue-500/5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"></span>
+        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/5 dark:bg-blue-950/60 border border-blue-100/50 dark:border-blue-900/50 text-primary dark:text-sky-400 text-xs font-bold shadow-sm shadow-blue-500/5">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-sky-400 animate-pulse"></span>
           Tahap {wizardStep} dari 14
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mb-2 drop-shadow-sm">Formulir Pendaftaran PPDB</h1>
@@ -3045,14 +2973,8 @@ export default function DaftarPage() {
                     const majorDetails = getMajorDetails(major.title || major.code);
                     
                     let isFull = false;
-                    if (kuotaData && Array.isArray(kuotaData)) {
-                      let k = null;
-                      for (let i = 0; i < kuotaData.length; i++) {
-                        if (kuotaData[i] && kuotaData[i].key === major.title) {
-                          k = kuotaData[i];
-                          break;
-                        }
-                      }
+                    if (kuotaData) {
+                      const k = kuotaData.find((k: any) => k.key === major.title);
                       if (k && k.target > 0) {
                         isFull = k.jumlah >= k.target;
                       }
@@ -3742,7 +3664,7 @@ export default function DaftarPage() {
               
               {/* Card 1: Identitas Diri */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <User size={16} className="text-blue-500" />
                     Identitas Diri
@@ -3764,7 +3686,7 @@ export default function DaftarPage() {
 
               {/* Card 2: Alamat & Kontak */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <Home size={16} className="text-blue-500" />
                     Alamat &amp; Kontak
@@ -3786,7 +3708,7 @@ export default function DaftarPage() {
 
               {/* Card 3: Pendidikan & Peminatan */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <School size={16} className="text-blue-500" />
                     Pendidikan &amp; Jurusan
@@ -3805,7 +3727,7 @@ export default function DaftarPage() {
 
               {/* Card 4: Data Orang Tua / Wali */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <Users size={16} className="text-blue-500" />
                     Keluarga &amp; Orang Tua
@@ -3825,7 +3747,7 @@ export default function DaftarPage() {
 
               {/* Card 5: Nilai US & Minat */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <FileText size={16} className="text-blue-500" />
                     Nilai &amp; Akademik
@@ -3845,7 +3767,7 @@ export default function DaftarPage() {
 
               {/* Card 6: Kebribadian & Kebiasaan */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <AlertCircle size={16} className="text-blue-500" />
                     Kedisiplinan &amp; Keuangan

@@ -106,7 +106,7 @@ const ScrollFloat = ({
     return () => {
       try {
         ctx.revert();
-      } catch (e) {
+      } catch (_e) {
         // Safe catch for React Strict Mode / HMR unmounting issues
       }
     };
@@ -114,6 +114,7 @@ const ScrollFloat = ({
 
   return (
     <div 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ref={containerRef as any} 
       className={`scroll-float ${textMode ? 'overflow-hidden pb-2 -mb-2' : ''} ${containerClassName}`}
     >

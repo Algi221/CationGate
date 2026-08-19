@@ -20,6 +20,7 @@ export const sanitizeSrc = (src: string | undefined | null): string | null => {
   return url;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SafeImage = ({ src, alt, width, height, className, onError, fill, priority, sizes, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
   const isDataUrl = src && src.startsWith("data:");

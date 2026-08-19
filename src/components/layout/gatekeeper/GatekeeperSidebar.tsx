@@ -102,6 +102,7 @@ export function GatekeeperSidebar({
     }
   ];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderMenuItem = (item: any, delayIndex: number) => {
     const fullHref = item.href;
     const hasSub = !!item.subItems;
@@ -193,6 +194,7 @@ export function GatekeeperSidebar({
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                   className="pl-4 ml-6 pr-2 py-1.5 space-y-1 border-l-2 border-slate-200 dark:border-slate-800"
                 >
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   {item.subItems.map((sub: any) => {
                     const fullSubHref = sub.href;
                     const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");

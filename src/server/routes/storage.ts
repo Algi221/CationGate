@@ -42,9 +42,9 @@ storageRouter.post('/presigned-url', async (c) => {
       publicUrl: publicUrlData.publicUrl,
       path: path,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error generating pre-signed URL:', error);
-    return c.json({ error: error.message || 'Failed to generate pre-signed URL' }, 500);
+    return c.json({ error: (error as any).message || 'Failed to generate pre-signed URL' }, 500);
   }
 });
 

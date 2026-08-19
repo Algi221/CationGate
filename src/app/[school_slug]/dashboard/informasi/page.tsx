@@ -10,7 +10,7 @@ const sanitizeUrl = (url: string | undefined | null): string => {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
     });
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 };
@@ -80,7 +80,7 @@ export default function KelolaInformasi() {
           dokumen: parsed.dokumen || "",
           dokumenName: parsed.dokumen_name || ""
         };
-      } catch (e) {
+      } catch (_e) {
         // fallback
       }
     }
@@ -92,7 +92,7 @@ export default function KelolaInformasi() {
     try {
       const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
       return new Date(dateString).toLocaleDateString('id-ID', options);
-    } catch (e) {
+    } catch (_e) {
       return dateString;
     }
   };
@@ -105,7 +105,7 @@ export default function KelolaInformasi() {
       const month = (1 + date.getMonth()).toString().padStart(2, '0');
       const day = date.getDate().toString().padStart(2, '0');
       return `${year}-${month}-${day}`;
-    } catch (e) {
+    } catch (_e) {
       return "";
     }
   };
@@ -123,7 +123,7 @@ export default function KelolaInformasi() {
         }
         return null;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching detail:", err);
       if (typeof addToast === "function") {
         addToast("Koneksi Error", "Gagal menghubungi server.", "danger");
@@ -154,8 +154,8 @@ export default function KelolaInformasi() {
           addToast("Error", "Gagal memuat informasi dari server.", "danger");
         }
       }
-    } catch (err: any) {
-      console.warn("Backend offline, using fallback seeded data:", err.message);
+    } catch (err: unknown) {
+      console.warn("Backend offline, using fallback seeded data:", (err as any).message);
       
       const fallbackData: Informasi[] = [
         {

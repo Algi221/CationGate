@@ -7,35 +7,50 @@ const LOADING_KEY = "cationgate_loading_session";
 
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "show" | "exit">("start");
-  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      // 1. If we already marked it as loaded in THIS javascript context, we NEVER show it again
+      // (This covers client-side navigation back to the page)
+      if ((window as any).__cationgate_loaded) {
+        return false;
+      }
+
+      // 2. We are in a fresh JS context (first visit, or hard refresh, or hard navigation)
+      try {
+        const navEntries = performance.getEntriesByType("navigation");
+        if (navEntries.length > 0) {
+          const navType = (navEntries[0] as PerformanceNavigationTiming).type;
+          // If it's a hard refresh, show it (user explicitly requested this)
+          if (navType === "reload") {
+            return true;
+          }
+        }
+        
+        // Otherwise, check if we've shown it in this tab session
+        if (sessionStorage.getItem("cationgate_loaded")) {
+          return false;
+        }
+        
+        // First visit in this tab
+        return true;
+      } catch (e) {
+        return true;
+      }
+    }
+    return true; // SSR
+  });
 
   const premiumEasing = [0.85, 0, 0.15, 1] as const;
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // Cek apakah ini hard refresh atau first visit
-    // Navigation Type API lebih akurat
-    const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-    const navType = navEntries.length > 0 ? navEntries[0].type : "navigate";
-
-    // Jika user menekan tombol Back/Forward, jangan tampilkan loading
-    if (navType === "back_forward") {
-      setIsMounted(false);
+    if (!isMounted) {
+      window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
       return;
     }
 
-    // Jika sessionStorage ada, berarti sudah pernah load di session ini (refresh)
-    // Kita tetap tampilkan loading di refresh, HANYA skip di back_forward
-    // Namun, untuk mencegah flash saat navigasi internal, kita bisa cek session
-    const hasLoaded = sessionStorage.getItem(LOADING_KEY);
-    if (hasLoaded && navType !== "reload" && navType !== "navigate") {
-        setIsMounted(false);
-        return;
-    }
-
-    sessionStorage.setItem(LOADING_KEY, "true");
-    setIsMounted(true);
+    (window as any).__cationgate_loaded = true;
+    sessionStorage.setItem("cationgate_loaded", "true");
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
     const t1 = setTimeout(() => setPhase("show"), 200);
@@ -44,13 +59,16 @@ export default function LoadingScreen() {
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
     };
-  }, []);
+  }, [isMounted]);
 
   const handleGateAnimationComplete = () => {
     if (phase === "exit") {
       setIsMounted(false);
-      document.body.style.overflow = "auto";
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
       window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
     }
   };

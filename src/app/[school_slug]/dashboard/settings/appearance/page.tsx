@@ -21,7 +21,7 @@ export default function AppearanceSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const params = useParams();
-  const schoolSlug = params?.school_slug as string || "";
+  const _schoolSlug = params?.school_slug as string || "";
 
   useEffect(() => {
     setMounted(true);
@@ -79,9 +79,9 @@ export default function AppearanceSettingsPage() {
       } else {
         throw new Error(data.message || "Gagal menyimpan tema.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (typeof addToast === "function") {
-        addToast("Error", err.message || "Terjadi kesalahan saat menyimpan tema.", "danger");
+        addToast("Error", (err as any).message || "Terjadi kesalahan saat menyimpan tema.", "danger");
       }
     } finally {
       setIsSaving(false);

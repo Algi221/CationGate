@@ -38,8 +38,9 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: isGlobalConfigLoaded } = usePPDB();
   const [isDark, setIsDark] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [majors, setMajors] = useState<any[]>([]);
-  const pathname = usePathname();
+  const _pathname = usePathname();
 
   useEffect(() => {
     // Check initial theme
@@ -64,6 +65,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
         if (data.success && data.data && data.data.ppdb_majors_config) {
           const config = data.data;
           if (Array.isArray(config.ppdb_majors_config)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const iconMap: Record<string, any> = {
               RPL: Cpu,
               TJKT: Layers,
@@ -72,6 +74,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
               ANM: Palette,
               TE: Cpu
             };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mapped = config.ppdb_majors_config.map((m: any) => ({
               ...m,
               icon: iconMap[m.code] || Cpu

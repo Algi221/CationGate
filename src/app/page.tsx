@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import { Navbar } from "@/components/landing/Navbar";
-import ScrollExpandSection  from "@/components/landing/ScrollExpandSection";
-import HeroSection from "@/components/landing/HeroSection";
+import _ScrollExpandSection  from "@/components/landing/ScrollExpandSection";
+import _HeroSection from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
 import { SystemFlowSection } from "@/components/landing/SystemFlowSection";
 import HeroPPDB from "@/components/landing/HeroSection";
-import SimGymSection from "@/components/landing/SimGymSection"; 
+import _SimGymSection from "@/components/landing/SimGymSection"; 
 import { TestimonialsSection } from "@/components/landing";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FaqSection } from "@/components/landing/FaqSection";

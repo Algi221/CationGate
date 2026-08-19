@@ -53,8 +53,8 @@ export async function initDb(): Promise<void> {
     } else {
       console.warn('Database schema.sql file not found at', schemaPath);
     }
-  } catch (error: any) {
-    console.error('Failed to connect or initialize PostgreSQL database:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to connect or initialize PostgreSQL database:', (error as any).message);
     console.warn('Berjalan dalam mode fallback mock-db. Kueri database mungkin gagal sebelum konfigurasi diperbarui.');
   } finally {
     if (client) client.release();

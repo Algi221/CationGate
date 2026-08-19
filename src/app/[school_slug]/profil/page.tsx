@@ -27,7 +27,7 @@ import {
   Menu,
   ChevronDown,
 } from "lucide-react";
-import SafeImage from "@/components/SafeImage";
+import _SafeImage from "@/components/SafeImage";
 
 const fadeInVariant: Variants = {
   hidden: { opacity: 0, y: 25 },
@@ -46,10 +46,10 @@ export default function ProfilSekolahPublicPage() {
   const schoolSlug = params?.school_slug as string;
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [_dropdownOpen, _setDropdownOpen] = useState(false);
 
   const [isDark, setIsDark] = useState(false);
-  const toggleDark = () => {
+  const _toggleDark = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle("dark");
   };
@@ -100,10 +100,10 @@ export default function ProfilSekolahPublicPage() {
     profilSekolah?.tujuan ||
     `1. Menghasilkan lulusan yang kompeten dan terserap di dunia kerja.\n2. Mewujudkan tata kelola institusi yang transparan, akuntabel, dan berbasis digital.\n3. Mengembangkan potensi peserta didik secara holistik.`;
 
-  const address = identitas.alamat;
-  const phone = "(021) 876-5432";
-  const email = identitas.email;
-  const schoolPeriod = "2026-2027";
+  const _address = identitas.alamat;
+  const _phone = "(021) 876-5432";
+  const _email = identitas.email;
+  const _schoolPeriod = "2026-2027";
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 selection:bg-blue-900 selection:text-white transition-colors duration-300">

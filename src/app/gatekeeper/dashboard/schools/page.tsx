@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import _Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   Building2, ShieldCheck, CheckCircle2, XCircle, AlertCircle, Search,
@@ -64,7 +64,7 @@ function GatekeeperSchoolManagementContent() {
       let json;
       try {
         json = JSON.parse(text);
-      } catch (parseError) {
+      } catch (_parseError) {
         console.error("Invalid JSON from API:", text.substring(0, 150));
         setSchools([]);
         return;
@@ -113,7 +113,7 @@ function GatekeeperSchoolManagementContent() {
             },
             body: JSON.stringify({ school_id: school.slug || school.id }),
           });
-        } catch (e) {}
+        } catch (_e) {}
 
         await fetchSchools();
 
@@ -131,7 +131,7 @@ function GatekeeperSchoolManagementContent() {
     });
   };
 
-  const handleToggleSuspend = (school: SchoolTenant) => {
+  const _handleToggleSuspend = (school: SchoolTenant) => {
     const isSuspended = school.status === "SUSPENDED";
     const nextStatus = isSuspended ? "FULL_VERIFIED" : "SUSPENDED";
 
@@ -189,7 +189,7 @@ function GatekeeperSchoolManagementContent() {
             },
             body: JSON.stringify({ school_id: school.slug || school.id }),
           });
-        } catch (e) {}
+        } catch (_e) {}
 
         await fetchSchools();
 

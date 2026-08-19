@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const BASE = 'https://cationgate.site';
-const SCHOOL_SLUG = 'smktarunabhakti';
+const _SCHOOL_SLUG = 'smktarunabhakti';
 
 test.describe('Gatekeeper & SaaS Full Flow', () => {
   test('Gatekeeper Login and Dashboard', async ({ page }) => {

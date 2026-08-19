@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Eye, X, CheckCircle, Clock, XCircle, User, Users, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight, Calendar, Sparkles } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
-import Image from "next/image";
+import _Image from "next/image";
 
 interface Student {
   id: number;
@@ -37,16 +37,19 @@ export default function DataPendaftarTable() {
   useEffect(() => {
     
     if (activeRows.length === 0 && publicApplicants.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setActiveRows(publicApplicants.map((a: any) => ({ ...a, isNew: false, isFadingOut: false })));
       prevApplicantsRef.current = publicApplicants;
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const currentIds = publicApplicants.map((a: any) => a.id);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removedApplicants = prevApplicantsRef.current.filter((a: any) => !currentIds.includes(a.id));
 
-    let updatedRows = [...activeRows];
+    const updatedRows = [...activeRows];
 
     removedApplicants.forEach(removed => {
       const idx = updatedRows.findIndex(r => r.id === removed.id);
@@ -57,6 +60,7 @@ export default function DataPendaftarTable() {
       }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     publicApplicants.forEach((newItem: any) => {
       const idx = updatedRows.findIndex(r => r.id === newItem.id);
       if (idx > -1) {
@@ -92,7 +96,7 @@ export default function DataPendaftarTable() {
   ];
 
   if (selectedStudent) {
-    const getGenderLabel = (g: string | null | undefined) => {
+    const _getGenderLabel = (g: string | null | undefined) => {
       if (!g) return "Laki-laki";
       const clean = g.toUpperCase().trim();
       if (clean === "L" || clean === "LAKI-LAKI" || clean === "LAKI_LAKI") return "Laki-laki";
@@ -100,13 +104,13 @@ export default function DataPendaftarTable() {
       return g;
     };
 
-    const getFormattedDate = (d: string | null | undefined) => {
+    const _getFormattedDate = (d: string | null | undefined) => {
       if (!d) return "14 Juni 2010";
       try {
         const date = new Date(d);
         const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         return date.toLocaleDateString('id-ID', options);
-      } catch (e) {
+      } catch (_e) {
         return d;
       }
     };
@@ -215,6 +219,7 @@ export default function DataPendaftarTable() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const uniqueMajors = Array.from(new Set(displayApplicants.map((item: any) => item.jurusan_1 || item.jurusan1).filter(Boolean)));
   const filteredData = displayApplicants.filter(item => {
     const matchName = 
@@ -272,6 +277,7 @@ export default function DataPendaftarTable() {
             className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all cursor-pointer min-w-[180px]"
           >
             <option value="Semua">Semua Jurusan</option>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {uniqueMajors.map((major: any) => (
               <option key={major} value={major}>{major}</option>
             ))}

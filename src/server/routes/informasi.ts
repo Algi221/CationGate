@@ -6,7 +6,7 @@ import { createInformasiSchema, updateInformasiSchema } from '../validations/inf
 
 const router = new Hono();
 
-interface InformasiItem {
+interface _InformasiItem {
   id: number;
   judul: string;
   konten: string;
@@ -27,6 +27,7 @@ router.get('/', async (c: Context) => {
     const { data: rows, error } = await query;
     if (error) throw error;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sanitizedRows = (rows || []).map((row: any) => {
       if (row.foto_url && row.foto_url.startsWith('{')) {
         try {
@@ -41,7 +42,7 @@ router.get('/', async (c: Context) => {
               dokumen_name: parsed.dokumen_name || ""
             })
           };
-        } catch (e) {
+        } catch (_e) {
           return row;
         }
       }
@@ -52,12 +53,12 @@ router.get('/', async (c: Context) => {
       success: true,
       data: sanitizedRows
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching informasi:', error);
     return c.json({
       success: false,
       message: 'Gagal mengambil data informasi.',
-      error: error.message
+      error: (error as any).message
     }, 500);
   }
 });
@@ -91,12 +92,12 @@ router.get('/:id', async (c: Context) => {
       success: true,
       data: record
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching informasi detail:', error);
     return c.json({
       success: false,
       message: 'Gagal mengambil detail informasi.',
-      error: error.message
+      error: (error as any).message
     }, 500);
   }
 });
@@ -109,17 +110,20 @@ router.post('/', adminAuth, async (c: Context) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => err.message)
+        errors: result.error.issues.map((err) => (err as any).message)
       }, 400);
     }
     const { judul, konten, tanggal, foto_url } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const insertData: any = {
       judul,
       konten,
@@ -138,12 +142,12 @@ router.post('/', adminAuth, async (c: Context) => {
       message: 'Informasi berhasil ditambahkan.',
       data: savedRecord
     }, 201);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating informasi:', error);
     return c.json({
       success: false,
       message: 'Gagal menambahkan informasi.',
-      error: error.message
+      error: (error as any).message
     }, 500);
   }
 });
@@ -157,12 +161,14 @@ router.put('/:id', adminAuth, async (c: Context) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => err.message)
+        errors: result.error.issues.map((err) => (err as any).message)
       }, 400);
     }
     const { judul, konten, tanggal, foto_url } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
@@ -180,6 +186,7 @@ router.put('/:id', adminAuth, async (c: Context) => {
       }, 404);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dataToUpdate: any = {};
     if (judul !== undefined) dataToUpdate.judul = judul;
     if (konten !== undefined) dataToUpdate.konten = konten;
@@ -199,12 +206,12 @@ router.put('/:id', adminAuth, async (c: Context) => {
       message: 'Informasi berhasil diperbarui.',
       data: updatedRecord
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating informasi:', error);
     return c.json({
       success: false,
       message: 'Gagal memperbarui informasi.',
-      error: error.message
+      error: (error as any).message
     }, 500);
   }
 });
@@ -215,6 +222,8 @@ router.delete('/:id', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
@@ -238,12 +247,12 @@ router.delete('/:id', adminAuth, async (c: Context) => {
       success: true,
       message: 'Informasi berhasil dihapus.'
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting informasi:', error);
     return c.json({
       success: false,
       message: 'Gagal menghapus informasi.',
-      error: error.message
+      error: (error as any).message
     }, 500);
   }
 });

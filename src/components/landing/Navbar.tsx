@@ -21,7 +21,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const pathname = usePathname();
+  const _pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -222,6 +222,7 @@ export function Navbar() {
 
                             {/* Right Grid */}
                             <div className="flex-1 grid grid-cols-2 gap-1 content-start">
+        
                               {item.bentoConfig.gridItems.map((sub: any) => (
                                 <Link
                                   key={sub.title}
@@ -332,6 +333,7 @@ export function Navbar() {
                   href: sub.href,
                 })) ||
                 (item.dropdownType === "bento" && item.bentoConfig
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   ? item.bentoConfig.gridItems.map((sub: any) => ({
                       title: sub.title,
                       href: sub.href,

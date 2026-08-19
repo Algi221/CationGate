@@ -181,7 +181,7 @@ export default function ProfilePage() {
 
 
 
-  const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
+  const _userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">

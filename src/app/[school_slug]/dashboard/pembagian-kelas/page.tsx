@@ -41,7 +41,7 @@ const formatNoPendaftaran = (periode: string | null | undefined, id: number) => 
     const prefix = `${year1}${year2}`;
     const sequence = 10000 + id;
     return `${prefix}${sequence}`;
-  } catch (e) {
+  } catch (_e) {
     return `2627${10000 + id}`;
   }
 };
@@ -58,6 +58,7 @@ interface Applicant {
   diterimaKelas?: string | null;
   status?: string;
   periode?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -119,7 +120,7 @@ export default function ClassDivisionManagement() {
   const [genderFilter, setGenderFilter] = useState<"ALL" | "L" | "P">("ALL");
 
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
-  const [targetClass, setTargetClass] = useState<string>("");
+  const [targetClass, _setTargetClass] = useState<string>("");
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -142,7 +143,7 @@ export default function ClassDivisionManagement() {
 
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [newClassName, setNewClassName] = useState("");
-  const [newClassCapacity, setNewClassCapacity] = useState(40);
+  const [newClassCapacity, _setNewClassCapacity] = useState(40);
   const [isAddingClass, setIsAddingClass] = useState(false);
 
   const [selectedClassDetail, setSelectedClassDetail] = useState<ClassItem | null>(null);
@@ -165,9 +166,10 @@ export default function ClassDivisionManagement() {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return parsed.map((m: any) => ({ code: m.code, name: m.title }));
         }
-      } catch (e) {
+      } catch (_e) {
         return majors;
       }
     }
@@ -215,7 +217,7 @@ export default function ClassDivisionManagement() {
       if (savedClasses) {
         try {
           setClasses(JSON.parse(savedClasses));
-        } catch (e) {
+        } catch (_e) {
           setClasses(generateDefaultClasses());
         }
       } else {
@@ -264,7 +266,7 @@ export default function ClassDivisionManagement() {
       if (diff === 2) return 12;
       if (diff >= 3) return 99; 
       return 10;
-    } catch (e) {
+    } catch (_e) {
       return 10;
     }
   };
@@ -466,7 +468,7 @@ export default function ClassDivisionManagement() {
 
     for (let i = 0; i < total; i++) {
       const id = selectedStudentIds[i];
-      const student = applicants.find((a: Applicant) => a.id === id);
+      const _student = applicants.find((a: Applicant) => a.id === id);
       
       const payload = {
         diterima_kelas: className || null,
@@ -974,6 +976,7 @@ export default function ClassDivisionManagement() {
 
             columns.forEach((col, colIdx) => {
               const cell = dataRow.getCell(colIdx + 1);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               cell.value = (values as any)[col.key];
               cell.font = { name: 'Arial', size: 9 };
               cell.border = {
@@ -1304,6 +1307,7 @@ export default function ClassDivisionManagement() {
               <Filter size={11} />
               <select
                 value={assignmentFilter}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(e) => setAssignmentFilter(e.target.value as any)}
                 className="bg-transparent focus:outline-none cursor-pointer uppercase tracking-wider font-extrabold text-[9px]"
               >
@@ -1318,6 +1322,7 @@ export default function ClassDivisionManagement() {
               <Filter size={11} />
               <select
                 value={genderFilter}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(e) => setGenderFilter(e.target.value as any)}
                 className="bg-transparent focus:outline-none cursor-pointer uppercase tracking-wider font-extrabold text-[9px]"
               >

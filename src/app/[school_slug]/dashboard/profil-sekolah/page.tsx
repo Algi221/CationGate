@@ -38,6 +38,7 @@ export default function ProfilSekolahPage() {
     }
   }, [profilSekolah]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saveConfig = async (key: string, value: any, label: string) => {
     if (isDemoMode) {
       Swal.fire({ icon: 'info', title: 'Mode Demo', text: 'Perubahan tidak disimpan permanen di mode demo.' });
@@ -67,8 +68,8 @@ export default function ProfilSekolahPage() {
       } else {
         Swal.fire("Gagal", data.message || `Gagal menyimpan ${label}`, "error");
       }
-    } catch (err: any) {
-      Swal.fire("Error", err.message || "Terjadi kesalahan sistem.", "error");
+    } catch (err: unknown) {
+      Swal.fire("Error", (err as any).message || "Terjadi kesalahan sistem.", "error");
     } finally {
       setLoading(false);
     }

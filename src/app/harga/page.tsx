@@ -86,6 +86,7 @@ export default function PricingPage() {
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-black text-slate-900 dark:text-white">
                         {isFree ? "Rp 0" : `Rp ${Number(pkg.price_yearly).toLocaleString("id-ID")}`}
+                      </span>
                       <span className="text-slate-500">{isFree ? "/ 20 Hari" : "/ Tahun"}</span>
                     </div>
                   </div>
@@ -98,22 +99,22 @@ export default function PricingPage() {
                       </div>
                     ))}
                   </div>
-                </div>
 
-                <div>
-                  <Link
-                    href="/daftar"
-                    className={`w-full py-3.5 rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all ${
-                      i === 1
-                        ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25"
-                        : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-white"
-                    }`}
-                  >
-                    {i === 0 ? "Mulai Sekarang" : "Pilih Paket Ini"}
-                  </Link>
-                </div>
+                  <div className="mt-8">
+                    <Link
+                      href="/daftar"
+                      className={`w-full py-3.5 rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all ${
+                        i === 1
+                          ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25"
+                          : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-white"
+                      }`}
+                    >
+                      {i === 0 ? "Mulai Sekarang" : "Pilih Paket Ini"}
+                    </Link>
+                  </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
       </main>

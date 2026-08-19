@@ -5,42 +5,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Menu,
-  X,
   DoorOpen,
   ChevronDown,
-  Sparkles,
   Users,
   Target,
   BookOpen,
   FileCheck,
-  BarChart3,
-  Cpu,
-  PhoneCall,
   Database,
   Shield,
-  Globe,
-  Mail,
 } from "lucide-react";
 import { CurvedNavbar, HamburgerButton } from "./CurvedMobileMenu";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuPopup,
-  NavigationMenuPositioner,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "../ui/navigation-menu-1";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [activeMobileDropdown, setActiveMobileDropdown] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -49,7 +29,7 @@ export function Navbar() {
     };
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.nav-dropdown-container')) {
+      if (!target.closest(".nav-dropdown-container")) {
         setActiveDropdown(null);
       }
     };
@@ -62,19 +42,19 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    // Notify other components (like FloatingVideo) that menu is open
-    const event = new CustomEvent('mobileMenuToggle', { detail: mobileMenuOpen });
+    const event = new CustomEvent("mobileMenuToggle", {
+      detail: mobileMenuOpen,
+    });
     window.dispatchEvent(event);
 
-    // Prevent background scrolling when mobile menu is open
     if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
-    
+
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
 
@@ -115,32 +95,66 @@ export function Navbar() {
           icon: Shield,
           title: "Admin Dashboard",
           desc: "Pusat kendali operasional sekolah dengan akses menyeluruh dan real-time.",
-          href: "/fitur"
+          href: "/fitur",
         },
         gridItems: [
-          { title: "Import & Export Excel", desc: "Kelola data siswa & nilai masal", href: "/fitur", icon: FileCheck },
-          { title: "Pembagian Kelas", desc: "Automasi plotting siswa baru", href: "/fitur", icon: Users },
-          { title: "Manajemen Data", desc: "Kontrol penuh data akademik", href: "/fitur", icon: Database },
-          { title: "Validasi Berkas", desc: "Verifikasi dokumen pendaftar", href: "/fitur", icon: FileCheck },
-        ]
-      }
+          {
+            title: "Import & Export Excel",
+            desc: "Kelola data siswa & nilai masal",
+            href: "/fitur",
+            icon: FileCheck,
+          },
+          {
+            title: "Pembagian Kelas",
+            desc: "Automasi plotting siswa baru",
+            href: "/fitur",
+            icon: Users,
+          },
+          {
+            title: "Manajemen Data",
+            desc: "Kontrol penuh data akademik",
+            href: "/fitur",
+            icon: Database,
+          },
+          {
+            title: "Validasi Berkas",
+            desc: "Verifikasi dokumen pendaftar",
+            href: "/fitur",
+            icon: FileCheck,
+          },
+        ],
+      },
     },
     { label: "Blog", href: "/blog", color: "#A855F7" },
     { label: "Hubungi Kami", href: "/kontak", color: "#E86BC6" },
   ];
 
   return (
-    <header className="fixed top-4 inset-x-0 z-[100] flex justify-center px-4 transition-all duration-500">
-      <div
-        className={`relative z-[110] transition-all duration-500 rounded-2xl border shadow-2xl px-5 sm:px-6 ${
-          scrolled
-            ? "w-full max-w-5xl bg-[#FFFFFF]/90 text-[#1A1A1A] border-rose-200/50 backdrop-blur-md py-2 shadow-lg"
-            : "w-full max-w-7xl bg-[#FFFFFF] text-[#1A1A1A] border-white/10 py-3"
-        }`}
+    <header className="fixed top-0 inset-x-0 z-[100] flex justify-center px-4 pt-3">
+      <motion.div
+        className="relative z-[110] bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible"
+        initial={false}
+        animate={{
+          width: scrolled ? "100%" : "100%",
+          maxWidth: scrolled ? "1024px" : "1280px",
+          borderRadius: scrolled ? "16px" : "0px",
+          borderWidth: scrolled ? "1px" : "0px",
+          borderColor: scrolled
+            ? "rgba(226, 232, 240, 0.8)"
+            : "rgba(255, 255, 255, 0)",
+          boxShadow: scrolled
+            ? "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08)"
+            : "0 0 0 0 rgba(0,0,0,0)",
+          paddingLeft: scrolled ? "20px" : "24px",
+          paddingRight: scrolled ? "20px" : "24px",
+          paddingTop: scrolled ? "8px" : "12px",
+          paddingBottom: scrolled ? "8px" : "12px",
+        }}
+        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
       >
-        <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-14 w-full">
           {/* Logo Section */}
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#2A1B1D] group-hover:scale-110 transition-transform">
               <DoorOpen className="w-5 h-5" />
             </div>
@@ -153,10 +167,8 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
-            <NavigationMenu>
-              <NavigationMenuList>
-                {navItems.map((item) => {
-                  const hasDropdown = Boolean(item.dropdown);
+            {navItems.map((item) => {
+              const hasDropdown = Boolean(item.dropdown);
 
               if (hasDropdown || item.dropdownType === "bento") {
                 return (
@@ -178,7 +190,9 @@ export function Navbar() {
                         {item.label}
                         <ChevronDown
                           className={`w-3.5 h-3.5 transition-transform duration-300 opacity-60 text-[#23191C] ${
-                            activeDropdown === item.label ? "rotate-180 opacity-100" : ""
+                            activeDropdown === item.label
+                              ? "rotate-180 opacity-100"
+                              : ""
                           }`}
                         />
                       </span>
@@ -187,18 +201,25 @@ export function Navbar() {
                     {activeDropdown === item.label && (
                       <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                         {item.dropdownType === "bento" && item.bentoConfig ? (
-                          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-2 w-[480px] flex gap-2">
+                          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-2.5 w-[480px] flex gap-2">
                             {/* Left Highlight Card */}
-                            <Link href={item.bentoConfig.leftCard.href} className="w-[180px] bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl p-4 flex flex-col justify-between group/left">
+                            <Link
+                              href={item.bentoConfig.leftCard.href}
+                              className="w-[180px] bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl p-4 flex flex-col justify-between group/left"
+                            >
                               <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 group-hover/left:text-blue-600 transition-colors">
                                 <item.bentoConfig.leftCard.icon className="w-5 h-5" />
                               </div>
                               <div className="mt-6">
-                                <h4 className="text-sm font-bold text-slate-900">{item.bentoConfig.leftCard.title}</h4>
-                                <p className="text-xs text-slate-500 mt-1 leading-snug">{item.bentoConfig.leftCard.desc}</p>
+                                <h4 className="text-sm font-bold text-slate-900">
+                                  {item.bentoConfig.leftCard.title}
+                                </h4>
+                                <p className="text-xs text-slate-500 mt-1 leading-snug">
+                                  {item.bentoConfig.leftCard.desc}
+                                </p>
                               </div>
                             </Link>
-                            
+
                             {/* Right Grid */}
                             <div className="flex-1 grid grid-cols-2 gap-1 content-start">
                               {item.bentoConfig.gridItems.map((sub: any) => (
@@ -258,11 +279,9 @@ export function Navbar() {
                 </Link>
               );
             })}
-              </NavigationMenuList>
-            </NavigationMenu>
           </div>
 
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
             <Link href="/daftar">
               <InteractiveHoverButton
                 className="
@@ -270,7 +289,7 @@ export function Navbar() {
                   rounded-full
                   border-0
                   bg-[#FFD33B]
-                  text-[#23191C]
+                  text-[#2A1B1D]
                   font-semibold
                   text-sm
                   px-6
@@ -281,6 +300,7 @@ export function Navbar() {
                   hover:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
                   hover:-translate-y-0.5
                   active:scale-95
+                  whitespace-nowrap
                 "
               >
                 Daftar Sekolah
@@ -289,11 +309,14 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex lg:hidden items-center relative z-[110]">
-            <HamburgerButton isActive={mobileMenuOpen} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} />
+          <div className="flex lg:hidden items-center relative z-[110] shrink-0">
+            <HamburgerButton
+              isActive={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            />
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Mobile Navigation Drawer */}
       <AnimatePresence mode="wait">
@@ -303,8 +326,17 @@ export function Navbar() {
             navItems={navItems.map((item) => ({
               heading: item.label,
               href: item.href,
-              subItems: item.dropdown?.map((sub) => ({ title: sub.title, href: sub.href })) || 
-                        (item.dropdownType === "bento" && item.bentoConfig ? item.bentoConfig.gridItems.map((sub: any) => ({ title: sub.title, href: sub.href })) : undefined)
+              subItems:
+                item.dropdown?.map((sub) => ({
+                  title: sub.title,
+                  href: sub.href,
+                })) ||
+                (item.dropdownType === "bento" && item.bentoConfig
+                  ? item.bentoConfig.gridItems.map((sub: any) => ({
+                      title: sub.title,
+                      href: sub.href,
+                    }))
+                  : undefined),
             }))}
             footer={
               <div className="flex flex-col w-full px-10 md:px-24 py-8 pb-12 gap-4">
@@ -313,11 +345,6 @@ export function Navbar() {
                     Daftar Sekolah Sekarang
                   </InteractiveHoverButton>
                 </Link>
-                <div className="flex w-full text-sm justify-between text-black dark:text-white mt-4">
-                  <div className="flex flex-col gap-2">
-                    
-                  </div>
-                </div>
               </div>
             }
           />

@@ -16,6 +16,7 @@ export default function LoadingScreen() {
     const navType = navEntries.length > 0 ? navEntries[0].type : "";
 
     if (navType === "back_forward") {
+      setIsMounted(false);
       return;
     }
 
@@ -40,9 +41,14 @@ export default function LoadingScreen() {
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isMounted && (
-        <div className="fixed inset-0 z-[9999] w-screen h-screen overflow-hidden pointer-events-none">
+        <motion.div 
+          className="fixed inset-0 z-[9999] w-screen h-screen overflow-hidden"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          {/* GERBANG KIRI */}
           <motion.div
             initial={{ x: "0%" }}
             animate={{ x: phase === "exit" ? "-100%" : "0%" }}
@@ -51,6 +57,7 @@ export default function LoadingScreen() {
             className="absolute top-0 left-0 w-[52vw] h-full bg-[#F8F6F0] z-40 pointer-events-auto shadow-xl"
           />
 
+          {/* GERBANG KANAN */}
           <motion.div
             initial={{ x: "0%" }}
             animate={{ x: phase === "exit" ? "100%" : "0%" }}
@@ -60,6 +67,7 @@ export default function LoadingScreen() {
             className="absolute top-0 right-0 w-[52vw] h-full bg-[#F8F6F0] z-40 pointer-events-auto shadow-xl"
           />
 
+          {/* KONTEN TENGAH */}
           <motion.div
             className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"
             animate={{
@@ -88,7 +96,7 @@ export default function LoadingScreen() {
               />
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

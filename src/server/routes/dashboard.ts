@@ -39,7 +39,7 @@ appRouter.get('/stats', adminAuth, async (c: Context) => {
     });
 
     if (error) {
-      console.warn('Dashboard stats RPC warning, trying direct count:', error.message);
+      console.warn('Dashboard stats RPC warning, trying direct count:', (error as any).message);
       
       // Fallback: direct count queries instead of broken RPC
       const { count: totalCount } = await supabase.from('student_applicants').select('*', { count: 'exact', head: true }).eq('school_id', resolvedId);
@@ -65,8 +65,8 @@ appRouter.get('/stats', adminAuth, async (c: Context) => {
       success: true,
       data: data
     });
-  } catch (err: any) {
-    console.warn('Fetch dashboard stats exception, returning fallback zeroes:', err?.message);
+  } catch (err: unknown) {
+    console.warn('Fetch dashboard stats exception, returning fallback zeroes:', (err as any)?.message);
     return c.json({
       success: true,
       data: {

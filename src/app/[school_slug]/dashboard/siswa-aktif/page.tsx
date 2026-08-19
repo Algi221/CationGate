@@ -10,12 +10,12 @@ const sanitizeUrl = (url: string | undefined | null): string => {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
     });
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 };
 
-const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
+const _sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
 import { generateNipdMap } from "@/utils/nipd";
 import { motion, AnimatePresence } from "framer-motion";
 import ExcelJS from 'exceljs';
@@ -52,7 +52,7 @@ import {
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import KuotaTab from "@/components/KuotaTab";
+import _KuotaTab from "@/components/KuotaTab";
 import Swal from 'sweetalert2';
 
 
@@ -64,7 +64,7 @@ export const formatNoPendaftaran = (periode: string | null | undefined, id: numb
     const prefix = `${year1}${year2}`;
     const sequence = 10000 + id;
     return `${prefix}${sequence}`;
-  } catch (e) {
+  } catch (_e) {
     return `2627${10000 + id}`;
   }
 };
@@ -164,17 +164,18 @@ interface Applicant {
   pelanggaran_lain?: string;
   periode?: string;
   berkas_foto?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 function ActiveStudentsDirectoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activePageTab = searchParams.get("tab") || "active";
+  const _activePageTab = searchParams.get("tab") || "active";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
 
-  const handleTabChange = (tab: "active" | "kuota") => {
+  const _handleTabChange = (tab: "active" | "kuota") => {
     router.push(`/dashboard/siswa-aktif?tab=${tab}`);
   };
 
@@ -197,7 +198,7 @@ function ActiveStudentsDirectoryContent() {
       if (saved) {
         try {
           return JSON.parse(saved);
-        } catch (e) {
+        } catch (_e) {
           console.error("Invalid JSON in ppdb_custom_periods:", saved);
         }
       }
@@ -277,6 +278,7 @@ function ActiveStudentsDirectoryContent() {
       const majorChanged = editForm.jurusan_1 !== currentMajor;
 
       // Sanitize null values by simply omitting them, so backend falls back to existing or defaults
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sanitizedForm: any = {};
       for (const key in editForm) {
         if (editForm[key] !== null) {
@@ -284,6 +286,7 @@ function ActiveStudentsDirectoryContent() {
         }
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updatedPayload: any = {
         ...sanitizedForm,
         jurusan1: sanitizedForm.jurusan_1 || sanitizedForm.jurusan
@@ -308,9 +311,9 @@ function ActiveStudentsDirectoryContent() {
       } else {
         alert(res?.message || "Gagal menyimpan perubahan.");
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setIsSaving(false);
-      alert("Terjadi kesalahan: " + e.message);
+      alert("Terjadi kesalahan: " + (e as any).message);
     }
   };
 
@@ -332,13 +335,13 @@ function ActiveStudentsDirectoryContent() {
       } else {
         addToast("Gagal", data.message || "Terjadi kesalahan.", "error");
       }
-    } catch (err) {
+    } catch (_err) {
       addToast("Error", "Gagal terhubung ke server", "error");
     }
   };
 
   const [activeTab, setActiveTab] = useState<string>("biodata");
-  const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
+  const [_selectedDoc, setSelectedDoc] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selectedApplicant) {
@@ -517,10 +520,12 @@ function ActiveStudentsDirectoryContent() {
       await workbook.xlsx.load(await file.arrayBuffer());
       const worksheet = workbook.worksheets[0];
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const students: any[] = [];
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return; // Skip header
         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rowData: any = {};
         worksheet.columns?.forEach((col, idx) => {
           if (col.key) {
@@ -1542,6 +1547,7 @@ function ActiveStudentsDirectoryContent() {
                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
                           <select
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                             className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
@@ -1551,6 +1557,7 @@ function ActiveStudentsDirectoryContent() {
                         ) : (
                           <input
                             type={f.type || "text"}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                             className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"

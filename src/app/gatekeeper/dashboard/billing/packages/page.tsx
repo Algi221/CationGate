@@ -55,7 +55,7 @@ export default function GatekeeperPackagesPage() {
       try {
         const json = JSON.parse(text);
         if (json.success) setPlans(json.data || []);
-      } catch (parseError) {
+      } catch (_parseError) {
         console.error("Invalid JSON from API:", text.substring(0, 150));
       }
     } catch (err) {
@@ -135,7 +135,7 @@ export default function GatekeeperPackagesPage() {
         } else {
           alert("Gagal menyimpan paket");
         }
-      } catch (parseError) {
+      } catch (_parseError) {
         console.error("Invalid JSON:", text.substring(0, 150));
       }
     } catch (err) {

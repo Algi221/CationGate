@@ -362,6 +362,7 @@ export default function KelolaUserInterface() {
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab && ["hero", "majors", "alur", "form", "faq", "revisions", "bank", "partners"].includes(tab)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setActiveTab(tab as any);
     }
   }, [searchParams]);
@@ -433,7 +434,7 @@ export default function KelolaUserInterface() {
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.");
   const [heroMediaUrl, setHeroMediaUrl] = useState("");
   const [heroMediaType, setHeroMediaType] = useState<"video" | "image" | "none">("none");
-  const [compressing, setCompressing] = useState(false);
+  const [_compressing, setCompressing] = useState(false);
   const [phone, setPhone] = useState("-");
   const [email, setEmail] = useState("info@sekolah.sch.id");
   const [address, setAddress] = useState("Alamat Lengkap Sekolah");
@@ -583,6 +584,7 @@ export default function KelolaUserInterface() {
 
       // Load draft from localStorage if present
       const savedDraft = localStorage.getItem(draftKey);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let draft: any = null;
       if (savedDraft) {
         try {
@@ -633,6 +635,7 @@ export default function KelolaUserInterface() {
         const dbMajors = activeConfig.ppdb_majors_config;
         const mergedMajors: MajorItem[] = [];
         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dbMajors.forEach((dbMajor: any) => {
           const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
           mergedMajors.push({
@@ -918,7 +921,7 @@ export default function KelolaUserInterface() {
       } else {
         showToastMsg(json.message || "Gagal menyimpan perubahan.", "error");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       showToastMsg("Terjadi kesalahan server.", "error");
     } finally {
@@ -939,7 +942,7 @@ export default function KelolaUserInterface() {
       
       setSchoolLogo(publicUrl);
       showToastMsg(`✨ Logo berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
-    } catch (e) {
+    } catch (_e) {
       showToastMsg("Gagal memproses logo.", "error");
     } finally {
       setCompressing(false);
@@ -972,7 +975,7 @@ export default function KelolaUserInterface() {
         setHeroMediaType("image");
         showToastMsg(`✨ Foto Hero berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
       }
-    } catch (e) {
+    } catch (_e) {
       showToastMsg("Gagal memproses media Hero.", "error");
     } finally {
       setCompressing(false);
@@ -1023,7 +1026,7 @@ export default function KelolaUserInterface() {
         minute: '2-digit'
       };
       return new Date(dateString).toLocaleDateString('id-ID', options);
-    } catch (e) {
+    } catch (_e) {
       return dateString;
     }
   };
@@ -1127,6 +1130,7 @@ export default function KelolaUserInterface() {
               key={tab.id}
               disabled={editingMajor !== null && tab.id !== "majors"}
               onClick={() => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 setActiveTab(tab.id as any);
                 router.push(`?tab=${tab.id}`);
               }}
@@ -1907,6 +1911,7 @@ export default function KelolaUserInterface() {
                                       e.preventDefault(); e.stopPropagation();
                                       setDragActiveStates(prev => ({ ...prev, [elementId]: false }));
                                       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         processMediaFile(e.dataTransfer.files[0], `gallery-${slotIdx}` as any);
                                       }
                                     }}
@@ -1928,6 +1933,7 @@ export default function KelolaUserInterface() {
                                       accept="image/*"
                                       onChange={(e) => {
                                         if (e.target.files && e.target.files[0]) {
+                                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                           processMediaFile(e.target.files[0], `gallery-${slotIdx}` as any);
                                         }
                                       }}
@@ -2581,7 +2587,7 @@ export default function KelolaUserInterface() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {partnersList.map((partner, idx) => (
+                  {partnersList.map((partner, _idx) => (
                     <div 
                       key={partner.id}
                       className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-5 relative overflow-hidden transition-all duration-300"

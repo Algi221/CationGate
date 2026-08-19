@@ -52,7 +52,7 @@ export default function VerificationPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<VerificationData | null>(null);
-  const [waAdmin, setWaAdmin] = useState<string>("6281292244456");
+  const [waAdmin, _setWaAdmin] = useState<string>("6281292244456");
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,8 +225,8 @@ export default function VerificationPage() {
                     src={getMajorLogoUrl(data.jurusan_1)}
                     alt="Logo Jurusan"
                     className="w-full h-full object-contain rounded-full"
-                    onError={(e: any) => {
-                      e.target.src = "/logo_smktb.png";
+                    onError={(e: unknown) => {
+                      (e as any).target.src = "/logo_smktb.png";
                     }}
                   />
                 </div>

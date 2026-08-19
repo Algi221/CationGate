@@ -88,7 +88,9 @@ export default function SubscriptionManagementPage() {
       setIsPaying(false);
 
       if (data.token) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((window as any).snap) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (window as any).snap.pay(data.token, {
             onSuccess: async function () {
               // Simpan ke local storage / database
@@ -120,7 +122,7 @@ export default function SubscriptionManagementPage() {
           });
         }
       }
-    } catch (e) {
+    } catch (_e) {
       setIsPaying(false);
       Swal.fire({ title: "Gagal Membuka Midtrans", text: "Silakan coba lagi.", icon: "error" });
     }

@@ -54,7 +54,7 @@ export default function ConfigPage() {
       } else {
         addToast("Gagal", json.message || "Gagal menyimpan", "danger");
       }
-    } catch (err) {
+    } catch (_err) {
       addToast("Error", "Terjadi kesalahan", "danger");
     } finally {
       setSaving(false);

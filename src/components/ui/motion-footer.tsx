@@ -151,10 +151,12 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
           });
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         element.addEventListener("mousemove", handleMouseMove as any);
         element.addEventListener("mouseleave", handleMouseLeave);
 
         return () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           element.removeEventListener("mousemove", handleMouseMove as any);
           element.removeEventListener("mouseleave", handleMouseLeave);
         };
@@ -166,8 +168,10 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
     return (
       <Component
         ref={(node: HTMLElement) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (localRef as any).current = node;
           if (typeof forwardedRef === "function") forwardedRef(node);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           else if (forwardedRef) (forwardedRef as any).current = node;
         }}
         className={cn("cursor-pointer", className)}

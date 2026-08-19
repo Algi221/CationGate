@@ -5,7 +5,7 @@ import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import Swal from 'sweetalert2';
+import _Swal from 'sweetalert2';
 import {
   Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
   Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
@@ -71,7 +71,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const isSchoolVerified = schoolStatus === "verified";
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const _searchParams = useSearchParams();
   const params = useParams();
   const schoolSlugRaw = params?.school_slug as string;
   const schoolSlug = schoolSlugRaw ? schoolSlugRaw.replace(/[^a-zA-Z0-9-]/g, '') : "";
@@ -82,7 +82,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [_hoveredItem, _setHoveredItem] = useState<string | null>(null);
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Search State
@@ -121,7 +121,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+  const [_openDropdowns, _setOpenDropdowns] = useState<Record<string, boolean>>({});
 
   // ── Auto-open dropdown for current active sections ─────────────────────────
   useEffect(() => {
@@ -150,7 +150,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const handleToggleCollapse = () => {
+  const _handleToggleCollapse = () => {
     const nextVal = !isCollapsed;
     setIsCollapsed(nextVal);
     localStorage.setItem("ppdb-sidebar-collapsed", String(nextVal));
@@ -296,7 +296,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
+  const _userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
 
   return (

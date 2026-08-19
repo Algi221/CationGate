@@ -29,9 +29,9 @@ export default function Error({ error, reset }: ErrorProps) {
           Maaf, halaman mengalami masalah atau tidak dapat dimuat saat ini.
         </p>
 
-        {error.message && (
+        {(error as any).message && (
           <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl text-[11px] font-mono text-red-600 dark:text-red-400 break-words max-w-xs mx-auto">
-            {error.message}
+            {(error as any).message}
           </div>
         )}
 

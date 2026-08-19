@@ -32,6 +32,7 @@ export default function AboutPage() {
   const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,7 +68,7 @@ export default function AboutPage() {
         } else {
           setMembers(data);
         }
-      } catch (error) {
+      } catch (_error) {
         setMembers(defaultTeam);
       } finally {
         setLoading(false);

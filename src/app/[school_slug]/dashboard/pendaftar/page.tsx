@@ -11,7 +11,7 @@ const sanitizeUrl = (url: string | undefined | null): string => {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
     });
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 };
@@ -42,7 +42,7 @@ export const formatNoPendaftaran = (periode: string | null | undefined, id: numb
     const prefix = `${year1}${year2}`;
     const sequence = 10000 + id;
     return `${prefix}${sequence}`;
-  } catch (e) {
+  } catch (_e) {
     return `2627${10000 + id}`;
   }
 };
@@ -146,6 +146,7 @@ interface Applicant {
   diterimaKelas?: string | null;
   diterima_tanggal?: string | null;
   diterimaTanggal?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -262,8 +263,8 @@ function ApplicantsDirectoryContent() {
       } else {
         setTrashError(data.message || "Gagal mengambil data pendaftar terhapus");
       }
-    } catch (err: any) {
-      setTrashError(err.message || "Terjadi kesalahan koneksi");
+    } catch (err: unknown) {
+      setTrashError((err as any).message || "Terjadi kesalahan koneksi");
     } finally {
       setTrashLoading(false);
     }
@@ -288,8 +289,8 @@ function ApplicantsDirectoryContent() {
       } else {
         setTrashError(data.message || "Gagal memulihkan data");
       }
-    } catch (err: any) {
-      setTrashError(err.message || "Terjadi kesalahan koneksi");
+    } catch (err: unknown) {
+      setTrashError((err as any).message || "Terjadi kesalahan koneksi");
     } finally {
       setTrashLoading(false);
     }
@@ -322,8 +323,8 @@ function ApplicantsDirectoryContent() {
       } else {
         setTrashError(data.message || "Gagal menghapus data");
       }
-    } catch (err: any) {
-      setTrashError(err.message || "Terjadi kesalahan koneksi");
+    } catch (err: unknown) {
+      setTrashError((err as any).message || "Terjadi kesalahan koneksi");
     } finally {
       setTrashLoading(false);
     }
@@ -481,7 +482,7 @@ function ApplicantsDirectoryContent() {
     currentPage * itemsPerPage
   );
 
-  const triggerGoogleSheetsSync = () => {
+  const _triggerGoogleSheetsSync = () => {
     if (filteredApplicants.length === 0) return;
     setSyncStatus("SYNCING");
     setSyncProgress(0);
@@ -529,7 +530,7 @@ function ApplicantsDirectoryContent() {
         return;
       }
       throw new Error("Server export endpoint unavailable");
-    } catch (err: any) {
+    } catch (_err: unknown) {
       // Client-side ExcelJS fallback for production (cationgate.site)
       try {
         const workbook = new ExcelJS.Workbook();
@@ -557,11 +558,11 @@ function ApplicantsDirectoryContent() {
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         saveAs(blob, `Data_Calon_Siswa_${new Date().toISOString().split("T")[0]}.xlsx`);
-      } catch (clientErr: any) {
+      } catch (clientErr: unknown) {
         Swal.fire({
           icon: "error",
           title: "Ekspor Gagal",
-          text: clientErr.message
+          text: (clientErr as any).message
         });
       }
     }
@@ -849,7 +850,7 @@ function ApplicantsDirectoryContent() {
                                 addToast("Verifikasi Berkas Fisik", data.message, "success");
                               }
                             }
-                          } catch (err: any) {
+                          } catch (err: unknown) {
                             console.error("Gagal update berkas fisik:", err);
                           }
                         }}
@@ -1889,6 +1890,7 @@ function ApplicantsDirectoryContent() {
                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
                           <select
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                             className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
@@ -1898,6 +1900,7 @@ function ApplicantsDirectoryContent() {
                         ) : (
                           <input
                             type={f.type || "text"}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                             className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"

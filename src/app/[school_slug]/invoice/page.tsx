@@ -12,7 +12,7 @@ const sanitizeUrl = (url: string | undefined | null): string => {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
     });
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 };
@@ -24,7 +24,7 @@ const formatNoPendaftaran = (periode: string | null | undefined, id: number) => 
     const prefix = `${year1}${year2}`;
     const sequence = 10000 + id;
     return `${prefix}${sequence}`;
-  } catch (e) {
+  } catch (_e) {
     return `2627${10000 + id}`;
   }
 };
@@ -33,6 +33,7 @@ function InvoiceContent() {
   const searchParams = useSearchParams();
   const nisn = searchParams.get("nisn");
   const isAdmin = searchParams.get("isAdmin") === "true";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(null);
   const [regCost, setRegCost] = useState(250000);
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
@@ -42,7 +43,7 @@ function InvoiceContent() {
   // Bersihkan nomor WhatsApp calon siswa ke format internasional
   const getCleanWaNumber = () => {
     if (!data || !data.whatsapp) return "";
-    let rawPhone = data.whatsapp;
+    const rawPhone = data.whatsapp;
     let cleanPhone = rawPhone.replace(/\D/g, '');
     if (cleanPhone.startsWith('0')) {
       cleanPhone = '62' + cleanPhone.substring(1);
@@ -133,8 +134,8 @@ function InvoiceContent() {
         } else {
           setError(json.message || "Gagal mengambil data invoice.");
         }
-      } catch (err: any) {
-        setError("Error: " + err.message);
+      } catch (err: unknown) {
+        setError("Error: " + (err as any).message);
       } finally {
         setLoading(false);
       }
@@ -370,7 +371,7 @@ function InvoiceContent() {
                 src="/logo_smktb.png" 
                 alt="Logo SMK Taruna Bhakti" 
                 style={{ width: '52px', height: '52px', objectFit: 'contain' }}
-                onError={(e:any) => e.target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"}
+                onError={(e:unknown) => (e as any).target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"}
               />
               <div>
                 <p style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#64748b', margin: '0 0 2px 0' }}>

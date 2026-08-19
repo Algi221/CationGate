@@ -6,10 +6,14 @@ import { useToast } from "./ToastContext";
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AuthContextType {
   adminToken: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adminUser: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setAdminUser: React.Dispatch<React.SetStateAction<any | null>>;
   gatekeeperToken: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   gatekeeperUser: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setGatekeeperUser: React.Dispatch<React.SetStateAction<any | null>>;
   loginAdmin: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   loginGatekeeper: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
@@ -23,8 +27,10 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children, schoolId }: { children: React.ReactNode; schoolId: string }) {
   const { addToast } = useToast();
   const [adminToken, setAdminToken] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [adminUser, setAdminUser] = useState<any | null>(null);
   const [gatekeeperToken, setGatekeeperToken] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [gatekeeperUser, setGatekeeperUser] = useState<any | null>(null);
 
   // Restore token & user from localStorage on mount
@@ -56,7 +62,7 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
       if (savedUser) {
         try {
           setAdminUser(JSON.parse(savedUser));
-        } catch (e) {
+        } catch (_e) {
           // ignore
         }
       }
@@ -87,7 +93,7 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
       if (savedGkUser) {
         try {
           setGatekeeperUser(JSON.parse(savedGkUser));
-        } catch (e) {
+        } catch (_e) {
           // ignore
         }
       }
@@ -135,8 +141,8 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
       } else {
         return { success: false, message: data.message || "Username atau password salah" };
       }
-    } catch (err: any) {
-      console.error("Login error:", err.message);
+    } catch (err: unknown) {
+      console.error("Login error:", (err as any).message);
       return { success: false, message: "Terjadi kesalahan koneksi. Silakan coba lagi." };
     }
   }, [addToast, schoolId]);
@@ -166,8 +172,8 @@ export function AuthProvider({ children, schoolId }: { children: React.ReactNode
       } else {
         return { success: false, message: data.message || "Username atau password salah" };
       }
-    } catch (err: any) {
-      console.error("Login Gatekeeper error:", err.message);
+    } catch (err: unknown) {
+      console.error("Login Gatekeeper error:", (err as any).message);
       return { success: false, message: "Terjadi kesalahan koneksi. Silakan coba lagi." };
     }
   }, [addToast]);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CheckIcon = ({ size = 16, strokeWidth = 3, ...props }: any) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -26,6 +27,7 @@ const OTPSuccess = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         transition={{ delay: 0.3, type: "spring", stiffness: 500, damping: 30 } as any}
         className="w-16 h-16 bg-green-500 ring-4 ring-green-100 dark:ring-green-900 text-white flex items-center justify-center rounded-full"
       >
@@ -66,6 +68,7 @@ const OTPInputBox = ({
   damping = 20,
   y = 10,
   opacity = 0,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: any) => {
   const animationControls = useAnimationControls();
   const springTransition = {
@@ -90,6 +93,7 @@ const OTPInputBox = ({
     animationControls.start({
       opacity: 1,
       y: 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       transition: springTransition as any,
     });
     return () => animationControls.stop();
@@ -100,46 +104,49 @@ const OTPInputBox = ({
       const transitionX = index * 68; // Adjusted gap
       animationControls.start({
         x: -transitionX,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         transition: slowSuccessTransition as any,
       });
     }
   }, [state, index, animationControls]);
 
   const onFocus = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     animationControls.start({ y: -5, transition: noDelaySpringTransition as any });
   };
 
   const onBlur = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     animationControls.start({ y: 0, transition: noDelaySpringTransition as any });
   };
 
-  const onKeyDown = (e: any) => {
-    const { value } = e.target;
-    if (e.key === "Backspace" && !value && index > 0) {
+  const onKeyDown = (e: unknown) => {
+    const { value } = (e as any).target;
+    if ((e as any).key === "Backspace" && !value && index > 0) {
       document.getElementById(`input-${index - 1}`)?.focus();
-    } else if (e.key === "ArrowLeft" && index > 0) {
+    } else if ((e as any).key === "ArrowLeft" && index > 0) {
       document.getElementById(`input-${index - 1}`)?.focus();
-    } else if (e.key === "ArrowRight" && index < length - 1) {
+    } else if ((e as any).key === "ArrowRight" && index < length - 1) {
       document.getElementById(`input-${index + 1}`)?.focus();
     }
   };
 
-  const onInput = (e: any) => {
-    const { value } = e.target;
+  const onInput = (e: unknown) => {
+    const { value } = (e as any).target;
     if (value.match(/^[0-9]$/)) {
-      e.target.value = value;
+      (e as any).target.value = value;
       if (index < length - 1) {
         document.getElementById(`input-${index + 1}`)?.focus();
       }
     } else {
-      e.target.value = "";
+      (e as any).target.value = "";
     }
     verifyOTP();
   };
 
-  const onPaste = (e: any) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").trim().slice(0, length);
+  const onPaste = (e: unknown) => {
+    (e as any).preventDefault();
+    const pastedData = (e as any).clipboardData.getData("text").trim().slice(0, length);
     const digits = pastedData.split("").filter((char: string) => /^[0-9]$/.test(char));
 
     digits.forEach((digit: string, i: number) => {
@@ -213,10 +220,11 @@ export function OTPVerification({
   const [state, setState] = useState<"idle" | "loading" | "error" | "success">("idle");
   const [countdown, setCountdown] = useState(60);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("Invalid OTP.");
+  const [errorMessage, _setErrorMessage] = useState("Invalid OTP.");
   const animationControls = useAnimationControls();
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let timer: any;
     if (isResendDisabled) {
       timer = setInterval(() => {

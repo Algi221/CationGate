@@ -15,6 +15,7 @@ import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export function FaqSection() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [lottieData, setLottieData] = useState<any>(null);
 
   // Mengambil file JSON animasi dari folder public

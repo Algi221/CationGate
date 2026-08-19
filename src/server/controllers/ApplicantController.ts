@@ -33,7 +33,7 @@ export class ApplicantController {
         .order("tgl_daftar", { ascending: false });
 
       if (error) {
-        console.warn('Fetch public applicants Supabase query warning:', error.message);
+        console.warn('Fetch public applicants Supabase query warning:', (error as any).message);
         return c.json({ success: true, data: [] });
       }
 
@@ -44,7 +44,7 @@ export class ApplicantController {
       }));
 
       return c.json({ success: true, data: sanitizedRows });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("ApplicantController.getAll Error:", err);
       return c.json(
         { success: false, message: "Gagal mengambil data pendaftar" },
@@ -54,7 +54,7 @@ export class ApplicantController {
   }
 
   // Example for optimistic updates endpoint
-  static async updateStatus(c: Context) {
+  static async updateStatus(_c: Context) {
     // Controller logic to approve/reject an applicant
     // Will be called by useMutation in frontend
   }

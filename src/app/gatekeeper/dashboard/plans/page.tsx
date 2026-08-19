@@ -175,7 +175,7 @@ export default function GatekeeperPlansPage() {
         } else {
           Swal.fire("Gagal", json.message || "Gagal menghapus paket", "error");
         }
-      } catch (err) {
+      } catch (_err) {
         Swal.fire("Error", "Terjadi kesalahan server", "error");
       }
     }

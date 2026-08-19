@@ -312,7 +312,7 @@ function SecuritySettingsSection() {
 }
 
 function ApiSettingsSection() {
-  const [apiKey, setApiKey] = useState("sk_live_51xyz...");
+  const [apiKey, _setApiKey] = useState("sk_live_51xyz...");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {

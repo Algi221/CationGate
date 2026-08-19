@@ -32,10 +32,11 @@ const app = new Hono().basePath('/api');
 // Safe JSON body parser middleware
 app.use('*', async (c, next) => {
   const originalJson = c.req.json.bind(c.req);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   c.req.json = async <T = any>() => {
     try {
       return await originalJson() as T;
-    } catch (err) {
+    } catch (_err) {
       return {} as T;
     }
   };

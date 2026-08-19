@@ -17,7 +17,8 @@ export default function DataPendaftarPage() {
   const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
-  const [filterStatus, setFilterStatus] = useState("Semua");
+  const [_filterStatus, _setFilterStatus] = useState("Semua");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;

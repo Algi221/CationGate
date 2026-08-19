@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BlurText from '@/components/BlurText';
-import SafeImage from "@/components/SafeImage";
+import _SafeImage from "@/components/SafeImage";
 import dompurify from "dompurify";
 import { usePPDB } from "@/context/PPDBContext";
 
@@ -30,7 +30,7 @@ const sanitizeUrl = (url: string | undefined | null): string | null => {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
     }) || null;
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 };
@@ -84,7 +84,7 @@ const parseMedia = (raw: string | null | undefined) => {
         dokumen: parsed.dokumen || "",
         dokumenName: parsed.dokumen_name || ""
       };
-    } catch (e) {
+    } catch (_e) {
       // fallback
     }
   }
@@ -180,9 +180,9 @@ export default function ForumPage() {
 
   const schoolSlug = params.school_slug as string;
   const identitas = profilSekolah?.identitas || {};
-  const address = identitas.alamat || "Jl. Raya Tapos No. 123, Depok";
-  const phone = "(021) 876-5432";
-  const email = identitas.email || "info@sekolah.sch.id";
+  const _address = identitas.alamat || "Jl. Raya Tapos No. 123, Depok";
+  const _phone = "(021) 876-5432";
+  const _email = identitas.email || "info@sekolah.sch.id";
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-[#F8FAFC] dark:bg-slate-950 transition-colors duration-300">

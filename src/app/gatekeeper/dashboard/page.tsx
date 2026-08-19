@@ -33,7 +33,7 @@ interface SchoolTenant {
 export default function GatekeeperOverviewPage() {
   const [schools, setSchools] = useState<SchoolTenant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [_error, setError] = useState("");
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function GatekeeperOverviewPage() {
       let json;
       try {
         json = JSON.parse(text);
-      } catch (parseError) {
+      } catch (_parseError) {
         console.error("Invalid JSON from API:", text.substring(0, 150));
         setSchools([]);
         return;
@@ -72,7 +72,7 @@ export default function GatekeeperOverviewPage() {
       } else {
         setSchools([]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Gagal mengambil data sekolah real:", err);
       setError("Gagal menghubungkan ke database server.");
     } finally {
@@ -146,6 +146,7 @@ export default function GatekeeperOverviewPage() {
     },
   ];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartOptions: any = {
     chart: {
       type: 'donut',

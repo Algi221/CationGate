@@ -129,7 +129,7 @@ export default function DateRangeCalendar({
     return endValue ? formatDateString(day) === endValue : false;
   };
 
-  const isHoveredRange = (day: Date): boolean => {
+  const _isHoveredRange = (_day: Date): boolean => {
 
     return false;
   };

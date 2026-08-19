@@ -356,7 +356,11 @@ export default function DashboardOverview() {
         }
       } catch { /* ignore */ }
     }
-    fetch("/api/config")
+    const token = adminToken || localStorage.getItem("ppdb_admin_token");
+    fetch(`/api/config?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: token ? { "Authorization": `Bearer ${token}` } : {}
+    })
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data?.ppdb_majors_config) {
@@ -488,7 +492,7 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     if (!schoolId) return;
-    fetch(`/api/config?school_id=${schoolId}`)
+    fetch(`/api/config?school_id=${schoolId}&_t=${Date.now()}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data) {

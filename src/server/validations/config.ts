@@ -128,7 +128,8 @@ export const singleConfigSchema = z.object({
     'ppdb_title',
     'ppdb_footer_desc',
     'ppdb_map_title',
-    'ppdb_map_url'
+    'ppdb_map_url',
+    'ppdb_profil_sekolah'
   ]),
   value: z.any()
 });

@@ -15,7 +15,7 @@ import {
   X, 
   Search, 
   Filter, 
-  Sparkles, 
+  Info, 
   GraduationCap, 
   CheckSquare, 
   MinusSquare, 
@@ -124,7 +124,11 @@ export default function ClassDivisionManagement() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await fetch("/api/config");
+        const token = localStorage.getItem("ppdb_admin_token");
+        const res = await fetch(`/api/config?_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
         const json = await res.json();
         if (json.success && json.data && json.data.ppdb_school_period) {
           setSchoolPeriod(json.data.ppdb_school_period);
@@ -200,7 +204,11 @@ export default function ClassDivisionManagement() {
     setMounted(true);
     const fetchClassesConfig = async () => {
       try {
-        const res = await fetch("/api/config");
+        const token = localStorage.getItem("ppdb_admin_token");
+        const res = await fetch(`/api/config?_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
         const json = await res.json();
         if (json.success && json.data && json.data.ppdb_classes_config) {
           setClasses(json.data.ppdb_classes_config);
@@ -456,9 +464,6 @@ export default function ClassDivisionManagement() {
   const handleAssignSelectedToClass = async (className: string) => {
     if (selectedStudentIds.length === 0) return;
     
-    setIsLoading(true);
-    setLoadingProgress(0);
-    
     const total = selectedStudentIds.length;
     let successCount = 0;
 
@@ -478,18 +483,16 @@ export default function ClassDivisionManagement() {
       if (result?.success) {
         successCount++;
       }
-      
-      setLoadingProgress(Math.round(((i + 1) / total) * 100));
     }
 
-    setIsLoading(false);
     setSelectedStudentIds([]);
-    await fetchActiveStudents();
-    
-    if (successCount === total) {
-      showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className || "Belum Ditentukan"}!`);
+    // await fetchActiveStudents(); (Already handled in background by context)
+    if (successCount === total && total > 0) {
+      showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className || "Belum Ditentukan"}!`, "success");
+    } else if (successCount > 0) {
+      showToast(`Sebagian berhasil: memindahkan ${successCount} dari ${total} siswa ke kelas ${className || "Belum Ditentukan"}.`, "info");
     } else {
-      showToast(`Berhasil memindahkan ${successCount} dari ${total} siswa ke kelas ${className || "Belum Ditentukan"}.`, "info");
+      showToast(`Gagal memindahkan siswa. Pastikan Anda tidak dalam mode demo atau offline.`, "error");
     }
   };
 
@@ -539,13 +542,11 @@ export default function ClassDivisionManagement() {
       const ids: number[] = JSON.parse(dataStr);
       if (!Array.isArray(ids) || ids.length === 0) return;
 
-      setIsLoading(true);
-      setLoadingProgress(0);
-
       const total = ids.length;
       let successCount = 0;
 
-      showToast(`Memindahkan ${total} siswa ke kelas ${className}...`, "info");
+      // Hapus loading bar buat 1 siswa, tetep tampilkan kalau > 10 siswa sekalian (biar gak nge-spam)
+      if (total > 5) showToast(`Memindahkan ${total} siswa ke kelas ${className}...`, "info");
 
       for (let i = 0; i < total; i++) {
         const id = ids[i];
@@ -557,17 +558,16 @@ export default function ClassDivisionManagement() {
         if (result?.success) {
           successCount++;
         }
-        setLoadingProgress(Math.round(((i + 1) / total) * 100));
       }
 
-      setIsLoading(false);
       setSelectedStudentIds([]);
-      await fetchActiveStudents();
-
-      if (successCount === total) {
-        showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className}!`);
+      // await fetchActiveStudents(); (Already handled in background by context)
+      if (successCount === total && total > 0) {
+        showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className}!`, "success");
+      } else if (successCount > 0) {
+        showToast(`Sebagian berhasil: memindahkan ${successCount} dari ${total} siswa ke kelas ${className}.`, "info");
       } else {
-        showToast(`Berhasil memindahkan ${successCount} dari ${total} siswa ke kelas ${className}.`, "info");
+        showToast(`Gagal memindahkan siswa. Pastikan Anda tidak dalam mode demo atau offline.`, "error");
       }
     } catch (err) {
       console.error("Drop error:", err);
@@ -1051,7 +1051,7 @@ export default function ClassDivisionManagement() {
             ? "bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-300 border-rose-250 dark:border-rose-900"
             : "bg-indigo-50 dark:bg-indigo-950/90 text-indigo-600 dark:text-indigo-300 border-indigo-250 dark:border-indigo-900"
         }`}>
-          {toast.type === "success" ? <Check size={16} /> : toast.type === "error" ? <ShieldAlert size={16} /> : <Sparkles size={16} />}
+          {toast.type === "success" ? <Check size={16} /> : toast.type === "error" ? <ShieldAlert size={16} /> : <Info size={16} />}
           <span>{toast.message}</span>
         </div>
       )}

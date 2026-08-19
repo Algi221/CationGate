@@ -428,7 +428,7 @@ export default function MajorPage() {
   useEffect(() => {
     const loadDynamicConfig = async () => {
       try {
-        const res = await fetch("/api/config");
+        const res = await fetch(`/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
@@ -1006,7 +1006,7 @@ export default function MajorPage() {
               <Link href={`/${params.school_slug}/daftar`} className="bg-[#ffffff] text-slate-900 hover:bg-[#f8fafc] text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto">
                 Daftar Sekarang
               </Link>
-              <Link href={`/${params.school_slug}`} className="border border-white/30 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
+              <Link href={`/${params.school_slug}`} className="border border-white/30 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
                 Kembali Ke Beranda
               </Link>
             </div>

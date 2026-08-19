@@ -11,9 +11,7 @@ import Swal from "sweetalert2";
 
 export default function GatekeeperSettingsPage() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [starterPrice, setStarterPrice] = useState("Rp 1.500.000");
-  const [proPrice, setProPrice] = useState("Rp 3.500.000");
-  const [enterprisePrice, setEnterprisePrice] = useState("Rp 7.500.000");
+
 
   const [saving, setSaving] = useState(false);
 
@@ -88,41 +86,7 @@ export default function GatekeeperSettingsPage() {
         </div>
       </div>
 
-      {/* SaaS Pricing Configurations */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-        <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-          <Globe className="w-5 h-5 text-blue-600" /> Konfigurasi Tarif Paket SaaS Sekolah
-        </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Paket STARTER / Bln</label>
-            <Input
-              value={starterPrice}
-              onChange={(e) => setStarterPrice(e.target.value)}
-              className="h-10 rounded-xl bg-white dark:bg-slate-900 text-xs font-mono font-bold"
-            />
-          </div>
-
-          <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 space-y-2">
-            <label className="text-xs font-bold text-blue-900 dark:text-blue-200">Paket PRO / Bln (Populer)</label>
-            <Input
-              value={proPrice}
-              onChange={(e) => setProPrice(e.target.value)}
-              className="h-10 rounded-xl bg-white dark:bg-slate-900 text-xs font-mono font-bold text-blue-600"
-            />
-          </div>
-
-          <div className="p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900 space-y-2">
-            <label className="text-xs font-bold text-purple-900 dark:text-purple-200">Paket ENTERPRISE / Thn</label>
-            <Input
-              value={enterprisePrice}
-              onChange={(e) => setEnterprisePrice(e.target.value)}
-              className="h-10 rounded-xl bg-white dark:bg-slate-900 text-xs font-mono font-bold text-purple-600"
-            />
-          </div>
-        </div>
-      </div>
 
     </div>
   );

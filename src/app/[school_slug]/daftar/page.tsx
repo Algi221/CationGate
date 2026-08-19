@@ -305,6 +305,7 @@ export default function DaftarPage() {
     noIjazah: "",
     noSKHUN: "",
     noPesertaUN: "",
+    deklarasi: false,
     lamaBelajar: "",
     pindahanDari: "",
     alasanPindah: "",

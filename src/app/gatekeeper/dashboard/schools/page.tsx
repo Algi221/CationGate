@@ -41,6 +41,12 @@ function GatekeeperSchoolManagementContent() {
   const [statusFilter, setStatusFilter] = useState(initialFilter);
   const [selectedSchoolModal, setSelectedSchoolModal] = useState<SchoolTenant | null>(null);
 
+  // Sync state when URL params change (e.g. from sidebar clicks)
+  useEffect(() => {
+    const raw = searchParams?.get("filter") || "ALL";
+    setStatusFilter(raw === "TAKEDOWN" ? "SUSPENDED" : raw);
+  }, [searchParams]);
+
   // School Tenants State (Fetched Live from DB)
   const [schools, setSchools] = useState<SchoolTenant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,24 +232,40 @@ function GatekeeperSchoolManagementContent() {
     return matchesSearch && matchesStatus;
   });
 
+  const getPageTitle = () => {
+    if (statusFilter === "FULL_VERIFIED") return "Sekolah Aktif (Verified)";
+    if (statusFilter === "PENDING_VERIFICATION") return "Menunggu Verifikasi";
+    if (statusFilter === "UNVERIFIED") return "Sekolah Belum Verifikasi";
+    if (statusFilter === "SUSPENDED") return "Sekolah Dibekukan (Takedown)";
+    return "Manajemen Semua Sekolah";
+  };
+
+  const getPageDescription = () => {
+    if (statusFilter === "FULL_VERIFIED") return "Daftar sekolah yang telah terverifikasi legalitasnya dan aktif beroperasi.";
+    if (statusFilter === "PENDING_VERIFICATION") return "Sekolah yang telah mengunggah SK Operasional dan menunggu persetujuan Anda.";
+    if (statusFilter === "UNVERIFIED") return "Sekolah yang baru mendaftar dan belum mengunggah dokumen SK Operasional.";
+    if (statusFilter === "SUSPENDED") return "Sekolah yang aksesnya dibekukan atau di-takedown dari platform.";
+    return "Kelola legalitas sekolah, verifikasi dokumen SK Operasional, dan pemantauan akses dashboard tenant.";
+  };
+
   return (
     <div className="space-y-6">
       
       {/* Header Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300">
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
             <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            Manajemen Sekolah SaaS (Tenants)
+            {getPageTitle()}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Kelola legalitas sekolah, verifikasi dokumen SK Operasional, dan pemantauan akses dashboard tenant.
+            {getPageDescription()}
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-center">
           <span className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold font-mono">
-            Total: {schools.length} Sekolah
+            Total: {filteredSchools.length} Sekolah
           </span>
           <button
             onClick={fetchSchools}
@@ -291,7 +313,16 @@ function GatekeeperSchoolManagementContent() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setStatusFilter(tab.id)}
+                onClick={() => {
+                  setStatusFilter(tab.id);
+                  const params = new URLSearchParams(searchParams?.toString() || "");
+                  if (tab.id === "ALL") {
+                    params.delete("filter");
+                  } else {
+                    params.set("filter", tab.id);
+                  }
+                  window.history.pushState(null, '', `?${params.toString()}`);
+                }}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   active
                     ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
@@ -305,153 +336,229 @@ function GatekeeperSchoolManagementContent() {
         </div>
       </div>
 
-      {/* Tenants Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50/80 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                <th className="py-4 px-5">Sekolah</th>
-                <th className="py-4 px-4">NPSN &amp; Dapodik</th>
-                <th className="py-4 px-4">Email Resmi</th>
-                <th className="py-4 px-4">Paket SaaS</th>
-                <th className="py-4 px-4">Status Verifikasi</th>
-                <th className="py-4 px-5 text-right">Aksi Platform</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">
-                    Memuat data sekolah real-time...
-                  </td>
+      {/* Dynamic Views Based on Status */}
+      {statusFilter === "PENDING_VERIFICATION" ? (
+        // PENDING VERIFICATION VIEW (Grid/Card Focus on Docs)
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loading ? (
+            <div className="col-span-full py-12 text-center text-slate-400 font-bold">Memuat data verifikasi...</div>
+          ) : filteredSchools.length === 0 ? (
+            <div className="col-span-full py-12 text-center text-slate-400 font-bold">Tidak ada antrean verifikasi.</div>
+          ) : filteredSchools.map((sc) => (
+            <div key={sc.id} className="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900/50 rounded-3xl p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-all">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 font-black text-lg flex items-center justify-center shrink-0">
+                    {sc.name.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 dark:text-white text-base leading-snug">{sc.name}</h4>
+                    <span className="text-xs text-slate-500 font-mono">NPSN: {sc.npsn || "-"}</span>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase animate-pulse">Menunggu</span>
+              </div>
+              
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Admin:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{sc.admin_name || "Admin Sekolah"}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Email:</span>
+                  <span className="font-mono text-slate-700 dark:text-slate-300">{sc.official_email}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Berkas:</span>
+                  <button onClick={() => setSelectedSchoolModal(sc)} className="font-bold text-blue-600 hover:underline flex items-center gap-1">
+                    <FileText className="w-3.5 h-3.5"/> Cek SK Legalitas
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-auto pt-2 flex gap-2">
+                <button
+                  onClick={() => handleApproveVerification(sc)}
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all flex justify-center items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4"/> Setujui Verifikasi
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+      ) : statusFilter === "SUSPENDED" ? (
+        // SUSPENDED / TAKEDOWN VIEW (Red Warning Table)
+        <div className="bg-rose-50/30 dark:bg-rose-950/10 rounded-3xl border border-rose-200 dark:border-rose-900/50 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/30 flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-rose-600" />
+            <h3 className="text-rose-900 dark:text-rose-200 font-bold text-sm">Daftar Instansi yang Dibekukan</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="text-[11px] font-extrabold uppercase tracking-wider text-rose-500 dark:text-rose-400">
+                  <th className="py-4 px-5">Nama Instansi</th>
+                  <th className="py-4 px-4">Kontak Admin</th>
+                  <th className="py-4 px-4">Alasan Suspend</th>
+                  <th className="py-4 px-5 text-right">Aksi Pemulihan</th>
                 </tr>
-              ) : filteredSchools.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">
-                    Tidak ada sekolah yang sesuai dengan filter pencarian.
-                  </td>
-                </tr>
-              ) : filteredSchools.map((sc) => (
-                <tr key={sc.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-850/50 transition-colors">
-                  
-                  {/* Sekolah */}
-                  <td className="py-4 px-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
-                        {sc.name.substring(0, 2).toUpperCase()}
+              </thead>
+              <tbody className="divide-y divide-rose-100 dark:divide-rose-900/30 text-xs font-medium">
+                {loading ? (
+                  <tr><td colSpan={4} className="py-12 text-center text-rose-400 font-bold">Memuat data...</td></tr>
+                ) : filteredSchools.length === 0 ? (
+                  <tr><td colSpan={4} className="py-12 text-center text-slate-400 font-bold">Tidak ada instansi yang dibekukan.</td></tr>
+                ) : filteredSchools.map((sc) => (
+                  <tr key={sc.id} className="hover:bg-rose-50 dark:hover:bg-rose-900/20">
+                    <td className="py-4 px-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900 text-rose-600 flex items-center justify-center shrink-0">
+                          <XCircle className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-rose-900 dark:text-rose-100">{sc.name}</h4>
+                          <span className="text-rose-500 font-mono text-[10px]">NPSN: {sc.npsn}</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{sc.name}</h4>
-                        <a href={`/${encodeURIComponent(sc.slug)}`} target="_blank" rel="noreferrer" className="text-xs text-blue-600 dark:text-blue-400 font-mono hover:underline">
-                          /{sc.slug}
+                    </td>
+                    <td className="py-4 px-4 text-slate-600 dark:text-slate-400 font-mono">{sc.official_email}</td>
+                    <td className="py-4 px-4">
+                      <span className="px-2.5 py-1 rounded-md bg-rose-100 text-rose-700 text-[10px] font-bold">Pelanggaran / Belum Verifikasi</span>
+                    </td>
+                    <td className="py-4 px-5 text-right">
+                      <button onClick={() => handleToggleSuspend(sc)} className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 font-bold text-slate-700 dark:text-slate-200 shadow-sm transition-all flex items-center gap-1.5 ml-auto">
+                        <Unlock className="w-4 h-4"/> Pulihkan Akses
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      ) : (
+        // DEFAULT / ACTIVE VIEW (Standard Monitoring Table)
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <th className="py-4 px-5">Sekolah</th>
+                  <th className="py-4 px-4">NPSN & Dapodik</th>
+                  <th className="py-4 px-4">Email Resmi</th>
+                  <th className="py-4 px-4">Paket SaaS</th>
+                  <th className="py-4 px-4">Status Verifikasi</th>
+                  <th className="py-4 px-5 text-right">Aksi Platform</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium">
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">Memuat data sekolah real-time...</td>
+                  </tr>
+                ) : filteredSchools.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">Tidak ada sekolah yang sesuai dengan filter pencarian.</td>
+                  </tr>
+                ) : filteredSchools.map((sc) => (
+                  <tr key={sc.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-850/50 transition-colors">
+                    <td className="py-4 px-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                          {sc.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <h4 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{sc.name}</h4>
+                          <a href={`/${encodeURIComponent(sc.slug)}`} target="_blank" rel="noreferrer" className="text-xs text-blue-600 dark:text-blue-400 font-mono hover:underline">
+                            /{sc.slug}
+                          </a>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 font-mono text-slate-700 dark:text-slate-300">
+                      <p className="font-bold">{sc.npsn || "-"}</p>
+                      <p className="text-[10px] text-slate-400">{sc.dapodik_code || "-"}</p>
+                    </td>
+                    <td className="py-4 px-4 text-slate-700 dark:text-slate-300 font-mono">
+                      {sc.official_email || "-"}
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] uppercase border border-slate-200 dark:border-slate-700">
+                        {sc.plan_type || "TRIAL"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      {sc.status === "FULL_VERIFIED" ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 text-xs font-bold">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> VERIFIED
+                        </span>
+                      ) : sc.status === "PENDING_VERIFICATION" ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900 text-xs font-bold animate-pulse">
+                          <Clock className="w-3.5 h-3.5" /> MENUNGGU SK
+                        </span>
+                      ) : sc.status === "SUSPENDED" ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-bold">
+                          <XCircle className="w-3.5 h-3.5" /> DIBEKUKAN
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                          <Clock className="w-3.5 h-3.5" /> BELUM KIRIM SK
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-4 px-5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setSelectedSchoolModal(sc)}
+                          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          title="Lihat Detail & Berkas"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        {sc.status !== "FULL_VERIFIED" && (
+                          <button
+                            onClick={() => handleApproveVerification(sc)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-all"
+                            title="Setujui Verifikasi"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleTakedownSchool(sc)}
+                          className="px-2.5 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 hover:bg-rose-100 text-xs font-bold border border-rose-200 transition-colors"
+                          title="Takedown / Suspend"
+                        >
+                          Takedown
+                        </button>
+                        <a
+                          href={`/${encodeURIComponent(sc.slug)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                        <a
+                          href={`/${encodeURIComponent(sc.slug)}/dashboard`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors"
+                        >
+                          Dashboard
                         </a>
                       </div>
-                    </div>
-                  </td>
-
-                  {/* NPSN & Dapodik */}
-                  <td className="py-4 px-4 font-mono text-slate-700 dark:text-slate-300">
-                    <p className="font-bold">{sc.npsn || "-"}</p>
-                    <p className="text-[10px] text-slate-400">{sc.dapodik_code || "-"}</p>
-                  </td>
-
-                  {/* Email Resmi */}
-                  <td className="py-4 px-4 text-slate-700 dark:text-slate-300 font-mono">
-                    {sc.official_email || "-"}
-                  </td>
-
-                  {/* Paket SaaS */}
-                  <td className="py-4 px-4">
-                    <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] uppercase border border-slate-200 dark:border-slate-700">
-                      {sc.plan_type || "TRIAL"}
-                    </span>
-                  </td>
-
-                  {/* Status Verifikasi */}
-                  <td className="py-4 px-4">
-                    {sc.status === "FULL_VERIFIED" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 text-xs font-bold">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> VERIFIED
-                      </span>
-                    ) : sc.status === "PENDING_VERIFICATION" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900 text-xs font-bold animate-pulse">
-                        <Clock className="w-3.5 h-3.5" /> MENUNGGU SK
-                      </span>
-                    ) : sc.status === "SUSPENDED" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-bold">
-                        <XCircle className="w-3.5 h-3.5" /> DIBEKUKAN
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 text-xs font-bold">
-                        <Clock className="w-3.5 h-3.5" /> BELUM KIRIM SK
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Aksi Platform */}
-                  <td className="py-4 px-5 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      
-                      {/* Lihat Detail Modal */}
-                      <button
-                        onClick={() => setSelectedSchoolModal(sc)}
-                        className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        title="Lihat Seluruh Data & Dokumen SK"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-
-                      {/* Approve Button if pending/unverified */}
-                      {sc.status !== "FULL_VERIFIED" && (
-                        <button
-                          onClick={() => handleApproveVerification(sc)}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-all"
-                          title="Approve & Verifikasi Sekolah"
-                        >
-                          <Check className="w-3.5 h-3.5" /> Approve
-                        </button>
-                      )}
-
-                      {/* Takedown Button */}
-                      <button
-                        onClick={() => handleTakedownSchool(sc)}
-                        className="px-2.5 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-100 text-xs font-bold border border-rose-200 dark:border-rose-900 transition-colors"
-                        title="Takedown / Dibekukan"
-                      >
-                        Takedown
-                      </button>
-
-                      {/* Direct Links */}
-                      <a
-                        href={`/${encodeURIComponent(sc.slug)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        title="Lihat Landing Page Sekolah"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-
-                      <a
-                        href={`/${encodeURIComponent(sc.slug)}/dashboard`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors"
-                        title="Buka Dashboard Tenant Sekolah"
-                      >
-                        Dashboard
-                      </a>
-
-                    </div>
-                  </td>
-
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── MODAL DETAIL LEGALITAS & BERKAS DOKUMEN SEKOLAH ─────────────────── */}
       {selectedSchoolModal && (

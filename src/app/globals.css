@@ -330,9 +330,6 @@ html.dark body {
 }
 
 .badge-pill {
-  background: rgba(0, 102, 255, 0.08);
-  border: 1px solid rgba(0, 102, 255, 0.15);
-  color: var(--primary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -344,9 +341,6 @@ html.dark body {
 }
 
 .dark .badge-pill {
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
 }
 
 .hero-title {
@@ -354,7 +348,6 @@ html.dark body {
   line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--heading);
   max-width: 900px;
   margin-bottom: 24px;
   animation: fadeInUp 0.9s ease-out;
@@ -363,7 +356,6 @@ html.dark body {
 }
 
 html.dark .hero-title {
-  color: var(--heading);
   filter: drop-shadow(0px 2px 16px rgba(0, 0, 0, 0.4));
 }
 
@@ -373,7 +365,6 @@ html.dark .hero-title {
 
 .hero-subtitle {
   font-size: 16px;
-  color: var(--dark-muted);
   max-width: 600px;
   line-height: 1.6;
   margin-bottom: 32px;
@@ -382,7 +373,6 @@ html.dark .hero-title {
 }
 
 html.dark .hero-subtitle {
-  color: var(--body);
 }
 
 .hero-action {

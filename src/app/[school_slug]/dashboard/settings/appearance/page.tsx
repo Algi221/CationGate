@@ -33,8 +33,9 @@ export default function AppearanceSettingsPage() {
     if (!adminToken) return;
     try {
       setIsLoading(true);
-      const url = schoolId ? `/api/config?school_id=${schoolId}` : `/api/config`;
+      const url = schoolId ? `/api/config?school_id=${schoolId}&_t=${Date.now()}` : `/api/config?_t=${Date.now()}`;
       const res = await fetch(url, {
+        cache: 'no-store',
         headers: {
           'Authorization': `Bearer ${adminToken}`
         }

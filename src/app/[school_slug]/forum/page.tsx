@@ -145,7 +145,8 @@ export default function ForumPage() {
         }
         
         try {
-          const configRes = await fetch(`${BACKEND_URL}/api/config`);
+          const schoolSlug = params?.school_slug as string || '';
+          const configRes = await fetch(`${BACKEND_URL}/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
           const configJson = await configRes.json();
           if (configJson.success && configJson.data && configJson.data.ppdb_school_period) {
             setSchoolPeriod(configJson.data.ppdb_school_period);

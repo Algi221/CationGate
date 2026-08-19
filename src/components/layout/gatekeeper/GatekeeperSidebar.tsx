@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Building2, Wallet, Activity, Settings, 
-  ShieldCheck, ChevronLeft, ChevronRight, ChevronDown
+  ShieldCheck, ChevronLeft, ChevronRight, ChevronDown, AlertCircle
 } from "lucide-react";
 
 interface GatekeeperSidebarProps {
@@ -66,17 +66,10 @@ export function GatekeeperSidebar({
       ]
     },
     {
-      category: "Keuangan & Langganan",
+      category: "Billing & Subscription",
       items: [
-        {
-          href: "/gatekeeper/dashboard/billing",
-          icon: <Wallet size={18} />,
-          label: "Billing & Paket",
-          subItems: [
-            { label: "Manajemen Paket", href: "/gatekeeper/dashboard/plans" },
-            { label: "Riwayat Transaksi", href: "/gatekeeper/dashboard/billing/transactions" },
-          ]
-        }
+        { href: "/gatekeeper/dashboard/billing", icon: <Wallet size={18} />, label: "Pendapatan & Tagihan" },
+        { href: "/gatekeeper/dashboard/plans", icon: <Activity size={18} />, label: "Paket Berlangganan" }
       ]
     },
     {
@@ -97,7 +90,8 @@ export function GatekeeperSidebar({
     {
       category: "Pengaturan Platform",
       items: [
-        { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Sistem" }
+        { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Global Settings" },
+        { href: "/gatekeeper/dashboard/settings/admins", icon: <ShieldCheck size={18} />, label: "Super Admins" },
       ]
     }
   ];

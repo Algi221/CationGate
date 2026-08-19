@@ -17,8 +17,8 @@ interface Plan {
 }
 
 /** Format number to "Rp 750.000" style with dots */
-function formatRupiahDisplay(num: number): string {
-  return `Rp ${num.toLocaleString('id-ID')}`;
+function formatRupiahDisplay(num: number | string): string {
+  return `Rp ${Number(num).toLocaleString('id-ID')}`;
 }
 
 /** Parse "750.000" or "750000" back to number */
@@ -28,9 +28,9 @@ function parseRupiahInput(raw: string): number {
 }
 
 /** Format raw number to "750.000" display string for input */
-function formatInputDisplay(num: number): string {
-  if (num === 0) return '';
-  return num.toLocaleString('id-ID');
+function formatInputDisplay(num: number | string): string {
+  if (num === '' || num === null || num === undefined) return '';
+  return Number(num).toLocaleString('id-ID');
 }
 
 export default function GatekeeperPlansPage() {
@@ -96,13 +96,19 @@ export default function GatekeeperPlansPage() {
   };
 
   const handlePriceChange = (rawValue: string) => {
-    const num = parseRupiahInput(rawValue);
+    const cleaned = rawValue.replace(/[^\d]/g, '');
+    if (!cleaned) {
+      setPriceYearly(0);
+      setPriceYearlyDisplay('');
+      return;
+    }
+    const num = parseInt(cleaned, 10);
     setPriceYearly(num);
-    setPriceYearlyDisplay(num > 0 ? formatInputDisplay(num) : '');
+    setPriceYearlyDisplay(num.toLocaleString('id-ID'));
   };
 
   const handleSave = async () => {
-    if (!name || priceYearly <= 0) {
+    if (!name || priceYearlyDisplay === '') {
       Swal.fire("Peringatan", "Mohon lengkapi nama paket dan harga tahunan", "warning");
       return;
     }

@@ -92,6 +92,24 @@ const sanitizeSrc = (src: string | undefined | null): string | null => {
   return url;
 };
 
+const transformMapUrl = (url: string | undefined | null): string | null => {
+  if (!url) return null;
+  const iframeMatch = url.match(/src="([^"]+)"/);
+  if (iframeMatch) return iframeMatch[1];
+  if (url.includes("pb=") || url.includes("output=embed")) return url;
+  if (url.includes("/place/")) {
+    try {
+      const placeName = url.split("/place/")[1].split("/")[0];
+      return `https://maps.google.com/maps?q=${placeName}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    } catch(e) {}
+  }
+  const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (match) {
+    return `https://maps.google.com/maps?q=${match[1]},${match[2]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+  return url;
+};
+
 const SafeImage = ({ src, alt, width, height, className, onError, fill, priority, sizes, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
   const isDataUrl = src && src.startsWith("data:");
@@ -398,7 +416,7 @@ export default function Home() {
         }
 
         if (schoolSlug === 'demo') return;
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}`);
+        const res = await fetch(`/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
         const data = await res.json();
 
         if (data.success && data.data) {
@@ -629,7 +647,7 @@ export default function Home() {
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
             )}
-            <div className="absolute inset-0 bg-white/50 dark:bg-[#020617] backdrop-blur-none pointer-events-none"></div>
+            <div className="absolute inset-0 bg-slate-900/60 dark:bg-[#020617]/80 backdrop-blur-[2px] pointer-events-none"></div>
           </div>
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[90vh] flex flex-col justify-center">
@@ -682,7 +700,7 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                <div className="badge-info">
+                <div className="badge-info bg-white/10 backdrop-blur-md border-white/20 text-white">
                   <span>{displayAlias}</span>
                 </div>
               </Link>
@@ -693,28 +711,28 @@ export default function Home() {
 
           {/* Hero Copy */}
           <div className="badge-wrapper relative z-10 flex flex-col items-center gap-3">
-            <span className="badge-pill">SPMB {schoolDisplayName.toUpperCase()}</span>
-            <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#0f172a] px-4 py-2 rounded-full backdrop-blur-md border border-slate-200 dark:border-slate-800/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-               <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
+            <span className="badge-pill !bg-white/10 !text-white !border-white/20 backdrop-blur-md">SPMB {schoolDisplayName.toUpperCase()}</span>
+            <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold !text-white bg-black/30 px-4 py-2 rounded-full backdrop-blur-md border border-white/20 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+               <MapPin size={14} className="text-blue-400" />
                <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>
             </div>
           </div>
 
-          <h1 className="hero-title relative z-10">
+          <h1 className="hero-title !text-white relative z-10 drop-shadow-2xl">
             {isConfigLoaded ? heroTitle : "\u00A0"} <br />
             {isConfigLoaded ? (
               <ShinyText 
                 text={heroTitleSub} 
                 speed={3} 
                 delay={1} 
-                color="var(--heading)" 
-                shineColor="#0ea5e9" 
+                color="#f8fafc" 
+                shineColor="#38bdf8" 
                 spread={135} 
               />
             ) : "\u00A0"}
           </h1>
 
-          <p className="hero-subtitle relative z-10">
+          <p className="hero-subtitle !text-slate-200 relative z-10 drop-shadow-lg font-medium">
             {isConfigLoaded ? heroSubtitle : "\u00A0"}
           </p>
 
@@ -1265,7 +1283,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
               
               <iframe
-                src={sanitizeUrl(mapUrl) || undefined}
+                src={transformMapUrl(sanitizeUrl(mapUrl)) || undefined}
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const LOADING_KEY = "cationgate_loading_session";
+
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "show" | "exit">("start");
   const [isMounted, setIsMounted] = useState<boolean>(false);
@@ -12,13 +14,27 @@ export default function LoadingScreen() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Cek apakah ini hard refresh atau first visit
+    // Navigation Type API lebih akurat
     const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-    const navType = navEntries.length > 0 ? navEntries[0].type : "";
+    const navType = navEntries.length > 0 ? navEntries[0].type : "navigate";
 
+    // Jika user menekan tombol Back/Forward, jangan tampilkan loading
     if (navType === "back_forward") {
+      setIsMounted(false);
       return;
     }
 
+    // Jika sessionStorage ada, berarti sudah pernah load di session ini (refresh)
+    // Kita tetap tampilkan loading di refresh, HANYA skip di back_forward
+    // Namun, untuk mencegah flash saat navigasi internal, kita bisa cek session
+    const hasLoaded = sessionStorage.getItem(LOADING_KEY);
+    if (hasLoaded && navType !== "reload" && navType !== "navigate") {
+        setIsMounted(false);
+        return;
+    }
+
+    sessionStorage.setItem(LOADING_KEY, "true");
     setIsMounted(true);
     document.body.style.overflow = "hidden";
 

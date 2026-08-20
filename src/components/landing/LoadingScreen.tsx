@@ -103,28 +103,16 @@ export default function LoadingScreen() {
             }}
             transition={{ duration: 0.4, ease: "easeIn" }}
           >
-            {/* Animated Logo */}
+            {/* Animated Logo (Rolling from right to center) */}
             <motion.div
-              initial={{ scale: 0, opacity: 0, rotate: -15 }}
-              animate={{ 
-                scale: 1, 
-                opacity: 1, 
-                rotate: 0,
-                y: [0, -8, 0]
-              }}
+              initial={{ x: "100vw", rotate: 720, opacity: 0 }}
+              animate={{ x: 0, rotate: 0, opacity: 1 }}
               transition={{
-                scale: { duration: 0.8, ease: premiumEasing },
-                opacity: { duration: 0.6 },
-                rotate: { duration: 0.8, ease: premiumEasing },
-                y: {
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  duration: 2.2,
-                  ease: "easeInOut",
-                  delay: 0.8
-                }
+                duration: 1.6,
+                ease: premiumEasing,
+                delay: 0.1
               }}
-              className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 mb-4 sm:mb-6 flex items-center justify-center drop-shadow-lg"
+              className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mb-6 flex items-center justify-center drop-shadow-xl"
             >
               <Image
                 src="/assets/catpeer/CationGate_Logo.png"

@@ -1642,7 +1642,7 @@ export default function DaftarPage() {
                     });
                   }
                 }}
-                className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-primary/5 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-primary dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/55 dark:border-blue-800/45"
+                className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-primary/5 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-primary dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/50 dark:border-blue-800/30"
               >
                 Daftar Calon Baru Lainnya
               </button>

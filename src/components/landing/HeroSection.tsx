@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Lottie from "lottie-react";
-import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Play, CheckCircle2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function HeroSPMB() {
@@ -72,24 +72,32 @@ export default function HeroSPMB() {
           </h2>
 
           <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-sm mx-auto lg:mx-0">
-            Dilengkapi manajemen database pendaftar, seleksi nilai rapor
-            otomatis, export data, hingga integrasi pembayaran digital.
+            Dilengkapi manajemen siswa pendaftar dan siswa aktif, export data, hingga integrasi pembayaran digital.
           </p>
 
-          {/* Tombol Aksi: Redirect ke /daftar dan /demo */}
-          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
-            <a
-              href="/daftar"
-              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-[#172A35] text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-[#172A35]/20 flex items-center justify-center gap-2 hover:bg-black hover:scale-105 active:scale-95 transition-all"
-            >
-              Daftar Sekolah <ArrowRight size={15} />
-            </a>
-            <a
-              href="/demo"
-              className="w-full sm:w-auto px-7 py-4 rounded-2xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:border-gray-900 hover:scale-105 active:scale-95 transition-all shadow-sm"
-            >
-              <Play size={14} className="fill-gray-900" /> Lihat Demo
-            </a>
+          {/* Micro-callout ajakan demo interaktif */}
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-medium text-gray-500">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+              </span>
+              <span>Eksplorasi langsung tanpa perlu login:</span>
+            </div>
+
+            {/* Tombol Aksi: Redirect ke /demo/dashboard dan /demo */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+              <a
+                href="/demo/dashboard"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-[#172A35] text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-[#172A35]/20 flex items-center justify-center gap-2 hover:bg-black hover:scale-105 active:scale-95 transition-all"
+              >
+                Dashboard Demo <ArrowRight size={15} />
+              </a>
+              <a
+                href="/demo"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:border-gray-900 hover:scale-105 active:scale-95 transition-all shadow-sm"
+              >
+                <Play size={14} className="fill-gray-900" /> Landingpage Demo
+              </a>
+            </div>
           </div>
         </div>
       </div>

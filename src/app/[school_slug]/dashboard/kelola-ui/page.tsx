@@ -27,7 +27,9 @@ import {
   ArrowLeft,
   Calendar,
   Database,
-  Building
+  Building,
+  Globe,
+  Power
 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadFileDirect, base64ToFile } from "@/utils/storage";
@@ -432,9 +434,6 @@ export default function KelolaUserInterface() {
   const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
   const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB Online");
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.");
-  const [heroMediaUrl, setHeroMediaUrl] = useState("");
-  const [heroMediaType, setHeroMediaType] = useState<"video" | "image" | "none">("none");
-  const [_compressing, setCompressing] = useState(false);
   const [phone, setPhone] = useState("-");
   const [email, setEmail] = useState("info@sekolah.sch.id");
   const [address, setAddress] = useState("Alamat Lengkap Sekolah");
@@ -503,6 +502,7 @@ export default function KelolaUserInterface() {
   const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
   const [formFee, setFormFee] = useState("250000");
+  const [isLandingPageActive, setIsLandingPageActive] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -515,11 +515,10 @@ export default function KelolaUserInterface() {
     if (!mounted || loading) return;
 
     const draft = {
+      ppdb_landing_active: isLandingPageActive,
       ppdb_hero_title: heroTitle,
       ppdb_hero_title_sub: heroTitleSub,
       ppdb_hero_subtitle: heroSubtitle,
-      ppdb_hero_media_url: heroMediaUrl,
-      ppdb_hero_media_type: heroMediaType,
       ppdb_phone: phone,
       ppdb_email: email,
       ppdb_address: address,
@@ -545,11 +544,10 @@ export default function KelolaUserInterface() {
   }, [
     mounted,
     loading,
+    isLandingPageActive,
     heroTitle,
     heroTitleSub,
     heroSubtitle,
-    heroMediaUrl,
-    heroMediaType,
     phone,
     email,
     address,
@@ -578,7 +576,11 @@ export default function KelolaUserInterface() {
   async function fetchCurrentConfig() {
     try {
       setLoading(true);
-      const res = await fetch("/api/config");
+      const token = adminToken || localStorage.getItem("ppdb_admin_token");
+      const url = slug ? `/api/config?school_slug=${slug}` : "/api/config";
+      const res = await fetch(url, {
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+      });
       const json = await res.json();
       const config = (json.success && json.data) ? json.data : {};
 
@@ -599,8 +601,6 @@ export default function KelolaUserInterface() {
       else if (!draft) setHeroTitleSub(`Portal PPDB ${ppdbTitle || 'Online'}`);
       
       if (activeConfig.ppdb_hero_subtitle) setHeroSubtitle(activeConfig.ppdb_hero_subtitle);
-      if (activeConfig.ppdb_hero_media_url) setHeroMediaUrl(activeConfig.ppdb_hero_media_url);
-      if (activeConfig.ppdb_hero_media_type) setHeroMediaType(activeConfig.ppdb_hero_media_type);
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
       if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
@@ -670,6 +670,9 @@ export default function KelolaUserInterface() {
         } else if (bankData && typeof bankData === "object") {
           setBankConfigList([bankData]);
         }
+      }
+      if (activeConfig.ppdb_landing_active !== undefined) {
+        setIsLandingPageActive(activeConfig.ppdb_landing_active === true || activeConfig.ppdb_landing_active === "true");
       }
       if (activeConfig.ppdb_fields_config && typeof activeConfig.ppdb_fields_config === "object") {
         setFieldsConfigUI(prev => ({ ...prev, ...activeConfig.ppdb_fields_config }));
@@ -839,11 +842,10 @@ export default function KelolaUserInterface() {
       }
 
       const configsPayload = {
+        ppdb_landing_active: isLandingPageActive,
         ppdb_hero_title: heroTitle,
         ppdb_hero_title_sub: heroTitleSub,
         ppdb_hero_subtitle: heroSubtitle,
-        ppdb_hero_media_url: heroMediaUrl,
-        ppdb_hero_media_type: heroMediaType,
         ppdb_phone: phone,
         ppdb_email: email,
         ppdb_address: address,
@@ -932,7 +934,6 @@ export default function KelolaUserInterface() {
 
   const handleSchoolLogoChange = async (file: File) => {
     try {
-      setCompressing(true);
       showToastMsg("Mengompresi logo...");
       const result = await compressImage(file, 400, 400, 0.85);
       
@@ -944,41 +945,6 @@ export default function KelolaUserInterface() {
       showToastMsg(`✨ Logo berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
     } catch (_e) {
       showToastMsg("Gagal memproses logo.", "error");
-    } finally {
-      setCompressing(false);
-    }
-  };
-
-  const handleHeroMediaFileChange = async (file: File) => {
-    try {
-      setCompressing(true);
-      if (file.type.startsWith("video/")) {
-        showToastMsg("Memproses video...");
-        const result = await compressVideo(file);
-        
-        showToastMsg("Mengunggah video ke cloud...", "info");
-        const processedFile = base64ToFile(result.base64, file.name);
-        const publicUrl = await uploadFileDirect(processedFile, 'hero_video');
-        
-        setHeroMediaUrl(publicUrl);
-        setHeroMediaType("video");
-        showToastMsg("✨ Video Hero berhasil diunggah!", "success");
-      } else {
-        showToastMsg("Mengompresi gambar...");
-        const result = await compressImage(file, 1600, 1000, 0.8);
-        
-        showToastMsg("Mengunggah gambar ke cloud...", "info");
-        const compressedFile = base64ToFile(result.base64, file.name);
-        const publicUrl = await uploadFileDirect(compressedFile, 'hero_image');
-        
-        setHeroMediaUrl(publicUrl);
-        setHeroMediaType("image");
-        showToastMsg(`✨ Foto Hero berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
-      }
-    } catch (_e) {
-      showToastMsg("Gagal memproses media Hero.", "error");
-    } finally {
-      setCompressing(false);
     }
   };
 
@@ -1014,6 +980,48 @@ export default function KelolaUserInterface() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleToggleLandingPageStatus = async () => {
+    const nextStatus = !isLandingPageActive;
+    const statusText = nextStatus ? "DIBUKA (PUBLIK)" : "DITUTUP (DRAFT / MAINTENANCE)";
+    
+    Swal.fire({
+      title: `Ubah Status Landing Page ke ${nextStatus ? 'Buka' : 'Tutup'}?`,
+      text: nextStatus 
+        ? "Landing page / subdomain sekolah akan dapat diakses publik oleh calon pendaftar."
+        : "Landing page / subdomain sekolah akan dinonaktifkan sementara dan menampilkan informasi pemeliharaan.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: nextStatus ? "#10B981" : "#F43F5E",
+      confirmButtonText: `Ya, ${nextStatus ? 'Buka' : 'Tutup'} Landing Page`,
+      cancelButtonText: "Batal",
+      customClass: { popup: "rounded-3xl" }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setIsLandingPageActive(nextStatus);
+        try {
+          const token = adminToken || localStorage.getItem("ppdb_admin_token");
+          await fetch("/api/config/save-all", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({
+              configs: { ppdb_landing_active: nextStatus },
+              description: `Ubah status publikasi landing page ke ${statusText}`
+            })
+          });
+          Swal.fire({
+            title: "Status Berhasil Diperbarui!",
+            text: `Landing page sekolah sekarang ${statusText}.`,
+            icon: "success",
+            confirmButtonColor: "#2563EB",
+            customClass: { popup: "rounded-2xl" }
+          });
+        } catch (_e) {
+          showToastMsg("Gagal memperbarui status landing page.", "error");
+        }
+      }
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -1108,6 +1116,61 @@ export default function KelolaUserInterface() {
           >
             <Check size={14} />
             <span>Simpan Perubahan</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Landing Page & Subdomain Public Status Control Banner */}
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold shrink-0 ${
+            isLandingPageActive
+              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
+              : "bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-800"
+          }`}>
+            <Globe className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-black text-slate-800 dark:text-white">
+                Status Landing Page / Subdomain Sekolah
+              </h3>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                isLandingPageActive 
+                  ? "bg-emerald-500 text-white" 
+                  : "bg-rose-500 text-white"
+              }`}>
+                {isLandingPageActive ? "PUBLIK (LIVE)" : "DITUTUP (DRAFT)"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {isLandingPageActive 
+                ? "Landing page publik aktif. Pengunjung dapat mengakses portal & mendaftar."
+                : "Landing page ditutup sementara. Pengunjung akan melihat informasi pemeliharaan."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <a
+            href={`/${slug || "demo"}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Lihat Website</span>
+          </a>
+          <button
+            onClick={handleToggleLandingPageStatus}
+            className={`flex-1 md:flex-none px-5 py-2.5 rounded-xl font-bold text-xs text-white transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
+              isLandingPageActive
+                ? "bg-rose-600 hover:bg-rose-700 shadow-rose-600/15"
+                : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/15"
+            }`}
+          >
+            <Power className="w-3.5 h-3.5" />
+            <span>{isLandingPageActive ? "Tutup Landing Page" : "Buka Landing Page"}</span>
           </button>
         </div>
       </div>
@@ -1265,101 +1328,6 @@ export default function KelolaUserInterface() {
                       className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors resize-y"
                     />
                   </div>
-
-                  {/* Hero Background Media Editor (Video or Photo Upload with Auto-Compressor) */}
-                  <div className="space-y-3 md:col-span-2 bg-slate-50 dark:bg-[#020617]/40 p-5 rounded-2xl border border-slate-200 dark:border-slate-800/60 dark:border-white/5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Video size={16} className="text-blue-500" />
-                        <label className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-wider">Media Background Hero (Foto / Video)</label>
-                      </div>
-                      <span className="text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-900">
-                        ✨ Auto-Compress Enabled
-                      </span>
-                    </div>
-
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                      Pilih tipe media background halaman utama. Berkas gambar/video yang diunggah akan otomatis di-kompres secara otomatis.
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => { setHeroMediaType("none"); setHeroMediaUrl(""); }}
-                        className={`p-3 rounded-xl border text-xs font-bold transition-all ${
-                          heroMediaType === "none"
-                            ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                            : "bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700"
-                        }`}
-                      >
-                        Default Mesh Gradient
-                      </button>
-
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleHeroMediaFileChange(file);
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className={`w-full p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                            heroMediaType === "image"
-                              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                              : "bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700"
-                          }`}
-                        >
-                          <ImageIcon size={14} />
-                          <span>Upload Foto Hero</span>
-                        </button>
-                      </div>
-
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="video/*"
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleHeroMediaFileChange(file);
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className={`w-full p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                            heroMediaType === "video"
-                              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                              : "bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700"
-                          }`}
-                        >
-                          <Video size={14} />
-                          <span>Upload Video Hero</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {heroMediaUrl && (
-                      <div className="mt-3 p-3 bg-white dark:bg-[#0f172a] rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 truncate max-w-xs">
-                          {heroMediaType === "video" ? <Video size={14} className="text-blue-500 shrink-0" /> : <ImageIcon size={14} className="text-emerald-500 shrink-0" />}
-                          <span className="truncate font-semibold text-slate-700 dark:text-slate-300">
-                            Media Aktif: {heroMediaType.toUpperCase()} ({heroMediaUrl.substring(0, 30)}...)
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { setHeroMediaType("none"); setHeroMediaUrl(""); }}
-                          className="text-rose-500 hover:text-rose-700 text-[11px] font-bold underline"
-                        >
-                          Hapus Media
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mt-8 mb-6">
@@ -1382,14 +1350,27 @@ export default function KelolaUserInterface() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Google Maps Embed iFrame URL</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Google Maps Embed iFrame URL</label>
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">Auto-Extract &lt;iframe&gt; src</span>
+                    </div>
                     <input
                       type="text"
                       value={mapUrl}
-                      onChange={(e) => setMapUrl(e.target.value)}
+                      onChange={(e) => {
+                        let val = e.target.value.trim();
+                        const srcMatch = val.match(/src=["']([^"']+)["']/i);
+                        if (srcMatch && srcMatch[1]) {
+                          val = srcMatch[1];
+                        }
+                        setMapUrl(val);
+                      }}
                       placeholder="https://www.google.com/maps/embed?pb=..."
                       className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      💡 <strong>Cara ambil:</strong> Buka Google Maps ➔ Cari lokasi sekolah ➔ Klik tombol <strong>Bagikan (Share)</strong> ➔ Pilih tab <strong>Sematkan peta (Embed a map)</strong> ➔ Klik <strong>Salin HTML</strong> lalu tempel (paste) langsung ke kotak ini.
+                    </p>
                   </div>
                   
                   <div className="space-y-2">

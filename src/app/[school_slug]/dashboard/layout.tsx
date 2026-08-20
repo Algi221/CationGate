@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import SchoolNotFound from "@/components/SchoolNotFound";
 import { AdminSidebar } from "@/components/layout/admin-sekolah/AdminSidebar";
+import TrialExpiredPopup from "@/components/TrialExpiredPopup";
 
 // ─── Breadcrumbs ──────────────────────────────────────────────────────────────
 function Breadcrumbs({ pathname }: { pathname: string }) {
@@ -73,8 +74,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const _searchParams = useSearchParams();
   const params = useParams();
-  const schoolSlugRaw = params?.school_slug as string;
-  const schoolSlug = schoolSlugRaw ? schoolSlugRaw.replace(/[^a-zA-Z0-9-]/g, '') : "";
+  const schoolSlugRaw = (params?.school_slug as string) || (pathname?.startsWith('/demo') ? 'demo' : '');
+  const schoolSlug = schoolSlugRaw ? schoolSlugRaw.replace(/[^a-zA-Z0-9-]/g, '') : "demo";
 
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -508,6 +509,9 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </motion.div>
         </main>
       </motion.div>
+
+      {/* ── Trial Expired Popup ──────────────────────────────────────────── */}
+      <TrialExpiredPopup />
 
       {/* ── Logout Confirmation Modal ──────────────────────────────────────── */}
       {showLogoutConfirm && (

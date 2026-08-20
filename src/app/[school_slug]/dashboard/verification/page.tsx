@@ -6,7 +6,7 @@ import { usePPDB } from "@/context/PPDBContext";
 import Script from "next/script";
 import {
   ShieldCheck, Building2, Mail, FileText, CheckCircle2, Clock,
-  AlertTriangle, Upload, ArrowRight, ArrowLeft, Check, Lock, ShieldAlert, Sparkles, ExternalLink, CreditCard
+  AlertTriangle, Upload, ArrowRight, ArrowLeft, Check, Lock, ShieldAlert, Sparkles, ExternalLink, CreditCard, Palette
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -316,9 +316,13 @@ export default function SchoolVerificationPage() {
                 }`}
               >
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
-                  isActive ? "bg-white dark:bg-[#0f172a]/20 text-white" : isDone ? "bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200" : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+                  isActive ? "bg-white !text-blue-600 shadow-sm" : isDone ? "bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200" : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
                 }`}>
-                  {isDone ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+                  {isDone ? (
+                    <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-300 stroke-[2.5]" />
+                  ) : (
+                    <Icon className={`w-4 h-4 ${isActive ? "!text-blue-600 stroke-[2.5]" : ""}`} />
+                  )}
                 </div>
                 <div className="hidden sm:block min-w-0">
                   <p className="text-xs font-bold truncate leading-snug">{st.title}</p>
@@ -633,61 +637,20 @@ export default function SchoolVerificationPage() {
                   </ul>
                 </div>
 
-                {/* Card Pembayaran Lisensi Midtrans */}
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-blue-950 border border-blue-200 dark:border-blue-800 text-left space-y-3 mt-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                      <CreditCard className="w-4 h-4" /> Pembayaran Lisensi SaaS Pro
-                    </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white font-extrabold text-[10px]">
-                      Rp 750.000 / Tahun
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                    Pihak sekolah dapat langsung menyelesaikan pembayaran lisensi tahunan melalui Payment Gateway resmi Midtrans (QRIS, Bank Transfer, E-Wallet).
-                  </p>
+                <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Button 
-                    onClick={handlePayMidtrans} 
-                    disabled={isPaying}
-                    className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md gap-2"
+                    variant="outline" 
+                    onClick={() => setCurrentStep(1)} 
+                    className="w-full sm:w-auto h-11 px-5 rounded-xl text-xs font-bold gap-2 border-slate-200 dark:border-slate-700"
                   >
-                    <CreditCard className="w-4 h-4" />
-                    {isPaying ? "Menghubungkan Midtrans..." : "Lakukan Pembayaran Midtrans (Rp 750.000 / Tahun)"}
-                  </Button>
-
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const res = await fetch("/api/saas/activate", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("ppdb_admin_token")}` },
-                          body: JSON.stringify({ slug: schoolSlug, school_id: schoolId }),
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                          Swal.fire({
-                            title: "Simulasi Pembayaran Midtrans Sukses! (Sandbox)",
-                            text: "Lisensi SaaS CationGate Pro (Rp 750.000 / Tahun) telah aktif & dashboard ter-unlocked.",
-                            icon: "success",
-                            confirmButtonColor: "#2563EB"
-                          }).then(() => {
-                            window.location.reload();
-                          });
-                        }
-                      } catch (_e) {
-                        Swal.fire({ title: "Gagal Mengaktifkan", text: "Terjadi kesalahan server.", icon: "error" });
-                      }
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-extrabold text-xs border border-emerald-200 dark:border-emerald-800 transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <Sparkles className="w-4 h-4 text-emerald-600" /> Simulasi Pembayaran Midtrans Sukses (Sandbox Testing)
-                  </button>
-                </div>
-
-                <div className="pt-2 flex items-center justify-center gap-3">
-                  <Button variant="outline" onClick={() => setCurrentStep(1)} className="h-10 px-5 rounded-xl text-xs font-bold gap-2">
                     Edit Kembali Data Verifikasi
+                  </Button>
+                  <Button 
+                    onClick={() => router.push(`/${schoolSlug}/dashboard/kelola-ui`)} 
+                    className="w-full sm:w-auto h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold gap-2 shadow-md shadow-blue-600/20"
+                  >
+                    <Palette className="w-4 h-4" />
+                    Kustomisasi Landing Page Draf
                   </Button>
                 </div>
               </div>

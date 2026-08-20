@@ -308,7 +308,7 @@ function BarChart({
 export default function DashboardOverview() {
   const { applicants, schoolId, adminToken, schoolStatus, isDemoMode } = usePPDB();
   const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || "";
+  const schoolSlug = (params?.school_slug as string) || "demo";
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
   const [counterTrigger, setCounterTrigger] = useState(false);
 

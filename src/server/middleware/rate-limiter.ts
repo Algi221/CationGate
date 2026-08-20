@@ -10,6 +10,11 @@ const ipRequestCounts = new Map<string, { count: number; resetTime: number }>();
 
 export const rateLimiter = (config: RateLimitConfig) => {
   return createMiddleware(async (c, next) => {
+    // In development mode, allow higher frequency requests for testing
+    if (process.env.NODE_ENV !== 'production') {
+      return await next();
+    }
+
     // Basic IP detection from common headers or fallback
     const ip = c.req.header('x-forwarded-for') || 
                c.req.header('x-real-ip') || 

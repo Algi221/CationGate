@@ -266,8 +266,15 @@ export default function DaftarSaaS() {
         {/* Header Logo */}
         <div className="relative z-10">
           <Link href="/" className="flex items-center gap-3 group inline-flex">
-            <div className="w-10 h-10 rounded-xl bg-yellow-400 text-zinc-950 flex items-center justify-center font-bold text-lg">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="relative w-10 h-10 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Image
+                src="/assets/catpeer/logo_cationGate.svg"
+                alt="CationGate Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain drop-shadow-md"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-2xl tracking-tight text-white">
@@ -336,8 +343,15 @@ export default function DaftarSaaS() {
 
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="w-9 h-9 rounded-xl bg-yellow-400 text-zinc-950 flex items-center justify-center font-bold text-sm">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="relative w-8 h-8 flex items-center justify-center">
+              <Image
+                src="/assets/catpeer/logo_cationGate.svg"
+                alt="CationGate Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain"
+                priority
+              />
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900">CationGate</span>
           </div>
@@ -481,9 +495,12 @@ export default function DaftarSaaS() {
                     </div>
                     
                     <div className="flex gap-2.5 pt-4">
-                      <Button type="submit" className="w-full h-12 rounded-xl bg-yellow-400 hover:bg-yellow-500 hover:shadow-lg hover:shadow-yellow-400/20 text-zinc-950 font-bold text-sm transition-all flex items-center justify-center">
-                        Lanjutkan <ArrowRight className="ml-2 w-4 h-4" />
-                      </Button>
+                      <button
+                        type="submit"
+                        className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        Lanjutkan <ArrowRight className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 )}
@@ -499,7 +516,7 @@ export default function DaftarSaaS() {
                         value={formData.admin_name} 
                         onChange={e => setFormData({...formData, admin_name: e.target.value})} 
                         placeholder="Drs. H. Ahmad Fauzi" 
-                        className="h-12 rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-yellow-400/30 focus:border-yellow-400 transition-all text-slate-900 placeholder:text-slate-400 text-sm shadow-sm"
+                        className="h-12 rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-slate-900 placeholder:text-slate-400 text-sm shadow-sm"
                       />
                     </div>
 
@@ -513,7 +530,7 @@ export default function DaftarSaaS() {
                             value={formData.admin_password} 
                             onChange={e => setFormData({...formData, admin_password: e.target.value})} 
                             placeholder="••••••••" 
-                            className="h-12 w-full rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-yellow-400/30 focus:border-yellow-400 transition-all text-slate-900 placeholder:text-slate-400 text-sm shadow-sm pr-12"
+                            className="h-12 w-full rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-slate-900 placeholder:text-slate-400 text-sm shadow-sm pr-12"
                           />
                           <button
                             type="button"
@@ -530,12 +547,21 @@ export default function DaftarSaaS() {
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                      <Button type="button" variant="outline" className="w-1/3 h-12 rounded-xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all shadow-sm" onClick={() => setStep(1)} disabled={loading}>
+                      <button
+                        type="button"
+                        onClick={() => setStep(1)}
+                        disabled={loading}
+                        className="w-1/3 h-12 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all shadow-sm flex items-center justify-center cursor-pointer disabled:opacity-60"
+                      >
                         Kembali
-                      </Button>
-                      <Button type="submit" className="flex-1 h-12 rounded-xl bg-yellow-400 hover:bg-yellow-500 hover:shadow-lg hover:shadow-yellow-400/20 text-zinc-950 font-bold text-sm transition-all flex items-center justify-center" disabled={loading}>
-                        Lanjutkan <ArrowRight className="ml-2 w-4 h-4" />
-                      </Button>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                      >
+                        Lanjutkan <ArrowRight className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 )}
@@ -546,7 +572,7 @@ export default function DaftarSaaS() {
                     
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                       <div className="bg-slate-50/80 px-5 py-4 border-b border-slate-200 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-yellow-400/20 flex items-center justify-center text-amber-500">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                           <Check className="w-4 h-4 stroke-[3]" />
                         </div>
                         <div>
@@ -567,7 +593,7 @@ export default function DaftarSaaS() {
                             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Subdomain</p>
                             <div className="flex items-start gap-1.5 mt-0.5">
                               <Globe className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-                              <p className="text-sm font-medium text-slate-900 break-all leading-tight">cationgate.site/<span className="text-amber-500 font-bold">{formData.slug || "-"}</span></p>
+                              <p className="text-sm font-medium text-slate-900 break-all leading-tight">cationgate.site/<span className="text-blue-600 font-bold">{formData.slug || "-"}</span></p>
                             </div>
                           </div>
                         </div>
@@ -594,15 +620,35 @@ export default function DaftarSaaS() {
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                      <Button type="button" variant="outline" className="w-1/3 h-12 rounded-xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all shadow-sm" onClick={() => setStep(2)} disabled={loading}>
+                      <button
+                        type="button"
+                        onClick={() => setStep(2)}
+                        disabled={loading}
+                        className="w-1/3 h-12 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all shadow-sm flex items-center justify-center cursor-pointer disabled:opacity-60"
+                      >
                         Ubah Data
-                      </Button>
-                      <Button type="button" onClick={() => {
-                        handleSendOTP();
-                        setStep(4);
-                      }} className="flex-1 h-12 rounded-xl bg-slate-900 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 text-white font-bold text-sm transition-all flex items-center justify-center" disabled={loading}>
-                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Kirim Kode OTP"}
-                      </Button>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSendOTP();
+                          setStep(4);
+                        }}
+                        disabled={loading}
+                        className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <span>Memproses...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Kirim Kode OTP</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 )}

@@ -364,6 +364,7 @@ export default function Home() {
   }, []);
 
   const [isDark, setIsDark] = useState(false);
+  const [isLandingActive, setIsLandingActive] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem('ppdb-theme');
@@ -401,12 +402,18 @@ export default function Home() {
           }
         }
 
-        if (schoolSlug === 'demo') return;
+        if (schoolSlug === 'demo') {
+          setIsConfigLoaded(true);
+          return;
+        }
         const res = await fetch(`/api/config?school_slug=${schoolSlug}`);
         const data = await res.json();
 
         if (data.success && data.data) {
           const config = data.data;
+          if (config.ppdb_landing_active !== undefined) {
+            setIsLandingActive(config.ppdb_landing_active === true || config.ppdb_landing_active === "true");
+          }
           if (config.ppdb_hero_title) setHeroTitle(config.ppdb_hero_title);
           if (config.ppdb_hero_title_sub) setHeroTitleSub(config.ppdb_hero_title_sub);
           if (config.ppdb_hero_subtitle) setHeroSubtitle(config.ppdb_hero_subtitle);
@@ -527,6 +534,37 @@ export default function Home() {
     return <SchoolNotFound slug={schoolSlug} />;
   }
 
+  if (isConfigLoaded && !isLandingActive) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white p-6 font-sans">
+        <div className="max-w-md w-full text-center space-y-6 bg-white dark:bg-slate-800/80 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center mx-auto text-amber-600">
+            <Clock className="w-8 h-8 animate-pulse" />
+          </div>
+          <div className="space-y-2">
+            <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
+              Portal Nonaktif / Draft
+            </span>
+            <h1 className="text-xl font-black text-slate-900 dark:text-white">
+              {ppdbTitle || "Portal PPDB Sekolah"}
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Website dan pendaftaran online saat ini sedang ditutup sementara oleh pihak pengelola sekolah untuk pemeliharaan data atau penyesuaian gelombang.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href={`/${schoolSlug}/dashboard`}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20"
+            >
+              Login Admin Sekolah <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-800/50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white dark:bg-[#0f172a] dark:text-[#f6f5f4]">
 
@@ -615,26 +653,9 @@ export default function Home() {
       {/* HERO SECTION WRAPPER */}
       <main className="flex-grow w-full relative z-0">
         <div className="relative w-full overflow-hidden">
-          {/* Media Background - Full Width */}
+          {/* Standard Mesh Gradient Background - Full Width */}
           <div className="absolute inset-0 -z-10 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-            {heroMediaType === "video" && heroMediaUrl ? (
-              <video
-                src={sanitizeUrl(heroMediaUrl) || undefined}
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="object-cover w-full h-full opacity-[0.03] dark:opacity-[0.05] pointer-events-none filter blur-[8px] scale-[1.02]"
-              />
-            ) : heroMediaType === "image" && heroMediaUrl ? (
-              <img
-                src={sanitizeUrl(heroMediaUrl) || undefined}
-                alt="Hero Background"
-                className="w-full h-full object-cover transition-opacity duration-1000"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
-            )}
+            <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
             <div className="absolute inset-0 bg-white/50 dark:bg-[#020617] backdrop-blur-none pointer-events-none"></div>
           </div>
 
@@ -707,21 +728,19 @@ export default function Home() {
           </div>
 
           <h1 className="hero-title relative z-10">
-            {isConfigLoaded ? heroTitle : "\u00A0"} <br />
-            {isConfigLoaded ? (
-              <ShinyText 
-                text={heroTitleSub} 
-                speed={3} 
-                delay={1} 
-                color="var(--heading)" 
-                shineColor="#0ea5e9" 
-                spread={135} 
-              />
-            ) : "\u00A0"}
+            {heroTitle} <br />
+            <ShinyText 
+              text={heroTitleSub} 
+              speed={3} 
+              delay={1} 
+              color="var(--heading)" 
+              shineColor="#0ea5e9" 
+              spread={135} 
+            />
           </h1>
 
           <p className="hero-subtitle relative z-10">
-            {isConfigLoaded ? heroSubtitle : "\u00A0"}
+            {heroSubtitle}
           </p>
 
           <div className="hero-action">

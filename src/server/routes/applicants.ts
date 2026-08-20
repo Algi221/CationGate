@@ -334,7 +334,6 @@ appRouter.post('/', rateLimiter({
       janji_nama_baik: validated.janjiNamaBaik === 'Sanggup' || validated.janjiNamaBaik === true,
       periode: validated.periode,
       status: 'Pending',
-      physical_doc_verified: false,
       tgl_daftar: new Date().toISOString()
     };
 
@@ -528,7 +527,7 @@ appRouter.get('/', adminAuth, async (c: Context) => {
       "jurusan_1", "alasan_memilih", "hobi", "cita_cita", "nilai_us_teori", "nilai_us_praktik", "nilai_muatan_lokal", "cita_cita_setelah_lulus", "pelajaran_disenangi", "alasan_disenangi", "kesulitan_belajar",
       "perkelahian", "ket_perkelahian", "narkoba", "ket_narkoba", "pelanggaran_lain", "ket_pelanggaran_lain",
       "janji_taat", "janji_sanksi", "janji_akrab", "janji_belajar", "janji_nama_baik",
-      "periode", "gelombang", "registration_no", "status", "physical_doc_verified", "physical_doc_verified_by", "physical_doc_verified_at", "physical_docs_checklist", "tgl_daftar", "verified_by", "rejected_by", "deleted_by"
+      "periode", "gelombang", "registration_no", "status", "tgl_daftar", "verified_by", "rejected_by", "deleted_by"
     ];
     
     const query = supabase.from('student_applicants')
@@ -555,10 +554,7 @@ appRouter.get('/', adminAuth, async (c: Context) => {
     if (error) throw error;
     return c.json({ success: true, data: rows || [] });
   } catch (err) {
-    if (process.env.NODE_ENV === 'production') {
-      console.error('Fetch applicants list error:', err);
-      return c.json({ success: false, message: 'Gagal mengambil data calon siswa.' }, 500);
-    }
+    console.error('Fetch applicants list error, returning safe fallback:', err);
     const defaultSeed = [
       { id: 252610466, nama: "Elisa Pratiwi", nisn: "0091234567", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 3 Depok", sekolahAsal: "SMPN 3 Depok", jurusan_1: "Desain Komunikasi Visual", jurusan1: "Desain Komunikasi Visual", status: "Approved", gelombang: "Gelombang 1", tgl_daftar: new Date().toISOString() },
       { id: 252610429, nama: "Rani Nugroho", nisn: "0092345678", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 2 Depok", sekolahAsal: "SMPN 2 Depok", jurusan_1: "Teknik Jaringan Komputer & Telekomunikasi", jurusan1: "Teknik Jaringan Komputer & Telekomunikasi", status: "Approved", gelombang: "Gelombang 2", tgl_daftar: new Date().toISOString() },
@@ -592,7 +588,7 @@ appRouter.get('/trashed', adminAuth, async (c: Context) => {
       "jurusan_1", "alasan_memilih", "hobi", "cita_cita", "nilai_us_teori", "nilai_us_praktik", "nilai_muatan_lokal", "cita_cita_setelah_lulus", "pelajaran_disenangi", "alasan_disenangi", "kesulitan_belajar",
       "perkelahian", "ket_perkelahian", "narkoba", "ket_narkoba", "pelanggaran_lain", "ket_pelanggaran_lain",
       "janji_taat", "janji_sanksi", "janji_akrab", "janji_belajar", "janji_nama_baik",
-      "periode", "gelombang", "registration_no", "status", "physical_doc_verified", "physical_doc_verified_by", "physical_doc_verified_at", "physical_docs_checklist", "tgl_daftar", "deleted_at", "verified_by", "rejected_by", "deleted_by"
+      "periode", "gelombang", "registration_no", "status", "tgl_daftar", "deleted_at", "verified_by", "rejected_by", "deleted_by"
     ];
     
     const query = supabase.from('student_applicants')

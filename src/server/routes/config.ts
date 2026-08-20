@@ -151,17 +151,9 @@ configRouter.get('/', async (c) => {
 
     // If school_slug is provided, resolve it to school_id
     if (schoolSlug && !schoolId) {
-      const { data: tenantData } = await supabase
-        .from('saas_tenants')
-        .select('id')
-        .eq('domain_slug', schoolSlug)
-        .single();
-      if (tenantData) {
-        schoolId = tenantData.id;
-      } else {
-        // Return empty if slug not found
-        return c.json({ success: true, data: {} });
-      }
+      const { resolveSchoolUUID } = await import('../db/resolve-school');
+      const { fontInMemSchools } = await import('./saas');
+      schoolId = await resolveSchoolUUID(schoolSlug, fontInMemSchools);
     }
 
     const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
@@ -178,7 +170,9 @@ configRouter.get('/', async (c) => {
     }
 
     let query = supabase.from('landing_page_config').select('*');
-    if (schoolId) query = query.eq('school_id', schoolId);
+    if (schoolId) {
+      query = query.eq('school_id', schoolId);
+    }
     
     const { data: configs, error } = await query;
     if (error) {
@@ -213,10 +207,74 @@ configRouter.get('/', async (c) => {
   }
 });
 
-// POST /api/config - Save or update configuration (Protected Admin)
+// POST /api/config - Save or update configuration (Single or Bulk) (Protected Admin)
 configRouter.post('/', adminAuth, async (c) => {
   try {
     const body = await c.req.json();
+
+    // 1. Check if bulk config format
+    if (body.configs && typeof body.configs === 'object') {
+      const result = configSaveSchema.safeParse(body);
+      if (!result.success) {
+        return c.json({
+          success: false,
+          message: 'Parameter tidak valid: ' + result.error.issues.map((e: unknown) => `${(e as any).path.join('.')}: ${(e as any).message}`).join(', ')
+        }, 400);
+      }
+
+      const { configs, description } = result.data;
+      const supabase = getSupabaseClient(c.req.header('Authorization'));
+      const schoolId = await requireTenantId(c);
+
+      const processedConfigs = { ...configs };
+      if (processedConfigs.ppdb_majors_config) {
+        processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config);
+      }
+      if (processedConfigs.ppdb_logo_url) {
+        processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
+      }
+
+      const upsertRows = Object.entries(processedConfigs).map(([key, val]) => ({
+        config_key: key,
+        config_value: val,
+        updated_at: new Date().toISOString(),
+        school_id: schoolId
+      }));
+
+      if (upsertRows.length > 0) {
+        const { error: upsertError } = await supabase
+          .from('landing_page_config')
+          .upsert(upsertRows, { onConflict: 'config_key,school_id' });
+        if (upsertError) {
+          // Fallback on config_key if school_id constraint differs
+          await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'config_key' });
+        }
+      }
+
+      // Record revision
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const adminUser = (c as any).get('adminUser') || {};
+        await supabase.from('ui_revisions').insert({
+          school_id: schoolId,
+          changed_by: adminUser.username || 'Admin Sekolah',
+          description: description || 'Pembaruan konfigurasi antarmuka',
+          created_at: new Date().toISOString()
+        });
+      } catch (_revErr) {
+        // Revision logging optional
+      }
+
+      const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
+      await delCached(cacheKey);
+
+      return c.json({
+        success: true,
+        message: 'Konfigurasi massal berhasil disimpan.'
+      });
+    }
+
+    // 2. Single config format
     const result = singleConfigSchema.safeParse(body);
     if (!result.success) {
       return c.json({
@@ -246,9 +304,11 @@ configRouter.post('/', adminAuth, async (c) => {
 
     const { error } = await supabase
       .from('landing_page_config')
-      .upsert(payload, { onConflict: 'config_key' });
+      .upsert(payload, { onConflict: 'config_key,school_id' });
       
-    if (error) throw error;
+    if (error) {
+      await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
+    }
 
     // Invalidate Redis cache
     const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';

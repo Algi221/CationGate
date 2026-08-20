@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface SchoolContextType {
@@ -25,15 +25,16 @@ const SchoolContext = createContext<SchoolContextType | null>(null);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export function SchoolProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const params = useParams();
-  const slug = (params?.school_slug as string) || "";
-  const isDemoMode = slug === 'demo';
+  const slug = (params?.school_slug as string) || (pathname?.startsWith('/demo') ? 'demo' : "");
+  const isDemoMode = slug === 'demo' || (pathname ? pathname.startsWith('/demo') : false);
 
   const [schoolId, setSchoolId] = useState<string>("");
   const [schoolStatus, setSchoolStatus] = useState<string>("");
   const [isSchoolNotFound, setIsSchoolNotFound] = useState<boolean>(false);
-  const [ppdbLogo, setPpdbLogo] = useState<string>("");
-  const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB SMK TB");
+  const [ppdbLogo, setPpdbLogo] = useState<string>("/assets/logo_sekolah/logo_smktb.png");
+  const [ppdbTitle, setPpdbTitle] = useState<string>("SMK TB");
   const [isConfigLoaded, setIsConfigLoaded] = useState<boolean>(false);
   const [ppdbFooterDesc, setPpdbFooterDesc] = useState<string>("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +42,13 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
 
   // ── Fetch global config (logo, title, profil) ──────────────────────────────
   const fetchConfigs = useCallback(async () => {
-    if (isDemoMode) return;
+    if (isDemoMode) {
+      setPpdbTitle("SMK TB");
+      setPpdbLogo("/assets/logo_sekolah/logo_smktb.png");
+      setPpdbFooterDesc("Portal simulasi dan demonstrasi interaktif sistem SPMB CationGate untuk sekolah kejuruan di Indonesia.");
+      setIsConfigLoaded(true);
+      return;
+    }
     try {
       const res = await fetch(`/api/config?school_slug=${slug}`);
       if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
@@ -57,7 +64,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       console.error("Gagal mengambil config:", err);
       setIsConfigLoaded(true);
     }
-  }, [slug]);
+  }, [slug, isDemoMode]);
 
   useEffect(() => {
     fetchConfigs();

@@ -322,7 +322,7 @@ export default function DataPendaftarTable() {
                       <span className={`inline-flex items-center px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                         item.status === 'Approved' ? 'bg-transparent text-emerald-500 dark:text-emerald-400 border border-emerald-500/40 dark:border-emerald-800' :
                         item.status === 'Rejected' ? 'bg-transparent text-rose-500 dark:text-rose-400 border border-rose-500/40 dark:border-rose-800' :
-                        'bg-transparent text-blue-500 dark:text-blue-400 border border-blue-500/40 dark:border-blue-800'
+                        'bg-amber-50/60 dark:bg-amber-950/30 text-amber-500 dark:text-amber-400 border border-amber-400/50 dark:border-amber-800'
                       }`}>
                         {item.status === 'Approved' ? 'TERVERIFIKASI' : item.status === 'Rejected' ? 'DITOLAK' : 'MENUNGGU'}
                       </span>

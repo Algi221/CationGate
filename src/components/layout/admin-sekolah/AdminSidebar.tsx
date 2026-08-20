@@ -30,7 +30,7 @@ export function AdminSidebar({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const params = useParams();
-  const schoolSlug = params?.school_slug as string;
+  const schoolSlug = (params?.school_slug as string) || (pathname?.startsWith('/demo') ? 'demo' : '');
 
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
@@ -92,7 +92,6 @@ export function AdminSidebar({
           href: `/${schoolSlug}/dashboard/kelola-ui`,
           icon: <Palette size={18} />,
           label: "Kelola UI/Data",
-          lockedIfUnverified: true,
           subItems: [
             { label: "Profil Sekolah", href: `/${schoolSlug}/dashboard/profil-sekolah` },
             { label: "General / Umum", href: `/${schoolSlug}/dashboard/kelola-ui?tab=hero` },
@@ -113,18 +112,7 @@ export function AdminSidebar({
       items: [
         { href: `/${schoolSlug}/dashboard/subscription`, icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
         { href: `/${schoolSlug}/dashboard/admin`, icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
-        {
-          href: `/${schoolSlug}/dashboard/settings`,
-          icon: <Settings size={18} />,
-          label: "Pengaturan",
-          lockedIfUnverified: true,
-          subItems: [
-            { label: "Utama/General", href: `/${schoolSlug}/dashboard/settings?tab=general` },
-            { label: "Tema & Tampilan", href: `/${schoolSlug}/dashboard/settings?tab=appearance` },
-            { label: "Keamanan", href: `/${schoolSlug}/dashboard/settings?tab=security` },
-            { label: "Integrasi API", href: `/${schoolSlug}/dashboard/settings?tab=api` }
-          ]
-        }
+        { href: `/${schoolSlug}/dashboard/settings`, icon: <Settings size={18} />, label: "Pengaturan Akun", lockedIfUnverified: true }
       ]
     }
   ];
@@ -199,37 +187,35 @@ export function AdminSidebar({
           <Link
             href={isLocked ? "#" : fullHref}
             onClick={handleItemClick}
-            className={`relative z-10 flex items-center justify-between rounded-xl text-sm font-semibold transition-colors duration-200 border ${
+            className={`relative z-10 flex items-center justify-between rounded-xl text-sm font-semibold transition-colors duration-200 ${
               isCollapsed ? "justify-center p-3" : "px-4 py-2.5"
             } ${
               isLocked
-                ? "opacity-50 text-slate-400 dark:text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-800/20 cursor-not-allowed"
+                ? "opacity-35 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none hover:bg-transparent"
                 : isActive && (!hasSub || isCollapsed)
-                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold border-transparent"
-                : "border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
             }`}
-          title={isCollapsed ? (isLocked ? `${item.label} (Terkunci 🔒)` : item.label) : undefined}
-        >
-          <div className="flex items-center min-w-0">
-            <span className="shrink-0">{item.icon}</span>
-            <span
-              className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-              }`}
-            >
-              {item.label}
-            </span>
-          </div>
-          {isLocked && !isCollapsed ? (
-            <Lock size={14} className="text-amber-500 shrink-0 ml-2" />
-          ) : hasSub && !isCollapsed ? (
-            <ChevronDown
-              size={14}
-              className={`text-slate-400 dark:text-slate-500 dark:text-slate-400 transition-transform duration-300 shrink-0 ml-2 ${
-                isOpen ? "rotate-180 text-blue-500" : ""
-              }`}
-            />
-          ) : null}
+            title={isCollapsed ? (isLocked ? `${item.label} (Terkunci)` : item.label) : undefined}
+          >
+            <div className="flex items-center min-w-0">
+              <span className="shrink-0">{item.icon}</span>
+              <span
+                className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                  isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+                }`}
+              >
+                {item.label}
+              </span>
+            </div>
+            {hasSub && !isCollapsed && !isLocked ? (
+              <ChevronDown
+                size={14}
+                className={`text-slate-400 dark:text-slate-500 transition-transform duration-300 shrink-0 ml-2 ${
+                  isOpen ? "rotate-180 text-blue-500" : ""
+                }`}
+              />
+            ) : null}
           </Link>
         </div>
 

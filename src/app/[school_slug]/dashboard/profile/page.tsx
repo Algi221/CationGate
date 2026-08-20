@@ -140,7 +140,7 @@ export default function ProfilePage() {
     setProfileMsg(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/profile`, {
+      const res = await fetch("/api/auth/profile", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

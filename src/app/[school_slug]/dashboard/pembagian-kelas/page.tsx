@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
+import { sanitizeSrc } from "@/components/SafeImage";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { generateNipdMap } from "@/utils/nipd";
@@ -68,9 +70,23 @@ interface ClassItem {
   maxCapacity: number;
 }
 
+const DEFAULT_MAJORS = [
+  { code: "RPL", name: "Rekayasa Perangkat Lunak" },
+  { code: "TJKT", name: "Teknik Jaringan Komputer & Telekomunikasi" },
+  { code: "DKV", name: "Desain Komunikasi Visual" },
+  { code: "BC", name: "Broadcasting & Perfilman" },
+  { code: "ANM", name: "Animasi" },
+  { code: "TE", name: "Teknik Elektronika" }
+];
+
 export default function ClassDivisionManagement() {
   const { applicants, activeStudents, updateActiveStudent, fetchActiveStudents, fetchAdminApplicants } = usePPDB();
   const [mounted, setMounted] = useState(false);
+  const params = useParams();
+  const schoolSlug = params?.school_slug as string || "";
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [dynamicMajorsList, setDynamicMajorsList] = useState<any[]>([]);
 
   useEffect(() => {
     if (typeof fetchActiveStudents === "function") {
@@ -82,8 +98,9 @@ export default function ClassDivisionManagement() {
   }, [fetchActiveStudents, fetchAdminApplicants]);
 
   const getMajorLogoUrl = (code: string) => {
-    switch (code.toUpperCase()) {
+    switch (code?.toUpperCase()) {
       case "RPL":
+      case "PPLG":
         return "/assets/jurusan/pplg.png";
       case "TJKT":
         return "/assets/jurusan/tjkt.png";
@@ -96,17 +113,30 @@ export default function ClassDivisionManagement() {
       case "TE":
         return "/assets/jurusan/te.png";
       default:
-        return "/logo_smktb.png";
+        return "/assets/logo_sekolah/logo_smktb.png";
     }
   };
 
-  const getMajorLogo = (code: string, size = "w-5 h-5") => {
-    const url = getMajorLogoUrl(code);
+  const getMajorLogo = (majorOrCode: any, size = "w-5 h-5") => {
+    let logoUrl = "/assets/logo_sekolah/logo_smktb.png";
+    if (typeof majorOrCode === "object" && majorOrCode?.logo) {
+      logoUrl = sanitizeSrc(majorOrCode.logo) || logoUrl;
+    } else if (typeof majorOrCode === "string") {
+      const found = activeMajors.find(m => m.code?.toUpperCase() === majorOrCode.toUpperCase());
+      if (found && (found as any).logo) {
+        logoUrl = sanitizeSrc((found as any).logo) || logoUrl;
+      } else {
+        logoUrl = getMajorLogoUrl(majorOrCode);
+      }
+    }
     return (
       <img
-        src={url}
-        alt={`Logo ${code}`}
+        src={logoUrl}
+        alt="Logo Jurusan"
         className={`${size} rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-800/80 dark:border-white/10`}
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).src = "/assets/logo_sekolah/logo_smktb.png";
+        }}
       />
     );
   };
@@ -125,20 +155,26 @@ export default function ClassDivisionManagement() {
     const fetchConfig = async () => {
       try {
         const token = localStorage.getItem("ppdb_admin_token");
-        const res = await fetch(`/api/config?_t=${Date.now()}`, {
+        const url = schoolSlug ? `/api/config?school_slug=${schoolSlug}&_t=${Date.now()}` : `/api/config?_t=${Date.now()}`;
+        const res = await fetch(url, {
           cache: 'no-store',
           headers: token ? { "Authorization": `Bearer ${token}` } : {}
         });
         const json = await res.json();
-        if (json.success && json.data && json.data.ppdb_school_period) {
-          setSchoolPeriod(json.data.ppdb_school_period);
+        if (json.success && json.data) {
+          if (json.data.ppdb_school_period) {
+            setSchoolPeriod(json.data.ppdb_school_period);
+          }
+          if (json.data.ppdb_majors_config && Array.isArray(json.data.ppdb_majors_config) && json.data.ppdb_majors_config.length > 0) {
+            setDynamicMajorsList(json.data.ppdb_majors_config);
+          }
         }
       } catch (e) {
-        console.error("Gagal mengambil periode akademik:", e);
+        console.error("Gagal mengambil konfigurasi sekolah:", e);
       }
     };
     fetchConfig();
-  }, []);
+  }, [schoolSlug]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -153,40 +189,44 @@ export default function ClassDivisionManagement() {
   const [classSearchTerm, setClassSearchTerm] = useState("");
   const [activeDropClass, setActiveDropClass] = useState<string | null>(null);
 
-  const majors = [
-    { code: "RPL", name: "Rekayasa Perangkat Lunak" },
-    { code: "TJKT", name: "Teknik Jaringan Komputer & Telekomunikasi" },
-    { code: "DKV", name: "Desain Komunikasi Visual" },
-    { code: "BC", name: "Broadcasting & Perfilman" },
-    { code: "ANM", name: "Animasi" },
-    { code: "TE", name: "Teknik Elektronika" }
-  ];
-
   const activeMajors = useMemo(() => {
-    if (!mounted) return majors;
-    const saved = localStorage.getItem("ppdb_majors_config");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((m: any) => ({ code: m.code, name: m.title }));
-        }
-      } catch (e) {
-        return majors;
+    if (dynamicMajorsList && dynamicMajorsList.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return dynamicMajorsList.map((m: any) => ({
+        code: m.code,
+        name: m.title || m.name || m.code,
+        logo: m.logo || getMajorLogoUrl(m.code)
+      }));
+    }
+    if (mounted) {
+      const saved = localStorage.getItem("ppdb_majors_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return parsed.map((m: any) => ({ 
+              code: m.code, 
+              name: m.title || m.name || m.code,
+              logo: m.logo || getMajorLogoUrl(m.code)
+            }));
+          }
+        } catch (_) {}
       }
     }
-    return majors;
-  }, [mounted]);
+    return DEFAULT_MAJORS.map(m => ({ ...m, logo: getMajorLogoUrl(m.code) }));
+  }, [dynamicMajorsList, mounted]);
 
   useEffect(() => {
-    if (activeMajors.length > 0) {
+    if (activeMajors.length > 0 && !activeMajors.some(m => m.code === selectedMajor)) {
       setSelectedMajor(activeMajors[0].code);
     }
-  }, [activeMajors]);
+  }, [activeMajors, selectedMajor]);
 
   function generateDefaultClasses(): ClassItem[] {
     const defaultList: ClassItem[] = [];
-    majors.forEach(m => {
+    const sourceMajors = activeMajors.length > 0 ? activeMajors : DEFAULT_MAJORS;
+    sourceMajors.forEach(m => {
       
       defaultList.push({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
       defaultList.push({ id: `X-${m.code}-2`, name: `X ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
@@ -1119,7 +1159,7 @@ export default function ClassDivisionManagement() {
                 : "bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-800 hover:border-indigo-500/40 hover:bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm"
             }`}
           >
-            {getMajorLogo(m.code, "w-12 h-12 shadow-md")}
+            {getMajorLogo(m, "w-12 h-12 shadow-md")}
             <span className={`mt-3 text-[9px] font-black uppercase tracking-widest leading-normal ${
               selectedMajor === m.code ? "text-white" : "text-slate-700 dark:text-slate-400"
             }`}>

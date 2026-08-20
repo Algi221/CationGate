@@ -10,7 +10,7 @@ import  SystemFlowSection  from "@/components/landing/SystemFlowSection";
 import HeroPPDB from "@/components/landing/HeroSection";
 import _SimGymSection from "@/components/landing/SimGymSection"; 
 import { TestimonialsSection } from "@/components/landing";
-import { PricingSection } from "@/components/landing/PricingSection";
+import ProductPacks from "@/components/ui/product-packs";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import { VideoModal } from "@/components/landing/VideoModal";
@@ -40,7 +40,7 @@ export default function LandingPage() {
         <AboutSection/>
         <SystemFlowSection />
         <TestimonialsSection />
-        <PricingSection />
+        <ProductPacks />
         <FaqSection />
         <ContactScreen /> 
       </main>

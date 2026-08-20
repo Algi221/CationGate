@@ -47,7 +47,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
 
   const fetchDetail = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/informasi/${params.id}`);
+      const res = await fetch(`${BACKEND_URL}/informasi/${params.id}`);
       const data = await res.json();
       if (data.success && data.data) {
         setInformasi(data.data);
@@ -93,7 +93,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
       foto_url: fotoUrl ? JSON.stringify(mediaObj) : null,
     };
     try {
-      const res = await fetch(`${BACKEND_URL}/api/informasi/${params.id}`, {
+      const res = await fetch(`${BACKEND_URL}/informasi/${params.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

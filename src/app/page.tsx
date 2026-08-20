@@ -6,7 +6,7 @@ import _ScrollExpandSection  from "@/components/landing/ScrollExpandSection";
 import _HeroSection from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
-import  SystemFlowSection  from "@/components/landing/SystemFlowSection";
+import  SystemFlowSection from "@/components/landing/SystemFlowSection";
 import HeroPPDB from "@/components/landing/HeroSection";
 import _SimGymSection from "@/components/landing/SimGymSection"; 
 import { TestimonialsSection } from "@/components/landing";
@@ -37,7 +37,7 @@ export default function LandingPage() {
         {/* <ScrollExpandSection/> */}
         <HeroPPDB />
         <PartnersSection/>
-        <AboutSection/>
+        {/* <AboutSection/> */}
         <SystemFlowSection />
         <TestimonialsSection />
         <ProductPacks />

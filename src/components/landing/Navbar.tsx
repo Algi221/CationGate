@@ -14,14 +14,62 @@ import {
   Database,
   Shield,
 } from "lucide-react";
-import { CurvedNavbar, HamburgerButton } from "./CurvedMobileMenu";
+import { CurvedNavbar } from "./CurvedMobileMenu";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
+
+// Hamburger Button dengan Performa & Transisi Smooth
+function HamburgerButton({
+  isActive,
+  onClick,
+}: {
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors focus:outline-none z-[120]"
+      aria-label="Toggle Menu"
+    >
+      <div className="w-5 h-4 relative flex flex-col justify-between">
+        <motion.span
+          animate={isActive ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className="w-full h-0.5 bg-[#23191C] rounded-full origin-center block"
+        />
+        <motion.span
+          animate={
+            isActive ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }
+          }
+          transition={{ duration: 0.15 }}
+          className="w-full h-0.5 bg-[#23191C] rounded-full origin-center block"
+        />
+        <motion.span
+          animate={isActive ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className="w-full h-0.5 bg-[#23191C] rounded-full origin-center block"
+        />
+      </div>
+    </button>
+  );
+}
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const _pathname = usePathname();
+
+  // Tambahkan useEffect ini di dalam file Navbar.tsx
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMobileMenuOpen(false); // Otomatis close kalau layar dibesarkan ke desktop
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,20 +89,23 @@ export function Navbar() {
     };
   }, []);
 
+  // Handle body overflow dan custom event dengan aman agar tidak lag
   useEffect(() => {
-    const event = new CustomEvent("mobileMenuToggle", {
-      detail: mobileMenuOpen,
-    });
-    window.dispatchEvent(event);
+    window.dispatchEvent(
+      new CustomEvent("mobileMenuToggle", { detail: mobileMenuOpen }),
+    );
 
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none"; // Mencegah layar scroll di belakang menu
     } else {
       document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
 
     return () => {
       document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, [mobileMenuOpen]);
 
@@ -130,12 +181,11 @@ export function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-[100] flex justify-center px-4 pt-3">
+    <header className="fixed top-0 inset-x-0 z-[100] flex justify-center px-4 pt-3 pointer-events-none">
       <motion.div
-        className="relative z-[110] bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible"
+        className="relative z-[110] bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible pointer-events-auto w-full"
         initial={false}
         animate={{
-          width: scrolled ? "100%" : "100%",
           maxWidth: scrolled ? "1024px" : "1280px",
           borderRadius: scrolled ? "16px" : "0px",
           borderWidth: scrolled ? "1px" : "0px",
@@ -150,7 +200,7 @@ export function Navbar() {
           paddingTop: scrolled ? "8px" : "12px",
           paddingBottom: scrolled ? "8px" : "12px",
         }}
-        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <div className="flex items-center justify-between h-14 w-full">
           {/* Logo Section */}
@@ -222,7 +272,7 @@ export function Navbar() {
 
                             {/* Right Grid */}
                             <div className="flex-1 grid grid-cols-2 gap-1 content-start">
-        
+                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                               {item.bentoConfig.gridItems.map((sub: any) => (
                                 <Link
                                   key={sub.title}
@@ -282,45 +332,49 @@ export function Navbar() {
             })}
           </div>
 
-          <div className="hidden sm:flex items-center gap-3 shrink-0">
-            <Link href="/daftar">
-              <InteractiveHoverButton
-                className="
-                  h-10
-                  rounded-full
-                  border-0
-                  bg-[#FFD33B]
-                  text-[#2A1B1D]
-                  font-semibold
-                  text-sm
-                  px-6
-                  shadow-none
-                  transition-all
-                  duration-300
-                  hover:bg-[#F3C625]
-                  hover:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
-                  hover:-translate-y-0.5
-                  active:scale-95
-                  whitespace-nowrap
-                "
-              >
-                Daftar Sekolah
-              </InteractiveHoverButton>
-            </Link>
-          </div>
+          {/* Right Action & Mobile Toggle Container */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Tombol Daftar Sekolah (Desktop/Tablet Besar) */}
+            <div className="hidden md:flex items-center">
+              <Link href="/daftar">
+                <InteractiveHoverButton
+                  className="
+                    h-10
+                    rounded-full
+                    border-0
+                    bg-[#FFD33B]
+                    text-[#2A1B1D]
+                    font-semibold
+                    text-sm
+                    px-6
+                    shadow-none
+                    transition-all
+                    duration-300
+                    hover:bg-[#F3C625]
+                    hover:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
+                    hover:-translate-y-0.5
+                    active:scale-95
+                    whitespace-nowrap
+                  "
+                >
+                  Daftar Sekolah
+                </InteractiveHoverButton>
+              </Link>
+            </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="flex lg:hidden items-center relative z-[110] shrink-0">
-            <HamburgerButton
-              isActive={mobileMenuOpen}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            />
+            {/* Tombol Hamburger (Mobile) */}
+            <div className="flex lg:hidden items-center">
+              <HamburgerButton
+                isActive={mobileMenuOpen}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              />
+            </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Mobile Navigation Drawer */}
-      <AnimatePresence mode="wait">
+      {/* Mobile Navigation Drawer / Sidebar (Full Screen Fix) */}
+      <AnimatePresence>
         {mobileMenuOpen && (
           <CurvedNavbar
             setIsActive={setMobileMenuOpen}
@@ -333,7 +387,6 @@ export function Navbar() {
                   href: sub.href,
                 })) ||
                 (item.dropdownType === "bento" && item.bentoConfig
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   ? item.bentoConfig.gridItems.map((sub: any) => ({
                       title: sub.title,
                       href: sub.href,

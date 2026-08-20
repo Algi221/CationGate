@@ -47,6 +47,7 @@
     "react-apexcharts": "^2.1.1",
     "react-dom": "19.2.4",
     "react-easy-crop": "^6.2.2",
+    "react-wrap-balancer": "^1.1.1",
     "resend": "^6.19.0",
     "shadcn": "^4.16.2",
     "sharp": "^0.35.3",

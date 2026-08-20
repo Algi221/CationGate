@@ -37,7 +37,7 @@ export default function LandingPage() {
         {/* <ScrollExpandSection/> */}
         <HeroPPDB />
         <PartnersSection/>
-        <AboutSection/>
+        {/* <AboutSection/> */}
         <SystemFlowSection />
         <TestimonialsSection />
         <PricingSection />

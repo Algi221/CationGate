@@ -108,7 +108,7 @@ export default function ForumPage() {
   const handleViewDetail = async (id: number) => {
     try {
       setLoadingDetailId(id);
-      const res = await fetch(`${BACKEND_URL}/api/informasi/${id}`);
+      const res = await fetch(`${BACKEND_URL}/informasi/${id}`);
       const json = await res.json();
       if (json.success && json.data) {
         setSelectedPost(json.data);
@@ -138,14 +138,15 @@ export default function ForumPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${BACKEND_URL}/api/informasi`);
+        const res = await fetch(`${BACKEND_URL}/informasi`);
         const json = await res.json();
         if (json.success && json.data) {
           setInformasi(json.data);
         }
         
         try {
-          const configRes = await fetch(`${BACKEND_URL}/api/config`);
+          const schoolSlug = params?.school_slug as string || '';
+          const configRes = await fetch(`${BACKEND_URL}/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
           const configJson = await configRes.json();
           if (configJson.success && configJson.data && configJson.data.ppdb_school_period) {
             setSchoolPeriod(configJson.data.ppdb_school_period);
@@ -477,14 +478,14 @@ export default function ForumPage() {
                   className="w-full md:w-auto md:max-w-[45%] bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 cursor-zoom-in relative group max-h-[350px] md:max-h-none shrink-0"
                 >
                   <img src={sanitizeSrc(media.foto)} alt={selectedPost.judul} className="max-w-full max-h-full md:max-h-[75vh] w-auto h-auto object-contain rounded-xl" />
-                  <div className="absolute inset-0 bg-slate-955/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                     <span className="bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full backdrop-blur-sm">🔍 Klik untuk Zoom</span>
                   </div>
                 </div>
               )}
               
               <div className="flex-1 flex flex-col min-w-0 h-auto md:h-full overflow-visible md:overflow-y-auto">
-                <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 sticky top-0 z-20 backdrop-blur-md">
+                <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15 sticky top-0 z-20 backdrop-blur-md">
                   <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-900">
                     <Calendar size={11} />
                     {formatDate(selectedPost.tanggal)}
@@ -513,7 +514,7 @@ export default function ForumPage() {
                         {media.video && (
                           <div className="space-y-3 text-left">
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider block">🎥 Video Lampiran:</span>
-                            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-955 shadow-md">
+                            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-900 shadow-md">
                               <video src={sanitizeSrc(media.video)} controls className="w-full max-h-72 object-contain">
                                 <track kind="captions" label="No captions" default />
                               </video>
@@ -536,7 +537,7 @@ export default function ForumPage() {
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4 cursor-zoom-in group relative"
                               >
                                 <img src={sanitizeSrc(media.dokumen)} alt="Dokumen Preview" className="max-w-full max-h-80 object-contain rounded-xl" />
-                                <div className="absolute inset-0 bg-slate-955/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                                   <span className="bg-black/60 text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">🔍 Zoom Dokumen</span>
                                 </div>
                               </div>
@@ -568,7 +569,7 @@ export default function ForumPage() {
                   )}
                 </div>
 
-                <div className="p-5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 border-t border-slate-100 dark:border-white/5 flex justify-end sticky bottom-0 z-20 backdrop-blur-md">
+                <div className="p-5 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15 border-t border-slate-100 dark:border-white/5 flex justify-end sticky bottom-0 z-20 backdrop-blur-md">
                   <button
                     onClick={() => setSelectedPost(null)}
                     className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all cursor-pointer"

@@ -880,7 +880,7 @@ function ActiveStudentsDirectoryContent() {
                       <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2 leading-none">
                         Angkatan Periode {period}
                         {period === "2026-2027" && (
-                          <span className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest">
+                          <span className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest">
                             Terbaru
                           </span>
                         )}
@@ -969,7 +969,7 @@ function ActiveStudentsDirectoryContent() {
                       className="overflow-hidden"
                     >
                       <div className="p-6 overflow-x-auto">
-                        <table className="w-full text-xs font-bold text-slate-655 dark:text-slate-400 border-collapse">
+                        <table className="w-full text-xs font-bold text-slate-600 dark:text-slate-400 border-collapse">
                           <thead>
                             <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-550 uppercase tracking-widest text-[9px]">
                               <th className="py-3 px-3 text-left w-12">No</th>
@@ -1029,7 +1029,7 @@ function ActiveStudentsDirectoryContent() {
                                         handleViewDetail(student);
                                         setActiveTab("biodata");
                                       }}
-                                      className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5"
+                                      className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-600 dark:text-slate-355 hover:text-slate-800 dark:hover:text-white rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5"
                                       title="Detail Siswa"
                                     >
                                       <Eye size={13} />
@@ -1261,7 +1261,7 @@ function ActiveStudentsDirectoryContent() {
                       <User size={12} className="text-blue-500" /> Ayah Kandung
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Ayah</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span></div>
                     </div>
@@ -1271,7 +1271,7 @@ function ActiveStudentsDirectoryContent() {
                       <User size={12} className="text-blue-500" /> Ibu Kandung
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pendidikan_ibu || selectedApplicant.pendidikanIbu || "-"} / {selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span></div>
                     </div>
@@ -1281,7 +1281,7 @@ function ActiveStudentsDirectoryContent() {
                       <Users size={12} className="text-blue-500" /> Wali & Kontak Darurat
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span> <span className="text-blue-600 dark:text-blue-455 font-mono text-sm font-extrabold">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span></div>
                     </div>
                   </div>
@@ -1295,7 +1295,7 @@ function ActiveStudentsDirectoryContent() {
                       <Info size={12} className="text-blue-500" /> Pendidikan Asal
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span> <span className="text-slate-800 dark:text-white text-sm font-extrabold">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"} / {selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"} ({selectedApplicant.lama_belajar || selectedApplicant.lamaBelajar || 3} Tahun)</span></div>
                     </div>
@@ -1339,7 +1339,7 @@ function ActiveStudentsDirectoryContent() {
 
                   <div className="p-5 bg-blue-50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-500/10 rounded-2xl space-y-3">
                     <span className="text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider text-[9px] block">Pernyataan Kesanggupan Taruna Baru:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-655 dark:text-slate-350">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-600 dark:text-slate-400">
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Patuh Aturan Sekolah</div>
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Menerima Sanksi Sekolah</div>
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Hubungan Akrab Taruna</div>
@@ -1404,8 +1404,8 @@ function ActiveStudentsDirectoryContent() {
       {isAddPeriodModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-sm flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15">
-              <h3 className="text-lg font-black text-slate-850 dark:text-white uppercase tracking-wide">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15">
+              <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase tracking-wide">
                 Tambah Periode Angkatan
               </h3>
               <p className="text-xs text-slate-400 dark:text-slate-550 font-bold mt-1">
@@ -1434,7 +1434,7 @@ function ActiveStudentsDirectoryContent() {
                   required
                 />
               </div>
-              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/15 flex items-center justify-end gap-3">
+              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsAddPeriodModalOpen(false)}
@@ -1466,7 +1466,7 @@ function ActiveStudentsDirectoryContent() {
                   <Pencil size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black text-slate-850 dark:text-white uppercase tracking-wide">
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white uppercase tracking-wide">
                     Edit Data — {editApplicant.nama}
                   </h3>
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
@@ -1480,7 +1480,7 @@ function ActiveStudentsDirectoryContent() {
             </div>
 
             {/* Body — scrollable form */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 hide-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 hide-scrollbar">
               {[
                 {
                   section: "Identitas Diri", icon: <User size={14} />, fields: [
@@ -1544,7 +1544,7 @@ function ActiveStudentsDirectoryContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {section.fields.map((f) => (
                       <div key={f.key} className="group">
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-400 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
                           <select
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any

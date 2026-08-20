@@ -28,7 +28,7 @@ export class ApplicantController {
         .from("student_applicants")
         .select("id, nama, nisn, status, tgl_daftar, jurusan_1, sekolah_asal, diterima_kelas, jenis_kelamin")
         .eq("school_id", resolvedId)
-        .in("status", ["Pending", "Approved", "Rejected"])
+        .in("status", ["Pending", "Approved", "Rejected", "Terverifikasi"])
         .is("deleted_at", null)
         .order("tgl_daftar", { ascending: false });
 

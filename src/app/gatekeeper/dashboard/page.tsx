@@ -440,7 +440,7 @@ export default function GatekeeperOverviewPage() {
             ) : pendingSchools.length > 0 ? (
               <>
                 {pendingSchools.slice(0, 5).map((sc) => (
-                  <div key={sc.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 dark:hover:bg-slate-850/50 p-2 rounded-2xl transition-colors">
+                  <div key={sc.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 p-2 rounded-2xl transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
                         {sc.name.substring(0, 2).toUpperCase()}
@@ -493,7 +493,7 @@ export default function GatekeeperOverviewPage() {
                 { action: "Suspend Tenant (Tunggakan)", subject: "SMK Budi Mulia", time: "3 jam yang lalu", icon: AlertCircle, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/50" },
                 { action: "Verifikasi SK Diterima", subject: "SD Global Islamic", time: "Kemarin", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/50" },
               ].map((log, idx) => (
-                <div key={idx} className="py-3.5 flex items-center gap-4 hover:bg-slate-50/80 dark:hover:bg-slate-850/50 p-2 rounded-2xl transition-colors">
+                <div key={idx} className="py-3.5 flex items-center gap-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 p-2 rounded-2xl transition-colors">
                   <div className={`p-2 rounded-xl ${log.bg} ${log.color} shrink-0`}>
                     <log.icon className="w-4 h-4" />
                   </div>

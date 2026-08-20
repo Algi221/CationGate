@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useMotionValue, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Globe,
   Mail,
@@ -211,21 +212,21 @@ export const CurvedNavbar: React.FC<
       exit="exit"
       className="h-[100dvh] w-screen fixed right-0 top-0 z-[200] bg-white dark:bg-[#0F0F11] overflow-hidden flex flex-col"
     >
-      {/* Header di dalam Sidebar (Logo + Tombol Close X) */}
-      <div className="absolute top-0 left-0 w-full px-6 md:px-24 py-6 flex items-center justify-between z-20">
-        <div className="font-semibold text-lg tracking-wide text-black dark:text-white">
+      {/* Header di dalam Sidebar (Logo) */}
+      <div className="w-full px-6 md:px-24 pt-7 pb-4 flex items-center gap-3 z-20 shrink-0">
+        <Image
+          src="/assets/catpeer/logo_cationGate.svg"
+          alt="CationGate Logo"
+          width={28}
+          height={28}
+          className="w-7 h-7 object-contain"
+        />
+        <div className="font-bold text-lg tracking-tight text-black dark:text-white">
           CationGate
         </div>
-        <button
-          onClick={() => setIsActive(false)}
-          className="w-11 h-11 rounded-full bg-slate-100 dark:bg-slate-800 text-black dark:text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
-          aria-label="Close Menu"
-        >
-          <X className="w-6 h-6" />
-        </button>
       </div>
 
-      <div className="h-full pt-28 pb-10 flex flex-col justify-between overflow-y-auto overflow-x-hidden">
+      <div className="h-full pt-16 pb-10 flex flex-col justify-between overflow-y-auto overflow-x-hidden">
         <div className="flex flex-col gap-3 px-6 md:px-24">
           <div className="flex items-center justify-between border-b border-black/30 dark:border-white/30 pb-4 mb-2">
             <div className="text-black dark:text-white uppercase text-xs font-bold tracking-widest">
@@ -251,5 +252,44 @@ export const CurvedNavbar: React.FC<
       </div>
       <Curve />
     </motion.div>
+  );
+};
+
+export const HamburgerButton = ({
+  isActive,
+  onClick,
+}: {
+  isActive: boolean;
+  onClick: () => void;
+}) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={isActive ? "Tutup menu" : "Buka menu"}
+      className={`relative z-[250] w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 shadow-sm border active:scale-95 focus:outline-none ${
+        isActive
+          ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white"
+          : "bg-white/90 dark:bg-[#0F0F11]/90 backdrop-blur-md border-black/5 dark:border-white/10 text-[#1A202C] dark:text-white"
+      }`}
+    >
+      <div className="relative w-5 h-[14px] flex flex-col justify-between items-center pointer-events-none">
+        <span
+          className={`block h-[2px] w-full bg-current rounded-full transition-transform duration-300 origin-center ${
+            isActive ? "rotate-45 translate-y-[6px]" : ""
+          }`}
+        />
+        <span
+          className={`block h-[2px] w-full bg-current rounded-full transition-opacity duration-300 ${
+            isActive ? "opacity-0" : ""
+          }`}
+        />
+        <span
+          className={`block h-[2px] w-full bg-current rounded-full transition-transform duration-300 origin-center ${
+            isActive ? "-rotate-45 -translate-y-[6px]" : ""
+          }`}
+        />
+      </div>
+    </button>
   );
 };

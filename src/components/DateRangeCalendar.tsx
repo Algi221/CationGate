@@ -212,7 +212,7 @@ export default function DateRangeCalendar({
             const start = isStart(day);
             const end = isEnd(day);
 
-            let bgClass = "bg-transparent hover:bg-slate-200/60 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-350";
+            let bgClass = "bg-transparent hover:bg-slate-200/60 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-400";
             if (start) {
               bgClass = "bg-blue-600 text-white font-extrabold rounded-l-xl";
             } else if (end) {

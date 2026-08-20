@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { AnimatePresence, motion } from "framer-motion";
 import Lottie from "lottie-react";
-import { ArrowRight, Info, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Info, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,6 +101,51 @@ export default function DaftarSaaS() {
     }
   }, [cooldown]);
 
+  // Debounced email availability check
+  useEffect(() => {
+    const email = formData.email.trim();
+    if (!email) {
+      setEmailErrorState('');
+      setEmailSuccessState(false);
+      setEmailChecking(false);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailSuccessState(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setEmailChecking(true);
+      setEmailErrorState('');
+      setEmailSuccessState(false);
+
+      try {
+        const res = await fetch('/api/saas/check-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!data.available) {
+          setEmailErrorState('Email sudah terdaftar di sistem.');
+          setEmailSuccessState(false);
+        } else {
+          setEmailErrorState('');
+          setEmailSuccessState(true);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setEmailChecking(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.email]);
+
   const handleSendOTP = async () => {
     if (!formData.email) {
       setErrorMsg("Harap isi Email Resmi instansi terlebih dahulu.");
@@ -173,35 +218,8 @@ export default function DaftarSaaS() {
     }
   }, [formData.school_name, step]);
 
-  const handleNext = () => {
-    if (step === 1) {
-      if (!formData.school_name || !formData.slug || !formData.email || !formData.phone) {
-        setErrorMsg("Harap lengkapi semua data instansi");
-        return;
-      }
-    }
-    if (step === 2) {
-      if (!formData.admin_name || !formData.admin_password) {
-        setErrorMsg("Harap lengkapi data administrator");
-        return;
-      }
-    }
-    if (emailChecking) {
-      setErrorMsg("Mohon tunggu, sedang memverifikasi ketersediaan email...");
-      return;
-    }
-    if (emailErrorState) {
-      setErrorMsg("Email sudah terdaftar, silakan gunakan email lain.");
-      return;
-    }
-    setErrorMsg("");
-    const nextStep = Math.min(step + 1, 3);
-    setStep(nextStep);
-    setMaxReachedStep(prev => Math.max(prev, nextStep));
-  };
-
   const handleEmailCheck = async (e: React.FocusEvent<HTMLInputElement>) => {
-    const email = e.target.value;
+    const email = e.target.value.trim();
     if (!email) {
       setEmailErrorState('');
       setEmailSuccessState(false);
@@ -215,12 +233,13 @@ export default function DaftarSaaS() {
       return;
     }
     
+    if (emailSuccessState || emailChecking) return;
+
     setEmailChecking(true);
     setEmailErrorState('');
     setEmailSuccessState(false);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
       const res = await fetch('/api/saas/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -239,6 +258,68 @@ export default function DaftarSaaS() {
     } finally {
       setEmailChecking(false);
     }
+  };
+
+  const handleNext = async () => {
+    if (step === 1) {
+      if (!formData.school_name || !formData.slug || !formData.email || !formData.phone) {
+        setErrorMsg("Harap lengkapi semua data instansi");
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        setEmailErrorState('Format email tidak valid.');
+        setErrorMsg("Format email tidak valid.");
+        return;
+      }
+
+      if (emailChecking) {
+        setErrorMsg("Mohon tunggu, sedang memverifikasi ketersediaan email...");
+        return;
+      }
+
+      if (emailErrorState) {
+        setErrorMsg(emailErrorState);
+        return;
+      }
+
+      if (!emailSuccessState) {
+        setEmailChecking(true);
+        try {
+          const res = await fetch('/api/saas/check-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: formData.email.trim() })
+          });
+          const data = await res.json();
+          if (!data.available) {
+            setEmailErrorState('Email sudah terdaftar di sistem.');
+            setErrorMsg('Email sudah terdaftar di sistem.');
+            setEmailSuccessState(false);
+            setEmailChecking(false);
+            return;
+          } else {
+            setEmailErrorState('');
+            setEmailSuccessState(true);
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setEmailChecking(false);
+        }
+      }
+    }
+    if (step === 2) {
+      if (!formData.admin_name || !formData.admin_password) {
+        setErrorMsg("Harap lengkapi data administrator");
+        return;
+      }
+    }
+    setErrorMsg("");
+    const nextStep = Math.min(step + 1, 3);
+    setStep(nextStep);
+    setMaxReachedStep(prev => Math.max(prev, nextStep));
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -475,21 +556,62 @@ export default function DaftarSaaS() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label htmlFor="email" className="text-[11px] font-bold text-slate-700">Email Resmi</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            required
-                            value={formData.email}
-                            onBlur={handleEmailCheck}
-                            onChange={(e) => {
-                              setFormData({ ...formData, email: e.target.value });
-                              if (emailErrorState) setEmailErrorState("");
-                              if (emailSuccessState) setEmailSuccessState(false);
-                            }}
-                            placeholder="info@sman1jakarta.sch.id"
-                            className="h-10 sm:h-11 rounded-xl border-slate-200 bg-white text-xs shadow-none focus:ring-0"
-                          />
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="email" className="text-[11px] font-bold text-slate-700">Email Resmi</Label>
+                            {emailChecking && (
+                              <span className="flex items-center gap-1 text-[10px] font-medium text-amber-600">
+                                <Loader2 className="h-3 w-3 animate-spin" /> Memeriksa...
+                              </span>
+                            )}
+                            {emailSuccessState && (
+                              <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+                                <Check className="h-3 w-3" /> Tersedia
+                              </span>
+                            )}
+                            {emailErrorState && (
+                              <span className="flex items-center gap-1 text-[10px] font-semibold text-rose-600">
+                                <AlertCircle className="h-3 w-3" /> Terdaftar
+                              </span>
+                            )}
+                          </div>
+                          <div className="relative">
+                            <Input
+                              id="email"
+                              type="email"
+                              required
+                              value={formData.email}
+                              onBlur={handleEmailCheck}
+                              onChange={(e) => {
+                                setFormData({ ...formData, email: e.target.value });
+                                if (emailErrorState) setEmailErrorState("");
+                                if (emailSuccessState) setEmailSuccessState(false);
+                              }}
+                              placeholder="info@sman1jakarta.sch.id"
+                              className={`h-10 sm:h-11 rounded-xl bg-white text-xs shadow-none pr-9 transition-colors ${
+                                emailErrorState
+                                  ? "border-rose-400 bg-rose-50/20 text-rose-950 focus:border-rose-500 focus:ring-0"
+                                  : emailSuccessState
+                                  ? "border-emerald-400 bg-emerald-50/20 text-slate-900 focus:border-emerald-500 focus:ring-0"
+                                  : "border-slate-200 focus:border-slate-900 focus:ring-0"
+                              }`}
+                            />
+                            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                              {emailChecking && <Loader2 className="h-4 w-4 animate-spin text-amber-500" />}
+                              {!emailChecking && emailSuccessState && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+                              {!emailChecking && emailErrorState && <AlertCircle className="h-4 w-4 text-rose-500" />}
+                            </div>
+                          </div>
+                          {emailErrorState ? (
+                            <p className="flex items-center gap-1 text-[10px] font-medium text-rose-600 mt-0.5">
+                              <AlertCircle className="h-3 w-3 shrink-0" />
+                              {emailErrorState}
+                            </p>
+                          ) : emailSuccessState ? (
+                            <p className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 mt-0.5">
+                              <Check className="h-3 w-3 shrink-0" />
+                              Email tersedia dan siap digunakan
+                            </p>
+                          ) : null}
                         </div>
 
                         <div className="space-y-1">

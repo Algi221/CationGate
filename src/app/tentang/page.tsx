@@ -185,7 +185,7 @@ export default function AboutPage() {
                   {/* Ukuran wrapper logo diperbesar dari w-24 h-24 jadi w-36 h-36 */}
                   <div className="w-36 h-36 relative mb-2 flex items-center justify-center">
                     <Image
-                      src="/assets/catpeer/icon.png"
+                      src="/assets/catpeer/CationGate_Logo.png"
                       alt="CationGate Logo"
                       fill
                       className="object-contain"

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 const LOADING_KEY = "cationgate_loading_session";
 
@@ -102,12 +103,44 @@ export default function LoadingScreen() {
             }}
             transition={{ duration: 0.4, ease: "easeIn" }}
           >
+            {/* Animated Logo */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0, rotate: -15 }}
+              animate={{ 
+                scale: 1, 
+                opacity: 1, 
+                rotate: 0,
+                y: [0, -8, 0]
+              }}
+              transition={{
+                scale: { duration: 0.8, ease: premiumEasing },
+                opacity: { duration: 0.6 },
+                rotate: { duration: 0.8, ease: premiumEasing },
+                y: {
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  duration: 2.2,
+                  ease: "easeInOut",
+                  delay: 0.8
+                }
+              }}
+              className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 mb-4 sm:mb-6 flex items-center justify-center drop-shadow-lg"
+            >
+              <Image
+                src="/assets/catpeer/CationGate_Logo.png"
+                alt="CationGate Logo"
+                fill
+                priority
+                className="object-contain"
+              />
+            </motion.div>
+
             <div className="overflow-hidden pb-4 px-4">
               <motion.h1
                 initial={{ y: "100%" }}
                 animate={{ y: "0%" }}
-                transition={{ duration: 1, ease: premiumEasing }}
-                className="text-6xl sm:text-7xl md:text-[9rem] font-extrabold tracking-tighter text-[#1A202C] leading-none"
+                transition={{ duration: 1, ease: premiumEasing, delay: 0.2 }}
+                className="text-5xl sm:text-6xl md:text-8xl font-extrabold tracking-tighter text-[#1A202C] leading-none text-center"
               >
                 CationGate<span className="text-[#FFD33B]">.</span>
               </motion.h1>

@@ -7,7 +7,7 @@ export { FaqSection } from "./FaqSection";
 export { default as LoadingScreen } from "./LoadingScreen";
 export { FeaturesShowcase } from "./FeaturesShowcase";
 export { PartnersSection } from "./PartnersSection";
-export { SystemFlowSection } from "./SystemFlowSection";
+export { default as SystemFlowSection } from "./SystemFlowSection";
 export { CtaBanner } from "./CtaBanner";
 export { RegionalStatsSection } from "./RegionalStatsSection";
 export { SuccessStorySection } from "./SuccessStorySection";

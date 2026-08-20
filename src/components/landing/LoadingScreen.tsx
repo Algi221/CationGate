@@ -3,97 +3,87 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const LOADING_KEY = "cationgate_loading_session";
+const ANIMATION_KEY = "cationgate_anim_done";
 
 export default function LoadingScreen() {
-  const [phase, setPhase] = useState<"start" | "show" | "exit">("start");
-  const [isMounted, setIsMounted] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      // 1. If we already marked it as loaded in THIS javascript context, we NEVER show it again
-      // (This covers client-side navigation back to the page)
-      if ((window as any).__cationgate_loaded) {
-        return false;
-      }
-
-      // 2. We are in a fresh JS context (first visit, or hard refresh, or hard navigation)
-      try {
-        const navEntries = performance.getEntriesByType("navigation");
-        if (navEntries.length > 0) {
-          const navType = (navEntries[0] as PerformanceNavigationTiming).type;
-          // If it's a hard refresh, show it (user explicitly requested this)
-          if (navType === "reload") {
-            return true;
-          }
-        }
-        
-        // Otherwise, check if we've shown it in this tab session
-        if (sessionStorage.getItem("cationgate_loaded")) {
-          return false;
-        }
-        
-        // First visit in this tab
-        return true;
-      } catch (e) {
-        return true;
-      }
-    }
-    return true; // SSR
-  });
-
-  const premiumEasing = [0.85, 0, 0.15, 1] as const;
+  const [show, setShow] = useState(false);
+  const [phase, setPhase] = useState<"start" | "exit">("start");
 
   useEffect(() => {
-    if (!isMounted) {
-      window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
+    // Check if current load is a hard refresh / reload
+    const navEntries = performance.getEntriesByType("navigation");
+    const isReload =
+      navEntries.length > 0 &&
+      (navEntries[0] as PerformanceNavigationTiming).type === "reload";
+
+    if (isReload) {
+      sessionStorage.removeItem(ANIMATION_KEY);
+    }
+
+    // Skip if already animated in this session (e.g. client back/forward navigation)
+    if (sessionStorage.getItem(ANIMATION_KEY)) {
+      setShow(false);
       return;
     }
 
-    (window as any).__cationgate_loaded = true;
-    sessionStorage.setItem("cationgate_loaded", "true");
+    // First time or hard refresh -> show loading screen
+    sessionStorage.setItem(ANIMATION_KEY, "1");
+    setShow(true);
+
+    // Lock page scroll while loading screen is active
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
-    const t1 = setTimeout(() => setPhase("show"), 200);
-    const t2 = setTimeout(() => setPhase("exit"), 4500);
+    const timer = setTimeout(() => {
+      setPhase("exit");
+    }, 2800);
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
+      clearTimeout(timer);
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
-  }, [isMounted]);
+  }, []);
 
-  const handleGateAnimationComplete = () => {
+  const premiumEasing = [0.85, 0, 0.15, 1] as const;
+
+  const handleGateDone = () => {
     if (phase === "exit") {
-      setIsMounted(false);
+      setShow(false);
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
-      window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
     }
   };
 
+  if (!show) return null;
+
   return (
     <AnimatePresence>
-      {isMounted && (
-        <div className="fixed inset-0 z-[9999] w-screen h-screen overflow-hidden pointer-events-none">
+      {show && (
+        <div
+          className="fixed inset-0 z-[9999] w-screen h-screen overflow-hidden select-none pointer-events-auto touch-none"
+          style={{ overflow: "hidden" }}
+        >
+          {/* Gate Kiri */}
           <motion.div
             initial={{ x: "0%" }}
             animate={{ x: phase === "exit" ? "-100%" : "0%" }}
             transition={{ duration: 1.2, ease: premiumEasing, delay: 0.3 }}
             style={{ willChange: "transform" }}
-            className="absolute top-0 left-0 w-[52vw] h-full bg-[#F8F6F0] z-40 pointer-events-auto shadow-xl"
+            className="absolute top-0 left-0 w-[52vw] h-full bg-[#F8F6F0] z-40 shadow-2xl"
           />
 
+          {/* Gate Kanan */}
           <motion.div
             initial={{ x: "0%" }}
             animate={{ x: phase === "exit" ? "100%" : "0%" }}
             transition={{ duration: 1.2, ease: premiumEasing, delay: 0.3 }}
             style={{ willChange: "transform" }}
-            onAnimationComplete={handleGateAnimationComplete}
-            className="absolute top-0 right-0 w-[52vw] h-full bg-[#F8F6F0] z-40 pointer-events-auto shadow-xl"
+            onAnimationComplete={handleGateDone}
+            className="absolute top-0 right-0 w-[52vw] h-full bg-[#F8F6F0] z-40 shadow-2xl"
           />
 
+          {/* Konten Tengah */}
           <motion.div
             className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"
             animate={{
@@ -117,7 +107,7 @@ export default function LoadingScreen() {
               <motion.div
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
-                transition={{ duration: 3.8, ease: premiumEasing, delay: 0.2 }}
+                transition={{ duration: 2.5, ease: premiumEasing, delay: 0.2 }}
                 className="h-full bg-[#1A202C]"
               />
             </div>
@@ -127,3 +117,4 @@ export default function LoadingScreen() {
     </AnimatePresence>
   );
 }
+

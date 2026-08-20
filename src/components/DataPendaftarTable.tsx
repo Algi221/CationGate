@@ -277,7 +277,6 @@ export default function DataPendaftarTable() {
             className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all cursor-pointer min-w-[180px]"
           >
             <option value="Semua">Semua Jurusan</option>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {uniqueMajors.map((major: any) => (
               <option key={major} value={major}>{major}</option>
             ))}

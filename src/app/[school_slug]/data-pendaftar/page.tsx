@@ -265,7 +265,7 @@ export default function DataPendaftarPage() {
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 w-fit">
                       SCAN QR PADA BUKTI PENDAFTARAN UNTUK CEK STATUS
                     </span>
-                    <div className="flex gap-2 items-center text-xs font-bold text-slate-500 dark:text-slate-450 mt-1">
+                    <div className="flex gap-2 items-center text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
                       <span>STATUS:</span>
                       <StatusBadge status={selectedStudent.status} />
                     </div>

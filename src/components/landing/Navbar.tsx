@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -130,9 +131,9 @@ export function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-[100] flex justify-center px-4 pt-3">
+    <header className="fixed top-0 inset-x-0 z-[220] flex justify-center px-4 pt-3">
       <motion.div
-        className="relative z-[110] bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible"
+        className="relative z-[225] bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible"
         initial={false}
         animate={{
           width: scrolled ? "100%" : "100%",
@@ -155,11 +156,18 @@ export function Navbar() {
         <div className="flex items-center justify-between h-14 w-full">
           {/* Logo Section */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#2A1B1D] group-hover:scale-110 transition-transform">
-              <DoorOpen className="w-5 h-5" />
+            <div className="relative w-8 h-8 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Image
+                src="/assets/catpeer/logo_cationGate.svg"
+                alt="CationGate Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain"
+                priority
+              />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-lg tracking-wide text-[#23191C]">
+              <span className="font-bold text-lg tracking-tight text-[#23191C]">
                 CationGate
               </span>
             </div>
@@ -310,7 +318,7 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex lg:hidden items-center relative z-[110] shrink-0">
+          <div className="flex lg:hidden items-center relative z-[250] shrink-0">
             <HamburgerButton
               isActive={mobileMenuOpen}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -333,7 +341,6 @@ export function Navbar() {
                   href: sub.href,
                 })) ||
                 (item.dropdownType === "bento" && item.bentoConfig
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   ? item.bentoConfig.gridItems.map((sub: any) => ({
                       title: sub.title,
                       href: sub.href,

@@ -44,7 +44,7 @@ export default function Error({ error, reset }: ErrorProps) {
           </button>
           <button
             onClick={() => (window.location.href = "/")}
-            className="px-6 py-3 bg-slate-200 hover:bg-slate-350 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+            className="px-6 py-3 bg-slate-200 hover:bg-slate-400 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
           >
             Kembali ke Beranda
           </button>

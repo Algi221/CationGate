@@ -3,10 +3,11 @@
 import * as React from "react";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
-import { DoorOpen, ArrowUpRight, ArrowUp } from "lucide-react";
+import { ArrowUpRight, ArrowUp } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -284,9 +285,13 @@ export function CinematicFooter() {
               {/* Column 1: Brand Info */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                    <DoorOpen className="w-4 h-4" />
-                  </div>
+                  <Image
+                    src="/assets/catpeer/logo_cationGate.svg"
+                    alt="CationGate Logo"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 object-contain"
+                  />
                   <span className="font-extrabold text-xl tracking-wide text-zinc-900">
                     CationGate
                   </span>

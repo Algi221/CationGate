@@ -107,7 +107,6 @@ function AreaChart({
     },
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const options: any = {
     legend: { show: false, position: "top", horizontalAlign: "left" },
     colors: [color],
@@ -329,8 +328,7 @@ export default function DashboardOverview() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (Array.isArray(parsed) && parsed.length > 0) {   
           setMajorsList(parsed.map((m: any) => ({
             name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
             dbName: m.title,
@@ -345,7 +343,7 @@ export default function DashboardOverview() {
         if (json.success && json.data?.ppdb_majors_config) {
           const dbMajors = json.data.ppdb_majors_config;
           if (Array.isArray(dbMajors) && dbMajors.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          
             const mapped = dbMajors.map((m: any) => ({
               name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
               dbName: m.title,
@@ -362,11 +360,8 @@ export default function DashboardOverview() {
   // ── Derived Stats (computed dari data pendaftar) ───────────────────────────
   const computedStats = useMemo(() => {
     const list = applicants || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const approved = list.filter((a: any) => a.status === "Approved").length;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pending = list.filter((a: any) => a.status === "Pending").length;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rejected = list.filter((a: any) => a.status === "Rejected").length;
     return { total: list.length, approved, pending, rejected };
   }, [applicants]);
@@ -377,7 +372,6 @@ export default function DashboardOverview() {
 
   const majorsMap = useMemo(() => {
     const counts: Record<string, number> = {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (applicants || []).forEach((a: any) => {
       const name = a.jurusan_1 || a.jurusan1 || "";
       if (name) counts[name] = (counts[name] || 0) + 1;
@@ -395,10 +389,10 @@ export default function DashboardOverview() {
   }, [majorsMap, majorsList]);
 
   const trend = useMemo(() => {
-    const now = new Date();
+    const now = new Date(); 
     const dayMs = 86400000;
     const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const registeredAt = (a: any) => {
       const d = new Date(a.tgl_daftar || a.created_at || Date.now());
       return isNaN(d.getTime()) ? Date.now() : d.getTime();
@@ -439,7 +433,7 @@ export default function DashboardOverview() {
       }
     } else {
       const months = new Map<string, { from: number; to: number }>();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (applicants || []).forEach((a: any) => {
         const t = registeredAt(a);
         const d = new Date(t);
@@ -464,7 +458,6 @@ export default function DashboardOverview() {
     }
 
     const counts = buckets.map((b) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (applicants || []).filter((a: any) => {
         const t = registeredAt(a);
         return t >= b.from && t < b.to;
@@ -770,7 +763,6 @@ export default function DashboardOverview() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-white/5">
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 {applicants.slice(0, 7).map((a: any, idx: number) => (
                   <motion.tr
                     key={a.id || idx}

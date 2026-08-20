@@ -627,7 +627,7 @@ export default function MajorPage() {
       <div className="fixed top-6 left-6 z-50">
         <Link 
           href={`/${params.school_slug}`} 
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -637,7 +637,7 @@ export default function MajorPage() {
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all" 
           title={isDark ? 'Mode Terang' : 'Mode Gelap'}
         >
           {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
@@ -758,7 +758,7 @@ export default function MajorPage() {
       {/* PROFILE VIDEO SECTION - Rendered only if video exists */}
       {major.video && (
         <section className="py-12 px-6 max-w-5xl mx-auto w-full relative z-10 animate-in fade-in duration-700">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-850 p-6 md:p-10 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col items-center text-center space-y-6">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 p-6 md:p-10 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col items-center text-center space-y-6">
             <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full major-gradient-bg opacity-10 dark:opacity-25 blur-3xl pointer-events-none"></div>
             
             <div className="space-y-2">
@@ -769,7 +769,7 @@ export default function MajorPage() {
               <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white">
                 Saksikan Video Dokumenter {major.alias}
               </h2>
-              <p className="text-slate-500 dark:text-slate-450 text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
                 Tonton video penjelasan ruang laboratorium praktikum, kompetensi dasar, hasil karya proyek lulusan, serta suasana kolaborasi siswa {major.title} di SMK Taruna Bhakti.
               </p>
             </div>

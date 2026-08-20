@@ -94,4 +94,10 @@ app.route('/password', passwordRouter);
 // Standard API health check
 app.get('/health', (c) => c.json({ status: 'OK', service: 'PPDB SMK Taruna Bhakti API Server v1.0.0 (Monolith)' }));
 
+// Handle SPA fallback for client-side routes
+app.get('*', (c) => {
+  if (c.req.path.startsWith('/api/')) return c.notFound();
+  return c.html(`<!DOCTYPE html><html><body><script>window.location.href = '/'</script></body></html>`);
+});
+
 export default app;

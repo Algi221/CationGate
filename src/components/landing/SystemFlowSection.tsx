@@ -64,7 +64,13 @@ const steps = [
   },
 ];
 
-const WaveDecoration = ({ colorClass, flip }) => (
+const WaveDecoration = ({
+  colorClass,
+  flip,
+}: {
+  colorClass: string;
+  flip: boolean;
+}) => (
   <div
     className={`absolute ${flip ? "top-0 rotate-180" : "bottom-0"} left-0 w-full h-[30vh] md:h-[65vh] pointer-events-none overflow-hidden z-0`}
   >
@@ -86,7 +92,16 @@ const WaveDecoration = ({ colorClass, flip }) => (
   </div>
 );
 
-const StepCard = ({ step, index, smoothProgress }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const StepCard = ({
+  step,
+  index,
+  smoothProgress,
+}: {
+  step: any;
+  index: number;
+  smoothProgress: any;
+}) => {
   const totalSections = steps.length + 1;
   const startVisible = index / totalSections + (1 / totalSections) * 0.3;
   const finishEntering = startVisible + (1 / totalSections) * 0.7;
@@ -189,34 +204,6 @@ const StepCard = ({ step, index, smoothProgress }) => {
     }
   };
 
-  const targetRef = useRef<HTMLDivElement>(null);
-
-  // Pantau progres scroll di dalam area 400vh
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start start", "end end"],
-  });
-
-  // 1. Animasi Geser Background & Konten ke Kiri (300vw karena layar pertama hitungannya 0vw)
-  const containerX = useTransform(scrollYProgress, [0, 1], ["0vw", "-300vw"]);
-
-  // 2. Animasi Posisi X Pesawat (Pesawat maju ke kanan di dalam container agar terlihat stay di kiri layar user)
-  const planeX = useTransform(scrollYProgress, [0, 1], ["15vw", "315vw"]);
-
-  // 3. Animasi Y Pesawat (Membentuk 3 gelombang sinus naik turun)
-  const planeY = useTransform(
-    scrollYProgress,
-    [0, 0.133, 0.3, 0.466, 0.633, 0.8, 0.966, 1],
-    ["0vh", "-20vh", "0vh", "20vh", "0vh", "-20vh", "0vh", "0vh"]
-  );
-
-  // 4. Animasi Rotasi Pesawat (Menukik ke atas dan ke bawah ngikutin jalur)
-  const planeRotate = useTransform(
-    scrollYProgress,
-    [0, 0.066, 0.133, 0.216, 0.3, 0.383, 0.466, 0.55, 0.633, 0.716, 0.8, 0.883, 0.966, 1],
-    [0, -25, 0, 25, 0, 25, 0, -25, 0, -25, 0, 25, 0, 0]
-  );
-
   return (
     <motion.div
       style={{ x, y, zIndex: index + 10 }}
@@ -237,7 +224,7 @@ const StepCard = ({ step, index, smoothProgress }) => {
 };
 
 export default function SystemFlowSection() {
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],

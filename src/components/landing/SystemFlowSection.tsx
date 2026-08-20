@@ -10,8 +10,7 @@ const steps = [
     text: "text-[#2e3749]",
     direction: "bottom",
     layout: "image-left",
-    image:
-      "https://images.unsplash.com/photo-1590650153855-d9e808231d41?auto=format&fit=crop&w=800&q=80",
+    image: "/assets/flow/flow1.png",
     waveColor: "text-[#FFD33B]/20",
   },
   {
@@ -22,8 +21,7 @@ const steps = [
     text: "text-[#2e3749]",
     direction: "right",
     layout: "image-right",
-    image:
-      "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=800&q=80",
+    image: "/assets/flow/flow2.png",
     waveColor: "text-[#2e3749]/10",
   },
   {
@@ -34,8 +32,7 @@ const steps = [
     text: "text-[#2e3749]",
     direction: "bottom",
     layout: "image-left",
-    image:
-      "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80",
+    image: "/assets/flow/otp.png",
     waveColor: "text-[#FFD33B]/20",
   },
   {
@@ -46,8 +43,7 @@ const steps = [
     text: "text-[#FAF8F5]",
     direction: "right",
     layout: "image-right",
-    image:
-      "https://images.unsplash.com/photo-1556742049-0a67d553c295?auto=format&fit=crop&w=800&q=80",
+    image: "/assets/flow/flow3.png",
     waveColor: "text-white/10",
   },
   {
@@ -58,8 +54,7 @@ const steps = [
     text: "text-[#2e3749]",
     direction: "bottom",
     layout: "image-left",
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+    image: "/assets/flow/flow1.png", // <- Ganti jika Anda punya gambar ke-5
     waveColor: "text-[#2e3749]/15",
   },
 ];
@@ -127,16 +122,26 @@ const StepCard = ({
     if (step.layout === "image-left") {
       return (
         <div className="w-full h-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center md:justify-between gap-6 md:gap-16 px-6 md:px-16 pt-24 md:pt-0 relative z-10">
-          <div className="w-full md:w-1/2 h-[35vh] md:h-[70vh] relative p-2 md:p-8 shrink-0">
-            <div className="absolute inset-0 bg-black/5 rounded-3xl transform -rotate-2 hidden md:block"></div>
-            <img
-              src={step.image}
-              alt={step.title}
-              loading="eager"
-              decoding="async"
-              className="absolute inset-0 w-full h-full object-cover rounded-2xl md:rounded-3xl shadow-md md:shadow-lg"
-            />
+          {/* UPDATED: Image wrapper with layers, shadows, & hover character */}
+          <div className="w-full md:w-1/2 h-[35vh] md:h-[70vh] relative p-2 md:p-8 shrink-0 group perspective-1000">
+            {/* Background offset card layer */}
+            <div className="absolute inset-4 md:inset-8 bg-black/10 rounded-3xl md:rounded-[2.5rem] transform -rotate-3 transition-transform duration-500 group-hover:-rotate-6 hidden md:block backdrop-blur-sm border border-black/5"></div>
+
+            {/* Main floating image container */}
+            <div className="absolute inset-4 md:inset-8 bg-white/60 backdrop-blur-md p-1.5 md:p-3 rounded-2xl md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] md:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-white/70 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-[0_40px_70px_rgba(0,0,0,0.2)]">
+              <img
+                src={step.image}
+                alt={step.title}
+                loading="eager"
+                decoding="async"
+                // object-top added so UI screenshots don't cut off at the header
+                className="w-full h-full object-cover object-top rounded-xl md:rounded-[2rem] shadow-sm bg-white"
+              />
+              {/* Subtle light glare/reflection effect on hover */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-[2rem]"></div>
+            </div>
           </div>
+
           <div className="w-full md:w-1/2 flex flex-col justify-center space-y-3 md:space-y-6 relative">
             <div className="flex items-baseline gap-3 md:gap-4">
               <span className="text-lg md:text-2xl font-bold tracking-widest uppercase opacity-70">
@@ -189,15 +194,25 @@ const StepCard = ({
               <div className="w-12 md:w-16 h-[2px] md:h-[3px] bg-current mt-4 md:mt-8 opacity-50"></div>
             </div>
           </div>
-          <div className="w-full md:w-1/2 h-[35vh] md:h-[70vh] relative p-2 md:p-8 shrink-0">
-            <div className="absolute inset-0 bg-black/5 rounded-3xl transform rotate-2 hidden md:block"></div>
-            <img
-              src={step.image}
-              alt={step.title}
-              loading="eager"
-              decoding="async"
-              className="absolute inset-0 w-full h-full object-cover rounded-2xl md:rounded-3xl shadow-md md:shadow-lg"
-            />
+
+          {/* UPDATED: Image wrapper with layers, shadows, & hover character (Reverse rotation for right side) */}
+          <div className="w-full md:w-1/2 h-[35vh] md:h-[70vh] relative p-2 md:p-8 shrink-0 group perspective-1000">
+            {/* Background offset card layer */}
+            <div className="absolute inset-4 md:inset-8 bg-black/10 rounded-3xl md:rounded-[2.5rem] transform rotate-3 transition-transform duration-500 group-hover:rotate-6 hidden md:block backdrop-blur-sm border border-black/5"></div>
+
+            {/* Main floating image container */}
+            <div className="absolute inset-4 md:inset-8 bg-white/60 backdrop-blur-md p-1.5 md:p-3 rounded-2xl md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] md:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-white/70 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-[0_40px_70px_rgba(0,0,0,0.2)]">
+              <img
+                src={step.image}
+                alt={step.title}
+                loading="eager"
+                decoding="async"
+                // object-top added so UI screenshots don't cut off at the header
+                className="w-full h-full object-cover object-top rounded-xl md:rounded-[2rem] shadow-sm bg-white"
+              />
+              {/* Subtle light glare/reflection effect on hover */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-[2rem]"></div>
+            </div>
           </div>
         </div>
       );
@@ -264,7 +279,7 @@ export default function SystemFlowSection() {
               style={{ writingMode: "vertical-rl" }}
             >
               <span className="text-xl font-bold tracking-[0.3em] uppercase">
-                CationGate Engine
+                CationGate 
               </span>
               <span className="text-xl font-bold tracking-[0.3em] uppercase opacity-50">
                 SPMB Digital

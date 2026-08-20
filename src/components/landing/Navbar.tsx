@@ -182,11 +182,12 @@ export function Navbar() {
   return (
     <header className="fixed top-0 inset-x-0 z-[220] flex justify-center px-4 pt-3">
       <motion.div
-        className="relative z-[225] bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible"
+        className="relative w-full z-[225] bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible"
         initial={false}
         animate={{
-          maxWidth: scrolled ? "1024px" : "1280px",
-          borderRadius: scrolled ? "16px" : "0px",
+          // Diperlebar sedikit ke 1360px saat di atas agar terasa "panjang tapi ga kejauhan"
+          maxWidth: scrolled ? "1024px" : "1360px",
+          borderRadius: scrolled ? "16px" : "24px",
           borderWidth: scrolled ? "1px" : "0px",
           borderColor: scrolled
             ? "rgba(226, 232, 240, 0.8)"
@@ -194,10 +195,11 @@ export function Navbar() {
           boxShadow: scrolled
             ? "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08)"
             : "0 0 0 0 rgba(0,0,0,0)",
-          paddingLeft: scrolled ? "20px" : "24px",
-          paddingRight: scrolled ? "20px" : "24px",
-          paddingTop: scrolled ? "8px" : "12px",
-          paddingBottom: scrolled ? "8px" : "12px",
+          // Padding horizontal & vertical dilebarkan agar terasa "longgar" di awal
+          paddingLeft: scrolled ? "20px" : "32px",
+          paddingRight: scrolled ? "20px" : "32px",
+          paddingTop: scrolled ? "8px" : "16px",
+          paddingBottom: scrolled ? "8px" : "16px",
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
@@ -340,28 +342,28 @@ export function Navbar() {
 
           {/* Right Action & Mobile Toggle Container */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Tombol Daftar Sekolah (Desktop/Tablet Besar) */}
-            <div className="hidden md:flex items-center">
-              <Link href="/daftar">
+            {/* Tombol Daftar Sekolah (Hanya muncul di Layar Besar/Desktop - lg:flex) */}
+            <div className="hidden lg:flex items-center">
+              <Link href="/daftar" className="group/daftar block p-1 -m-1">
                 <InteractiveHoverButton
                   className="
-                    h-10
-                    rounded-full
-                    border-0
-                    bg-[#FFD33B]
-                    text-[#2A1B1D]
-                    font-semibold
-                    text-sm
-                    px-6
-                    shadow-none
-                    transition-all
-                    duration-300
-                    hover:bg-[#F3C625]
-                    hover:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
-                    hover:-translate-y-0.5
-                    active:scale-95
-                    whitespace-nowrap
-                  "
+          h-10
+          rounded-full
+          border-0
+          bg-[#FFD33B]
+          text-[#2A1B1D]
+          font-semibold
+          text-sm
+          px-6
+          shadow-none
+          transition-all
+          duration-300
+          group-hover/daftar:bg-[#F3C625]
+          group-hover/daftar:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
+          group-hover/daftar:-translate-y-0.5
+          active:scale-95
+          whitespace-nowrap
+        "
                 >
                   Daftar Sekolah
                 </InteractiveHoverButton>

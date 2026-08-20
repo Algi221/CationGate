@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import Image from "next/image";
 
 const ANIMATION_KEY = "cationgate_anim_done";
 
 export default function LoadingScreen() {
   const [show, setShow] = useState(false);
-  const [phase, setPhase] = useState<"video" | "reveal" | "exit">("video");
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [phase, setPhase] = useState<"intro" | "exit">("intro");
 
   useEffect(() => {
     // Check if current load is a hard refresh / reload
@@ -36,32 +35,53 @@ export default function LoadingScreen() {
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
-    // Play video
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {
-        // Autoplay policy fallback
-      });
+    // Play subtle pleasant sound effect on roll & settle
+    try {
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      if (AudioContextClass) {
+        const ctx = new AudioContextClass();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(
+          580,
+          ctx.currentTime + 0.35
+        );
+
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          ctx.currentTime + 0.5
+        );
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + 0.05);
+        osc.stop(ctx.currentTime + 0.5);
+      }
+    } catch {
+      // Audio policy safe fallback
     }
 
-    // Transition from video to logo & brand reveal after ~2 seconds
-    const timerVideoToReveal = setTimeout(() => {
-      setPhase("reveal");
-    }, 2000);
-
-    // Transition to exit (gate open) after reveal completes (~3.8 seconds)
-    const timerExit = setTimeout(() => {
+    // Pacing yang nyaman dan elegan: 2.8 detik sebelum gerbang membelah
+    const timer = setTimeout(() => {
       setPhase("exit");
-    }, 4000);
+    }, 2800);
 
     return () => {
-      clearTimeout(timerVideoToReveal);
-      clearTimeout(timerExit);
+      clearTimeout(timer);
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
   }, []);
 
-  const premiumEasing = [0.85, 0, 0.15, 1] as const;
+  // Kurva perlambatan mewah untuk gerbang & brand
+  const silkyGateEasing = [0.76, 0, 0.24, 1] as const;
 
   const handleGateDone = () => {
     if (phase === "exit") {
@@ -71,10 +91,33 @@ export default function LoadingScreen() {
     }
   };
 
-  const handleVideoEnded = () => {
-    if (phase === "video") {
-      setPhase("reveal");
-    }
+  // Huruf untuk efek ketik per-karakter
+  const lettersCation = ["C", "a", "t", "i", "o", "n"];
+  const lettersGate = ["G", "a", "t", "e", "."];
+
+  const containerVariants: Variants = {
+    hidden: { opacity: 1 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.065,
+        delayChildren: 0.65, // Mulai mengetik tepat setelah logo mendarat
+      },
+    },
+  };
+
+  const letterVariants: Variants = {
+    hidden: { opacity: 0, y: 14, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 280,
+        damping: 18,
+      },
+    },
   };
 
   if (!show) return null;
@@ -83,118 +126,126 @@ export default function LoadingScreen() {
     <AnimatePresence>
       {show && (
         <div
-          className="fixed inset-0 z-[9999] w-screen h-screen overflow-hidden select-none pointer-events-auto touch-none bg-[#F8F6F0]"
+          className="fixed inset-0 z-[9999] w-screen h-screen overflow-hidden select-none pointer-events-auto touch-none"
           style={{ overflow: "hidden" }}
         >
-          {/* Gate Kiri */}
+          {/* ─── GERBANG KIRI (SPLIT TO LEFT) ─────────────────────────── */}
           <motion.div
             initial={{ x: "0%" }}
             animate={{ x: phase === "exit" ? "-100%" : "0%" }}
-            transition={{ duration: 1.1, ease: premiumEasing, delay: 0.1 }}
+            transition={{ duration: 1.2, ease: silkyGateEasing, delay: 0.08 }}
             style={{ willChange: "transform" }}
-            className="absolute top-0 left-0 w-[52vw] h-full bg-[#F8F6F0] z-40 shadow-2xl"
+            className="absolute top-0 left-0 w-[52vw] h-full bg-[#F8F6F0] z-40"
           />
 
-          {/* Gate Kanan */}
+          {/* ─── GERBANG KANAN (SPLIT TO RIGHT) ────────────────────────── */}
           <motion.div
             initial={{ x: "0%" }}
             animate={{ x: phase === "exit" ? "100%" : "0%" }}
-            transition={{ duration: 1.1, ease: premiumEasing, delay: 0.1 }}
+            transition={{ duration: 1.2, ease: silkyGateEasing, delay: 0.08 }}
             style={{ willChange: "transform" }}
             onAnimationComplete={handleGateDone}
-            className="absolute top-0 right-0 w-[52vw] h-full bg-[#F8F6F0] z-40 shadow-2xl"
+            className="absolute top-0 right-0 w-[52vw] h-full bg-[#F8F6F0] z-40"
           />
 
-          {/* Center Stage Animation */}
+          {/* ─── CENTER BRAND STAGE: LOGO & LETTER-BY-LETTER TEXT ─────── */}
           <motion.div
             className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none px-4"
             animate={{
               opacity: phase === "exit" ? 0 : 1,
-              scale: phase === "exit" ? 0.95 : 1,
+              scale: phase === "exit" ? 0.94 : 1,
+              y: phase === "exit" ? -25 : 0,
             }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
+            transition={{ duration: 0.45, ease: "easeInOut" }}
           >
-            {/* Phase 1: Video Intro */}
-            {phase === "video" && (
+            <div className="flex flex-col items-center justify-center space-y-6 text-center">
+              
+              {/* LOGO: Berguling dari atas layar ke tengah dengan rotasi dan efek membal elastis */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="relative flex items-center justify-center max-w-sm sm:max-w-md w-full aspect-video rounded-3xl overflow-hidden shadow-2xl bg-black/5"
+                initial={{
+                  y: -260,
+                  rotate: -360,
+                  scale: 0.4,
+                  opacity: 0,
+                }}
+                animate={{
+                  y: 0,
+                  rotate: 0,
+                  scale: 1,
+                  opacity: 1,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 140,
+                  damping: 12,
+                  mass: 0.9,
+                  duration: 1.0,
+                }}
+                className="relative w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center"
               >
-                <video
-                  ref={videoRef}
-                  src="/assets/videos/animationCationGate.mp4"
-                  autoPlay
-                  muted
-                  playsInline
-                  onEnded={handleVideoEnded}
-                  className="w-full h-full object-cover"
+                {/* Glow Aura & Floating Pulse di belakang Logo */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{
+                    opacity: [0.35, 0.7, 0.35],
+                    scale: [0.95, 1.15, 0.95],
+                  }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 2.0,
+                    ease: "easeInOut",
+                    delay: 0.5,
+                  }}
+                  className="absolute inset-0 bg-[#FFD33B]/35 rounded-full blur-2xl"
+                />
+
+                <Image
+                  src="/assets/catpeer/logo_cationGate.svg"
+                  alt="CationGate Logo"
+                  width={144}
+                  height={144}
+                  className="w-full h-full object-contain relative z-10 drop-shadow-2xl"
+                  priority
                 />
               </motion.div>
-            )}
 
-            {/* Phase 2: Morph to Logo & Typography */}
-            {phase !== "video" && (
+              {/* TEXT: Muncul per huruf secara ketik tanpa kursor/garis kuning */}
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col items-center justify-center text-center space-y-6"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="flex items-center justify-center px-4"
               >
-                {/* Logo with Glow & Floating Animation */}
-                <motion.div
-                  initial={{ scale: 0.4, rotate: -10, opacity: 0 }}
-                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 20,
-                    delay: 0.1,
-                  }}
-                  className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center"
-                >
-                  <div className="absolute inset-0 bg-[#FFD33B]/20 rounded-full blur-2xl animate-pulse" />
-                  <Image
-                    src="/assets/catpeer/logo_cationGate.svg"
-                    alt="CationGate Logo"
-                    width={112}
-                    height={112}
-                    className="w-full h-full object-contain relative z-10 drop-shadow-xl"
-                    priority
-                  />
-                </motion.div>
+                <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-none flex items-center">
+                  {/* Cation */}
+                  <span className="flex text-[#1A202C]">
+                    {lettersCation.map((char, index) => (
+                      <motion.span
+                        key={`cation-${index}`}
+                        variants={letterVariants}
+                        className="inline-block"
+                      >
+                        {char}
+                      </motion.span>
+                    ))}
+                  </span>
 
-                {/* Staggered Typography "CationGate" */}
-                <div className="overflow-hidden px-4">
-                  <motion.h1
-                    initial={{ y: "100%", opacity: 0 }}
-                    animate={{ y: "0%", opacity: 1 }}
-                    transition={{
-                      duration: 0.8,
-                      ease: premiumEasing,
-                      delay: 0.25,
-                    }}
-                    className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-[#1A202C] leading-tight"
-                  >
-                    Cation<span className="text-[#FFD33B]">Gate</span>
-                    <span className="text-[#FFD33B]">.</span>
-                  </motion.h1>
-                </div>
-
-                {/* Tagline Badge */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.45 }}
-                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1A202C]/5 border border-[#1A202C]/10 text-xs sm:text-sm font-bold tracking-widest uppercase text-[#1A202C]/70"
-                >
-                  <span className="w-2 h-2 rounded-full bg-[#FFD33B]" />
-                  SPMB Digital &amp; School Platform
-                </motion.div>
+                  {/* Gate. */}
+                  <span className="flex text-[#FFD33B]">
+                    {lettersGate.map((char, index) => (
+                      <motion.span
+                        key={`gate-${index}`}
+                        variants={letterVariants}
+                        className="inline-block"
+                      >
+                        {char}
+                      </motion.span>
+                    ))}
+                  </span>
+                </h1>
               </motion.div>
-            )}
+
+            </div>
           </motion.div>
         </div>
       )}

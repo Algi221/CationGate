@@ -113,7 +113,7 @@ export default function KelolaInformasi() {
   const fetchDetailItem = async (id: number): Promise<Informasi | null> => {
     try {
       setLoadingDetailId(id);
-      const res = await fetch(`${BACKEND_URL}/api/informasi/${id}`);
+      const res = await fetch(`${BACKEND_URL}/informasi/${id}`);
       const data = await res.json();
       if (data.success && data.data) {
         return data.data;
@@ -145,7 +145,7 @@ export default function KelolaInformasi() {
   const fetchInformasi = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/informasi`);
+      const res = await fetch(`${BACKEND_URL}/informasi`);
       const data = await res.json();
       if (data.success) {
         setInformasiList(data.data);
@@ -385,8 +385,8 @@ export default function KelolaInformasi() {
 
     try {
       const url = isEditMode 
-        ? `${BACKEND_URL}/api/informasi/${selectedId}` 
-        : `${BACKEND_URL}/api/informasi`;
+        ? `${BACKEND_URL}/informasi/${selectedId}` 
+        : `${BACKEND_URL}/informasi`;
       
       const method = isEditMode ? "PUT" : "POST";
 
@@ -446,7 +446,7 @@ export default function KelolaInformasi() {
     setDeleteConfirmId(null);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/informasi/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/informasi/${id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${adminToken}`

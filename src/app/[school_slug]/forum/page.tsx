@@ -108,7 +108,7 @@ export default function ForumPage() {
   const handleViewDetail = async (id: number) => {
     try {
       setLoadingDetailId(id);
-      const res = await fetch(`${BACKEND_URL}/api/informasi/${id}`);
+      const res = await fetch(`${BACKEND_URL}/informasi/${id}`);
       const json = await res.json();
       if (json.success && json.data) {
         setSelectedPost(json.data);
@@ -138,7 +138,7 @@ export default function ForumPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${BACKEND_URL}/api/informasi`);
+        const res = await fetch(`${BACKEND_URL}/informasi`);
         const json = await res.json();
         if (json.success && json.data) {
           setInformasi(json.data);
@@ -146,7 +146,7 @@ export default function ForumPage() {
         
         try {
           const schoolSlug = params?.school_slug as string || '';
-          const configRes = await fetch(`${BACKEND_URL}/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
+          const configRes = await fetch(`${BACKEND_URL}/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
           const configJson = await configRes.json();
           if (configJson.success && configJson.data && configJson.data.ppdb_school_period) {
             setSchoolPeriod(configJson.data.ppdb_school_period);

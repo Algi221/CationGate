@@ -32,10 +32,11 @@ const app = new Hono().basePath('/api');
 // Safe JSON body parser middleware
 app.use('*', async (c, next) => {
   const originalJson = c.req.json.bind(c.req);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   c.req.json = async <T = any>() => {
     try {
       return await originalJson() as T;
-    } catch (err) {
+    } catch (_err) {
       return {} as T;
     }
   };
@@ -58,15 +59,15 @@ app.use('*', secureHeaders({
   xContentTypeOptions: true,
   xFrameOptions: 'SAMEORIGIN',
   strictTransportSecurity: 'max-age=63072000; includeSubDomains; preload',
-  contentSecurityPolicy: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", "data:", "https:"],
-    fontSrc: ["'self'", "https:"],
-    connectSrc: ["'self'"],
-    frameAncestors: ["'self'"],
-  },
+    contentSecurityPolicy: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://snap-assets.sandbox.midtrans.com", "https://api.sandbox.midtrans.com", "https://pay.google.com", "https://gwk.gopayapi.com", "https://www.googletagmanager.com"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "https:"],
+      connectSrc: ["'self'", "https://api.sandbox.midtrans.com"],
+      frameAncestors: ["'self'", "https://app.sandbox.midtrans.com"],
+    },
   referrerPolicy: 'strict-origin-when-cross-origin',
   xXssProtection: '1; mode=block',
 }));
@@ -92,5 +93,11 @@ app.route('/password', passwordRouter);
 
 // Standard API health check
 app.get('/health', (c) => c.json({ status: 'OK', service: 'PPDB SMK Taruna Bhakti API Server v1.0.0 (Monolith)' }));
+
+// Handle SPA fallback for client-side routes
+app.get('*', (c) => {
+  if (c.req.path.startsWith('/api/')) return c.notFound();
+  return c.html(`<!DOCTYPE html><html><body><script>window.location.href = '/'</script></body></html>`);
+});
 
 export default app;

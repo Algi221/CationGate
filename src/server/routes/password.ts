@@ -63,7 +63,7 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
     await supabase.from('verification_otps').update({ is_used: true }).eq('id', records[0].id);
 
     return c.json({ success: true, message: 'Password berhasil diubah. Silakan login dengan password baru.' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Reset Password Error:', err);
     return c.json({ success: false, message: 'Terjadi kesalahan sistem.' }, 500);
   }

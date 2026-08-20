@@ -24,13 +24,14 @@ export const adminAuth = createMiddleware(async (c, next) => {
 
   
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const decoded = jwt.verify(token, getJwtSecret()) as any;
       if (!decoded.school_id) {
         return c.json({ success: false, message: 'Akses ditolak: Sesi Anda tidak valid untuk halaman ini.' }, 401);
       }
     c.set('admin', decoded);
     return await next();
-  } catch (error) {
+  } catch (_error) {
     return c.json({
       message: 'Akses ditolak: Sesi Anda tidak valid atau telah berakhir.'
     }, 401);
@@ -47,6 +48,7 @@ export const superAdminAuth = createMiddleware(async (c, next) => {
     return res as Response;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = c.get('admin') as any;
   if (admin && admin.role === 'superadmin') {
     return await next();
@@ -64,6 +66,7 @@ export const gatekeeperAuth = createMiddleware(async (c, next) => {
   }
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const decoded = jwt.verify(authHeader.slice(7), getJwtSecret()) as any;
     if (decoded.isGatekeeper !== true || decoded.role !== 'gatekeeper') {
       return c.json({ success: false, message: 'Akses ditolak: Anda tidak memiliki izin untuk tindakan ini.' }, 403);
@@ -80,7 +83,9 @@ export const gatekeeperAuth = createMiddleware(async (c, next) => {
  * Never uses query parameters — prevents tenant impersonation attacks.
  * Returns 404 (not 403) so attackers can't tell if a record exists.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const requireTenantId = async (c: any): Promise<string> => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = c.get('admin') as any;
   if (!admin?.school_id) {
     throw new TenantError();

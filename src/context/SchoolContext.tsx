@@ -14,7 +14,9 @@ interface SchoolContextType {
   ppdbLogo: string;
   ppdbTitle: string;
   ppdbFooterDesc: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profilSekolah: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setProfilSekolah: React.Dispatch<React.SetStateAction<any>>;
   fetchConfigs: () => Promise<void>;
 }
@@ -34,6 +36,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB SMK TB");
   const [isConfigLoaded, setIsConfigLoaded] = useState<boolean>(false);
   const [ppdbFooterDesc, setPpdbFooterDesc] = useState<string>("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [profilSekolah, setProfilSekolah] = useState<any>(null);
 
   // ── Fetch global config (logo, title, profil) ──────────────────────────────

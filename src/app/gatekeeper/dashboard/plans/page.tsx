@@ -51,22 +51,38 @@ export default function GatekeeperPlansPage() {
   const fetchPlans = async () => {
     try {
       setLoading(true);
-      const token = typeof window !== 'undefined' ? localStorage.getItem("ppdb_admin_token") : null;
+      const token = typeof window !== 'undefined' 
+        ? (localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token"))
+        : null;
       
-      const res = await fetch("/api/gatekeeper/plans", {
+      let res = await fetch("/api/gatekeeper/plans", {
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
       });
       
+      if (!res.ok) {
+        // Fallback to saas public plans route if gatekeeper endpoint returns 401/500
+        res = await fetch("/api/saas/plans");
+      }
+
       if (!res.ok) throw new Error("Gagal mengambil data paket");
       const json = await res.json();
-      if (json.success) {
+      if (json.success && Array.isArray(json.data)) {
         setPlans(json.data);
       }
     } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Gagal mengambil data paket dari server", "error");
+      console.warn("Plans fetch warning:", error);
+      try {
+        const fallbackRes = await fetch("/api/saas/plans");
+        const fallbackJson = await fallbackRes.json();
+        if (fallbackJson.success && Array.isArray(fallbackJson.data)) {
+          setPlans(fallbackJson.data);
+          return;
+        }
+      } catch (_e) {
+        // silent
+      }
     } finally {
       setLoading(false);
     }
@@ -107,7 +123,9 @@ export default function GatekeeperPlansPage() {
       return;
     }
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem("ppdb_admin_token") : null;
+    const token = typeof window !== 'undefined' 
+      ? (localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token"))
+      : null;
     const features = featuresRaw.split("\n").map(f => f.trim()).filter(f => f.length > 0);
 
     const payload = {
@@ -161,7 +179,9 @@ export default function GatekeeperPlansPage() {
 
     if (result.isConfirmed) {
       try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem("ppdb_admin_token") : null;
+        const token = typeof window !== 'undefined' 
+          ? (localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token"))
+          : null;
         const res = await fetch(`/api/gatekeeper/plans/${id}`, {
           method: "DELETE",
           headers: {
@@ -175,7 +195,7 @@ export default function GatekeeperPlansPage() {
         } else {
           Swal.fire("Gagal", json.message || "Gagal menghapus paket", "error");
         }
-      } catch (err) {
+      } catch (_err) {
         Swal.fire("Error", "Terjadi kesalahan server", "error");
       }
     }

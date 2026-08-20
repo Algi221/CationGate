@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { AnimatePresence, motion } from "framer-motion";
@@ -120,7 +121,7 @@ export default function DaftarSaaS() {
       } else {
         setErrorMsg(data.message || "Gagal mengirim OTP.");
       }
-    } catch (err) {
+    } catch (_err) {
       setErrorMsg("Terjadi kesalahan sistem saat mengirim OTP.");
     } finally {
       setOtpLoading(false);
@@ -143,7 +144,7 @@ export default function DaftarSaaS() {
         setErrorMsg(data.message || "Kode OTP salah atau kedaluwarsa.");
         return false;
       }
-    } catch (err) {
+    } catch (_err) {
       setErrorMsg("Terjadi kesalahan sistem saat verifikasi OTP.");
       return false;
     }
@@ -158,7 +159,7 @@ export default function DaftarSaaS() {
       });
       const data = await res.json();
       return data.success;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   };
@@ -257,7 +258,7 @@ export default function DaftarSaaS() {
         setErrorMsg(data.message || "Gagal mendaftar");
       }
       setLoading(false);
-    } catch (err) {
+    } catch (_err) {
       setErrorMsg("Terjadi kesalahan sistem");
       setLoading(false);
     }

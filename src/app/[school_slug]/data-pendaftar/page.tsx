@@ -17,7 +17,8 @@ export default function DataPendaftarPage() {
   const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
-  const [filterStatus, setFilterStatus] = useState("Semua");
+  const [_filterStatus, _setFilterStatus] = useState("Semua");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -64,7 +65,7 @@ export default function DataPendaftarPage() {
 
       {/* NAVBAR */}
       <nav className="sticky top-0 z-40 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center shadow-sm">
-        <Link href="/" className="flex items-center gap-3 group">
+        <Link href={`/${window.location.pathname.split('/')[1]}`} className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
             <ArrowLeft size={18} className="text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
           </div>
@@ -264,7 +265,7 @@ export default function DataPendaftarPage() {
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 w-fit">
                       SCAN QR PADA BUKTI PENDAFTARAN UNTUK CEK STATUS
                     </span>
-                    <div className="flex gap-2 items-center text-xs font-bold text-slate-500 dark:text-slate-450 mt-1">
+                    <div className="flex gap-2 items-center text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
                       <span>STATUS:</span>
                       <StatusBadge status={selectedStudent.status} />
                     </div>

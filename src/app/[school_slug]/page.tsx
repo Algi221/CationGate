@@ -57,6 +57,7 @@ const DataPendaftarTable = dynamic(() => import("@/components/DataPendaftarTable
 import ShinyText from "@/components/ShinyText";
 const ScrollFloat = dynamic(() => import("@/components/ScrollFloat"), {
   ssr: false,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   loading: (props: any) => <div className={props.containerClassName}>{props.children}</div>
 });
 import dompurify from "dompurify";
@@ -92,6 +93,7 @@ const sanitizeSrc = (src: string | undefined | null): string | null => {
   return url;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SafeImage = ({ src, alt, width, height, className, onError, fill, priority, sizes, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
   const isDataUrl = src && src.startsWith("data:");
@@ -132,7 +134,7 @@ const SafeImage = ({ src, alt, width, height, className, onError, fill, priority
   );
 };
 
-interface InformasiItem {
+interface _InformasiItem {
   id: number;
   judul: string;
   konten: string;
@@ -180,21 +182,21 @@ const DEFAULT_ALUR: AlurItem[] = [
 ];
 
 export default function Home() {
-  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle, isSchoolNotFound, isConfigLoaded: isGlobalConfigLoaded } = usePPDB();
+  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle, isSchoolNotFound, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
   const [isConfigLoaded, setIsConfigLoaded] = useState(false);
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "sekolah";
 
 
   
-  const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
+  const [_isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [_activeModal, _setActiveModal] = useState<string | null>(null);
 
   const schoolDisplayName = ppdbTitle || schoolSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  const [waGroupUrl, setWaGroupUrl] = useState("");
+  const [_waGroupUrl, setWaGroupUrl] = useState("");
   const [waAdmin, setWaAdmin] = useState("");
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
@@ -208,8 +210,8 @@ export default function Home() {
   const [heroTitle, setHeroTitle] = useState("Penerimaan Peserta Didik Baru");
   const [heroTitleSub, setHeroTitleSub] = useState(`SPMB ${schoolDisplayName}`);
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [_phone, setPhone] = useState("");
+  const [_email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [mapTitle, setMapTitle] = useState(`Kunjungi ${schoolDisplayName}`);
   const [mapUrl, setMapUrl] = useState("");
@@ -238,6 +240,7 @@ export default function Home() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [partnersList, setPartnersList] = useState<any[]>([]);
   const [showAllPartners, setShowAllPartners] = useState(false);
 
@@ -311,7 +314,7 @@ export default function Home() {
     try {
       const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
       return new Date(dateString).toLocaleDateString('id-ID', options);
-    } catch (e) {
+    } catch (_e) {
       return dateString;
     }
   };
@@ -323,7 +326,7 @@ export default function Home() {
   const videos = ["/assets/videos/vid1.webm", "/assets/videos/vid2.webm"];
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handleVideoEnded = () => {
+  const _handleVideoEnded = () => {
     setCurrentVideo((prev) => (prev + 1) % videos.length);
   };
 
@@ -347,6 +350,7 @@ export default function Home() {
         if (timer) clearTimeout(timer);
       };
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let timer: any;
       const onWindowLoad = () => {
         timer = handleLoad();
@@ -376,7 +380,7 @@ export default function Home() {
           try {
           try {
             setAlurList(JSON.parse(localAlur));
-          } catch (e) {
+          } catch (_e) {
             console.error("Invalid localAlur:", localAlur);
           }
           } catch (e) {
@@ -389,7 +393,7 @@ export default function Home() {
           try {
           try {
             setFaqList(JSON.parse(localFaq));
-          } catch (e) {
+          } catch (_e) {
             console.error("Invalid localFaq:", localFaq);
           }
           } catch (e) {
@@ -428,6 +432,7 @@ export default function Home() {
             setPartnersList([]);
           }
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const iconMap: Record<string, any> = {
               RPL: Cpu,
               TJKT: Layers,
@@ -436,6 +441,7 @@ export default function Home() {
               ANM: Palette,
               TE: Cpu
             };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mapped = config.ppdb_majors_config.map((m: any) => ({
               ...m,
               icon: iconMap[m.code] || Cpu
@@ -994,11 +1000,12 @@ export default function Home() {
                       width={56}
                       height={56}
                       className="w-14 h-14 object-contain drop-shadow-sm"
-                      onError={(e: any) => {
-                        e.target.style.display = 'none';
-                        const parent = e.target.parentElement;
+                      onError={(e: unknown) => {
+                        (e as any).target.style.display = 'none';
+                        const parent = (e as any).target.parentElement;
                         if (parent) {
                           parent.classList.add('bg-blue-50');
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           parent.querySelectorAll('.fallback-code').forEach((el: any) => el.remove());
                           const fallbackDiv = document.createElement('div');
                           fallbackDiv.style.color = '#0066ff';
@@ -1220,7 +1227,7 @@ export default function Home() {
         </div>
       </section>
       {/* MAP SECTION */}
-        <section className="w-full bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/50 py-24 relative z-10 transition-colors duration-300">
+        <section className="w-full bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/50 py-24 relative z-10 transition-colors duration-300">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16">
               <ScrollFloat

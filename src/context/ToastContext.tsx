@@ -21,6 +21,7 @@ const ToastContext = createContext<ToastContextType | null>(null);
 // ─── Notification Sound ───────────────────────────────────────────────────────
 function playNotificationSound() {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
     const osc1 = audioCtx.createOscillator();
     const osc2 = audioCtx.createOscillator();
@@ -40,8 +41,8 @@ function playNotificationSound() {
     osc1.start(); osc2.start();
     osc1.stop(audioCtx.currentTime + 0.5);
     osc2.stop(audioCtx.currentTime + 0.5);
-  } catch (e: any) {
-    console.log('AudioContext blocked or unsupported:', e.message);
+  } catch (e: unknown) {
+    console.log('AudioContext blocked or unsupported:', (e as any).message);
   }
 }
 

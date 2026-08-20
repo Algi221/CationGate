@@ -328,7 +328,7 @@ export default function DashboardOverview() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed) && parsed.length > 0) {   
           setMajorsList(parsed.map((m: any) => ({
             name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
             dbName: m.title,
@@ -343,6 +343,7 @@ export default function DashboardOverview() {
         if (json.success && json.data?.ppdb_majors_config) {
           const dbMajors = json.data.ppdb_majors_config;
           if (Array.isArray(dbMajors) && dbMajors.length > 0) {
+          
             const mapped = dbMajors.map((m: any) => ({
               name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
               dbName: m.title,
@@ -388,9 +389,10 @@ export default function DashboardOverview() {
   }, [majorsMap, majorsList]);
 
   const trend = useMemo(() => {
-    const now = new Date();
+    const now = new Date(); 
     const dayMs = 86400000;
     const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+
     const registeredAt = (a: any) => {
       const d = new Date(a.tgl_daftar || a.created_at || Date.now());
       return isNaN(d.getTime()) ? Date.now() : d.getTime();
@@ -431,6 +433,7 @@ export default function DashboardOverview() {
       }
     } else {
       const months = new Map<string, { from: number; to: number }>();
+
       (applicants || []).forEach((a: any) => {
         const t = registeredAt(a);
         const d = new Date(t);

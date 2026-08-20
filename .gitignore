@@ -49,12 +49,16 @@ next-env.d.ts
 .agent/
 .agents/
 .gemini/
+.codegraph/
 
 # Misc
 *.md
 !README.md
 hasil_export/
 opencode.json
+
+# Migrations
+supabase/migrations/
 
 # Uploads
 public/assets/*/uploads/

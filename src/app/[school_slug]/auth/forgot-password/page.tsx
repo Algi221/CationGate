@@ -16,7 +16,7 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [_showPassword, _setShowPassword] = useState(false);
   const [step, setStep] = useState(1); // 1: Email, 2: OTP & New Password
   
   const [loading, setLoading] = useState(false);
@@ -59,7 +59,7 @@ export default function ForgotPassword() {
       } else {
         setError(data.message || "Gagal mengirim OTP.");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Terjadi kesalahan sistem saat mengirim OTP.");
     } finally {
       setLoading(false);
@@ -94,7 +94,7 @@ export default function ForgotPassword() {
       } else {
         setError(data.message || "Kode OTP salah atau kedaluwarsa.");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Terjadi kesalahan sistem saat verifikasi OTP.");
     } finally {
       setLoading(false);

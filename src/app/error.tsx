@@ -29,9 +29,9 @@ export default function Error({ error, reset }: ErrorProps) {
           Maaf, halaman mengalami masalah atau tidak dapat dimuat saat ini.
         </p>
 
-        {error.message && (
+        {(error as any).message && (
           <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl text-[11px] font-mono text-red-600 dark:text-red-400 break-words max-w-xs mx-auto">
-            {error.message}
+            {(error as any).message}
           </div>
         )}
 
@@ -44,7 +44,7 @@ export default function Error({ error, reset }: ErrorProps) {
           </button>
           <button
             onClick={() => (window.location.href = "/")}
-            className="px-6 py-3 bg-slate-200 hover:bg-slate-350 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+            className="px-6 py-3 bg-slate-200 hover:bg-slate-400 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
           >
             Kembali ke Beranda
           </button>

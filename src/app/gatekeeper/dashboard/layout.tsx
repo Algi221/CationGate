@@ -17,8 +17,8 @@ import { GatekeeperSidebar } from "@/components/layout/gatekeeper/GatekeeperSide
 // ─── Gatekeeper Breadcrumbs ───────────────────────────────────────────────────
 function GatekeeperBreadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
-  const activeTab = searchParams.get("tab");
-  const filter = searchParams.get("filter");
+  const _activeTab = searchParams.get("tab");
+  const _filter = searchParams.get("filter");
 
   const labelMap: Record<string, string> = {
     dashboard: "Ringkasan Platform",
@@ -69,7 +69,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const { gatekeeperToken, gatekeeperUser, logoutGatekeeper } = usePPDB();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const _searchParams = useSearchParams();
 
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -77,7 +77,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [_hoveredItem, _setHoveredItem] = useState<string | null>(null);
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
 
   // ── Close user dropdown on outside click ─────────────────────────────────
@@ -91,7 +91,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+  const [_openDropdowns, _setOpenDropdowns] = useState<Record<string, boolean>>({});
 
   // ── Auto-open dropdown for current active sections ─────────────────────────
   useEffect(() => {
@@ -120,7 +120,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const handleToggleCollapse = () => {
+  const _handleToggleCollapse = () => {
     const nextVal = !isCollapsed;
     setIsCollapsed(nextVal);
     localStorage.setItem("ppdb-sidebar-collapsed", String(nextVal));

@@ -1,4 +1,4 @@
-import https from 'https';
+import _https from 'https';
 
 let cachedChatId: string | null = process.env.TELEGRAM_CHAT_ID || null;
 
@@ -11,6 +11,7 @@ async function discoverChatId(token: string): Promise<string | null> {
       console.warn(`[Telegram Bot] Failed to fetch updates: ${response.statusText}`);
       return null;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: any = await response.json();
     if (data.ok && data.result && data.result.length > 0) {
       // Search for the last valid chat interaction
@@ -29,8 +30,8 @@ async function discoverChatId(token: string): Promise<string | null> {
     }
     console.warn('[Telegram Bot] Auto-discovery: No message history found. Please send a message (e.g. "/start") to the bot first.');
     return null;
-  } catch (error: any) {
-    console.error(`[Telegram Bot] Error during auto-discovery: ${error.message}`);
+  } catch (error: unknown) {
+    console.error(`[Telegram Bot] Error during auto-discovery: ${(error as any).message}`);
     return null;
   }
 }
@@ -78,8 +79,8 @@ export async function sendTelegramNotification(message: string): Promise<boolean
       console.error(`[Telegram Bot] Failed to send message: ${response.status} ${response.statusText} - ${errorText}`);
       return false;
     }
-  } catch (error: any) {
-    console.error(`[Telegram Bot] Network error sending notification: ${error.message}`);
+  } catch (error: unknown) {
+    console.error(`[Telegram Bot] Network error sending notification: ${(error as any).message}`);
     return false;
   }
 }

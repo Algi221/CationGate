@@ -42,7 +42,9 @@ export default function SchoolVerificationPage() {
       setIsPaying(false);
 
       if (data.token) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((window as any).snap) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (window as any).snap.pay(data.token, {
             onSuccess: async function () {
               await fetch("/api/saas/activate", {
@@ -73,7 +75,7 @@ export default function SchoolVerificationPage() {
           });
         }
       }
-    } catch (e) {
+    } catch (_e) {
       setIsPaying(false);
       Swal.fire({ title: "Gagal Membuka Midtrans", text: "Silakan coba lagi beberapa saat lagi.", icon: "error" });
     }
@@ -233,7 +235,7 @@ export default function SchoolVerificationPage() {
           confirmButtonColor: "#2563EB"
         });
       }
-    } catch (err) {
+    } catch (_err) {
       setLoading(false);
       setIsSubmitted(true);
       setCurrentStep(4);
@@ -513,7 +515,7 @@ export default function SchoolVerificationPage() {
                   processFile(e.dataTransfer.files[0]);
                 }
               }}
-              className="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-850/40 text-center space-y-4 cursor-pointer transition-all hover:bg-blue-50/20"
+              className="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-800/40 text-center space-y-4 cursor-pointer transition-all hover:bg-blue-50/20"
             >
               <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-100 dark:border-blue-900">
                 <Upload className="w-7 h-7" />
@@ -673,7 +675,7 @@ export default function SchoolVerificationPage() {
                             window.location.reload();
                           });
                         }
-                      } catch (e) {
+                      } catch (_e) {
                         Swal.fire({ title: "Gagal Mengaktifkan", text: "Terjadi kesalahan server.", icon: "error" });
                       }
                     }}

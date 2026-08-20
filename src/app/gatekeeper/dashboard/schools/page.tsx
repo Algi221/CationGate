@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import _Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   Building2, ShieldCheck, CheckCircle2, XCircle, AlertCircle, Search,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StatusBadge } from "@/components/ui/status-badge";
 import Swal from "sweetalert2";
 
 interface SchoolTenant {
@@ -41,6 +42,11 @@ function GatekeeperSchoolManagementContent() {
   const [statusFilter, setStatusFilter] = useState(initialFilter);
   const [selectedSchoolModal, setSelectedSchoolModal] = useState<SchoolTenant | null>(null);
 
+  useEffect(() => {
+    const rf = searchParams?.get("filter") || "ALL";
+    setStatusFilter(rf === "TAKEDOWN" ? "SUSPENDED" : rf);
+  }, [searchParams]);
+
   // School Tenants State (Fetched Live from DB)
   const [schools, setSchools] = useState<SchoolTenant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +70,7 @@ function GatekeeperSchoolManagementContent() {
       let json;
       try {
         json = JSON.parse(text);
-      } catch (parseError) {
+      } catch (_parseError) {
         console.error("Invalid JSON from API:", text.substring(0, 150));
         setSchools([]);
         return;
@@ -113,7 +119,7 @@ function GatekeeperSchoolManagementContent() {
             },
             body: JSON.stringify({ school_id: school.slug || school.id }),
           });
-        } catch (e) {}
+        } catch (_e) {}
 
         await fetchSchools();
 
@@ -131,7 +137,7 @@ function GatekeeperSchoolManagementContent() {
     });
   };
 
-  const handleToggleSuspend = (school: SchoolTenant) => {
+  const _handleToggleSuspend = (school: SchoolTenant) => {
     const isSuspended = school.status === "SUSPENDED";
     const nextStatus = isSuspended ? "FULL_VERIFIED" : "SUSPENDED";
 
@@ -189,7 +195,7 @@ function GatekeeperSchoolManagementContent() {
             },
             body: JSON.stringify({ school_id: school.slug || school.id }),
           });
-        } catch (e) {}
+        } catch (_e) {}
 
         await fetchSchools();
 
@@ -333,7 +339,7 @@ function GatekeeperSchoolManagementContent() {
                   </td>
                 </tr>
               ) : filteredSchools.map((sc) => (
-                <tr key={sc.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-850/50 transition-colors">
+                <tr key={sc.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
                   
                   {/* Sekolah */}
                   <td className="py-4 px-5">
@@ -370,23 +376,7 @@ function GatekeeperSchoolManagementContent() {
 
                   {/* Status Verifikasi */}
                   <td className="py-4 px-4">
-                    {sc.status === "FULL_VERIFIED" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 text-xs font-bold">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> VERIFIED
-                      </span>
-                    ) : sc.status === "PENDING_VERIFICATION" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900 text-xs font-bold animate-pulse">
-                        <Clock className="w-3.5 h-3.5" /> MENUNGGU SK
-                      </span>
-                    ) : sc.status === "SUSPENDED" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-bold">
-                        <XCircle className="w-3.5 h-3.5" /> DIBEKUKAN
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 text-xs font-bold">
-                        <Clock className="w-3.5 h-3.5" /> BELUM KIRIM SK
-                      </span>
-                    )}
+                    <StatusBadge status={sc.status} size="sm" />
                   </td>
 
                   {/* Aksi Platform */}

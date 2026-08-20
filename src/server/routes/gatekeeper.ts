@@ -59,7 +59,7 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
     const supabase = getSupabaseClient();
     
     // Check gatekeeper_users table
-    let { data: gatekeeper } = await supabase
+    const { data: gatekeeper } = await supabase
       .from('gatekeeper_users')
       .select('*')
       .or(`username.eq.${username},email.eq.${username}`)
@@ -98,8 +98,8 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
       }
     });
 
-  } catch (err: any) {
-    console.error('Gatekeeper login error:', err?.message);
+  } catch (err: unknown) {
+    console.error('Gatekeeper login error:', (err as any)?.message);
     return c.json({ success: false, message: 'Terjadi kesalahan server saat login.' }, 500);
   }
 });
@@ -113,19 +113,21 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
     const { data: dbSchools } = await supabase.from('schools').select('*').order('created_at', { ascending: false });
     
     // Fetch candidate/prospective schools
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let prospectiveList: any[] = [];
     try {
       const { data: ps } = await supabase.from('prospective_schools').select('*').order('created_at', { ascending: false });
       if (ps) prospectiveList = ps;
-    } catch (e) {}
+    } catch (_e) {}
 
     if (prospectiveList.length === 0) {
       try {
         const { data: cs } = await supabase.from('calon_sekolah').select('*').order('created_at', { ascending: false });
         if (cs) prospectiveList = cs;
-      } catch (e) {}
+      } catch (_e) {}
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const combinedMap = new Map<string, any>();
     
     if (dbSchools && Array.isArray(dbSchools)) {
@@ -148,7 +150,7 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
 
     const schoolsList = Array.from(combinedMap.values());
     return c.json({ success: true, data: schoolsList });
-  } catch (err) {
+  } catch (_err) {
     const schoolsList = Array.from(fontInMemSchools.values());
     return c.json({ success: true, data: schoolsList });
   }
@@ -168,6 +170,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
     const isNumericId = !isNaN(Number(idOrSlug)) && Number(idOrSlug) > 0;
 
     // 1. Find school details in memory or DB
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let targetSchool: any = null;
     fontInMemSchools.forEach((s, keySlug) => {
       if (String(s.id) === idOrSlug || String(s.slug) === idOrSlug || keySlug === idOrSlug) {
@@ -181,7 +184,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
         psQuery = isNumericId ? psQuery.eq('id', Number(idOrSlug)) : psQuery.eq('slug', idOrSlug);
         const { data: ps } = await psQuery.maybeSingle();
         if (ps) targetSchool = ps;
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     if (!targetSchool) {
@@ -190,7 +193,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
         scQuery = isNumericId ? scQuery.eq('id', Number(idOrSlug)) : scQuery.eq('slug', idOrSlug);
         const { data: sc } = await scQuery.maybeSingle();
         if (sc) targetSchool = sc;
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     const sName = targetSchool?.name || 'Sekolah Terverifikasi';
@@ -202,7 +205,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
       let psUpdate = supabase.from('prospective_schools').update({ status: 'FULL_VERIFIED', is_verified: true });
       psUpdate = isNumericId ? psUpdate.eq('id', Number(idOrSlug)) : psUpdate.eq('slug', sSlug);
       await psUpdate;
-    } catch (e) {}
+    } catch (_e) {}
 
     // 3. Upsert into 'schools' table in Supabase
     try {
@@ -221,8 +224,8 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
           accreditation: targetSchool?.accreditation || 'A',
           admin_name: candidateSchoolAdmin(targetSchool)
         }, { onConflict: 'slug' });
-    } catch (sbErr: any) {
-      console.warn('Supabase schools upsert warning:', sbErr.message);
+    } catch (sbErr: unknown) {
+      console.warn('Supabase schools upsert warning:', (sbErr as any).message);
     }
 
     // 4. Update fontInMemSchools map for instant slug resolution & active state
@@ -250,12 +253,13 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
       success: true,
       message: `Verifikasi sekolah '${sName}' telah disetujui.`
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Approve school error:', err);
-    return c.json({ success: false, message: 'Gagal meng-approve sekolah: ' + err.message }, 500);
+    return c.json({ success: false, message: 'Gagal meng-approve sekolah: ' + (err as any).message }, 500);
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function candidateSchoolAdmin(targetSchool: any): string {
   if (targetSchool?.admin_name) return targetSchool.admin_name;
   return 'Kepala Sekolah';
@@ -275,8 +279,8 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
           .from('schools')
           .update({ status: 'TAKEDOWN', is_verified: false })
           .eq('id', resolvedId);
-      } catch (err: any) {
-        console.warn('Supabase takedown warning:', err.message);
+      } catch (err: unknown) {
+        console.warn('Supabase takedown warning:', (err as any).message);
       }
     }
 
@@ -288,7 +292,7 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
     });
 
     return c.json({ success: true, message: 'Instansi sekolah berhasil di-takedown (Non-Aktif).' });
-  } catch (err: any) {
+  } catch (_err: unknown) {
     return c.json({ success: true, message: 'Instansi sekolah berhasil di-takedown (Non-Aktif).' });
   }
 });
@@ -308,8 +312,8 @@ gatekeeperRouter.get('/plans', gatekeeperAuth, async (c) => {
 
     if (error) throw error;
     return c.json({ success: true, data: data || [] });
-  } catch (err: any) {
-    console.error('Get plans error:', err?.message);
+  } catch (err: unknown) {
+    console.error('Get plans error:', (err as any)?.message);
     return c.json({ success: false, message: 'Gagal mengambil data paket' }, 500);
   }
 });
@@ -331,9 +335,9 @@ gatekeeperRouter.post('/plans', gatekeeperAuth, async (c) => {
 
     if (error) throw error;
     return c.json({ success: true, data });
-  } catch (err: any) {
-    console.error('Create plan error:', err?.message);
-    return c.json({ success: false, message: 'Gagal membuat paket: ' + err?.message }, 500);
+  } catch (err: unknown) {
+    console.error('Create plan error:', (err as any)?.message);
+    return c.json({ success: false, message: 'Gagal membuat paket: ' + (err as any)?.message }, 500);
   }
 });
 
@@ -360,9 +364,9 @@ gatekeeperRouter.put('/plans/:id', gatekeeperAuth, async (c) => {
 
     if (error) throw error;
     return c.json({ success: true, data });
-  } catch (err: any) {
-    console.error('Update plan error:', err?.message);
-    return c.json({ success: false, message: 'Gagal mengupdate paket: ' + err?.message }, 500);
+  } catch (err: unknown) {
+    console.error('Update plan error:', (err as any)?.message);
+    return c.json({ success: false, message: 'Gagal mengupdate paket: ' + (err as any)?.message }, 500);
   }
 });
 
@@ -375,9 +379,9 @@ gatekeeperRouter.delete('/plans/:id', gatekeeperAuth, async (c) => {
 
     if (error) throw error;
     return c.json({ success: true, message: 'Paket berhasil dihapus' });
-  } catch (err: any) {
-    console.error('Delete plan error:', err?.message);
-    return c.json({ success: false, message: 'Gagal menghapus paket: ' + err?.message }, 500);
+  } catch (err: unknown) {
+    console.error('Delete plan error:', (err as any)?.message);
+    return c.json({ success: false, message: 'Gagal menghapus paket: ' + (err as any)?.message }, 500);
   }
 });
 

@@ -3,10 +3,11 @@
 import * as React from "react";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
-import { DoorOpen, ArrowUpRight, ArrowUp } from "lucide-react";
+import { ArrowUpRight, ArrowUp } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -151,10 +152,12 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
           });
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         element.addEventListener("mousemove", handleMouseMove as any);
         element.addEventListener("mouseleave", handleMouseLeave);
 
         return () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           element.removeEventListener("mousemove", handleMouseMove as any);
           element.removeEventListener("mouseleave", handleMouseLeave);
         };
@@ -166,8 +169,10 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
     return (
       <Component
         ref={(node: HTMLElement) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (localRef as any).current = node;
           if (typeof forwardedRef === "function") forwardedRef(node);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           else if (forwardedRef) (forwardedRef as any).current = node;
         }}
         className={cn("cursor-pointer", className)}
@@ -280,9 +285,13 @@ export function CinematicFooter() {
               {/* Column 1: Brand Info */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                    <DoorOpen className="w-4 h-4" />
-                  </div>
+                  <Image
+                    src="/assets/catpeer/logo_cationGate.svg"
+                    alt="CationGate Logo"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 object-contain"
+                  />
                   <span className="font-extrabold text-xl tracking-wide text-zinc-900">
                     CationGate
                   </span>

@@ -47,7 +47,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
 
   const fetchDetail = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/informasi/${params.id}`);
+      const res = await fetch(`${BACKEND_URL}/informasi/${params.id}`);
       const data = await res.json();
       if (data.success && data.data) {
         setInformasi(data.data);
@@ -93,7 +93,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
       foto_url: fotoUrl ? JSON.stringify(mediaObj) : null,
     };
     try {
-      const res = await fetch(`${BACKEND_URL}/api/informasi/${params.id}`, {
+      const res = await fetch(`${BACKEND_URL}/informasi/${params.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -220,6 +220,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
               </>
             )}
           </button>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           <Link href={`/${(params as any)?.school_slug || ''}/dashboard/informasi`} className="px-6 py-2 bg-slate-200 text-slate-800 dark:text-white rounded hover:bg-slate-300 flex items-center">
             <ArrowRight size={16} />
             <span>Kembali ke Daftar</span>

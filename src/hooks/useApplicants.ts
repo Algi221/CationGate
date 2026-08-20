@@ -10,6 +10,7 @@ export type Applicant = {
   tgl_daftar: string;
   jurusan_1: string;
   sekolah_asal?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 };
 
@@ -22,7 +23,7 @@ const fetchApplicants = async (schoolId: string): Promise<Applicant[]> => {
   try {
     const data = JSON.parse(text);
     return data.data || [];
-  } catch (err) {
+  } catch (_err) {
     console.error("Invalid JSON from API:", text.substring(0, 150));
     return [];
   }
@@ -88,7 +89,7 @@ export const useUpdateApplicantStatus = (schoolId: string) => {
       const text = await res.text();
       try {
         return JSON.parse(text);
-      } catch (err) {
+      } catch (_err) {
         console.error("Invalid JSON from API:", text.substring(0, 150));
         throw new Error("Invalid response from server");
       }
@@ -107,6 +108,7 @@ export const useUpdateApplicantStatus = (schoolId: string) => {
           ["applicants", schoolId],
           (old) =>
             old?.map((applicant) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               applicant.id === id ? { ...applicant, status: status as any } : applicant
             )
         );

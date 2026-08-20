@@ -101,34 +101,6 @@ export const configSaveSchema = z.object({
 });
 
 export const singleConfigSchema = z.object({
-  key: z.enum([
-    'ppdb_hero_title',
-    'ppdb_hero_title_sub',
-    'ppdb_hero_subtitle',
-    'ppdb_phone',
-    'ppdb_email',
-    'ppdb_address',
-    'ppdb_school_period',
-    'ppdb_wa_group_url',
-    'ppdb_wa_admin',
-    'ppdb_form_guideline',
-    'ppdb_form_fee',
-    'ppdb_reg_cost',
-    'ppdb_bank_config',
-    'ppdb_alur_config',
-    'ppdb_faq_config',
-    'ppdb_gelombang_config',
-    'ppdb_majors_config',
-    'ppdb_partners_config',
-    'ppdb_fields_config',
-    'ppdb_portal_status',
-    'ppdb_telegram_config',
-    'ppdb_session_timeout',
-    'ppdb_logo_url',
-    'ppdb_title',
-    'ppdb_footer_desc',
-    'ppdb_map_title',
-    'ppdb_map_url'
-  ]),
+  key: z.string().min(1).max(100).regex(/^ppdb_/, { message: 'Key harus diawali dengan ppdb_' }),
   value: z.any()
 });

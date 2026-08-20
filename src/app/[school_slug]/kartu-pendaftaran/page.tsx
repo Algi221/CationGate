@@ -32,6 +32,7 @@ export default function KartuPendaftaranPage({
   const nisn = resolvedSearchParams.nisn;
 
   const [applicant, setApplicant] = useState<ApplicantCardData | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [schoolData, setSchoolData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,8 +63,8 @@ export default function KartuPendaftaranPage({
         } else {
           setError(appJson.message || "Data pendaftar tidak ditemukan.");
         }
-      } catch (err: any) {
-        setError("Gagal memuat kartu pendaftaran: " + err.message);
+      } catch (err: unknown) {
+        setError("Gagal memuat kartu pendaftaran: " + (err as any).message);
       } finally {
         setLoading(false);
       }

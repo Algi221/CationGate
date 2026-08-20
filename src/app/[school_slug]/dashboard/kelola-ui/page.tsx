@@ -362,6 +362,7 @@ export default function KelolaUserInterface() {
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab && ["hero", "majors", "alur", "form", "faq", "revisions", "bank", "partners"].includes(tab)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setActiveTab(tab as any);
     }
   }, [searchParams]);
@@ -433,7 +434,7 @@ export default function KelolaUserInterface() {
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.");
   const [heroMediaUrl, setHeroMediaUrl] = useState("");
   const [heroMediaType, setHeroMediaType] = useState<"video" | "image" | "none">("none");
-  const [compressing, setCompressing] = useState(false);
+  const [_compressing, setCompressing] = useState(false);
   const [phone, setPhone] = useState("-");
   const [email, setEmail] = useState("info@sekolah.sch.id");
   const [address, setAddress] = useState("Alamat Lengkap Sekolah");
@@ -583,6 +584,7 @@ export default function KelolaUserInterface() {
 
       // Load draft from localStorage if present
       const savedDraft = localStorage.getItem(draftKey);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let draft: any = null;
       if (savedDraft) {
         try {
@@ -633,6 +635,7 @@ export default function KelolaUserInterface() {
         const dbMajors = activeConfig.ppdb_majors_config;
         const mergedMajors: MajorItem[] = [];
         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dbMajors.forEach((dbMajor: any) => {
           const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
           mergedMajors.push({
@@ -918,7 +921,7 @@ export default function KelolaUserInterface() {
       } else {
         showToastMsg(json.message || "Gagal menyimpan perubahan.", "error");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       showToastMsg("Terjadi kesalahan server.", "error");
     } finally {
@@ -939,7 +942,7 @@ export default function KelolaUserInterface() {
       
       setSchoolLogo(publicUrl);
       showToastMsg(`✨ Logo berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
-    } catch (e) {
+    } catch (_e) {
       showToastMsg("Gagal memproses logo.", "error");
     } finally {
       setCompressing(false);
@@ -972,7 +975,7 @@ export default function KelolaUserInterface() {
         setHeroMediaType("image");
         showToastMsg(`✨ Foto Hero berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
       }
-    } catch (e) {
+    } catch (_e) {
       showToastMsg("Gagal memproses media Hero.", "error");
     } finally {
       setCompressing(false);
@@ -1023,7 +1026,7 @@ export default function KelolaUserInterface() {
         minute: '2-digit'
       };
       return new Date(dateString).toLocaleDateString('id-ID', options);
-    } catch (e) {
+    } catch (_e) {
       return dateString;
     }
   };
@@ -1037,10 +1040,10 @@ export default function KelolaUserInterface() {
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border text-xs font-bold animate-in slide-in-from-bottom duration-300 ${
           toast.type === "success" 
-            ? "bg-emerald-50 dark:bg-emerald-950/90 text-emerald-600 dark:text-emerald-300 border-emerald-250 dark:border-emerald-900" 
+            ? "bg-emerald-50 dark:bg-emerald-950/90 text-emerald-600 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900" 
             : toast.type === "error"
-            ? "bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-300 border-rose-250 dark:border-rose-900"
-            : "bg-indigo-50 dark:bg-indigo-950/90 text-indigo-600 dark:text-indigo-300 border-indigo-250 dark:border-indigo-900"
+            ? "bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-300 border-rose-200 dark:border-rose-900"
+            : "bg-indigo-50 dark:bg-indigo-950/90 text-indigo-600 dark:text-indigo-300 border-indigo-200 dark:border-indigo-900"
         }`}>
           {toast.type === "success" ? <Check size={16} /> : toast.type === "error" ? <X size={16} /> : <Info size={16} />}
           <span>{toast.message}</span>
@@ -1127,6 +1130,7 @@ export default function KelolaUserInterface() {
               key={tab.id}
               disabled={editingMajor !== null && tab.id !== "majors"}
               onClick={() => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 setActiveTab(tab.id as any);
                 router.push(`?tab=${tab.id}`);
               }}
@@ -1520,7 +1524,7 @@ export default function KelolaUserInterface() {
                   <>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-white/5 pb-4">
                       <div>
-                        <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                        <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                           <GraduationCap size={16} className="text-blue-500" />
                           <span>Kompetensi Keahlian (Jurusan)</span>
                         </h3>
@@ -1611,7 +1615,7 @@ export default function KelolaUserInterface() {
                               <h4 className="font-extrabold text-sm text-slate-800 dark:text-white mb-2 group-hover:text-blue-500 transition-colors">
                                 {major.title}
                               </h4>
-                              <p className="text-xs text-slate-450 dark:text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed font-semibold">
+                              <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed font-semibold">
                                 {major.desc}
                               </p>
                             </div>
@@ -1634,7 +1638,7 @@ export default function KelolaUserInterface() {
                           setEditingMajor(null);
                           setIsNewMajor(false);
                         }}
-                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-350 transition-colors cursor-pointer"
+                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-400 transition-colors cursor-pointer"
                       >
                         <ArrowLeft size={12} />
                         <span>Kembali ke List Kartu</span>
@@ -1642,7 +1646,7 @@ export default function KelolaUserInterface() {
 
                       <div className="flex items-center gap-3">
                         <span className="w-3 h-6 rounded-full" style={{ backgroundColor: editingMajor.color }} />
-                        <h3 className="text-sm font-black uppercase tracking-wider text-slate-850 dark:text-white">
+                        <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-white">
                           {isNewMajor ? "WORKSPACE BARU JURUSAN" : `WORKSPACE EDITOR JURUSAN: ${editingMajor.code}`}
                         </h3>
                       </div>
@@ -1653,7 +1657,7 @@ export default function KelolaUserInterface() {
                       <div className="lg:col-span-1 space-y-6">
                         
                         {/* 2.1 Logo Drag & Drop - Custom Adjusted Size as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Logo Kompetensi</span>
@@ -1661,7 +1665,7 @@ export default function KelolaUserInterface() {
                             </div>
                             
                             {/* Adjusted circular logo size display as requested */}
-                            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-slate-850 border shadow p-0.5 flex items-center justify-center text-slate-400">
+                            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 border shadow p-0.5 flex items-center justify-center text-slate-400">
                               {editingMajor.logo ? (
                                 <img src={DOMPurify.sanitize(sanitizeSrc(editingMajor.logo))} alt="" className="w-full h-full object-cover rounded-xl" />
                               ) : (
@@ -1708,13 +1712,13 @@ export default function KelolaUserInterface() {
                             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-90 group-hover:opacity-95 flex flex-col items-center justify-center text-white p-3">
                               <Upload size={20} className="animate-bounce text-blue-400 mb-1" />
                               <span className="text-[9px] font-black uppercase tracking-wider">Drag / Ganti Logo</span>
-                              <span className="text-[7px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                              <span className="text-[7px] font-bold text-slate-400 uppercase mt-0.5">Atau Klik Explorer</span>
                             </div>
                           </div>
                         </div>
 
                         {/* 2.2 Banner Image Drag & Drop - Custom Backdrop cue */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div>
                             <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Banner Utama Unsplash</span>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">Tampil di header visual detail halaman</span>
@@ -1758,20 +1762,20 @@ export default function KelolaUserInterface() {
                             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-90 group-hover:opacity-95 flex flex-col items-center justify-center text-white p-3">
                               <Upload size={20} className="animate-bounce text-blue-400 mb-1" />
                               <span className="text-[9px] font-black uppercase tracking-wider">Drag / Ganti Banner</span>
-                              <span className="text-[7px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                              <span className="text-[7px] font-bold text-slate-400 uppercase mt-0.5">Atau Klik Explorer</span>
                             </div>
                           </div>
                         </div>
 
                         {/* 2.3 Video Upload Picker - Local File Explorer Uploader + Preview Player as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div>
                             <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Video Profil Jurusan</span>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">Upload dari file explorer (Maks. 15MB MP4/WebM)</span>
                           </div>
 
                           {editingMajor.video ? (
-                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-850">
+                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-800">
                               <video src={DOMPurify.sanitize(sanitizeSrc(editingMajor.video))} controls className="w-full h-full object-cover" />
                               <button
                                 type="button"
@@ -1827,34 +1831,34 @@ export default function KelolaUserInterface() {
                       <div className="lg:col-span-2 space-y-6">
                         
                         {/* 2.4 General Texts */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">Informasi Umum</h4>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                              <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Kode Jurusan (e.g. RPL, TJKT)</label>
+                              <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Kode Jurusan (e.g. RPL, TJKT)</label>
                               <input
                                 type="text"
                                 value={editingMajor.code}
                                 disabled={!isNewMajor}
                                 onChange={(e) => setEditingMajor({ ...editingMajor, code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") })}
                                 placeholder="Masukkan kode jurusan..."
-                                className={`w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none ${!isNewMajor ? "opacity-50 cursor-not-allowed" : ""}`}
+                                className={`w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none ${!isNewMajor ? "opacity-50 cursor-not-allowed" : ""}`}
                               />
                             </div>
 
                             <div className="space-y-1.5">
-                              <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Nama Program Studi</label>
+                              <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Nama Program Studi</label>
                               <input
                                 type="text"
                                 value={editingMajor.title}
                                 onChange={(e) => setEditingMajor({ ...editingMajor, title: e.target.value })}
-                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                               />
                             </div>
 
                             <div className="space-y-1.5 sm:col-span-2">
-                              <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Warna Hex Aksen</label>
+                              <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Warna Hex Aksen</label>
                               <div className="flex gap-2">
                                 <input
                                   type="color"
@@ -1866,28 +1870,28 @@ export default function KelolaUserInterface() {
                                   type="text"
                                   value={editingMajor.color}
                                   onChange={(e) => setEditingMajor({ ...editingMajor, color: e.target.value })}
-                                  className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs uppercase focus:outline-none"
+                                  className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs uppercase focus:outline-none"
                                 />
                               </div>
                             </div>
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Deskripsi Lengkap</label>
+                            <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Deskripsi Lengkap</label>
                             <textarea
                               value={editingMajor.desc}
                               onChange={(e) => setEditingMajor({ ...editingMajor, desc: e.target.value })}
                               rows={3}
-                              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none resize-none"
+                              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none resize-none"
                             />
                           </div>
                         </div>
 
                         {/* 2.5 Dynamic Gallery Slots - All 4 unsplash photos are completely editable from File Explorer with faded background cue as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <div>
                             <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">Galeri Aktivitas (4 Foto &amp; Caption)</h4>
-                            <span className="text-[8px] text-slate-450 font-bold block mt-1 uppercase">Ganti foto standard Unsplash menggunakan File Explorer Anda secara visual</span>
+                            <span className="text-[8px] text-slate-400 font-bold block mt-1 uppercase">Ganti foto standard Unsplash menggunakan File Explorer Anda secara visual</span>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1907,6 +1911,7 @@ export default function KelolaUserInterface() {
                                       e.preventDefault(); e.stopPropagation();
                                       setDragActiveStates(prev => ({ ...prev, [elementId]: false }));
                                       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         processMediaFile(e.dataTransfer.files[0], `gallery-${slotIdx}` as any);
                                       }
                                     }}
@@ -1928,6 +1933,7 @@ export default function KelolaUserInterface() {
                                       accept="image/*"
                                       onChange={(e) => {
                                         if (e.target.files && e.target.files[0]) {
+                                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                           processMediaFile(e.target.files[0], `gallery-${slotIdx}` as any);
                                         }
                                       }}
@@ -1938,7 +1944,7 @@ export default function KelolaUserInterface() {
                                     <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-[1px] opacity-80 group-hover:opacity-90 transition-opacity flex flex-col items-center justify-center text-white p-2">
                                       <ImageIcon size={18} className="text-blue-400 mb-1 animate-pulse" />
                                       <span className="text-[8px] font-black uppercase tracking-wider">Ganti Foto Galeri #{slotIdx+1}</span>
-                                      <span className="text-[6px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                                      <span className="text-[6px] font-bold text-slate-400 uppercase mt-0.5">Atau Klik Explorer</span>
                                     </div>
                                   </div>
 
@@ -1961,7 +1967,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.6 Interactive Careers (4 slots) */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
                             Peluang Kerja / Karir Lulusan (4 Item)
                           </h4>
@@ -1983,7 +1989,7 @@ export default function KelolaUserInterface() {
                                       setEditingMajor({ ...editingMajor, careers: updated });
                                     }}
                                     placeholder="Nama Profesi"
-                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-250 dark:border-white/5 rounded-lg text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                                   />
                                   <textarea
                                     value={career.desc}
@@ -1995,7 +2001,7 @@ export default function KelolaUserInterface() {
                                     }}
                                     rows={2}
                                     placeholder="Penjelasan profesi..."
-                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-250 dark:border-white/5 rounded-lg text-slate-850 dark:text-white font-semibold text-[10px] focus:outline-none resize-none"
+                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-800 dark:text-white font-semibold text-[10px] focus:outline-none resize-none"
                                   />
                                 </div>
                               );
@@ -2004,7 +2010,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.7 Interactive Laboratory Facilities */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
                             Fasilitas Laboratorium &amp; Sarana Utama
                           </h4>
@@ -2020,7 +2026,7 @@ export default function KelolaUserInterface() {
                                     updated[fIdx] = e.target.value;
                                     setEditingMajor({ ...editingMajor, facilities: updated });
                                   }}
-                                  className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                                  className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                                 />
                                 <button
                                   type="button"
@@ -2109,7 +2115,7 @@ export default function KelolaUserInterface() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                       <Settings size={16} className="text-blue-500" />
                       <span>Tahapan Proses / Alur Pendaftaran Calon Siswa</span>
                     </h3>
@@ -2137,22 +2143,22 @@ export default function KelolaUserInterface() {
 
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Judul Langkah</label>
+                          <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Judul Langkah</label>
                           <input
                             type="text"
                             value={item.title}
                             onChange={(e) => handleUpdateAlur(item.id, "title", e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                           />
                         </div>
 
                         <div className="space-y-1.5 md:col-span-2">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Deskripsi Singkat</label>
+                          <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Deskripsi Singkat</label>
                           <input
                             type="text"
                             value={item.desc}
                             onChange={(e) => handleUpdateAlur(item.id, "desc", e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none"
+                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none"
                           />
                         </div>
                       </div>
@@ -2201,7 +2207,7 @@ export default function KelolaUserInterface() {
             {activeTab === "form" && (
               <div className="space-y-6">
                 <div className="border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                     <Info size={16} className="text-blue-500" />
                     <span>Panduan Pengisian Formulir &amp; Biaya</span>
                   </h3>
@@ -2209,7 +2215,7 @@ export default function KelolaUserInterface() {
 
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Biaya Formulir Pendaftaran (Rupiah)</label>
+                    <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Biaya Formulir Pendaftaran (Rupiah)</label>
                     <input
                       type="text"
                       value={formatRupiah(formFee)}
@@ -2223,7 +2229,7 @@ export default function KelolaUserInterface() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Petunjuk / Panduan Registrasi (Form Wizard)</label>
+                    <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Petunjuk / Panduan Registrasi (Form Wizard)</label>
                     <textarea
                       value={formGuideline}
                       onChange={(e) => setFormGuideline(e.target.value)}
@@ -2314,7 +2320,7 @@ export default function KelolaUserInterface() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                       <HelpCircle size={16} className="text-blue-500" />
                       <span>Daftar Pertanyaan Yang Sering Diajukan (FAQ)</span>
                     </h3>
@@ -2342,22 +2348,22 @@ export default function KelolaUserInterface() {
 
                       <div className="flex-1 grid grid-cols-1 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Pertanyaan (Question)</label>
+                          <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Pertanyaan (Question)</label>
                           <input
                             type="text"
                             value={item.q}
                             onChange={(e) => handleUpdateFaq(idx, "q", e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                           />
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Jawaban (Answer)</label>
+                          <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Jawaban (Answer)</label>
                           <textarea
                             value={item.a}
                             onChange={(e) => handleUpdateFaq(idx, "a", e.target.value)}
                             rows={3}
-                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none resize-y"
+                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none resize-y"
                           />
                         </div>
                       </div>
@@ -2406,7 +2412,7 @@ export default function KelolaUserInterface() {
             {activeTab === "revisions" && (
               <div className="space-y-6">
                 <div className="border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                     <Clock size={16} className="text-blue-500" />
                     <span>Riwayat &amp; Catatan Perubahan User Interface</span>
                   </h3>
@@ -2424,7 +2430,7 @@ export default function KelolaUserInterface() {
                           <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-extrabold rounded-lg text-[9px] uppercase tracking-wider">
                             Revisi #{rev.id}
                           </span>
-                          <span className="text-[10px] text-slate-450 dark:text-slate-500 dark:text-slate-400 font-extrabold uppercase">
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-extrabold uppercase">
                             Oleh: @{rev.changed_by}
                           </span>
                         </div>
@@ -2462,7 +2468,7 @@ export default function KelolaUserInterface() {
               <div className="space-y-6 animate-in fade-in duration-300">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                       <Database size={16} className="text-blue-500" />
                       <span>Daftar Rekening Bank Sekolah</span>
                     </h3>
@@ -2502,7 +2508,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Bank</label>
+                          <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Bank</label>
                           <input
                             type="text"
                             value={bank.bankName}
@@ -2517,7 +2523,7 @@ export default function KelolaUserInterface() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nomor Rekening</label>
+                            <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nomor Rekening</label>
                             <input
                               type="text"
                               value={bank.accountNumber}
@@ -2531,7 +2537,7 @@ export default function KelolaUserInterface() {
                           </div>
 
                           <div className="space-y-2">
-                            <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Pemilik Rekening</label>
+                            <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Pemilik Rekening</label>
                             <input
                               type="text"
                               value={bank.accountHolder}
@@ -2561,7 +2567,7 @@ export default function KelolaUserInterface() {
               <div className="space-y-6 animate-in fade-in duration-300">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                       <Briefcase size={16} className="text-blue-500" />
                       <span>Daftar Partner Industri</span>
                     </h3>
@@ -2581,7 +2587,7 @@ export default function KelolaUserInterface() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {partnersList.map((partner, idx) => (
+                  {partnersList.map((partner, _idx) => (
                     <div 
                       key={partner.id}
                       className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-5 relative overflow-hidden transition-all duration-300"
@@ -2619,7 +2625,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Partner</label>
+                          <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Partner</label>
                           <input
                             type="text"
                             value={partner.name}
@@ -2633,7 +2639,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Link Website</label>
+                          <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Link Website</label>
                           <input
                             type="text"
                             value={partner.url}
@@ -2647,7 +2653,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Ukuran Logo</label>
+                          <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Ukuran Logo</label>
                           <select
                             value={partner.h}
                             onChange={(e) => {
@@ -2693,7 +2699,7 @@ export default function KelolaUserInterface() {
               <button 
                 type="button" 
                 onClick={() => setShowConfirmModal(false)}
-                className="p-1 text-slate-450 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white rounded-lg"
+                className="p-1 text-slate-400 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white rounded-lg"
               >
                 <X size={16} />
               </button>
@@ -2709,7 +2715,7 @@ export default function KelolaUserInterface() {
                 rows={3}
                 required
                 placeholder="Contoh: Mengubah judul utama, memperbarui logo RPL, dan memperbarui alur langkah 3"
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-none"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-none"
               />
             </div>
 

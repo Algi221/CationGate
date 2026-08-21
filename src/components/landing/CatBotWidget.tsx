@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { 
-  X, 
-  Send, 
-  SquarePen, 
-  Loader2
-} from "lucide-react";
+import { X, Send, SquarePen, Loader2, GripHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
@@ -23,27 +18,60 @@ const DEFAULT_SUGGESTIONS = [
   "Cara mendaftarkan sekolah SMK?",
   "Metode pembayaran formulir?",
   "Alur pendaftaran siswa mandiri di HP?",
-  "Integrasi ekspor ke Dapodik?"
+  "Integrasi ekspor ke Dapodik?",
 ];
+
+// Mapping variasi aset maskot
+const MASCOT_ASSETS = {
+  idle: "/assets/catpeer/catpeerStandup.svg",
+  thinking: "/assets/catpeer/catpeerTodo.svg",
+  writing: "/assets/catpeer/catpeerPegangsurat.svg",
+  sleepy: "/assets/catpeer/catpeerBobo.svg",
+  icon: "/assets/catpeer/catpeerIcon.svg",
+};
 
 export function CatBotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVideoVisible, setIsVideoVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // State baru untuk menahan kemunculan ikon sampai loading selesai
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
+
+  const [botMood, setBotMood] = useState<keyof typeof MASCOT_ASSETS>("idle");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome-1",
       sender: "bot",
       text: "Halo! Saya Catpeer, asisten cerdas resmi dari CationGate.\n\nAda yang bisa saya bantu terkait pendaftaran sekolah SMK, alur SPMB mandiri, atau sistem pembayaran formulir? miaw",
-      time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
-    }
+      time: new Date().toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    },
   ]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const constraintsRef = useRef<HTMLDivElement>(null);
 
-  // Listen to Floating Video visibility to dynamically adjust FAB and Modal position
+  // Efek untuk menunggu loading screen selesai (delay)
   useEffect(() => {
+    // Ubah angka 3000 (3 detik) ini sesuaikan dengan durasi komponen loading screen kamu
+    const loadingTimer = setTimeout(() => {
+      setIsPageLoaded(true);
+    }, 3000);
+
+    return () => clearTimeout(loadingTimer);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
     const handleVideoToggle = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (typeof detail?.isVisible === "boolean") {
@@ -51,62 +79,102 @@ export function CatBotWidget() {
       }
     };
     window.addEventListener("floatingVideoToggle", handleVideoToggle);
-    return () => window.removeEventListener("floatingVideoToggle", handleVideoToggle);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("floatingVideoToggle", handleVideoToggle);
+    };
   }, []);
 
-  // Auto scroll to bottom of chat
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
-      setTimeout(() => inputRef.current?.focus(), 300);
+      setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [isOpen, messages, isLoading]);
+  }, [isOpen]);
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
     if (!text || isLoading) return;
 
+    setBotMood("writing");
+    setIsLoading(true);
+    setInputText("");
+
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: "user",
       text: text,
-      time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+      time: new Date().toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    setInputText("");
-    setIsLoading(true);
+    setTimeout(() => scrollToBottom("smooth"), 50);
 
     try {
       const historyPayload = messages.map((m) => ({
         role: m.sender === "user" ? "user" : "model",
-        text: m.text
+        text: m.text,
       }));
 
       const res = await fetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-          history: historyPayload
-        })
+        body: JSON.stringify({ message: text, history: historyPayload }),
       });
 
       const data = await res.json();
 
       if (data.success && data.reply) {
-        const botMsg: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          sender: "bot",
-          text: data.reply,
-          time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
-          source: data.source
-        };
-        setMessages((prev) => [...prev, botMsg]);
+        setBotMood("thinking");
+
+        const replyText = data.reply;
+        const botMsgId = (Date.now() + 1).toString();
+        const currentTime = new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: botMsgId,
+            sender: "bot",
+            text: "",
+            time: currentTime,
+            source: data.source,
+          },
+        ]);
+
+        let i = 0;
+        let currentText = "";
+        const chunkSize = 3;
+
+        const interval = setInterval(() => {
+          currentText += replyText.substring(i, i + chunkSize);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === botMsgId ? { ...m, text: currentText } : m,
+            ),
+          );
+          i += chunkSize;
+
+          if (i % (chunkSize * 2) === 0) scrollToBottom("auto");
+
+          if (i >= replyText.length) {
+            clearInterval(interval);
+            setBotMood("idle");
+            setIsLoading(false);
+            setTimeout(() => scrollToBottom("smooth"), 50);
+          }
+        }, 10);
       } else {
         throw new Error(data.message || "Gagal mendapatkan respon");
       }
@@ -114,137 +182,142 @@ export function CatBotWidget() {
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: "bot",
-        text: "Maaf, koneksi ke server sedang sibuk. Anda dapat membaca panduan lengkap di menu Fitur Unggulan atau mendaftar di halaman Daftar Sekolah. miaw",
-        time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+        text: "Maaf, koneksi ke server sedang sibuk. Silakan coba lagi beberapa saat lagi ya. miaw",
+        time: new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
       setMessages((prev) => [...prev, errorMsg]);
-    } finally {
+      setBotMood("sleepy");
       setIsLoading(false);
+      setTimeout(() => scrollToBottom("smooth"), 100);
     }
   };
 
   const handleResetChat = () => {
+    setBotMood("idle");
     setMessages([
       {
         id: Date.now().toString(),
         sender: "bot",
         text: "Percakapan telah diatur ulang. Ada topik seputar CationGate yang ingin Anda ketahui? miaw",
-        time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
-      }
+        time: new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
     ]);
   };
 
   return (
-    <>
-      {/* FLOATING ACTION BUTTON (FAB) - DYNAMIC POSITION ABOVE VIDEO */}
+    <div
+      ref={constraintsRef}
+      className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"
+    >
       <AnimatePresence>
-        {!isOpen && (
+        {isPageLoaded && !isOpen && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ 
-              scale: 1, 
+            animate={{
+              scale: 1,
               opacity: 1,
-              bottom: isVideoVisible ? 150 : 24 
+              bottom: isVideoVisible ? 150 : 24,
             }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed right-6 z-[950] flex items-center gap-3"
+            className="absolute right-6 pointer-events-auto flex items-center gap-3 z-[950]"
           >
-            {/* Sleek Minimalist Speech Bubble (Balon Chat) */}
-            <div className="hidden sm:flex items-center relative bg-black text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-2xl border border-slate-800 pointer-events-none select-none">
+            <div className="hidden sm:flex items-center relative bg-black text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-2xl border border-slate-800 select-none">
               <span className="text-slate-100 tracking-tight font-sans">
                 Tanya Catpeer aja miaw
               </span>
-              {/* Balon Chat Pointer Tail */}
               <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-black border-t border-r border-slate-800 rotate-45" />
             </div>
 
-            {/* Main Trigger Button */}
             <button
               onClick={() => setIsOpen(true)}
               className="relative group w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FFC000] hover:bg-[#FFD33B] text-black shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-95 cursor-pointer border-2 border-white ring-4 ring-black/15 hover:ring-black/25"
-              title="Buka Asisten Catpeer"
-              aria-label="Buka Chatbot Catpeer"
             >
-              {/* Mascot Icon */}
               <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Image
-                  src="/assets/catpeer/catpeerStandup.svg"
+                  src={MASCOT_ASSETS.icon}
                   alt="Catpeer"
                   width={40}
                   height={40}
                   className="w-full h-full object-contain"
                 />
               </div>
-
-              {/* Status Indicator */}
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* CHATBOT WINDOW (POSITIONED CLEANLY ABOVE VIDEO IF ACTIVE + EXTRA TALL) */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            drag={!isMobile}
+            dragConstraints={constraintsRef}
+            dragElastic={0.05}
+            dragMomentum={false}
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
-              scale: 1,
-              bottom: isVideoVisible ? 148 : 24
-            }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className={`
-              fixed z-[9999] flex flex-col shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] border-2 border-black
-              inset-0 w-full h-full rounded-none
-              sm:inset-auto sm:right-6 sm:w-[500px] lg:w-[520px]
-              sm:rounded-[2.5rem]
-              overflow-hidden bg-black
-            `}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             style={{
-              height: isVideoVisible 
-                ? "min(640px, calc(100vh - 170px))" 
-                : "min(780px, 92vh)"
+              bottom: isMobile ? 0 : isVideoVisible ? 150 : 24,
+              maxHeight: isMobile
+                ? "100%"
+                : `calc(100vh - ${isVideoVisible ? 180 : 54}px)`,
             }}
+            className={`
+              pointer-events-auto absolute flex flex-col 
+              shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border border-slate-800
+              inset-0 w-full h-full rounded-none
+              sm:inset-auto sm:right-6 sm:w-[420px] sm:h-[720px]
+              sm:rounded-[2rem] overflow-hidden bg-black
+            `}
           >
-            {/* 1. SOLID BLACK HEADER (NO TRANSPARENCY) */}
-            <div className="p-4 sm:p-5 bg-black text-white border-b border-slate-800 flex items-center justify-between z-30 shrink-0">
-              <div className="flex items-center gap-3.5">
-                <div className="relative w-11 h-11 rounded-full bg-[#FFC000] p-1 border-2 border-white/40 flex items-center justify-center shrink-0 shadow-md">
+            <div className="p-4 bg-black text-white border-b border-slate-800 flex items-center justify-between z-30 shrink-0 select-none">
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing p-0.5">
+                  <GripHorizontal className="w-4 h-4" />
+                </div>
+                <div className="relative w-10 h-10 rounded-full bg-[#FFC000] p-1 border border-white/20 flex items-center justify-center shrink-0 shadow-md">
                   <Image
-                    src="/assets/catpeer/catpeerStandup.svg"
-                    alt="Catpeer"
-                    width={36}
-                    height={36}
-                    className="w-8 h-8 object-contain"
+                    src={MASCOT_ASSETS[botMood]}
+                    alt="Catpeer Mood"
+                    width={32}
+                    height={32}
+                    className="w-7 h-7 object-contain transition-all duration-300"
                   />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-black rounded-full" />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-black rounded-full" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-black text-base sm:text-lg text-white tracking-tight">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-black text-[15px] text-white tracking-tight">
                       Catpeer
                     </h3>
-                    <span className="text-[10px] font-black uppercase bg-[#FFC000] text-black px-2 py-0.5 rounded-full">
+                    <span className="text-[9px] font-black uppercase bg-[#FFC000] text-black px-1.5 py-0.5 rounded-md">
                       AI
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 font-medium">
-                    Asisten Cerdas CationGate
+                  <p className="text-[11px] text-slate-400 font-medium transition-all duration-300">
+                    {botMood === "writing"
+                      ? "Menerima pesan..."
+                      : botMood === "thinking"
+                        ? "Mengetik..."
+                        : "Asisten Cerdas CationGate"}
                   </p>
                 </div>
               </div>
 
-              {/* Action Icons */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-0.5">
                 <button
                   onClick={handleResetChat}
                   className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
                   title="Obrolan Baru"
-                  aria-label="Obrolan Baru"
                 >
                   <SquarePen className="w-4 h-4" />
                 </button>
@@ -252,104 +325,99 @@ export function CatBotWidget() {
                   onClick={() => setIsOpen(false)}
                   className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
                   title="Tutup Chat"
-                  aria-label="Tutup Chat"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* 2. CHAT CANVAS WITH SOLID YELLOW BACKGROUND & FULLY VISIBLE CATPEER ILLUSTRATION */}
-            <div className="relative flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 z-10 flex flex-col bg-[#FFC000]">
-              
-              {/* CLEARLY VISIBLE CATPEER STANDUP MASCOT IN THE BACKGROUND */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 opacity-85">
-                <img
-                  src="/assets/catpeer/catpeerStandup.svg"
-                  alt="Catpeer Mascot"
-                  className="w-[280px] sm:w-[320px] h-auto max-h-[80%] object-contain"
+            <div className="relative flex-1 bg-[#FFC000] flex flex-col overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 opacity-[0.08]">
+                <Image
+                  src={MASCOT_ASSETS.icon}
+                  alt="Watermark"
+                  width={240}
+                  height={240}
+                  className="w-[200px] h-auto object-contain"
                 />
               </div>
 
-              {/* Messages Container */}
-              <div className="relative z-10 space-y-4 flex-1">
-                {messages.map((msg) => {
+              <div className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {messages.map((msg, index) => {
                   const isBot = msg.sender === "bot";
                   return (
-                    <div
-                      key={msg.id}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                      key={msg.id || index}
                       className={`flex flex-col ${isBot ? "items-start" : "items-end"} gap-1`}
                     >
-                      <div className="flex items-end gap-2.5 max-w-[90%] sm:max-w-[85%]">
+                      <div className="flex items-end gap-2 max-w-[90%] sm:max-w-[85%]">
                         {isBot && (
-                          <div className="w-8 h-8 rounded-full bg-black p-1.5 flex items-center justify-center shrink-0 mb-1 shadow-md border border-slate-800">
+                          <div className="w-7 h-7 rounded-full bg-black p-1 flex items-center justify-center shrink-0 mb-1 shadow-md border border-slate-800">
                             <Image
-                              src="/assets/catpeer/catpeerStandup.svg"
+                              src={MASCOT_ASSETS.icon}
                               alt="Catpeer"
-                              width={24}
-                              height={24}
+                              width={20}
+                              height={20}
                               className="w-full h-full object-contain"
                             />
                           </div>
                         )}
 
                         <div
-                          className={`
-                            px-4.5 py-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed
-                            ${isBot 
-                              ? "bg-white text-slate-950 font-normal rounded-tl-xs shadow-xl border border-slate-200/90" 
-                              : "bg-black text-white font-medium rounded-tr-xs shadow-xl border border-slate-900"
-                            }
-                          `}
+                          className={`px-4 py-3 rounded-2xl text-[13px] sm:text-[14px] leading-relaxed ${isBot ? "bg-white text-slate-900 font-normal rounded-tl-sm shadow-sm" : "bg-black text-white font-medium rounded-tr-sm shadow-md"}`}
                         >
                           <div className="whitespace-pre-line break-words font-sans">
                             {msg.text}
                           </div>
                         </div>
                       </div>
-
-                      {/* Timestamp */}
-                      <span className={`text-[10px] font-bold px-11 ${isBot ? "text-slate-900" : "text-slate-900"}`}>
+                      <span className="text-[10px] font-bold px-9 text-slate-900/40">
                         {msg.time}
                       </span>
-                    </div>
+                    </motion.div>
                   );
                 })}
 
-                {/* Loading Bubble */}
-                {isLoading && (
-                  <div className="flex items-start gap-2.5 max-w-[85%]">
-                    <div className="w-8 h-8 rounded-full bg-black p-1.5 flex items-center justify-center shrink-0 shadow-md border border-slate-800">
+                {isLoading && botMood === "writing" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-start gap-2 max-w-[85%]"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-black p-1 flex items-center justify-center shrink-0 shadow-md border border-slate-800">
                       <Image
-                        src="/assets/catpeer/catpeerStandup.svg"
+                        src={MASCOT_ASSETS.icon}
                         alt="Catpeer"
-                        width={24}
-                        height={24}
+                        width={20}
+                        height={20}
                         className="w-full h-full object-contain"
                       />
                     </div>
-                    <div className="bg-white border border-slate-200 px-4.5 py-3.5 rounded-2xl rounded-tl-xs text-xs sm:text-sm text-slate-900 flex items-center gap-2.5 shadow-xl">
-                      <Loader2 className="w-4 h-4 animate-spin text-black" />
-                      <span className="font-semibold text-slate-950">Catpeer sedang mengetik...</span>
+                    <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-sm text-[13px] sm:text-sm text-slate-900 flex items-center gap-2 shadow-sm">
+                      <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                      <span className="font-semibold text-slate-600">
+                        Catpeer menerima pesan...
+                      </span>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
-
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick Suggestions (Solid Black High-Contrast Pills) */}
               {messages.length <= 3 && !isLoading && (
-                <div className="relative z-10 pt-3 border-t border-black/20">
-                  <p className="text-[11px] uppercase font-black text-black tracking-wider mb-2">
+                <div className="relative z-20 px-4 py-3 bg-gradient-to-t from-[#FFC000] via-[#FFC000]/95 to-transparent shrink-0">
+                  <p className="text-[10px] uppercase font-black text-black/80 tracking-wider mb-2">
                     Pertanyaan Populer:
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-[100px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {DEFAULT_SUGGESTIONS.map((sug, i) => (
                       <button
                         key={i}
                         onClick={() => handleSendMessage(sug)}
-                        className="text-xs bg-black hover:bg-slate-900 text-white font-bold px-3.5 py-2 rounded-full transition-all shadow-md active:scale-95 cursor-pointer text-left border border-slate-800"
+                        className="text-[11px] bg-black/90 hover:bg-black text-white font-bold px-3.5 py-1.5 rounded-full transition-all shadow-sm active:scale-95 cursor-pointer text-left border border-slate-800"
                       >
                         {sug}
                       </button>
@@ -357,17 +425,15 @@ export function CatBotWidget() {
                   </div>
                 </div>
               )}
-
             </div>
 
-            {/* 3. SOLID BLACK FOOTER / INPUT AREA (NO TRANSPARENCY) */}
-            <div className="p-3.5 sm:p-4.5 bg-black border-t border-slate-800 z-30 shrink-0">
+            <div className="p-3.5 sm:p-4 bg-black border-t border-slate-800 z-30 shrink-0">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSendMessage();
                 }}
-                className="flex items-center gap-2.5"
+                className="flex items-center gap-2"
               >
                 <input
                   ref={inputRef}
@@ -375,30 +441,28 @@ export function CatBotWidget() {
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Ketik pertanyaan seputar CationGate..."
-                  className="flex-1 h-12 bg-[#121824] text-white placeholder:text-slate-400 text-xs sm:text-sm px-4 rounded-xl border border-slate-800 focus:outline-none focus:border-[#FFC000] focus:ring-2 focus:ring-[#FFC000]/20 transition-all font-medium"
+                  className="flex-1 h-11 bg-[#121824] text-white placeholder:text-slate-500 text-[13px] sm:text-sm px-4 rounded-xl border-none outline-none focus:outline-none focus:ring-0 transition-all font-medium"
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isLoading}
-                  className="w-12 h-12 rounded-xl bg-[#FFC000] hover:bg-[#FFD33B] text-black flex items-center justify-center shrink-0 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-lg font-bold"
-                  title="Kirim Pesan"
+                  className="w-11 h-11 rounded-xl bg-[#FFC000] hover:bg-[#FFD33B] text-black flex items-center justify-center shrink-0 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-md font-bold"
                 >
                   <Send className="w-4 h-4" />
                 </button>
               </form>
-
-              <div className="mt-2.5 text-center">
-                <span className="text-[11px] text-slate-400 font-medium">
+              <div className="mt-2 text-center">
+                <span className="text-[9px] text-slate-500 font-medium">
                   Didukung oleh Google Gemini AI &bull; Catpeer CationGate
                 </span>
               </div>
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
+
 export default CatBotWidget;

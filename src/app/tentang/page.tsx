@@ -7,20 +7,15 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Navbar } from "@/components/landing/Navbar";
 import { CinematicFooter } from "@/components/ui/motion-footer";
-import {
-  Heart,
-  Target,
-  Users,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  BookOpen,
-} from "lucide-react";
+import { Target, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+const supabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -32,20 +27,36 @@ export default function AboutPage() {
   const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fallback data tim jika supabase belum siap / tabel kosong
+  // Data 4 Anggota Utama dengan Path Aset Lokal di public/assets/team/
   const defaultTeam = [
     {
       id: 1,
       name: "Algifahri Tri Ramadhan",
-      role: "Founder & Lead Architect",
-      photo_url: "",
+      role: "Fullstack Developer",
+      photo_url: "/assets/team/algifahri.jpg",
     },
-    { id: 2, name: "Pak Joy", role: "Pembina IT & Advisor", photo_url: "" },
-    { id: 3, name: "Bu Miranda", role: "Mentor Algoritma & QA", photo_url: "" },
-    { id: 4, name: "Husein", role: "Core Contributor", photo_url: "" },
+    {
+      id: 2,
+      name: "Zefanya Law Prasetyo",
+      role: "Frontend Developer",
+      photo_url: "/assets/team/pak-joy.jpg",
+    },
+    {
+      id: 3,
+      name: "Farel Al Fatir Fauzan",
+      role: "Frontend Developer",
+      photo_url: "/assets/team/bu-miranda.jpg",
+    },
+    {
+      id: 4,
+      name: "Husein",
+      role: "Testing",
+      photo_url: "/assets/team/husein.jpg",
+    },
   ];
 
   useEffect(() => {
@@ -67,7 +78,7 @@ export default function AboutPage() {
         } else {
           setMembers(data);
         }
-      } catch (error) {
+      } catch (_error) {
         setMembers(defaultTeam);
       } finally {
         setLoading(false);
@@ -76,10 +87,9 @@ export default function AboutPage() {
     fetchMembers();
   }, []);
 
-  // Animasi GSAP yang smooth dan natural (tanpa efek kaku)
+  // Animasi GSAP
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero reveal animation
       gsap.from(".hero-content > *", {
         y: 60,
         opacity: 0,
@@ -88,7 +98,6 @@ export default function AboutPage() {
         ease: "power4.out",
       });
 
-      // Parallax floating background elements
       gsap.to(".floating-img-1", {
         y: -100,
         scrollTrigger: {
@@ -109,7 +118,6 @@ export default function AboutPage() {
         },
       });
 
-      // Section fades on scroll
       [section1Ref, section2Ref, section3Ref].forEach((ref) => {
         if (!ref.current) return;
         const elements = ref.current.querySelectorAll(".animate-up");
@@ -143,12 +151,14 @@ export default function AboutPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative pt-48 pb-32 px-6 flex flex-col items-center justify-center text-center overflow-hidden">
-          {/* Background blurred glowing circles */}
           <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl floating-img-1"></div>
           <div className="absolute bottom-10 -right-20 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-3xl floating-img-2"></div>
 
           <div className="max-w-4xl hero-content relative z-10 space-y-6">
-
+            <span className="inline-flex items-center gap-2 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full shadow-sm">
+              <Sparkles size={14} className="text-blue-400" /> Tentang
+              CationGate
+            </span>
             <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tight text-zinc-900 leading-none">
               Membangun Masa Depan <br />{" "}
               <span className="text-yellow-400">Digital Pendidikan</span>
@@ -169,17 +179,28 @@ export default function AboutPage() {
         >
           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
             <div className="flex-1 relative animate-up w-full">
+              {/* Kotak Vokasi dengan Logo Diperbesar */}
               <div className="relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-700 hover:scale-[1.02] flex items-center justify-center bg-white border border-zinc-200 p-12">
-                <div className="text-center space-y-4">
-                  <div className="w-20 h-20 bg-blue-600 text-white rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-blue-600/30">
-                    <BookOpen size={36} />
+                <div className="text-center space-y-4 flex flex-col items-center">
+                  {/* Ukuran wrapper logo diperbesar dari w-24 h-24 jadi w-36 h-36 */}
+                  <div className="w-36 h-36 relative mb-2 flex items-center justify-center">
+                    <Image
+                      src="/assets/logo_cationgate/CationGate_Logo.png"
+                      alt="CationGate Logo"
+                      fill
+                      sizes="144px"
+                      className="object-contain"
+                    />
                   </div>
-                  <h3 className="text-2xl font-black">Inovasi Vokasi</h3>
+                  <h3 className="text-2xl font-black text-zinc-900">
+                    CationGate
+                  </h3>
                   <p className="text-zinc-500 text-sm">
                     Dari SMK untuk kemajuan sistem pendidikan nasional.
                   </p>
                 </div>
               </div>
+
               {/* Decorative Floating Card */}
               <div className="absolute -bottom-6 -right-6 bg-zinc-900 text-white p-6 rounded-3xl shadow-xl max-w-[260px] hidden md:block border border-zinc-800">
                 <p className="font-bold text-sm leading-snug">
@@ -215,7 +236,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Visi & Misi Section (Desain ala Lumeriá Gelap Mewah) */}
+        {/* Visi & Misi Section */}
         <section
           ref={section2Ref}
           id="mission"
@@ -265,7 +286,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Team Section */}
+        {/* Team Section (4 Orang Utama) */}
         <section
           className="pt-28 pb-16 px-6 max-w-7xl mx-auto overflow-hidden"
           id="team"
@@ -297,20 +318,18 @@ export default function AboutPage() {
                   className="group bg-white rounded-3xl shadow-sm p-8 flex flex-col items-center border border-zinc-200 hover:border-blue-500/50 hover:shadow-xl transition-all duration-300"
                 >
                   <div className="w-24 h-24 relative rounded-full overflow-hidden border-2 border-zinc-200 mb-5 group-hover:border-blue-600 transition-colors bg-zinc-100">
-                    {member.photo_url ? (
-                      <Image
-                        src={member.photo_url}
-                        alt={member.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <img
-                        src={`https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(member.name)}`}
-                        alt={member.name}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
+                    <Image
+                      src={
+                        member.photo_url ||
+                        `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(member.name)}`
+                      }
+                      alt={member.name}
+                      fill sizes="(max-width: 768px) 100vw, 360px"className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.target as HTMLElement;
+                        target.style.display = "none";
+                      }}
+                    />
                   </div>
                   <h3 className="font-bold text-xl mb-1 text-zinc-900 text-center group-hover:text-blue-600 transition-colors">
                     {member.name}

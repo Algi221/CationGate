@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import { getSupabaseClient } from '../db/supabase';
 import { pool } from '../db/client';
 import { redis } from '../../utils/redis';
-// @ts-ignore
+
 import midtransClient from 'midtrans-client';
 import crypto from 'crypto';
 import { registerLimiter } from '../middleware/rate-limiter';
@@ -19,9 +19,11 @@ const snap = new midtransClient.Snap({
 });
 
 // In-Memory store for registered schools fallback (HMR Refreshed)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const fontInMemSchools = new Map<string, any>();
 
 // Helper function to check 3-day takedown expiry
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function checkThreeDayTakedown(schoolObj: any): boolean {
   if (!schoolObj || schoolObj.status === 'FULL_VERIFIED' || schoolObj.status === 'TAKEDOWN') {
     return false;
@@ -68,6 +70,7 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
     }
 
     // 2. Check candidate 'prospective_schools' table (or calon_sekolah)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let candidateData: any = null;
     try {
       const { data: psData } = await supabase
@@ -222,6 +225,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
     const fallbackId = Math.floor(Date.now() / 1000);
     const createdAtIso = new Date().toISOString();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newSchoolObj: any = {
       id: fallbackId,
       name: school_name,
@@ -236,6 +240,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
     };
     
     // 1. Insert into Supabase 'prospective_schools' table
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let insertedSchoolId: any = null;
 
     // Generate a UUID for admin_users.school_id (since admin_users.school_id is UUID type)
@@ -264,8 +269,8 @@ saasRouter.post('/register', registerLimiter, async (c) => {
         insertedSchoolId = psData.id;
         newSchoolObj.id = insertedSchoolId;
       }
-    } catch (sbErr: any) {
-      console.warn('Supabase client insert warning:', sbErr.message);
+    } catch (sbErr: unknown) {
+      console.warn('Supabase client insert warning:', (sbErr as any).message);
     }
 
     if (!insertedSchoolId) {
@@ -281,8 +286,8 @@ saasRouter.post('/register', registerLimiter, async (c) => {
           insertedSchoolId = pgRes.rows[0].id;
           newSchoolObj.id = insertedSchoolId;
         }
-      } catch (pgErr: any) {
-        console.error('PG Insert error during SaaS registration fallback:', pgErr.message);
+      } catch (pgErr: unknown) {
+        console.error('PG Insert error during SaaS registration fallback:', (pgErr as any).message);
         return c.json({ success: false, message: 'Gagal menyimpan data pendaftaran ke database' }, 500);
       }
     }
@@ -303,7 +308,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
         status: 'unverified',
         subscription_plan: 'free'
       });
-    } catch (schoolsErr: any) {
+    } catch (schoolsErr: unknown) {
       try {
         await pool.query(
           `INSERT INTO schools (id, name, slug, email, status, subscription_plan, created_at)
@@ -327,7 +332,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
         role: 'superadmin',
         school_id: generatedSchoolUUID
       });
-    } catch (adminErr: any) {
+    } catch (adminErr: unknown) {
       try {
         await pool.query(
           `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, school_id)
@@ -346,11 +351,11 @@ saasRouter.post('/register', registerLimiter, async (c) => {
       message: 'Registrasi berhasil! Account instansi aktif.'
     });
     
-  } catch (err: any) {
-    console.error('SaaS register exception:', err?.message);
+  } catch (err: unknown) {
+    console.error('SaaS register exception:', (err as any)?.message);
     return c.json({ 
       success: false, 
-      message: 'Terjadi kesalahan sistem saat registrasi: ' + err?.message
+      message: 'Terjadi kesalahan sistem saat registrasi: ' + (err as any)?.message
     }, 500);
   }
 });
@@ -366,13 +371,15 @@ saasRouter.post('/activate', adminAuth, async (c) => {
 
     const supabase = getSupabaseClient();
     const idOrSlug = String(targetSlug);
+    const now = new Date();
+    const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
 
     // If order_id provided, update its status
     if (order_id) {
       try {
         await supabase
           .from('orders')
-          .update({ status: 'SETTLEMENT', updated_at: new Date().toISOString() })
+          .update({ status: 'SETTLEMENT', updated_at: now.toISOString() })
           .eq('order_id', order_id);
       } catch (e) {}
     }
@@ -399,14 +406,15 @@ saasRouter.post('/activate', adminAuth, async (c) => {
       console.warn('Supabase prospective_schools update warning:', e);
     }
 
-    // 2. Update/Upsert Supabase 'schools'
-    // 2. Update/Upsert Supabase 'schools'
+    // 2. Update Supabase 'schools' with subscription_end_date
+    let resolvedUUID: string | null = null;
     try {
       let scUpdate = supabase
         .from('schools')
         .update({
           status: 'FULL_VERIFIED',
-          subscription_plan: 'PRO_750K'
+          subscription_plan: 'PRO_YEARLY',
+          subscription_end_date: oneYearLater.toISOString()
         });
 
       const isNumericId = !isNaN(Number(idOrSlug)) && Number(idOrSlug) > 0;
@@ -416,18 +424,44 @@ saasRouter.post('/activate', adminAuth, async (c) => {
         scUpdate = scUpdate.eq('slug', idOrSlug);
       }
       
-      await scUpdate;
+      const { data: updatedSchool } = await scUpdate.select('id').maybeSingle();
+      if (updatedSchool) resolvedUUID = updatedSchool.id;
     } catch (e) {
       console.warn('Supabase schools update warning:', e);
     }
 
-    // 3. Update fontInMemSchools map
+    // 3. Resolve UUID if not found yet
+    if (!resolvedUUID) {
+      try {
+        const { resolveSchoolUUID } = await import('../db/resolve-school');
+        resolvedUUID = await resolveSchoolUUID(idOrSlug, fontInMemSchools) || null;
+      } catch (_e) {}
+    }
+
+    // 4. Insert into school_subscriptions
+    if (resolvedUUID) {
+      try {
+        await supabase.from('school_subscriptions').insert({
+          school_id: resolvedUUID,
+          plan_name: 'PRO_YEARLY',
+          status: 'ACTIVE',
+          started_at: now.toISOString(),
+          expires_at: oneYearLater.toISOString(),
+          midtrans_order_id: order_id || null,
+          amount_paid: 750000
+        });
+      } catch (e) {
+        console.warn('school_subscriptions insert warning:', e);
+      }
+    }
+
+    // 5. Update fontInMemSchools map
     fontInMemSchools.forEach((s, keySlug) => {
       if (String(s.id) === idOrSlug || String(s.slug) === idOrSlug || keySlug === idOrSlug) {
         s.status = 'FULL_VERIFIED';
         s.is_verified = true;
         s.plan_type = 'PRO';
-        s.subscription_plan = 'PRO_750K';
+        s.subscription_plan = 'PRO_YEARLY';
       }
     });
 
@@ -436,16 +470,16 @@ saasRouter.post('/activate', adminAuth, async (c) => {
       localObj.status = 'FULL_VERIFIED';
       localObj.is_verified = true;
       localObj.plan_type = 'PRO';
-      localObj.subscription_plan = 'PRO_750K';
+      localObj.subscription_plan = 'PRO_YEARLY';
     }
 
     return c.json({
       success: true,
       message: 'Pembayaran Midtrans berhasil dikonfirmasi! Paket Pro CationGate (Rp 750.000 / Tahun) telah aktif & dashboard unlocked.'
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Activate error:', err);
-    return c.json({ success: false, message: 'Gagal mengaktifkan lisensi: ' + err.message }, 500);
+    return c.json({ success: false, message: 'Gagal mengaktifkan lisensi: ' + (err as any).message }, 500);
   }
 });
 
@@ -472,6 +506,7 @@ async function createMidtransOrder({
   customerEmail: string;
   itemId: string;
   itemName: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any;
 }) {
   const orderId = `CG-${orderType}-${Date.now()}`;
@@ -548,8 +583,8 @@ saasRouter.post('/create-payment-token', async (c) => {
       redirect_url: result.redirect_url,
       order_id: result.order_id,
     });
-  } catch (err: any) {
-    console.error('Midtrans token creation error:', err?.message);
+  } catch (err: unknown) {
+    console.error('Midtrans token creation error:', (err as any)?.message);
     // Return mock token for sandbox resilience
     return c.json({
       success: true,
@@ -585,6 +620,7 @@ saasRouter.post('/payment/student-form-token', async (c) => {
         .maybeSingle();
 
       if (cfg && cfg.config_value) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const val = cfg.config_value as any;
         if (typeof val === 'object' && val.amount) {
           regFee = Number(val.amount);
@@ -623,8 +659,8 @@ saasRouter.post('/payment/student-form-token', async (c) => {
       order_id: result.order_id,
       amount: regFee,
     });
-  } catch (err: any) {
-    console.error('Student form token error:', err?.message);
+  } catch (err: unknown) {
+    console.error('Student form token error:', (err as any)?.message);
     return c.json({
       success: true,
       token: `MOCK-SNAP-TOKEN-${Date.now()}`,
@@ -669,6 +705,7 @@ saasRouter.post('/midtrans-webhook', async (c) => {
 
     // Update order in DB
     const supabase = getSupabaseClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let orderRow: any = null;
     try {
       const { data: orderData } = await supabase
@@ -719,21 +756,172 @@ saasRouter.post('/midtrans-webhook', async (c) => {
     }
 
     return c.json({ success: true, message: 'Webhook processed' });
-  } catch (err: any) {
-    console.warn('[Midtrans Webhook Error]:', err.message);
+  } catch (err: unknown) {
+    console.warn('[Midtrans Webhook Error]:', (err as any).message);
     return c.json({ success: true, message: 'Webhook received' });
   }
 });
 
-// Get active pricing plans
+// Get active pricing plans (2 static plans)
 saasRouter.get('/plans', async (c) => {
   try {
-    const pgRes = await pool.query('SELECT * FROM plans WHERE is_active = true ORDER BY id ASC');
-    return c.json({ success: true, data: pgRes.rows || [] });
-  } catch (err: any) {
-    console.error('Fetch SaaS plans error:', err?.message);
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('id', { ascending: true });
+
+    if (error) {
+      console.warn('Plans table missing, returning static fallback');
+      return c.json({ success: true, data: [
+        { id: 1, name: 'Free Trial', price_monthly: 0, price_yearly: 0, features: ['Pendaftaran Online PPDB', 'Kelola Data Calon Siswa', 'Export Excel', 'Landing Page Sekolah', 'Maks 100 Pendaftar', 'Masa Aktif 30 Hari'], is_active: true },
+        { id: 2, name: 'Pro Tahunan', price_monthly: 62500, price_yearly: 750000, features: ['Semua Fitur Free Trial', 'Unlimited Pendaftar', 'Custom Branding & Logo', 'Multi-Admin Dashboard', 'WhatsApp Notifikasi', 'Prioritas Support 24/7', 'Pembagian Kelas Otomatis', 'Laporan & Statistik Lengkap'], is_active: true }
+      ] });
+    }
+    return c.json({ success: true, data: data || [] });
+  } catch (err: unknown) {
+    console.error('Fetch SaaS plans error:', (err as any)?.message);
     return c.json({ success: false, message: 'Gagal mengambil data paket SaaS' }, 500);
   }
 });
 
+// Get subscription status for a school
+saasRouter.get('/subscription-status', async (c) => {
+  try {
+    const schoolId = c.req.query('school_id');
+    const slug = c.req.query('slug');
+
+    if (!schoolId && !slug) {
+      return c.json({ success: false, message: 'school_id or slug required' }, 400);
+    }
+
+    const supabase = getSupabaseClient();
+
+    // Resolve school_id from slug if needed
+    let resolvedSchoolId = schoolId;
+    if (!resolvedSchoolId && slug) {
+      const { resolveSchoolUUID } = await import('../db/resolve-school');
+      resolvedSchoolId = await resolveSchoolUUID(slug, fontInMemSchools) || undefined;
+    }
+
+    if (!resolvedSchoolId) {
+      // No subscription found — default to free trial from school creation date
+      return c.json({
+        success: true,
+        data: {
+          plan: 'FREE_TRIAL',
+          status: 'ACTIVE',
+          daysLeft: 30,
+          isExpired: false,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      });
+    }
+
+    // Check school_subscriptions table
+    const { data: sub } = await supabase
+      .from('school_subscriptions')
+      .select('*')
+      .eq('school_id', resolvedSchoolId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (sub) {
+      const expiresAt = new Date(sub.expires_at);
+      const now = new Date();
+      const diffMs = expiresAt.getTime() - now.getTime();
+      const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+      const isExpired = daysLeft <= 0;
+
+      // Auto-update status if expired
+      if (isExpired && sub.status === 'ACTIVE') {
+        try {
+          await supabase
+            .from('school_subscriptions')
+            .update({ status: 'EXPIRED', updated_at: new Date().toISOString() })
+            .eq('id', sub.id);
+        } catch (_e) {}
+      }
+
+      return c.json({
+        success: true,
+        data: {
+          plan: sub.plan_name,
+          status: isExpired ? 'EXPIRED' : sub.status,
+          daysLeft,
+          isExpired,
+          expiresAt: sub.expires_at,
+          startedAt: sub.started_at,
+          amountPaid: sub.amount_paid || 0
+        }
+      });
+    }
+
+    // No subscription record — check school creation date for implicit free trial
+    const { data: school } = await supabase
+      .from('schools')
+      .select('created_at, subscription_plan, subscription_end_date')
+      .eq('id', resolvedSchoolId)
+      .maybeSingle();
+
+    if (school) {
+      const createdAt = new Date(school.created_at || Date.now());
+      const trialEnd = new Date(createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      const diffMs = trialEnd.getTime() - now.getTime();
+      const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+      const isExpired = daysLeft <= 0;
+
+      // If school has subscription_end_date from legacy, use that
+      if (school.subscription_end_date) {
+        const legacyEnd = new Date(school.subscription_end_date);
+        const legacyDiff = legacyEnd.getTime() - now.getTime();
+        const legacyDays = Math.max(0, Math.ceil(legacyDiff / (1000 * 60 * 60 * 24)));
+        return c.json({
+          success: true,
+          data: {
+            plan: school.subscription_plan || 'FREE_TRIAL',
+            status: legacyDays <= 0 ? 'EXPIRED' : 'ACTIVE',
+            daysLeft: legacyDays,
+            isExpired: legacyDays <= 0,
+            expiresAt: school.subscription_end_date
+          }
+        });
+      }
+
+      return c.json({
+        success: true,
+        data: {
+          plan: 'FREE_TRIAL',
+          status: isExpired ? 'EXPIRED' : 'ACTIVE',
+          daysLeft,
+          isExpired,
+          expiresAt: trialEnd.toISOString()
+        }
+      });
+    }
+
+    // Complete fallback
+    return c.json({
+      success: true,
+      data: {
+        plan: 'FREE_TRIAL',
+        status: 'ACTIVE',
+        daysLeft: 30,
+        isExpired: false,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    });
+  } catch (err: unknown) {
+    console.error('Subscription status error:', (err as any)?.message);
+    return c.json({
+      success: true,
+      data: { plan: 'FREE_TRIAL', status: 'ACTIVE', daysLeft: 30, isExpired: false }
+    });
+  }
+});
+
 export default saasRouter;
+

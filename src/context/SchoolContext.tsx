@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface SchoolContextType {
@@ -14,7 +14,9 @@ interface SchoolContextType {
   ppdbLogo: string;
   ppdbTitle: string;
   ppdbFooterDesc: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profilSekolah: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setProfilSekolah: React.Dispatch<React.SetStateAction<any>>;
   fetchConfigs: () => Promise<void>;
 }
@@ -23,24 +25,32 @@ const SchoolContext = createContext<SchoolContextType | null>(null);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export function SchoolProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const params = useParams();
-  const slug = (params?.school_slug as string) || "";
-  const isDemoMode = slug === 'demo';
+  const slug = (params?.school_slug as string) || (pathname?.startsWith('/demo') ? 'demo' : "");
+  const isDemoMode = slug === 'demo' || (pathname ? pathname.startsWith('/demo') : false);
 
   const [schoolId, setSchoolId] = useState<string>("");
   const [schoolStatus, setSchoolStatus] = useState<string>("");
   const [isSchoolNotFound, setIsSchoolNotFound] = useState<boolean>(false);
-  const [ppdbLogo, setPpdbLogo] = useState<string>("");
-  const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB SMK TB");
+  const [ppdbLogo, setPpdbLogo] = useState<string>("/assets/logo_sekolah/logo_smktb.png");
+  const [ppdbTitle, setPpdbTitle] = useState<string>("SMK TB");
   const [isConfigLoaded, setIsConfigLoaded] = useState<boolean>(false);
   const [ppdbFooterDesc, setPpdbFooterDesc] = useState<string>("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [profilSekolah, setProfilSekolah] = useState<any>(null);
 
   // ── Fetch global config (logo, title, profil) ──────────────────────────────
   const fetchConfigs = useCallback(async () => {
-    if (isDemoMode) return;
+    if (isDemoMode) {
+      setPpdbTitle("SMK TB");
+      setPpdbLogo("/assets/logo_sekolah/logo_smktb.png");
+      setPpdbFooterDesc("Portal simulasi dan demonstrasi interaktif sistem SPMB CationGate untuk sekolah kejuruan di Indonesia.");
+      setIsConfigLoaded(true);
+      return;
+    }
     try {
-      const res = await fetch(`/api/config?school_slug=${slug}&_t=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(`/api/config?school_slug=${slug}`);
       if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
       const data = await res.json();
       if (data.success && data.data) {
@@ -54,7 +64,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       console.error("Gagal mengambil config:", err);
       setIsConfigLoaded(true);
     }
-  }, [slug]);
+  }, [slug, isDemoMode]);
 
   useEffect(() => {
     fetchConfigs();
@@ -63,7 +73,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   // ── Fetch school theme color ───────────────────────────────────────────────
   useEffect(() => {
     if (schoolId) {
-      fetch(`/api/config?school_id=${schoolId}&_t=${Date.now()}`, { cache: 'no-store' })
+      fetch(`/api/config?school_id=${schoolId}`)
         .then((res) => {
           if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return null;
           return res.json();
@@ -113,15 +123,14 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
             setIsSchoolNotFound(false);
             setSchoolId(data.data.school_uuid || data.data.id);
             if (data.data.status) setSchoolStatus(data.data.status);
-            
-            setPpdbLogo(prev => prev || data.data.logo_url || "");
-            setPpdbTitle(prev => (prev && prev !== "PPDB SMK TB" && prev !== slug) ? prev : (data.data.name || "PPDB SMK TB"));
+            if (data.data.logo_url) setPpdbLogo(data.data.logo_url);
+            if (data.data.name) setPpdbTitle(data.data.name);
           } else if (slug !== 'smktarunabhakti' && slug !== 'demo') {
             setIsSchoolNotFound(true);
           } else {
             setIsSchoolNotFound(false);
             setSchoolId(slug);
-            setPpdbTitle(prev => (prev && prev !== "PPDB SMK TB") ? prev : (slug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : slug));
+            setPpdbTitle(slug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : slug);
           }
         })
         .catch((err) => {

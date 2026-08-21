@@ -308,7 +308,7 @@ function BarChart({
 export default function DashboardOverview() {
   const { applicants, schoolId, adminToken, schoolStatus, isDemoMode } = usePPDB();
   const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || "";
+  const schoolSlug = (params?.school_slug as string) || "demo";
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
   const [counterTrigger, setCounterTrigger] = useState(false);
 
@@ -328,7 +328,7 @@ export default function DashboardOverview() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed) && parsed.length > 0) {   
           setMajorsList(parsed.map((m: any) => ({
             name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
             dbName: m.title,
@@ -337,16 +337,13 @@ export default function DashboardOverview() {
         }
       } catch { /* ignore */ }
     }
-    const token = adminToken || localStorage.getItem("ppdb_admin_token");
-    fetch(`/api/config?_t=${Date.now()}`, {
-      cache: 'no-store',
-      headers: token ? { "Authorization": `Bearer ${token}` } : {}
-    })
+    fetch("/api/config")
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data?.ppdb_majors_config) {
           const dbMajors = json.data.ppdb_majors_config;
           if (Array.isArray(dbMajors) && dbMajors.length > 0) {
+          
             const mapped = dbMajors.map((m: any) => ({
               name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
               dbName: m.title,
@@ -392,9 +389,10 @@ export default function DashboardOverview() {
   }, [majorsMap, majorsList]);
 
   const trend = useMemo(() => {
-    const now = new Date();
+    const now = new Date(); 
     const dayMs = 86400000;
     const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+
     const registeredAt = (a: any) => {
       const d = new Date(a.tgl_daftar || a.created_at || Date.now());
       return isNaN(d.getTime()) ? Date.now() : d.getTime();
@@ -435,6 +433,7 @@ export default function DashboardOverview() {
       }
     } else {
       const months = new Map<string, { from: number; to: number }>();
+
       (applicants || []).forEach((a: any) => {
         const t = registeredAt(a);
         const d = new Date(t);
@@ -473,7 +472,7 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     if (!schoolId) return;
-    fetch(`/api/config?school_id=${schoolId}&_t=${Date.now()}`, { cache: 'no-store' })
+    fetch(`/api/config?school_id=${schoolId}`)
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data) {
@@ -770,7 +769,7 @@ export default function DashboardOverview() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
-                    className="hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-all"
+                    className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-all"
                   >
                     <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[130px] truncate">{a.nama}</td>
                     <td className="py-2.5 truncate max-w-[110px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>

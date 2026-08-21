@@ -56,16 +56,21 @@ mailerRouter.post('/send-otp', async (c) => {
       });
 
       if (error) {
-        throw new Error(error.message);
+        throw new Error((error as any).message);
       }
     } else {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('FATAL: RESEND_API_KEY is not configured for production. Email will not be sent.');
+        return c.json({ success: false, message: 'Gagal mengirim email: Konfigurasi server email tidak lengkap.' }, 500);
+      }
+      
       console.warn('⚠️ RESEND_API_KEY not configured, skipping email send. OTP generated:', otp);
       // For local development when Resend is not set up
       return c.json({ success: true, message: 'OTP berhasil digenerate (Mode Dev)', dev_otp: otp });
     }
 
     return c.json({ success: true, message: 'Kode OTP telah dikirim ke email Anda.' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Send OTP Error:', err);
     return c.json({ success: false, message: 'Gagal mengirim OTP.' }, 500);
   }
@@ -99,7 +104,7 @@ mailerRouter.post('/verify-otp', async (c) => {
     await supabase.from('verification_otps').update({ is_used: true }).eq('id', records[0].id);
 
     return c.json({ success: true, message: 'Verifikasi berhasil.' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Verify OTP Error:', err);
     return c.json({ success: false, message: 'Gagal verifikasi OTP.' }, 500);
   }

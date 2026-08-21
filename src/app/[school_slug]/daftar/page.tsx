@@ -16,7 +16,7 @@ const sanitizeUrl = (url: string | undefined | null): string => {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
     });
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 };
@@ -191,21 +191,22 @@ export default function DaftarPage() {
   const [furthestStep, setFurthestStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [kuotaData, setKuotaData] = useState<any[] | null>(null);
   const [portalStatus, setPortalStatus] = useState("open");
   const [fieldsConfig, setFieldsConfig] = useState<Record<string, { label: string; required: boolean; active: boolean }>>({});
 
-  const getFieldLabel = (key: string, defaultLabel: string) => {
+  const _getFieldLabel = (key: string, defaultLabel: string) => {
     return fieldsConfig[key]?.label || defaultLabel;
   };
-  const isFieldRequired = (key: string) => {
+  const _isFieldRequired = (key: string) => {
     const configVal = fieldsConfig[key];
     if (configVal === undefined) {
       return DEFAULT_FIELDS_CONFIG[key]?.required !== false;
     }
     return configVal.required;
   };
-  const isFieldActive = (key: string) => {
+  const _isFieldActive = (key: string) => {
     const configVal = fieldsConfig[key];
     if (configVal === undefined) {
       return DEFAULT_FIELDS_CONFIG[key]?.active !== false;
@@ -251,9 +252,6 @@ export default function DaftarPage() {
     tahunMulaiBeasiswa: "",
     tahunSelesaiBeasiswa: "",
     namaAyah: "",
-    nikAyah: "",
-    tahunLahirAyah: "",
-    whatsappAyah: "",
     tempatLahirAyah: "",
     tglLahirAyah: "",
     agamaAyah: "",
@@ -268,9 +266,6 @@ export default function DaftarPage() {
     kodePosAyah: "",
     statusAyah: "Masih Hidup",
     namaIbu: "",
-    nikIbu: "",
-    tahunLahirIbu: "",
-    whatsappIbu: "",
     tempatLahirIbu: "",
     tglLahirIbu: "",
     agamaIbu: "",
@@ -300,12 +295,10 @@ export default function DaftarPage() {
     statusWali: "Masih Hidup",
     teleponOrtu: "",
     sekolahAsal: "",
-    npsnSekolahAsal: "",
     tglLulus: "",
     noIjazah: "",
     noSKHUN: "",
     noPesertaUN: "",
-    deklarasi: false,
     lamaBelajar: "",
     pindahanDari: "",
     alasanPindah: "",
@@ -346,14 +339,17 @@ export default function DaftarPage() {
     berkasPrestasiBase64: "",
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [submittedCandidate, setSubmittedCandidate] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [successData, setSuccessData] = useState<any>(null);
 
   const [isDark, setIsDark] = useState(false);
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [regCost, setRegCost] = useState(250000);
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
+  const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [bankConfigList, setBankConfigList] = useState<Array<{ bankName: string; accountNumber: string; accountHolder: string }>>([
     { bankName: "Bank Mandiri", accountNumber: "157-00-0174092-2", accountHolder: "Yayasan Taruna Bhakti" }
   ]);
@@ -408,7 +404,7 @@ export default function DaftarPage() {
         if (parsed && typeof parsed === 'object') {
           setFieldsConfig(parsed);
         }
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     const savedMajors = localStorage.getItem('ppdb_majors_config');
@@ -460,6 +456,10 @@ export default function DaftarPage() {
             if (config.ppdb_wa_group_url) {
               setWaGroupUrl(config.ppdb_wa_group_url);
               localStorage.setItem('ppdb_wa_group_url', config.ppdb_wa_group_url);
+            }
+            if (config.ppdb_wa_admin) {
+              setWaAdmin(config.ppdb_wa_admin);
+              localStorage.setItem('ppdb_wa_admin', config.ppdb_wa_admin);
             }
             if (config.ppdb_portal_status) {
               setPortalStatus(config.ppdb_portal_status);
@@ -577,6 +577,7 @@ export default function DaftarPage() {
                               nisn: nisn,
                               bukti_bayar: null,
                               metode_pembayaran: "Payment Gateway",
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
                               school_slug: (params as any)?.school_slug as string
                             })
             });
@@ -609,6 +610,7 @@ export default function DaftarPage() {
 
   useEffect(() => {
     if (isSuccess) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const targetNisn = formData.nisn || (submittedCandidate && ((submittedCandidate as any).nisn));
       if (targetNisn) {
         const fetchSuccessData = async () => {
@@ -658,7 +660,7 @@ export default function DaftarPage() {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  const _handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
@@ -683,8 +685,8 @@ export default function DaftarPage() {
     }
   };
 
-  const handleInputChange = (e: any) => {
-    const { name, value } = e.target;
+  const handleInputChange = (e: unknown) => {
+    const { name, value } = (e as any).target;
 
     if (name === "nisn") {
       const cleanValue = value.replace(/\D/g, "").slice(0, 10);
@@ -798,6 +800,7 @@ export default function DaftarPage() {
     fields.forEach((key) => {
       const conf = fieldsConfig[key] || DEFAULT_FIELDS_CONFIG[key];
       if (conf && conf.active !== false && conf.required === true) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const val = (formData as any)[key];
         const isEmpty = val === undefined || val === null || 
                         (typeof val === "string" && val.trim() === "") || 
@@ -809,62 +812,6 @@ export default function DaftarPage() {
     });
 
     return errors;
-  };
-
-  const fillDummyDataAndSkip = () => {
-    setFormData({
-      ...formData,
-      nama: "Ahmad Bintang Pratama",
-      nisn: "0012345678",
-      nik: "3276012345678901",
-      tempatLahir: "Depok",
-      tglLahir: "2010-05-15",
-      jenisKelamin: "L",
-      agama: "Islam",
-      kewarganegaraan: "WNI",
-      alamat: "Jl. Raya Bogor Km 30",
-      rtRw: "01/02",
-      kelurahan: "Mekarsari",
-      kecamatan: "Cimanggis",
-      kodePos: "16452",
-      whatsapp: "081234567890",
-      email: "ahmad@example.com",
-      tinggalDengan: "Orang Tua",
-      transportasi: "Motor",
-      tinggiBadan: "165",
-      beratBadan: "55",
-      jarakSekolah: "Kurang dari 1 km",
-      jarakKm: "1",
-      waktuJam: "0",
-      waktuMenit: "15",
-      jumlahSaudara: "2",
-      golonganDarah: "O",
-      penyakitDiderita: "Tidak ada",
-      kebutuhanKhusus: [],
-      namaAyah: "Budi Santoso",
-      nikAyah: "3276012345678902",
-      tahunLahirAyah: "1980",
-      pendidikanAyah: "S1",
-      pekerjaanAyah: "Karyawan Swasta",
-      penghasilanAyah: "Rp 5.000.000 - Rp 20.000.000",
-      whatsappAyah: "081234567891",
-      namaIbu: "Siti Aminah",
-      nikIbu: "3276012345678903",
-      tahunLahirIbu: "1985",
-      pendidikanIbu: "S1",
-      pekerjaanIbu: "Ibu Rumah Tangga",
-      penghasilanIbu: "Kurang dari Rp 500.000",
-      whatsappIbu: "081234567892",
-      sekolahAsal: "SMPN 1 Depok",
-      npsnSekolahAsal: "20228123",
-      teleponOrtu: "081234567891",
-      diterimaKelas: "X (Sepuluh)",
-      tglLulus: "2026-06-10",
-      lamaBelajar: "3",
-      deklarasi: true
-    });
-    setFurthestStep(14);
-    setWizardStep(14);
   };
 
   const nextStep = async () => {
@@ -882,7 +829,7 @@ export default function DaftarPage() {
         customClass: {
           popup: 'rounded-[2rem] border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6',
           confirmButton: 'rounded-xl px-5 py-2.5 text-xs font-extrabold tracking-wider',
-          title: 'text-base font-black text-slate-850 dark:text-white uppercase'
+          title: 'text-base font-black text-slate-800 dark:text-white uppercase'
         }
       });
       return;
@@ -906,6 +853,7 @@ export default function DaftarPage() {
       Object.keys(DEFAULT_FIELDS_CONFIG).forEach((key) => {
         const conf = fieldsConfig[key] || DEFAULT_FIELDS_CONFIG[key];
         if (conf && conf.active !== false && conf.required === true) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const val = (finalData as any)[key];
           const isEmpty = val === undefined || val === null || (typeof val === "string" && val.trim() === "") || (Array.isArray(val) && val.length === 0);
           if (isEmpty) {
@@ -969,6 +917,8 @@ export default function DaftarPage() {
         }
       }
       finalData.periode = calculatedPeriod;
+       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (finalData as any).school_slug = (params as any)?.school_slug as string || 'smk';
 
       try {
@@ -990,7 +940,7 @@ export default function DaftarPage() {
             customClass: {
               popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
               confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
-              title: 'text-base font-extrabold text-slate-850 dark:text-white'
+              title: 'text-base font-extrabold text-slate-800 dark:text-white'
             }
           });
         }
@@ -1004,7 +954,7 @@ export default function DaftarPage() {
           customClass: {
             popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
             confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
-            title: 'text-base font-extrabold text-slate-850 dark:text-white'
+            title: 'text-base font-extrabold text-slate-800 dark:text-white'
           }
         });
       } finally {
@@ -1032,7 +982,7 @@ export default function DaftarPage() {
         customClass: {
           popup: 'rounded-[2rem] border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6',
           confirmButton: 'rounded-xl px-5 py-2.5 text-xs font-extrabold tracking-wider',
-          title: 'text-base font-black text-slate-850 dark:text-white uppercase'
+          title: 'text-base font-black text-slate-800 dark:text-white uppercase'
         }
       });
     }
@@ -1046,13 +996,14 @@ export default function DaftarPage() {
             <Clock size={32} />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-black text-slate-850 dark:text-white uppercase tracking-wider">Pendaftaran Ditutup</h2>
+            <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wider">Pendaftaran Ditutup</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
               Mohon maaf, portal Penerimaan Peserta Didik Baru (PPDB) SMK Taruna Bhakti Depok saat ini sedang ditutup.
             </p>
           </div>
           <div className="pt-2">
             <Link
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               href={`/${(params as any)?.school_slug || ''}`}
               className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-primary hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
             >
@@ -1182,16 +1133,16 @@ export default function DaftarPage() {
             border-color: #e2e8f0 !important;
           }
 
-          html.dark .printable-invoice-sheet .text-slate-955,
           html.dark .printable-invoice-sheet .text-slate-900,
-          html.dark .printable-invoice-sheet .text-slate-850,
+          html.dark .printable-invoice-sheet .text-slate-900,
+          html.dark .printable-invoice-sheet .text-slate-800,
           html.dark .printable-invoice-sheet .text-slate-855,
           html.dark .printable-invoice-sheet .text-slate-800 dark:text-white,
           html.dark .printable-invoice-sheet .text-slate-700 dark:text-slate-200,
-          .printable-invoice-sheet .text-slate-955,
+          .printable-invoice-sheet .text-slate-900,
           .printable-invoice-sheet .text-slate-900,
           .printable-invoice-sheet .text-slate-855,
-          .printable-invoice-sheet .text-slate-850,
+          .printable-invoice-sheet .text-slate-800,
           .printable-invoice-sheet .text-slate-800 dark:text-white,
           .printable-invoice-sheet .text-slate-700 dark:text-slate-200 {
             color: #0f172a !important;
@@ -1199,11 +1150,11 @@ export default function DaftarPage() {
 
           html.dark .printable-invoice-sheet .text-slate-550,
           html.dark .printable-invoice-sheet .text-slate-500 dark:text-slate-400,
-          html.dark .printable-invoice-sheet .text-slate-450,
+          html.dark .printable-invoice-sheet .text-slate-400,
           html.dark .printable-invoice-sheet .text-slate-400,
           .printable-invoice-sheet .text-slate-550,
           .printable-invoice-sheet .text-slate-500 dark:text-slate-400,
-          .printable-invoice-sheet .text-slate-450,
+          .printable-invoice-sheet .text-slate-400,
           .printable-invoice-sheet .text-slate-400 {
             color: #64748b !important;
           }
@@ -1261,11 +1212,11 @@ export default function DaftarPage() {
             Data pendaftaran Anda telah berhasil direkam di sistem PPDB SMK Taruna Bhakti.
           </p>
           <div className="bg-background/70 dark:bg-slate-950/30 backdrop-blur-sm border border-slate-100 dark:border-slate-800 rounded-xl p-4 mb-6 text-left text-xs space-y-2">
-            <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700/50 dark:border-slate-850">
+            <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700/50 dark:border-slate-800">
               <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">NISN:</span>
               <span className="font-bold text-slate-700 dark:text-slate-200">{successData.nisn}</span>
             </div>
-            <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700/50 dark:border-slate-850">
+            <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700/50 dark:border-slate-800">
               <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">Sekolah Asal:</span>
               <span className="font-bold text-slate-700 dark:text-slate-200">{successData.sekolah_asal || successData.sekolahAsal || "-"}</span>
             </div>
@@ -1316,7 +1267,8 @@ export default function DaftarPage() {
             <Link href={`/invoice?nisn=${successData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]">
               Lihat &amp; Cetak Invoice
             </Link>
-            <Link href="/" className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            <Link href={`/${(params as any)?.school_slug || ''}`} className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
               Kembali ke Beranda
             </Link>
             <button
@@ -1490,7 +1442,7 @@ export default function DaftarPage() {
             </div>
 
             {/* Documents Checklist warning Box */}
-            <div className="bg-amber-50/60 dark:bg-amber-950/10 border border-amber-250/50 dark:border-amber-900/40 rounded-3xl p-6 text-left space-y-3 shadow-sm">
+            <div className="bg-amber-50/60 dark:bg-amber-950/10 border border-amber-200/50 dark:border-amber-900/40 rounded-3xl p-6 text-left space-y-3 shadow-sm">
               <div className="font-black text-xs uppercase tracking-wider text-amber-800 dark:text-amber-400 flex items-center gap-1.5 border-b border-amber-200/50 dark:border-amber-900/20 pb-2">
                 <AlertCircle size={14} className="shrink-0" />
                 PENTING: BAWA BERKAS FISIK KE SEKOLAH
@@ -1541,7 +1493,8 @@ export default function DaftarPage() {
                 Cetak Invoice Resmi (PDF)
               </button>
 
-              <Link href="/" className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              <Link href={`/${(params as any)?.school_slug || ''}`} className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
                 <Home size={13} />
                 Kembali ke Beranda
               </Link>
@@ -1689,7 +1642,7 @@ export default function DaftarPage() {
                     });
                   }
                 }}
-                className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-primary/5 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-primary dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/55 dark:border-blue-800/45"
+                className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-primary/5 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-primary dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/50 dark:border-blue-800/30"
               >
                 Daftar Calon Baru Lainnya
               </button>
@@ -1713,7 +1666,7 @@ export default function DaftarPage() {
 
             {/* School Letterhead */}
             <div className="flex items-center gap-4 border-b-4 border-double border-slate-800 pb-4 mb-6">
-              {ppdbLogo && <img src={ppdbLogo || undefined} alt="Logo Sekolah" className="w-14 h-14 object-contain" onError={(e:any) => e.target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"} />}
+              {ppdbLogo && <img src={ppdbLogo || undefined} alt="Logo Sekolah" className="w-14 h-14 object-contain" onError={(e:unknown) => (e as any).target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"} />}
               <div className="text-left">
                 <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5">Panitia Penerimaan Peserta Didik Baru</h4>
                 <h2 className="text-lg font-black text-slate-900 leading-tight">
@@ -1727,7 +1680,7 @@ export default function DaftarPage() {
             {/* Invoice Header */}
             <div className="text-center mb-6">
               <h1 className="text-base font-black uppercase tracking-widest text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-700 inline-block pb-1.5 mb-1.5">TANDA BUKTI REGISTRASI & INVOICE PEMBAYARAN</h1>
-              <p className="text-[10px] font-mono font-bold text-slate-450">Nomor Dokumen: INV-{successData.nisn}</p>
+              <p className="text-[10px] font-mono font-bold text-slate-400">Nomor Dokumen: INV-{successData.nisn}</p>
             </div>
 
             {/* Invoice details layout: 2-Columns grid */}
@@ -1765,7 +1718,7 @@ export default function DaftarPage() {
             {/* Fee item details table */}
             <table className="w-full text-left text-[11px] font-bold text-slate-700 dark:text-slate-200 border-collapse mb-6">
               <thead>
-                <tr className="border-b border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-450">
+                <tr className="border-b border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-400">
                   <th className="py-2.5">Deskripsi Alokasi Tagihan</th>
                   <th className="py-2.5 text-right w-36">Jumlah (Rp)</th>
                 </tr>
@@ -1794,7 +1747,7 @@ export default function DaftarPage() {
                   <span>Pajak (PPN 0%):</span>
                   <span>Nihil</span>
                 </div>
-                <div className="flex justify-between text-slate-955 font-black text-xs py-2 border-t-2 border-slate-800">
+                <div className="flex justify-between text-slate-900 font-black text-xs py-2 border-t-2 border-slate-800">
                   <span>Total Tagihan:</span>
                   <span className="text-primary font-black text-sm">Rp {regCost.toLocaleString("id-ID")}</span>
                 </div>
@@ -1802,7 +1755,7 @@ export default function DaftarPage() {
             </div>
 
             {/* Payment Details footer and official approval stamp */}
-            <div className="flex justify-between items-center text-[9px] text-slate-500 dark:text-slate-400 leading-normal border-t border-slate-200 pt-4 mb-8 print:hidden">
+            <div className="flex justify-between items-center text-[9px] text-slate-500 dark:text-slate-400 leading-normal border-t border-slate-100 pt-4 mb-8 print:hidden">
               <div className="flex gap-4">
                 <div>
                   <span className="font-black">Metode Bayar:</span> <span className="text-slate-800 dark:text-white font-bold uppercase">
@@ -1878,7 +1831,7 @@ export default function DaftarPage() {
           customClass: {
             popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
             confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
-            title: 'text-base font-extrabold text-slate-850 dark:text-white'
+            title: 'text-base font-extrabold text-slate-800 dark:text-white'
           }
         });
         return;
@@ -1894,7 +1847,7 @@ export default function DaftarPage() {
           customClass: {
             popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
             confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
-            title: 'text-base font-extrabold text-slate-850 dark:text-white'
+            title: 'text-base font-extrabold text-slate-800 dark:text-white'
           }
         });
         return;
@@ -1930,6 +1883,7 @@ export default function DaftarPage() {
                       nisn: submittedCandidate.nisn,
                       bukti_bayar: receiptBase64 || null,
                       metode_pembayaran: metode,
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       school_slug: (params as any)?.school_slug as string
                     })
         });
@@ -1957,20 +1911,20 @@ export default function DaftarPage() {
             customClass: {
               popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
               confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
-              title: 'text-base font-extrabold text-slate-850 dark:text-white'
+              title: 'text-base font-extrabold text-slate-800 dark:text-white'
             }
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         Swal.fire({
           icon: 'error',
           title: 'Terjadi Kesalahan',
-          text: err.message,
+          text: (err as any).message,
           confirmButtonColor: '#3b82f6',
           customClass: {
             popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
             confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
-            title: 'text-base font-extrabold text-slate-850 dark:text-white'
+            title: 'text-base font-extrabold text-slate-800 dark:text-white'
           }
         });
       } finally {
@@ -1993,7 +1947,7 @@ export default function DaftarPage() {
           {/* Grid Layout: Left Side (Billing Summary), Right Side (Payment Options) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
                         {/* Left Side: Summary Panel (Col Span 4) */}
-            <div className="lg:col-span-4 flex flex-col justify-between bg-background/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-700/50 dark:border-slate-850 rounded-[2rem] p-6 relative overflow-hidden">
+            <div className="lg:col-span-4 flex flex-col justify-between bg-background/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-700/50 dark:border-slate-800 rounded-[2rem] p-6 relative overflow-hidden">
               <div className="space-y-6">
                 
                 {/* Profil Calon Siswa */}
@@ -2031,7 +1985,7 @@ export default function DaftarPage() {
                         <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0">
                           <School size={14} />
                         </div>
-                        <span className="text-xs font-bold text-slate-450 dark:text-slate-500 dark:text-slate-400">Datang ke Sekolah</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400">Datang ke Sekolah</span>
                       </div>
 
                       {/* Langkah 4 */}
@@ -2039,7 +1993,7 @@ export default function DaftarPage() {
                         <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0">
                           <Clock size={14} />
                         </div>
-                        <span className="text-xs font-bold text-slate-450 dark:text-slate-500 dark:text-slate-400">Menunggu Verifikasi</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400">Menunggu Verifikasi</span>
                       </div>
 
                       {/* Langkah 5 */}
@@ -2047,7 +2001,7 @@ export default function DaftarPage() {
                         <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0">
                           <CheckCircle2 size={14} />
                         </div>
-                        <span className="text-xs font-bold text-slate-450 dark:text-slate-500 dark:text-slate-400">Selesai</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400">Selesai</span>
                       </div>
                     </>
                   ) : (
@@ -2093,8 +2047,8 @@ export default function DaftarPage() {
                           src={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath} 
                           alt={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoText} 
                           className="w-7 h-7 object-contain"
-                          onError={(e: any) => {
-                            e.target.style.display = 'none';
+                          onError={(e: unknown) => {
+                            (e as any).target.style.display = 'none';
                           }}
                         />
                       ) : (
@@ -2102,7 +2056,7 @@ export default function DaftarPage() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[8px] font-black text-slate-450 uppercase tracking-wider">Jurusan</p>
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Jurusan</p>
                       <p className="text-xs font-extrabold text-slate-800 dark:text-white truncate">
                         {submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1 || "-"}
                       </p>
@@ -2114,10 +2068,10 @@ export default function DaftarPage() {
               {/* Tombol Bantuan Pembayaran */}
               <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/50 dark:border-slate-800/80">
                 <a
-                  href="https://wa.me/6281234567890?text=Halo%20Panitia%20PPDB%20SMK%20Taruna%20Bhakti,%20saya%20butuh%20bantuan%20terkait%20pembayaran..."
+                  href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Panitia%20PPDB,%20saya%20butuh%20bantuan%20terkait%20pembayaran...`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-background dark:hover:bg-slate-850 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-background dark:hover:bg-slate-800 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
                 >
                   <HelpCircle size={14} />
                   <span>Bantuan Pembayaran</span>
@@ -2147,7 +2101,7 @@ export default function DaftarPage() {
                   
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-4">
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-500 dark:text-slate-400">Jumlah Tagihan</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 dark:text-slate-400">Jumlah Tagihan</span>
                       <h3 className="text-2xl font-black text-primary dark:text-sky-400 mt-0.5">
                         Rp {regCost.toLocaleString("id-ID")}
                       </h3>
@@ -2159,8 +2113,8 @@ export default function DaftarPage() {
                             src={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath} 
                             alt={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoText} 
                             className="w-5 h-5 object-contain"
-                            onError={(e: any) => {
-                              e.target.style.display = 'none';
+                            onError={(e: unknown) => {
+                              (e as any).target.style.display = 'none';
                             }}
                           />
                         ) : (
@@ -2176,27 +2130,27 @@ export default function DaftarPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-350">
-                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-400">
+                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                       <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">Nama Lengkap:</span>
-                      <span className="text-slate-850 dark:text-white uppercase truncate max-w-[150px]">{submittedCandidate?.nama}</span>
+                      <span className="text-slate-800 dark:text-white uppercase truncate max-w-[150px]">{submittedCandidate?.nama}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850">
+                    <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                       <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">NISN Pendaftar:</span>
-                      <span className="text-slate-850 dark:text-white font-mono tracking-wider">{submittedCandidate?.nisn}</span>
+                      <span className="text-slate-800 dark:text-white font-mono tracking-wider">{submittedCandidate?.nisn}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Tab Switcher */}
-                <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-700/50 dark:border-slate-850 rounded-2xl max-w-md">
+                <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-700/50 dark:border-slate-800 rounded-2xl max-w-md">
                   <button
                     type="button"
                     onClick={() => setActivePaymentMethod("transfer")}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                       activePaymentMethod === "transfer"
                         ? "bg-white dark:bg-[#0f172a] text-blue-650 dark:text-sky-400 shadow-sm border border-slate-200 dark:border-slate-700/40 dark:border-slate-800"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-slate-250"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-slate-200"
                     }`}
                   >
                     <CreditCard size={14} />
@@ -2208,7 +2162,7 @@ export default function DaftarPage() {
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                       activePaymentMethod === "tu"
                         ? "bg-white dark:bg-[#0f172a] text-blue-650 dark:text-sky-400 shadow-sm border border-slate-200 dark:border-slate-700/40 dark:border-slate-800"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-slate-250"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-slate-200"
                     }`}
                   >
                     <Building size={14} />
@@ -2219,7 +2173,7 @@ export default function DaftarPage() {
                 {activePaymentMethod === "transfer" ? (
                   <div className="space-y-6 animate-in fade-in duration-200">
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 dark:text-slate-500 dark:text-slate-400 mb-2">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 dark:text-slate-400 mb-2">
                         Langkah Pembayaran Transfer Bank
                       </h4>
                       <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
@@ -2228,7 +2182,7 @@ export default function DaftarPage() {
                     </div>
 
                     {/* Warning Limit Pembayaran 24 Jam */}
-                    <div className="bg-amber-50/60 dark:bg-amber-950/10 border border-amber-250/50 dark:border-amber-900/40 rounded-2xl p-4.5 flex items-start gap-3 text-amber-800 dark:text-amber-300">
+                    <div className="bg-amber-50/60 dark:bg-amber-950/10 border border-amber-200/50 dark:border-amber-900/40 rounded-2xl p-4.5 flex items-start gap-3 text-amber-800 dark:text-amber-300">
                       <AlertCircle size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
                       <div className="text-[11px] font-bold leading-normal">
                         <p className="font-black uppercase tracking-wider mb-0.5">PENTING: Batas Waktu Pembayaran 24 Jam!</p>
@@ -2277,7 +2231,7 @@ export default function DaftarPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleCopy(bank.accountNumber || "157-00-0174092-2")}
-                                  className="p-1.5 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 border border-white/15 text-slate-350 hover:text-white rounded-lg transition duration-150 active:scale-95 cursor-pointer"
+                                  className="p-1.5 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 border border-white/15 text-slate-400 hover:text-white rounded-lg transition duration-150 active:scale-95 cursor-pointer"
                                   title="Salin Nomor Rekening"
                                 >
                                   {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
@@ -2328,7 +2282,7 @@ export default function DaftarPage() {
                         </div>
                       ) : (
                         
-                        <div className="bg-background/80 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-700/60 dark:border-slate-850 rounded-[1.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-background/80 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-[1.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
                           <div className="flex items-center gap-4 w-full md:w-auto">
                             <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-205 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">
                               {manualReceiptBase64.startsWith("data:application/pdf") ? (
@@ -2375,7 +2329,7 @@ export default function DaftarPage() {
                 ) : (
                   <div className="space-y-6 animate-in fade-in duration-200">
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 dark:text-slate-500 dark:text-slate-400 mb-2">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 dark:text-slate-400 mb-2">
                         Langkah Pembayaran Langsung ke TU Sekolah
                       </h4>
                       <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
@@ -2389,7 +2343,7 @@ export default function DaftarPage() {
                         <FileText size={14} className="shrink-0" />
                         PENTING: BAWA BERKAS PERSYARATAN DI BAWAH INI!
                       </div>
-                      <p className="text-[11px] text-slate-605 dark:text-slate-350 leading-relaxed font-bold">
+                      <p className="text-[11px] text-slate-605 dark:text-slate-400 leading-relaxed font-bold">
                         Calon siswa diimbau untuk langsung membawa surat-surat/dokumen berikut saat melakukan pembayaran di sekolah guna mempercepat verifikasi fisik berkas:
                       </p>
                       <ul className="text-[11px] text-slate-700 dark:text-slate-200 font-bold space-y-1.5 pl-4.5 list-disc leading-normal">
@@ -2433,8 +2387,9 @@ export default function DaftarPage() {
       {/* Floating Action Buttons */}
       <div className="fixed top-6 left-6 z-50">
         <Link 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           href={`/${(params as any)?.school_slug || ''}`}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -2444,7 +2399,7 @@ export default function DaftarPage() {
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all" 
           title={isDark ? 'Mode Terang' : 'Mode Gelap'}
         >
           {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
@@ -2452,8 +2407,8 @@ export default function DaftarPage() {
       </div>
 
       <div className="mb-10 text-center mt-12 relative z-10 flex flex-col items-center">
-        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-100/50 dark:border-blue-400/20 text-blue-700 dark:text-blue-300 text-xs font-bold shadow-sm shadow-blue-500/5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"></span>
+        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/5 dark:bg-blue-950/60 border border-blue-100/50 dark:border-blue-900/50 text-primary dark:text-sky-400 text-xs font-bold shadow-sm shadow-blue-500/5">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-sky-400 animate-pulse"></span>
           Tahap {wizardStep} dari 14
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mb-2 drop-shadow-sm">Formulir Pendaftaran PPDB</h1>
@@ -2478,18 +2433,15 @@ export default function DaftarPage() {
                 key={step}
                 onClick={() => goToStep(step)}
                 title={`Tahap ${step}`}
-                className={`rounded-full z-10 transition-all duration-500 ease-out cursor-pointer select-none relative ${
+                className={`rounded-full z-10 transition-all duration-500 ease-out cursor-pointer select-none relative flex items-center justify-center font-bold text-[10px] ${
                   isCurrent
-                    ? "w-7 h-7 bg-primary dark:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.65)] scale-125 ring-[6px] ring-primary/20"
+                    ? "w-7 h-7 bg-primary dark:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.65)] scale-125 ring-[6px] ring-primary/20"
                     : isCompleted
-                      ? "w-4.5 h-4.5 bg-primary dark:bg-blue-500 hover:bg-primary hover:bg-primary/90 ring-[4px] ring-primary/10"
-                      : "w-4 h-4 bg-white dark:bg-[#0f172a] border-2 border-slate-200 dark:border-slate-800 hover:border-primary"
+                      ? "w-6 h-6 bg-primary dark:bg-blue-500 text-white hover:bg-primary/90 ring-[3px] ring-primary/10"
+                      : "w-6 h-6 bg-white dark:bg-[#0f172a] text-slate-400 border-2 border-slate-200 dark:border-slate-800 hover:border-primary hover:text-primary"
                 }`}
               >
-                {/* Clean indicator dot for active step to look premium */}
-                {isCurrent && (
-                  <span className="absolute inset-1.5 bg-white dark:bg-[#0f172a] rounded-full animate-pulse"></span>
-                )}
+                {step}
               </div>
             );
           })}
@@ -3032,14 +2984,9 @@ export default function DaftarPage() {
                     const majorDetails = getMajorDetails(major.title || major.code);
                     
                     let isFull = false;
-                    if (kuotaData && Array.isArray(kuotaData)) {
-                      let k = null;
-                      for (let i = 0; i < kuotaData.length; i++) {
-                        if (kuotaData[i] && kuotaData[i].key === major.title) {
-                          k = kuotaData[i];
-                          break;
-                        }
-                      }
+                    if (kuotaData) {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const k = kuotaData.find((k: any) => k.key === major.title);
                       if (k && k.target > 0) {
                         isFull = k.jumlah >= k.target;
                       }
@@ -3067,6 +3014,7 @@ export default function DaftarPage() {
                         {/* Logo jurusan */}
                         {majorDetails.logoPath ? (
                           <img
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             src={sanitizeSrc((major as any).logo) || majorDetails.logoPath}
                             alt={major.code}
                             className="w-9 h-9 object-contain rounded-lg shrink-0"
@@ -3729,7 +3677,7 @@ export default function DaftarPage() {
               
               {/* Card 1: Identitas Diri */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <User size={16} className="text-blue-500" />
                     Identitas Diri
@@ -3739,10 +3687,10 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-650 dark:text-slate-350">
-                  <div className="flex justify-between"><span className="text-slate-400">Nama Lengkap:</span><span className="text-slate-850 dark:text-white uppercase">{formData.nama || "-"}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">NISN:</span><span className="font-mono text-slate-850 dark:text-white">{formData.nisn || "-"}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">NIK:</span><span className="font-mono text-slate-850 dark:text-white">{formData.nik || "-"}</span></div>
+                <div className="text-xs space-y-2.5 font-bold text-slate-650 dark:text-slate-400">
+                  <div className="flex justify-between"><span className="text-slate-400">Nama Lengkap:</span><span className="text-slate-800 dark:text-white uppercase">{formData.nama || "-"}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">NISN:</span><span className="font-mono text-slate-800 dark:text-white">{formData.nisn || "-"}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">NIK:</span><span className="font-mono text-slate-800 dark:text-white">{formData.nik || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Tempat, Tgl Lahir:</span><span>{formData.tempatLahir || "-"}, {formData.tglLahir || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Jenis Kelamin:</span><span>{formData.jenisKelamin === "L" ? "Laki-laki" : formData.jenisKelamin === "P" ? "Perempuan" : "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Agama:</span><span>{formData.agama || "-"}</span></div>
@@ -3751,7 +3699,7 @@ export default function DaftarPage() {
 
               {/* Card 2: Alamat & Kontak */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <Home size={16} className="text-blue-500" />
                     Alamat &amp; Kontak
@@ -3761,7 +3709,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-400">
                   <div className="flex justify-between"><span className="text-slate-400">Alamat Rumah:</span><span className="text-right max-w-[180px] truncate">{formData.alamat || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">RT / RW:</span><span>{formData.rtRw || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Kelurahan:</span><span>{formData.kelurahan || "-"}</span></div>
@@ -3773,7 +3721,7 @@ export default function DaftarPage() {
 
               {/* Card 3: Pendidikan & Peminatan */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <School size={16} className="text-blue-500" />
                     Pendidikan &amp; Jurusan
@@ -3783,7 +3731,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-400">
                   <div className="flex justify-between"><span className="text-slate-400">Sekolah Asal:</span><span className="uppercase">{formData.sekolahAsal || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Jurusan Utama:</span><span className="text-primary dark:text-sky-450 uppercase">{formData.jurusan1 || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Tanggal Lulus:</span><span>{formData.tglLulus || "-"}</span></div>
@@ -3792,7 +3740,7 @@ export default function DaftarPage() {
 
               {/* Card 4: Data Orang Tua / Wali */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <Users size={16} className="text-blue-500" />
                     Keluarga &amp; Orang Tua
@@ -3802,7 +3750,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-400">
                   <div className="flex justify-between"><span className="text-slate-400">Nama Ayah:</span><span className="uppercase">{formData.namaAyah || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Nama Ibu:</span><span className="uppercase">{formData.namaIbu || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Nama Wali:</span><span className="uppercase">{formData.namaWali || "-"}</span></div>
@@ -3812,7 +3760,7 @@ export default function DaftarPage() {
 
               {/* Card 5: Nilai US & Minat */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <FileText size={16} className="text-blue-500" />
                     Nilai &amp; Akademik
@@ -3822,7 +3770,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-400">
                   <div className="flex justify-between"><span className="text-slate-400">Nilai US Teori:</span><span className="font-mono">{formData.nilaiUSTeori || "0"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Nilai US Praktik:</span><span className="font-mono">{formData.nilaiUSPraktik || "0"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Nilai Muatan Lokal:</span><span className="font-mono">{formData.nilaiMuatanLokal || "0"}</span></div>
@@ -3832,7 +3780,7 @@ export default function DaftarPage() {
 
               {/* Card 6: Kebribadian & Kebiasaan */}
               <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
-                <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <AlertCircle size={16} className="text-blue-500" />
                     Kedisiplinan &amp; Keuangan
@@ -3842,7 +3790,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-400">
                   <div className="flex justify-between"><span className="text-slate-400">Sanggup Taat Tata Tertib:</span><span>{formData.janjiTaat || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Sanggup Sanksi:</span><span>{formData.janjiSanksi || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Penerima KPS/KIP:</span><span>KPS: {formData.punyaKPS}, KIP: {formData.punyaKIP}</span></div>
@@ -3872,7 +3820,7 @@ export default function DaftarPage() {
                   <h4 className="font-black text-slate-900 dark:text-amber-400 text-lg md:text-xl mb-2 tracking-tight">
                     PENTING: Informasi Verifikasi Berkas Fisik Calon Siswa
                   </h4>
-                  <p className="text-slate-650 dark:text-slate-350 text-sm leading-relaxed mb-6 font-semibold">
+                  <p className="text-slate-650 dark:text-slate-400 text-sm leading-relaxed mb-6 font-semibold">
                     Anda <span className="text-amber-600 dark:text-amber-400 font-black underline underline-offset-4">tidak perlu mengunggah berkas digital</span> di dalam formulir online ini. Sebagai gantinya, silakan lengkapi dan bawa berkas fisik/fotokopi berikut ini langsung ke panitia PPDB di sekolah saat melakukan proses verifikasi langsung:
                   </p>
                   
@@ -3891,7 +3839,7 @@ export default function DaftarPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-black text-slate-800 dark:text-slate-200 truncate">{doc.title}</p>
-                          <p className="text-xs text-slate-450 dark:text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">{doc.desc}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">{doc.desc}</p>
                         </div>
                       </div>
                     ))}
@@ -3905,11 +3853,11 @@ export default function DaftarPage() {
               <label className="flex items-start gap-3.5 cursor-pointer p-5 rounded-2xl bg-background dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 transition-all hover:bg-slate-100 dark:bg-[#1e293b]/60 dark:hover:bg-slate-900/40">
                 <input
                   type="checkbox"
-                  className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-350 dark:border-slate-700 shrink-0 cursor-pointer"
+                  className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-400 dark:border-slate-700 shrink-0 cursor-pointer"
                   checked={formData.deklarasi}
                   onChange={(e) => setFormData(prev => ({ ...prev, deklarasi: e.target.checked }))}
                 />
-                <span className="text-xs md:text-sm text-slate-650 dark:text-slate-350 leading-relaxed cursor-pointer font-medium">
+                <span className="text-xs md:text-sm text-slate-650 dark:text-slate-400 leading-relaxed cursor-pointer font-medium">
                   <strong>Pernyataan Kebenaran Data:</strong> Saya menyatakan dengan sadar dan penuh tanggung jawab bahwa seluruh data yang saya isikan di dalam formulir pendaftaran online ini adalah benar, lengkap, dan sesuai dengan dokumen asli. Apabila di kemudian hari ditemukan ketidaksesuaian atau pemalsuan data, saya bersedia menerima sanksi administrasi termasuk pembatalan pendaftaran di SMK Taruna Bhakti.
                 </span>
               </label>

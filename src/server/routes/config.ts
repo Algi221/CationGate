@@ -82,7 +82,7 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
         return `/assets/jurusan/uploads/${filename}`;
       } catch (err) {
         console.warn(`FFmpeg optimization failed for ${prefix}, falling back to original file`, err);
-        try { fs.unlinkSync(tempPath); } catch (e) {} // ignore error if temp file already removed
+        try { fs.unlinkSync(tempPath); } catch (_e) {} // ignore error if temp file already removed
       }
     }
     
@@ -111,6 +111,8 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
   }
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function processMajorsConfig(majors: any[]): Promise<any[]> {
   if (!Array.isArray(majors)) return majors;
   return Promise.all(majors.map(async (major) => {
@@ -125,6 +127,7 @@ async function processMajorsConfig(majors: any[]): Promise<any[]> {
       updatedMajor.video = await saveBase64File(updatedMajor.video, `${major.code}_video`);
     }
     if (updatedMajor.gallery && Array.isArray(updatedMajor.gallery)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       updatedMajor.gallery = await Promise.all(updatedMajor.gallery.map(async (item: any, idx: number) => {
         if (item.url) {
           return {
@@ -148,28 +151,15 @@ configRouter.get('/', async (c) => {
 
     // If school_slug is provided, resolve it to school_id
     if (schoolSlug && !schoolId) {
-      let tenantData = null;
-      const { data: sData } = await supabase.from('schools').select('id').eq('slug', schoolSlug).maybeSingle();
-      if (sData) tenantData = sData;
-      else {
-        const { data: pData } = await supabase.from('prospective_schools').select('id').eq('slug', schoolSlug).maybeSingle();
-        if (pData) tenantData = pData;
-        else {
-          const { data: cData } = await supabase.from('calon_sekolah').select('id').eq('slug', schoolSlug).maybeSingle();
-          if (cData) tenantData = cData;
-        }
-      }
-
-      if (tenantData) {
-        schoolId = tenantData.id;
-      } else {
-        return c.json({ success: true, data: {} });
-      }
+      const { resolveSchoolUUID } = await import('../db/resolve-school');
+      const { fontInMemSchools } = await import('./saas');
+      schoolId = await resolveSchoolUUID(schoolSlug, fontInMemSchools);
     }
 
     const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
     
     // 1. Try to get from Redis Cache first
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cachedData = await getCached<Record<string, any>>(cacheKey);
     if (cachedData) {
       return c.json({
@@ -180,18 +170,22 @@ configRouter.get('/', async (c) => {
     }
 
     let query = supabase.from('landing_page_config').select('*');
-    if (schoolId) query = query.eq('school_id', schoolId);
+    if (schoolId) {
+      query = query.eq('school_id', schoolId);
+    }
     
     const { data: configs, error } = await query;
     if (error) {
-      console.warn('Fetch config DB warning (using default config):', error.message);
+      console.warn('Fetch config DB warning (using default config):', (error as any).message);
       return c.json({
         success: true,
         data: {}
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const configMap: Record<string, any> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (configs || []).forEach((row: any) => {
       configMap[row.config_key] = row.config_value;
     });
@@ -204,8 +198,8 @@ configRouter.get('/', async (c) => {
       data: configMap,
       source: 'db'
     });
-  } catch (err: any) {
-    console.warn('Fetch config DB exception (using default config):', err.message);
+  } catch (err: unknown) {
+    console.warn('Fetch config DB exception (using default config):', (err as any).message);
     return c.json({
       success: true,
       data: {}
@@ -213,15 +207,79 @@ configRouter.get('/', async (c) => {
   }
 });
 
-// POST /api/config - Save or update configuration (Protected Admin)
+// POST /api/config - Save or update configuration (Single or Bulk) (Protected Admin)
 configRouter.post('/', adminAuth, async (c) => {
   try {
     const body = await c.req.json();
+
+    // 1. Check if bulk config format
+    if (body.configs && typeof body.configs === 'object') {
+      const result = configSaveSchema.safeParse(body);
+      if (!result.success) {
+        return c.json({
+          success: false,
+          message: 'Parameter tidak valid: ' + result.error.issues.map((e: unknown) => `${(e as any).path.join('.')}: ${(e as any).message}`).join(', ')
+        }, 400);
+      }
+
+      const { configs, description } = result.data;
+      const supabase = getSupabaseClient(c.req.header('Authorization'));
+      const schoolId = await requireTenantId(c);
+
+      const processedConfigs = { ...configs };
+      if (processedConfigs.ppdb_majors_config) {
+        processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config);
+      }
+      if (processedConfigs.ppdb_logo_url) {
+        processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
+      }
+
+      const upsertRows = Object.entries(processedConfigs).map(([key, val]) => ({
+        config_key: key,
+        config_value: val,
+        updated_at: new Date().toISOString(),
+        school_id: schoolId
+      }));
+
+      if (upsertRows.length > 0) {
+        const { error: upsertError } = await supabase
+          .from('landing_page_config')
+          .upsert(upsertRows, { onConflict: 'config_key,school_id' });
+        if (upsertError) {
+          // Fallback on config_key if school_id constraint differs
+          await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'config_key' });
+        }
+      }
+
+      // Record revision
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const adminUser = (c as any).get('adminUser') || {};
+        await supabase.from('ui_revisions').insert({
+          school_id: schoolId,
+          changed_by: adminUser.username || 'Admin Sekolah',
+          description: description || 'Pembaruan konfigurasi antarmuka',
+          created_at: new Date().toISOString()
+        });
+      } catch (_revErr) {
+        // Revision logging optional
+      }
+
+      const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
+      await delCached(cacheKey);
+
+      return c.json({
+        success: true,
+        message: 'Konfigurasi massal berhasil disimpan.'
+      });
+    }
+
+    // 2. Single config format
     const result = singleConfigSchema.safeParse(body);
     if (!result.success) {
       return c.json({
         success: false,
-        message: 'Parameter tidak valid: ' + result.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')
+        message: 'Parameter tidak valid: ' + result.error.issues.map((e: unknown) => `${(e as any).path.join('.')}: ${(e as any).message}`).join(', ')
       }, 400);
     }
     const { key, value } = result.data;
@@ -236,6 +294,7 @@ configRouter.post('/', adminAuth, async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = {
       config_key: key,
       config_value: processedValue,
@@ -245,9 +304,11 @@ configRouter.post('/', adminAuth, async (c) => {
 
     const { error } = await supabase
       .from('landing_page_config')
-      .upsert(payload, { onConflict: 'config_key' });
+      .upsert(payload, { onConflict: 'config_key,school_id' });
       
-    if (error) throw error;
+    if (error) {
+      await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
+    }
 
     // Invalidate Redis cache
     const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
@@ -257,11 +318,11 @@ configRouter.post('/', adminAuth, async (c) => {
       success: true,
       message: 'Konfigurasi berhasil disimpan.'
     });
-  } catch (err: any) {
-    console.error('Save config DB error:', err.message);
+  } catch (err: unknown) {
+    console.error('Save config DB error:', (err as any).message);
     return c.json({
       success: false,
-      message: 'Gagal menyimpan konfigurasi: ' + err.message
+      message: 'Gagal menyimpan konfigurasi: ' + (err as any).message
     }, 500);
   }
 });
@@ -272,7 +333,7 @@ configRouter.get('/revisions', adminAuth, async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
-    let query = supabase.from('ui_revisions')
+    const query = supabase.from('ui_revisions')
       .select('id, changed_by, description, created_at')
       .order('created_at', { ascending: false })
       .eq('school_id', schoolId);
@@ -284,11 +345,11 @@ configRouter.get('/revisions', adminAuth, async (c) => {
       success: true,
       data: revisions
     });
-  } catch (err: any) {
-    console.error('Fetch revisions error:', err.message);
+  } catch (err: unknown) {
+    console.error('Fetch revisions error:', (err as any).message);
     return c.json({
       success: false,
-      message: 'Gagal mengambil riwayat perubahan: ' + err.message
+      message: 'Gagal mengambil riwayat perubahan: ' + (err as any).message
     }, 500);
   }
 });
@@ -305,7 +366,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       console.warn('[WARN] Bulk save validation failed:', result.error.format());
       return c.json({
         success: false,
-        message: 'Parameter tidak valid: ' + result.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')
+        message: 'Parameter tidak valid: ' + result.error.issues.map((e: unknown) => `${(e as any).path.join('.')}: ${(e as any).message}`).join(', ')
       }, 400);
     }
 
@@ -313,7 +374,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
-    let processedConfigs = { ...configs };
+    const processedConfigs = { ...configs };
     if (processedConfigs.ppdb_majors_config) {
       processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config);
     }
@@ -322,6 +383,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     }
 
     for (const [key, value] of Object.entries(processedConfigs)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
         config_key: key,
         config_value: value,
@@ -333,9 +395,11 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       if (error) throw error;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = (c as any).get('admin');
     const adminName = admin?.nama || admin?.username || 'Administrator';
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const revPayload: any = {
       config_values: configs,
       changed_by: adminName,
@@ -355,11 +419,11 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       success: true,
       message: 'Semua konfigurasi berhasil disimpan dan tercatat dalam riwayat perubahan.'
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[ERROR] Failed to parse/save configurations:', err);
     return c.json({
       success: false,
-      message: `Gagal menyimpan konfigurasi: ${err.message || 'Error tidak diketahui'}`
+      message: `Gagal menyimpan konfigurasi: ${(err as any).message || 'Error tidak diketahui'}`
     }, 500);
   }
 });
@@ -380,7 +444,7 @@ configRouter.post('/restore', adminAuth, async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
-    let query = supabase.from('ui_revisions').select('*').eq('id', parseInt(revisionId))
+    const query = supabase.from('ui_revisions').select('*').eq('id', parseInt(revisionId))
       .eq('school_id', schoolId);
     const { data: revision, error } = await query.single();
     
@@ -396,12 +460,13 @@ configRouter.post('/restore', adminAuth, async (c) => {
     if (typeof config_values === 'string') {
       try {
         configs = JSON.parse(config_values);
-      } catch (e) {
+      } catch (_e) {
         configs = {};
       }
     }
 
     for (const [key, value] of Object.entries(configs)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
         config_key: key,
         config_value: value,
@@ -411,9 +476,11 @@ configRouter.post('/restore', adminAuth, async (c) => {
       await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = (c as any).get('admin');
     const adminName = admin?.nama || admin?.username || 'Administrator';
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newRevPayload: any = {
       config_values: configs,
       changed_by: adminName,
@@ -427,11 +494,11 @@ configRouter.post('/restore', adminAuth, async (c) => {
       success: true,
       message: `Berhasil mengembalikan (restore) tampilan ke versi #${revisionId}.`
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Failed to restore configuration revision:', err);
     return c.json({
       success: false,
-      message: `Gagal melakukan pemulihan konfigurasi: ${err.message}`
+      message: `Gagal melakukan pemulihan konfigurasi: ${(err as any).message}`
     }, 500);
   }
 });
@@ -459,7 +526,7 @@ configRouter.get('/registration_fee', async (c) => {
 
     if (error) throw error;
     return c.json({ success: true, data });
-  } catch (err: any) {
+  } catch (_err: unknown) {
     return c.json({ success: false, message: 'Failed to fetch config' }, 500);
   }
 });
@@ -482,7 +549,7 @@ configRouter.post('/registration_fee', adminAuth, async (c) => {
       .from('landing_page_config')
       .upsert(
         { school_id: schoolId, config_key: 'registration_fee', config_value: configValue, updated_at: new Date().toISOString() },
-        { onConflict: 'config_key' }
+        { onConflict: 'school_id,config_key' }
       )
       .select()
       .single();
@@ -490,8 +557,8 @@ configRouter.post('/registration_fee', adminAuth, async (c) => {
     if (error) throw error;
 
     return c.json({ success: true, message: 'Registration fee updated', data });
-  } catch (err: any) {
-    return c.json({ success: false, message: err.message }, 500);
+  } catch (err: unknown) {
+    return c.json({ success: false, message: (err as any).message }, 500);
   }
 });
 

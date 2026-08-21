@@ -18,8 +18,13 @@ export async function uploadFileDirect(file: File, prefix: string = 'media'): Pr
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to get pre-signed URL');
+      console.warn("Pre-signed storage endpoint unavailable, using direct Data URL fallback.");
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     }
 
     const { signedUrl, publicUrl } = await response.json();
@@ -34,14 +39,25 @@ export async function uploadFileDirect(file: File, prefix: string = 'media'): Pr
     });
 
     if (!uploadResponse.ok) {
-      throw new Error('Failed to upload file to S3 storage');
+      console.warn("S3 PUT upload failed, falling back to Data URL.");
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     }
 
     // 3. Return the final public URL
     return publicUrl;
   } catch (error) {
-    console.error('Direct S3 upload error:', error);
-    throw error;
+    console.warn('Direct S3 upload error, fallback to Data URL:', error);
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 }
 

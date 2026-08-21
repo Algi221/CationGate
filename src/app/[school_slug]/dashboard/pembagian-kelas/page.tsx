@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
+import { sanitizeSrc } from "@/components/SafeImage";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { generateNipdMap } from "@/utils/nipd";
@@ -68,9 +70,23 @@ interface ClassItem {
   maxCapacity: number;
 }
 
+const DEFAULT_MAJORS = [
+  { code: "RPL", name: "Rekayasa Perangkat Lunak" },
+  { code: "TJKT", name: "Teknik Jaringan Komputer & Telekomunikasi" },
+  { code: "DKV", name: "Desain Komunikasi Visual" },
+  { code: "BC", name: "Broadcasting & Perfilman" },
+  { code: "ANM", name: "Animasi" },
+  { code: "TE", name: "Teknik Elektronika" }
+];
+
 export default function ClassDivisionManagement() {
   const { applicants, activeStudents, updateActiveStudent, fetchActiveStudents, fetchAdminApplicants } = usePPDB();
   const [mounted, setMounted] = useState(false);
+  const params = useParams();
+  const schoolSlug = params?.school_slug as string || "";
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [dynamicMajorsList, setDynamicMajorsList] = useState<any[]>([]);
 
   useEffect(() => {
     if (typeof fetchActiveStudents === "function") {
@@ -82,8 +98,9 @@ export default function ClassDivisionManagement() {
   }, [fetchActiveStudents, fetchAdminApplicants]);
 
   const getMajorLogoUrl = (code: string) => {
-    switch (code.toUpperCase()) {
+    switch (code?.toUpperCase()) {
       case "RPL":
+      case "PPLG":
         return "/assets/jurusan/pplg.png";
       case "TJKT":
         return "/assets/jurusan/tjkt.png";
@@ -96,17 +113,30 @@ export default function ClassDivisionManagement() {
       case "TE":
         return "/assets/jurusan/te.png";
       default:
-        return "/logo_smktb.png";
+        return "/assets/logo_sekolah/logo_smktb.png";
     }
   };
 
-  const getMajorLogo = (code: string, size = "w-5 h-5") => {
-    const url = getMajorLogoUrl(code);
+  const getMajorLogo = (majorOrCode: any, size = "w-5 h-5") => {
+    let logoUrl = "/assets/logo_sekolah/logo_smktb.png";
+    if (typeof majorOrCode === "object" && majorOrCode?.logo) {
+      logoUrl = sanitizeSrc(majorOrCode.logo) || logoUrl;
+    } else if (typeof majorOrCode === "string") {
+      const found = activeMajors.find(m => m.code?.toUpperCase() === majorOrCode.toUpperCase());
+      if (found && (found as any).logo) {
+        logoUrl = sanitizeSrc((found as any).logo) || logoUrl;
+      } else {
+        logoUrl = getMajorLogoUrl(majorOrCode);
+      }
+    }
     return (
       <img
-        src={url}
-        alt={`Logo ${code}`}
+        src={logoUrl}
+        alt="Logo Jurusan"
         className={`${size} rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-800/80 dark:border-white/10`}
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).src = "/assets/logo_sekolah/logo_smktb.png";
+        }}
       />
     );
   };
@@ -125,20 +155,26 @@ export default function ClassDivisionManagement() {
     const fetchConfig = async () => {
       try {
         const token = localStorage.getItem("ppdb_admin_token");
-        const res = await fetch(`/api/config?_t=${Date.now()}`, {
+        const url = schoolSlug ? `/api/config?school_slug=${schoolSlug}&_t=${Date.now()}` : `/api/config?_t=${Date.now()}`;
+        const res = await fetch(url, {
           cache: 'no-store',
           headers: token ? { "Authorization": `Bearer ${token}` } : {}
         });
         const json = await res.json();
-        if (json.success && json.data && json.data.ppdb_school_period) {
-          setSchoolPeriod(json.data.ppdb_school_period);
+        if (json.success && json.data) {
+          if (json.data.ppdb_school_period) {
+            setSchoolPeriod(json.data.ppdb_school_period);
+          }
+          if (json.data.ppdb_majors_config && Array.isArray(json.data.ppdb_majors_config) && json.data.ppdb_majors_config.length > 0) {
+            setDynamicMajorsList(json.data.ppdb_majors_config);
+          }
         }
       } catch (e) {
-        console.error("Gagal mengambil periode akademik:", e);
+        console.error("Gagal mengambil konfigurasi sekolah:", e);
       }
     };
     fetchConfig();
-  }, []);
+  }, [schoolSlug]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -153,40 +189,44 @@ export default function ClassDivisionManagement() {
   const [classSearchTerm, setClassSearchTerm] = useState("");
   const [activeDropClass, setActiveDropClass] = useState<string | null>(null);
 
-  const majors = [
-    { code: "RPL", name: "Rekayasa Perangkat Lunak" },
-    { code: "TJKT", name: "Teknik Jaringan Komputer & Telekomunikasi" },
-    { code: "DKV", name: "Desain Komunikasi Visual" },
-    { code: "BC", name: "Broadcasting & Perfilman" },
-    { code: "ANM", name: "Animasi" },
-    { code: "TE", name: "Teknik Elektronika" }
-  ];
-
   const activeMajors = useMemo(() => {
-    if (!mounted) return majors;
-    const saved = localStorage.getItem("ppdb_majors_config");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((m: any) => ({ code: m.code, name: m.title }));
-        }
-      } catch (e) {
-        return majors;
+    if (dynamicMajorsList && dynamicMajorsList.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return dynamicMajorsList.map((m: any) => ({
+        code: m.code,
+        name: m.title || m.name || m.code,
+        logo: m.logo || getMajorLogoUrl(m.code)
+      }));
+    }
+    if (mounted) {
+      const saved = localStorage.getItem("ppdb_majors_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return parsed.map((m: any) => ({ 
+              code: m.code, 
+              name: m.title || m.name || m.code,
+              logo: m.logo || getMajorLogoUrl(m.code)
+            }));
+          }
+        } catch (_) {}
       }
     }
-    return majors;
-  }, [mounted]);
+    return DEFAULT_MAJORS.map(m => ({ ...m, logo: getMajorLogoUrl(m.code) }));
+  }, [dynamicMajorsList, mounted]);
 
   useEffect(() => {
-    if (activeMajors.length > 0) {
+    if (activeMajors.length > 0 && !activeMajors.some(m => m.code === selectedMajor)) {
       setSelectedMajor(activeMajors[0].code);
     }
-  }, [activeMajors]);
+  }, [activeMajors, selectedMajor]);
 
   function generateDefaultClasses(): ClassItem[] {
     const defaultList: ClassItem[] = [];
-    majors.forEach(m => {
+    const sourceMajors = activeMajors.length > 0 ? activeMajors : DEFAULT_MAJORS;
+    sourceMajors.forEach(m => {
       
       defaultList.push({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
       defaultList.push({ id: `X-${m.code}-2`, name: `X ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
@@ -1046,10 +1086,10 @@ export default function ClassDivisionManagement() {
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.2)] border text-xs font-bold animate-in slide-in-from-bottom duration-300 ${
           toast.type === "success" 
-            ? "bg-emerald-50 dark:bg-emerald-950/90 text-emerald-600 dark:text-emerald-300 border-emerald-250 dark:border-emerald-900" 
+            ? "bg-emerald-50 dark:bg-emerald-950/90 text-emerald-600 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900" 
             : toast.type === "error"
-            ? "bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-300 border-rose-250 dark:border-rose-900"
-            : "bg-indigo-50 dark:bg-indigo-950/90 text-indigo-600 dark:text-indigo-300 border-indigo-250 dark:border-indigo-900"
+            ? "bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-300 border-rose-200 dark:border-rose-900"
+            : "bg-indigo-50 dark:bg-indigo-950/90 text-indigo-600 dark:text-indigo-300 border-indigo-200 dark:border-indigo-900"
         }`}>
           {toast.type === "success" ? <Check size={16} /> : toast.type === "error" ? <ShieldAlert size={16} /> : <Info size={16} />}
           <span>{toast.message}</span>
@@ -1116,12 +1156,12 @@ export default function ClassDivisionManagement() {
             className={`flex flex-col items-center justify-center text-center p-6 rounded-3xl transition-all border duration-300 hover:scale-[1.03] group cursor-pointer ${
               selectedMajor === m.code
                 ? "bg-gradient-to-tr from-indigo-600 to-blue-600 border-indigo-600/85 text-white shadow-lg shadow-indigo-500/20 scale-[1.02]"
-                : "bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-800 hover:border-indigo-500/40 hover:bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
+                : "bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-800 hover:border-indigo-500/40 hover:bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm"
             }`}
           >
-            {getMajorLogo(m.code, "w-12 h-12 shadow-md")}
+            {getMajorLogo(m, "w-12 h-12 shadow-md")}
             <span className={`mt-3 text-[9px] font-black uppercase tracking-widest leading-normal ${
-              selectedMajor === m.code ? "text-white" : "text-slate-700 dark:text-slate-350"
+              selectedMajor === m.code ? "text-white" : "text-slate-700 dark:text-slate-400"
             }`}>
               {m.name}
             </span>
@@ -1147,7 +1187,7 @@ export default function ClassDivisionManagement() {
             className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               selectedGrade === g
                 ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/20 scale-[1.02]"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50"
             }`}
           >
             Kelas {g} {g === 10 ? "(Baru Masuk)" : ""}
@@ -1166,21 +1206,21 @@ export default function ClassDivisionManagement() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportAllClasses}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 border border-emerald-250 dark:border-white/5 text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 border border-emerald-200 dark:border-white/5 text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 transition-all shadow-sm cursor-pointer"
             >
               <Download size={12} />
               <span>Ekspor Semua Kelas ({selectedMajor})</span>
             </button>
             <button
               onClick={handleExportAllMajors}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 border border-blue-250 dark:border-white/5 text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 border border-blue-200 dark:border-white/5 text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 transition-all shadow-sm cursor-pointer"
             >
               <Download size={12} />
               <span>Ekspor Semua Jurusan</span>
             </button>
             <button
               onClick={() => setIsAddingClass(!isAddingClass)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-655 dark:text-slate-350 dark:hover:text-white transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 dark:hover:text-white transition-all shadow-sm cursor-pointer"
             >
               {isAddingClass ? <X size={12} /> : <Plus size={12} />}
               <span>{isAddingClass ? "Tutup Form" : "Buat Kelas Baru"}</span>
@@ -1198,7 +1238,7 @@ export default function ClassDivisionManagement() {
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
                 placeholder={`Contoh: X ${selectedMajor} 3`}
-                className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
+                className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
               />
             </div>
 
@@ -1234,7 +1274,7 @@ export default function ClassDivisionManagement() {
                 
                 <div className="flex justify-between items-start gap-2 mb-4">
                   <div>
-                    <h4 className="font-extrabold text-slate-850 dark:text-white text-sm group-hover:text-blue-500 transition-colors">{c.name}</h4>
+                    <h4 className="font-extrabold text-slate-800 dark:text-white text-sm group-hover:text-blue-500 transition-colors">{c.name}</h4>
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Terdaftar: {enroll.total} Siswa</span>
                     {enroll.total > 0 && (
                       <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
@@ -1332,7 +1372,7 @@ export default function ClassDivisionManagement() {
 
         {/* Student Table Checklist */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
+          <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-400">
             <thead>
               <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
                 <th className="py-3.5 px-4 text-center w-12 pl-6">
@@ -1378,7 +1418,7 @@ export default function ClassDivisionManagement() {
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelectStudent(student.id)}
-                        className="rounded border-slate-350 dark:border-white/10 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
+                        className="rounded border-slate-400 dark:border-white/10 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
                       />
                     </td>
 
@@ -1387,7 +1427,7 @@ export default function ClassDivisionManagement() {
                     </td>
 
                     <td className="py-3 px-4">
-                      <div className="font-extrabold text-slate-850 dark:text-white text-sm">{student.nama}</div>
+                      <div className="font-extrabold text-slate-800 dark:text-white text-sm">{student.nama}</div>
                       <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
                         Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"} · Periode Daftar: {student.periode || "2026-2027"}
                       </span>
@@ -1411,7 +1451,7 @@ export default function ClassDivisionManagement() {
                       {student.nisn}
                     </td>
 
-                    <td className="py-3 px-4 text-slate-550 dark:text-slate-450 font-semibold uppercase">
+                    <td className="py-3 px-4 text-slate-550 dark:text-slate-400 font-semibold uppercase">
                       {student.sekolah_asal || student.sekolahAsal}
                     </td>
 
@@ -1423,11 +1463,11 @@ export default function ClassDivisionManagement() {
 
                     <td className="py-3 px-4 text-center">
                       {assignedClass ? (
-                        <span className="inline-flex px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+                        <span className="inline-flex px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
                           {assignedClass}
                         </span>
                       ) : (
-                        <span className="inline-flex px-2 py-0.5 rounded-full bg-slate-50 dark:bg-[#020617]/30 border border-slate-200 dark:border-white/5 text-slate-450 dark:text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider">
+                        <span className="inline-flex px-2 py-0.5 rounded-full bg-slate-50 dark:bg-[#020617]/30 border border-slate-200 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider">
                           Belum Diatur
                         </span>
                       )}
@@ -1475,7 +1515,7 @@ export default function ClassDivisionManagement() {
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
               <div>
-                <h3 className="text-base font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
+                <h3 className="text-base font-black text-slate-800 dark:text-white flex items-center gap-3 uppercase tracking-wide">
                   <span>Daftar Kelas: {selectedClassDetail.name}</span>
                   <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 uppercase tracking-widest">
                     {enrolledStudentsInDetail.length} Siswa Terdaftar
@@ -1485,7 +1525,7 @@ export default function ClassDivisionManagement() {
               </div>
               <button
                 onClick={() => { setSelectedClassDetail(null); setClassSearchTerm(""); }}
-                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
               >
                 ✕
               </button>
@@ -1502,13 +1542,13 @@ export default function ClassDivisionManagement() {
                   value={classSearchTerm}
                   onChange={(e) => setClassSearchTerm(e.target.value)}
                   placeholder="Cari siswa di kelas..."
-                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
+                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
                 />
               </div>
 
               <button
                 onClick={() => handleExportClassCSV(selectedClassDetail.name)}
-                className="w-full sm:w-auto px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-250 dark:border-emerald-900/40 hover:bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shrink-0"
+                className="w-full sm:w-auto px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shrink-0"
               >
                 <Download size={14} />
                 <span>Cetak Daftar Kelas (XLS)</span>
@@ -1517,7 +1557,7 @@ export default function ClassDivisionManagement() {
 
             {/* Modal Student Table */}
             <div className="flex-1 overflow-y-auto p-6 max-h-[45vh]">
-              <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
+              <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-400">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest">
                     <th className="py-2.5 px-3 text-left w-12">No</th>
@@ -1535,7 +1575,7 @@ export default function ClassDivisionManagement() {
                       <td className="py-3 px-3 text-slate-400 font-mono">{idx + 1}</td>
                       <td className="py-3 px-4 text-center font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
                       <td className="py-3 px-4">
-                        <div className="font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</div>
+                        <div className="font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">{student.nama}</div>
                         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
                           Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"}
                         </span>
@@ -1581,7 +1621,7 @@ export default function ClassDivisionManagement() {
             <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 flex justify-end shrink-0">
               <button
                 onClick={() => { setSelectedClassDetail(null); setClassSearchTerm(""); }}
-                className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
               >
                 Tutup Jendela
               </button>

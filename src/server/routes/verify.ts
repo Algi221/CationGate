@@ -112,8 +112,8 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
             status: 'PENDING_VERIFICATION'
           })
           .eq('id', resolvedId);
-      } catch (dbErr: any) {
-        console.warn('Supabase school update warning:', dbErr.message);
+      } catch (dbErr: unknown) {
+        console.warn('Supabase school update warning:', (dbErr as any).message);
       }
     }
 
@@ -138,8 +138,8 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
             expires_at: expiresAt.toISOString(),
             is_used: false
           });
-      } catch (otpErr: any) {
-        console.warn('OTP DB insert warning:', otpErr.message);
+      } catch (otpErr: unknown) {
+        console.warn('OTP DB insert warning:', (otpErr as any).message);
       }
     }
 
@@ -175,7 +175,7 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
             </div>
           `
         });
-      } catch (emailErr) {
+      } catch (_emailErr) {
         console.warn('OTP generated but email failed to send. OTP code:', otpCode);
       }
     }
@@ -184,7 +184,7 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
       success: true,
       message: 'Data verifikasi tersimpan. Dokumen sedang ditinjau oleh Gatekeeper.'
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Submit verification exception:', err);
     return c.json({ success: false, message: 'Terjadi kesalahan server saat menyimpan data.' }, 500);
   }

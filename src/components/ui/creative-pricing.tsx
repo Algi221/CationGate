@@ -1,7 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Check, Pencil, Star, Sparkles } from "lucide-react";
+"use client";
+
+import * as React from "react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import React from "react";
+import { Button } from "@/components/ui/button";
 
 interface PricingTier {
     name: string;

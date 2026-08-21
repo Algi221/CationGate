@@ -9,6 +9,11 @@ export function ThemeProvider({
   ...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
   const pathname = usePathname();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isMainLanding =
     pathname === "/" ||
@@ -20,6 +25,11 @@ export function ThemeProvider({
     pathname?.startsWith("/register") ||
     pathname?.startsWith("/daftar") ||
     pathname?.startsWith("/blog");
+
+  // Jika belum mounted di client, render children standar tanpa paksaan tema untuk mencegah mismatch SSR
+  if (!mounted) {
+    return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
+  }
 
   return (
     <NextThemesProvider

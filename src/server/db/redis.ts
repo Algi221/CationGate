@@ -50,6 +50,7 @@ export async function getCached<T>(key: string): Promise<T | null> {
  * @param value The value to store
  * @param ex Expiration in seconds (default 3600s / 1 hour)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function setCached(key: string, value: any, ex: number = 3600): Promise<void> {
   if (!redisClient) return;
   try {

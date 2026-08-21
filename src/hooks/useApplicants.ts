@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { getBrowserSupabase } from "@/lib/supabase-client";
 
 export type Applicant = {
   id: number;
@@ -10,6 +10,7 @@ export type Applicant = {
   tgl_daftar: string;
   jurusan_1: string;
   sekolah_asal?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 };
 
@@ -22,7 +23,7 @@ const fetchApplicants = async (schoolId: string): Promise<Applicant[]> => {
   try {
     const data = JSON.parse(text);
     return data.data || [];
-  } catch (err) {
+  } catch (_err) {
     console.error("Invalid JSON from API:", text.substring(0, 150));
     return [];
   }
@@ -43,11 +44,9 @@ export const useApplicants = (schoolId: string) => {
   // Subscribe to Supabase Realtime changes on student_applicants table
   useEffect(() => {
     if (!schoolId) return;
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) return;
+    const supabase = getBrowserSupabase();
+    if (!supabase) return;
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
     const channel = supabase
       .channel(`dashboard:applicants:${schoolId}`)
       .on(
@@ -88,7 +87,7 @@ export const useUpdateApplicantStatus = (schoolId: string) => {
       const text = await res.text();
       try {
         return JSON.parse(text);
-      } catch (err) {
+      } catch (_err) {
         console.error("Invalid JSON from API:", text.substring(0, 150));
         throw new Error("Invalid response from server");
       }
@@ -107,6 +106,7 @@ export const useUpdateApplicantStatus = (schoolId: string) => {
           ["applicants", schoolId],
           (old) =>
             old?.map((applicant) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               applicant.id === id ? { ...applicant, status: status as any } : applicant
             )
         );

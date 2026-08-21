@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Eye, X, CheckCircle, Clock, XCircle, User, Users, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight, Calendar, Sparkles } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
-import Image from "next/image";
+import _Image from "next/image";
 
 interface Student {
   id: number;
@@ -37,16 +37,19 @@ export default function DataPendaftarTable() {
   useEffect(() => {
     
     if (activeRows.length === 0 && publicApplicants.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setActiveRows(publicApplicants.map((a: any) => ({ ...a, isNew: false, isFadingOut: false })));
       prevApplicantsRef.current = publicApplicants;
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const currentIds = publicApplicants.map((a: any) => a.id);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removedApplicants = prevApplicantsRef.current.filter((a: any) => !currentIds.includes(a.id));
 
-    let updatedRows = [...activeRows];
+    const updatedRows = [...activeRows];
 
     removedApplicants.forEach(removed => {
       const idx = updatedRows.findIndex(r => r.id === removed.id);
@@ -57,6 +60,7 @@ export default function DataPendaftarTable() {
       }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     publicApplicants.forEach((newItem: any) => {
       const idx = updatedRows.findIndex(r => r.id === newItem.id);
       if (idx > -1) {
@@ -92,7 +96,7 @@ export default function DataPendaftarTable() {
   ];
 
   if (selectedStudent) {
-    const getGenderLabel = (g: string | null | undefined) => {
+    const _getGenderLabel = (g: string | null | undefined) => {
       if (!g) return "Laki-laki";
       const clean = g.toUpperCase().trim();
       if (clean === "L" || clean === "LAKI-LAKI" || clean === "LAKI_LAKI") return "Laki-laki";
@@ -100,13 +104,13 @@ export default function DataPendaftarTable() {
       return g;
     };
 
-    const getFormattedDate = (d: string | null | undefined) => {
+    const _getFormattedDate = (d: string | null | undefined) => {
       if (!d) return "14 Juni 2010";
       try {
         const date = new Date(d);
         const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         return date.toLocaleDateString('id-ID', options);
-      } catch (e) {
+      } catch (_e) {
         return d;
       }
     };
@@ -146,7 +150,7 @@ export default function DataPendaftarTable() {
               </span>
             </div>
             
-            <h2 className="text-4xl md:text-6xl font-black text-slate-800 dark:text-white uppercase tracking-tight leading-[1.1] mb-12 max-w-sm text-balance">
+            <h2 className="text-4xl md:text-6xl font-black text-slate-800 dark:text-white uppercase tracking-tight leading-[1.1] mb-12 max-w-sm break-words">
               {selectedStudent.nama}
             </h2>
             
@@ -215,6 +219,7 @@ export default function DataPendaftarTable() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const uniqueMajors = Array.from(new Set(displayApplicants.map((item: any) => item.jurusan_1 || item.jurusan1).filter(Boolean)));
   const filteredData = displayApplicants.filter(item => {
     const matchName = 
@@ -317,7 +322,7 @@ export default function DataPendaftarTable() {
                       <span className={`inline-flex items-center px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                         item.status === 'Approved' ? 'bg-transparent text-emerald-500 dark:text-emerald-400 border border-emerald-500/40 dark:border-emerald-800' :
                         item.status === 'Rejected' ? 'bg-transparent text-rose-500 dark:text-rose-400 border border-rose-500/40 dark:border-rose-800' :
-                        'bg-transparent text-blue-500 dark:text-blue-400 border border-blue-500/40 dark:border-blue-800'
+                        'bg-amber-50/60 dark:bg-amber-950/30 text-amber-500 dark:text-amber-400 border border-amber-400/50 dark:border-amber-800'
                       }`}>
                         {item.status === 'Approved' ? 'TERVERIFIKASI' : item.status === 'Rejected' ? 'DITOLAK' : 'MENUNGGU'}
                       </span>

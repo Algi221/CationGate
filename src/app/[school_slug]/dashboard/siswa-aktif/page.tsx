@@ -10,12 +10,12 @@ const sanitizeUrl = (url: string | undefined | null): string => {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
     });
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 };
 
-const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
+const _sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
 import { generateNipdMap } from "@/utils/nipd";
 import { motion, AnimatePresence } from "framer-motion";
 import ExcelJS from 'exceljs';
@@ -50,9 +50,9 @@ import {
   FileSpreadsheet
 } from "lucide-react";
 
-import { useRouter, useSearchParams, useParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import KuotaTab from "@/components/KuotaTab";
+import _KuotaTab from "@/components/KuotaTab";
 import Swal from 'sweetalert2';
 
 
@@ -64,7 +64,7 @@ export const formatNoPendaftaran = (periode: string | null | undefined, id: numb
     const prefix = `${year1}${year2}`;
     const sequence = 10000 + id;
     return `${prefix}${sequence}`;
-  } catch (e) {
+  } catch (_e) {
     return `2627${10000 + id}`;
   }
 };
@@ -164,20 +164,19 @@ interface Applicant {
   pelanggaran_lain?: string;
   periode?: string;
   berkas_foto?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 function ActiveStudentsDirectoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activePageTab = searchParams.get("tab") || "active";
-  const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || '';
+  const _activePageTab = searchParams.get("tab") || "active";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
 
-  const handleTabChange = (tab: "active" | "kuota") => {
-    router.push(`/${schoolSlug}/dashboard/siswa-aktif?tab=${tab}`);
+  const _handleTabChange = (tab: "active" | "kuota") => {
+    router.push(`/dashboard/siswa-aktif?tab=${tab}`);
   };
 
   const { activeStudents, addToast, fetchActiveStudents, updateActiveStudent, isDemoMode } = usePPDB();
@@ -199,7 +198,7 @@ function ActiveStudentsDirectoryContent() {
       if (saved) {
         try {
           return JSON.parse(saved);
-        } catch (e) {
+        } catch (_e) {
           console.error("Invalid JSON in ppdb_custom_periods:", saved);
         }
       }
@@ -279,6 +278,7 @@ function ActiveStudentsDirectoryContent() {
       const majorChanged = editForm.jurusan_1 !== currentMajor;
 
       // Sanitize null values by simply omitting them, so backend falls back to existing or defaults
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sanitizedForm: any = {};
       for (const key in editForm) {
         if (editForm[key] !== null) {
@@ -286,6 +286,7 @@ function ActiveStudentsDirectoryContent() {
         }
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updatedPayload: any = {
         ...sanitizedForm,
         jurusan1: sanitizedForm.jurusan_1 || sanitizedForm.jurusan
@@ -310,9 +311,9 @@ function ActiveStudentsDirectoryContent() {
       } else {
         alert(res?.message || "Gagal menyimpan perubahan.");
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setIsSaving(false);
-      alert("Terjadi kesalahan: " + e.message);
+      alert("Terjadi kesalahan: " + (e as any).message);
     }
   };
 
@@ -334,13 +335,13 @@ function ActiveStudentsDirectoryContent() {
       } else {
         addToast("Gagal", data.message || "Terjadi kesalahan.", "error");
       }
-    } catch (err) {
+    } catch (_err) {
       addToast("Error", "Gagal terhubung ke server", "error");
     }
   };
 
   const [activeTab, setActiveTab] = useState<string>("biodata");
-  const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
+  const [_selectedDoc, setSelectedDoc] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selectedApplicant) {
@@ -519,10 +520,12 @@ function ActiveStudentsDirectoryContent() {
       await workbook.xlsx.load(await file.arrayBuffer());
       const worksheet = workbook.worksheets[0];
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const students: any[] = [];
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return; // Skip header
         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rowData: any = {};
         worksheet.columns?.forEach((col, idx) => {
           if (col.key) {
@@ -867,7 +870,7 @@ function ActiveStudentsDirectoryContent() {
                 {/* Accordion Trigger Header */}
                 <div 
                   onClick={() => togglePeriod(period)}
-                  className="px-6 py-5 flex items-center justify-between cursor-pointer select-none bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50 dark:bg-slate-950/25 dark:hover:bg-slate-950/25"
+                  className="px-6 py-5 flex items-center justify-between cursor-pointer select-none bg-slate-50 dark:bg-slate-800/50/40 dark:bg-slate-950/15 border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50 dark:bg-slate-800/50/80 dark:hover:bg-slate-950/25"
                 >
                   <div className="flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100/50 dark:border-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
@@ -877,7 +880,7 @@ function ActiveStudentsDirectoryContent() {
                       <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2 leading-none">
                         Angkatan Periode {period}
                         {period === "2026-2027" && (
-                          <span className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest">
+                          <span className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest">
                             Terbaru
                           </span>
                         )}
@@ -966,7 +969,7 @@ function ActiveStudentsDirectoryContent() {
                       className="overflow-hidden"
                     >
                       <div className="p-6 overflow-x-auto">
-                        <table className="w-full text-xs font-bold text-slate-655 dark:text-slate-400 border-collapse">
+                        <table className="w-full text-xs font-bold text-slate-600 dark:text-slate-400 border-collapse">
                           <thead>
                             <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-550 uppercase tracking-widest text-[9px]">
                               <th className="py-3 px-3 text-left w-12">No</th>
@@ -984,7 +987,7 @@ function ActiveStudentsDirectoryContent() {
                             {students.map((student, idx) => (
                               <tr 
                                 key={student.id}
-                                className="border-b border-slate-100 dark:border-slate-800/50 dark:border-white/5 hover:bg-slate-50 dark:bg-slate-950/30 dark:hover:bg-slate-950/10 transition-colors"
+                                className="border-b border-slate-100 dark:border-slate-800/50 dark:border-white/5 hover:bg-slate-50 dark:bg-slate-800/50/30 dark:hover:bg-slate-950/10 transition-colors"
                               >
                                 <td className="py-3.5 px-3 text-slate-400 dark:text-slate-600 dark:text-slate-300 font-mono">{idx + 1}</td>
                                 <td className="py-3.5 px-4 font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
@@ -1026,7 +1029,7 @@ function ActiveStudentsDirectoryContent() {
                                         handleViewDetail(student);
                                         setActiveTab("biodata");
                                       }}
-                                      className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5"
+                                      className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-600 dark:text-slate-355 hover:text-slate-800 dark:hover:text-white rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5"
                                       title="Detail Siswa"
                                     >
                                       <Eye size={13} />
@@ -1258,7 +1261,7 @@ function ActiveStudentsDirectoryContent() {
                       <User size={12} className="text-blue-500" /> Ayah Kandung
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Ayah</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span></div>
                     </div>
@@ -1268,7 +1271,7 @@ function ActiveStudentsDirectoryContent() {
                       <User size={12} className="text-blue-500" /> Ibu Kandung
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pendidikan_ibu || selectedApplicant.pendidikanIbu || "-"} / {selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span></div>
                     </div>
@@ -1278,7 +1281,7 @@ function ActiveStudentsDirectoryContent() {
                       <Users size={12} className="text-blue-500" /> Wali & Kontak Darurat
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span> <span className="text-blue-600 dark:text-blue-455 font-mono text-sm font-extrabold">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span></div>
                     </div>
                   </div>
@@ -1292,7 +1295,7 @@ function ActiveStudentsDirectoryContent() {
                       <Info size={12} className="text-blue-500" /> Pendidikan Asal
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span> <span className="text-slate-800 dark:text-white text-sm font-extrabold">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"} / {selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"} ({selectedApplicant.lama_belajar || selectedApplicant.lamaBelajar || 3} Tahun)</span></div>
                     </div>
@@ -1336,7 +1339,7 @@ function ActiveStudentsDirectoryContent() {
 
                   <div className="p-5 bg-blue-50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-500/10 rounded-2xl space-y-3">
                     <span className="text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider text-[9px] block">Pernyataan Kesanggupan Taruna Baru:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-655 dark:text-slate-350">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-600 dark:text-slate-400">
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Patuh Aturan Sekolah</div>
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Menerima Sanksi Sekolah</div>
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Hubungan Akrab Taruna</div>
@@ -1401,8 +1404,8 @@ function ActiveStudentsDirectoryContent() {
       {isAddPeriodModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-sm flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15">
-              <h3 className="text-lg font-black text-slate-850 dark:text-white uppercase tracking-wide">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15">
+              <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase tracking-wide">
                 Tambah Periode Angkatan
               </h3>
               <p className="text-xs text-slate-400 dark:text-slate-550 font-bold mt-1">
@@ -1431,7 +1434,7 @@ function ActiveStudentsDirectoryContent() {
                   required
                 />
               </div>
-              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/15 flex items-center justify-end gap-3">
+              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsAddPeriodModalOpen(false)}
@@ -1463,7 +1466,7 @@ function ActiveStudentsDirectoryContent() {
                   <Pencil size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black text-slate-850 dark:text-white uppercase tracking-wide">
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white uppercase tracking-wide">
                     Edit Data — {editApplicant.nama}
                   </h3>
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
@@ -1477,7 +1480,7 @@ function ActiveStudentsDirectoryContent() {
             </div>
 
             {/* Body — scrollable form */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 hide-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 hide-scrollbar">
               {[
                 {
                   section: "Identitas Diri", icon: <User size={14} />, fields: [
@@ -1541,9 +1544,10 @@ function ActiveStudentsDirectoryContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {section.fields.map((f) => (
                       <div key={f.key} className="group">
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-400 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
                           <select
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                             className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
@@ -1553,6 +1557,7 @@ function ActiveStudentsDirectoryContent() {
                         ) : (
                           <input
                             type={f.type || "text"}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                             className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"
@@ -1566,7 +1571,7 @@ function ActiveStudentsDirectoryContent() {
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/25 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
               <button
                 onClick={() => setEditApplicant(null)}
                 className="px-6 py-3 bg-white dark:bg-[#0f172a] hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"

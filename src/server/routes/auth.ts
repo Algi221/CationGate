@@ -31,7 +31,7 @@ authRouter.post('/login', rateLimiter({
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => err.message)
+        errors: result.error.issues.map((err) => (err as any).message)
       }, 400);
     }
     const { username, password } = result.data;
@@ -59,8 +59,10 @@ authRouter.post('/login', rateLimiter({
       schoolId = resolvedUUID;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let adminUser: any = null;
     let ysboAuthenticated = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let ysboUser: any = null;
     let ysbmoToken: string | null = null;
     
@@ -85,6 +87,7 @@ authRouter.post('/login', rateLimiter({
         });
 
         if (response.ok) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const result: any = await response.json();
           if (result.status_code === 200 && result.data) {
             ysboAuthenticated = true;
@@ -92,8 +95,8 @@ authRouter.post('/login', rateLimiter({
             ysbmoToken = result.token || result.data.token || result.access_token || result.data.access_token || result.token_akses || result.data.token_akses || null;
           }
         }
-      } catch (fetchErr: any) {
-        console.warn('Koneksi API YSBMO gagal, beralih ke kredensial lokal:', fetchErr.message);
+      } catch (fetchErr: unknown) {
+        console.warn('Koneksi API YSBMO gagal, beralih ke kredensial lokal:', (fetchErr as any).message);
       }
     }
 
@@ -118,6 +121,7 @@ authRouter.post('/login', rateLimiter({
         const { data } = await updateQuery.select().single();
         adminUser = data;
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const payload: any = {
           username: usernameKey,
           password_hash: hashedPassword,
@@ -177,15 +181,40 @@ authRouter.post('/login', rateLimiter({
       console.error('[Telegram Bot] Gagal mengirim notifikasi login:', err);
     });
 
+    let schoolSlug = null;
+    const effectiveSchoolId = adminUser.school_id || schoolId;
+    if (effectiveSchoolId) {
+      for (const [, s] of fontInMemSchools) {
+        if (s.school_uuid === effectiveSchoolId || String(s.id) === String(effectiveSchoolId) || s.slug === effectiveSchoolId) {
+          schoolSlug = s.slug;
+          break;
+        }
+      }
+      if (!schoolSlug) {
+        try {
+          const { data: sch } = await supabase.from('schools').select('slug').eq('id', effectiveSchoolId).maybeSingle();
+          if (sch?.slug) schoolSlug = sch.slug;
+        } catch (_) {}
+      }
+      if (!schoolSlug) {
+        try {
+          const { data: psch } = await supabase.from('prospective_schools').select('slug').eq('id', effectiveSchoolId).maybeSingle();
+          if (psch?.slug) schoolSlug = psch.slug;
+        } catch (_) {}
+      }
+    }
+
     return c.json({
       success: true,
       message: 'Asyik! Kamu berhasil login. Selamat datang!',
       token,
+      school_slug: schoolSlug,
       admin: {
         username: adminUser.username,
         nama: adminUser.nama_lengkap,
         role: adminUser.role,
-        foto_profil: adminUser.foto_profil
+        foto_profil: adminUser.foto_profil,
+        school_id: effectiveSchoolId
       }
     });
 
@@ -200,6 +229,7 @@ authRouter.post('/login', rateLimiter({
 
 authRouter.patch('/change-password', adminAuth, async (c) => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = (c as any).get('admin');
     const body = await c.req.json();
     const result = changePasswordSchema.safeParse(body);
@@ -207,7 +237,7 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => err.message)
+        errors: result.error.issues.map((err) => (err as any).message)
       }, 400);
     }
     const { currentPassword, newPassword } = result.data;
@@ -215,7 +245,7 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
-    let query = supabase.from('admin_users').select('*').eq('id', admin.id)
+    const query = supabase.from('admin_users').select('*').eq('id', admin.id)
       .eq('school_id', schoolId);
     const { data: adminUser } = await query.single();
 
@@ -235,7 +265,7 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
     }
 
     const newHash = bcrypt.hashSync(newPassword, 10);
-    let updateQuery = supabase.from('admin_users').update({ password_hash: newHash }).eq('id', admin.id)
+    const updateQuery = supabase.from('admin_users').update({ password_hash: newHash }).eq('id', admin.id)
       .eq('school_id', schoolId);
     
     await updateQuery;
@@ -256,6 +286,7 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
 
 authRouter.patch('/profile', adminAuth, async (c) => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = (c as any).get('admin');
     const body = await c.req.json();
     const { nama_lengkap, username, foto_profil } = body as {
@@ -267,7 +298,7 @@ authRouter.patch('/profile', adminAuth, async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
-    let query = supabase.from('admin_users').select('*').eq('id', admin.id)
+    const query = supabase.from('admin_users').select('*').eq('id', admin.id)
       .eq('school_id', schoolId);
     const { data: existing } = await query.single();
 
@@ -276,7 +307,7 @@ authRouter.patch('/profile', adminAuth, async (c) => {
     }
 
     if (username && username !== existing.username) {
-      let duplicateQuery = supabase.from('admin_users').select('id').eq('username', username)
+      const duplicateQuery = supabase.from('admin_users').select('id').eq('username', username)
         .eq('school_id', schoolId);
       const { data: duplicate } = await duplicateQuery.maybeSingle();
       if (duplicate) {
@@ -284,12 +315,13 @@ authRouter.patch('/profile', adminAuth, async (c) => {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dataToUpdate: any = {};
     if (nama_lengkap && nama_lengkap.trim()) dataToUpdate.nama_lengkap = nama_lengkap.trim();
     if (username && username.trim()) dataToUpdate.username = username.trim();
     if (foto_profil !== undefined) dataToUpdate.foto_profil = foto_profil;
 
-    let updateQuery = supabase.from('admin_users').update(dataToUpdate).eq('id', admin.id)
+    const updateQuery = supabase.from('admin_users').update(dataToUpdate).eq('id', admin.id)
       .eq('school_id', schoolId);
     const { data: updated, error } = await updateQuery.select('id, username, nama_lengkap, role, foto_profil').single();
 

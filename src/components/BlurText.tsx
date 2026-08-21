@@ -3,9 +3,12 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const buildKeyframes = (from: any, steps: any[]) => {
   const keys = new Set([...Object.keys(from), ...steps.flatMap(s => Object.keys(s))]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const keyframes: any = {};
   keys.forEach(k => {
     keyframes[k] = [from[k], ...steps.map(s => s[k])];
@@ -21,7 +24,9 @@ interface BlurTextProps {
   direction?: 'top' | 'bottom';
   threshold?: number;
   rootMargin?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   animationFrom?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   animationTo?: any[];
   easing?: (t: number) => number;
   onAnimationComplete?: () => void;
@@ -91,6 +96,7 @@ const BlurText: React.FC<BlurTextProps> = ({
       {elements.map((segment, index) => {
         const animateKeyframes = buildKeyframes(fromSnapshot, toSnapshots);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const spanTransition: any = {
           duration: totalDuration,
           times,

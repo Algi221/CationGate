@@ -17,24 +17,33 @@ export const sanitizeSrc = (src: string | undefined | null): string | null => {
   if (url && url.startsWith("/jurusan/")) {
     url = url.replace("/jurusan/", "/assets/jurusan/");
   }
+  if (url && url.startsWith("/partners/")) {
+    url = url.replace("/partners/", "/assets/partners/");
+  }
   return url;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SafeImage = ({ src, alt, width, height, className, onError, fill, priority, sizes, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
-  const isDataUrl = src && src.startsWith("data:");
+  const [errorCount, setErrorCount] = useState(0);
+  const cleanSrc = sanitizeSrc(src);
+  const isDataUrl = cleanSrc && cleanSrc.startsWith("data:");
   
   const finalSizes = fill && !sizes ? "(max-width: 768px) 48px, 64px" : sizes;
 
-  if (isDataUrl || useFallbackImg || !src) {
+  if (isDataUrl || useFallbackImg || !cleanSrc) {
     return (
       <img 
-        src={src || "/logo_smktb.png"} 
+        src={errorCount > 0 ? "/assets/logo_sekolah/logo_smktb.png" : (cleanSrc || "/assets/logo_sekolah/logo_smktb.png")} 
         alt={alt} 
         width={width} 
         height={height} 
         className={className} 
-        onError={onError} 
+        onError={(e) => {
+          setErrorCount(prev => prev + 1);
+          if (onError) onError(e);
+        }} 
         {...props} 
       />
     );
@@ -42,7 +51,7 @@ const SafeImage = ({ src, alt, width, height, className, onError, fill, priority
   
   return (
     <Image 
-      src={src} 
+      src={cleanSrc} 
       alt={alt} 
       width={width} 
       height={height} 

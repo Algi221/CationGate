@@ -9,6 +9,7 @@ function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
 function CollapsibleTrigger({ asChild, ...props }: CollapsiblePrimitive.Trigger.Props & { asChild?: boolean }) {
   if (asChild) {
     const { children, ...rest } = props
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return <CollapsiblePrimitive.Trigger data-slot="collapsible-trigger" render={children as any} {...rest} />
   }
   return (

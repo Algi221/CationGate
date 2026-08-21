@@ -52,7 +52,7 @@ export default function VerificationPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<VerificationData | null>(null);
-  const [waAdmin, setWaAdmin] = useState<string>("6281292244456");
+  const [waAdmin, _setWaAdmin] = useState<string>("6281292244456");
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +93,7 @@ export default function VerificationPage() {
             <User size={32} />
           </div>
           <div>
-            <h2 className="text-xl font-black uppercase tracking-wider text-slate-850 dark:text-white">Verifikasi Status Pendaftaran</h2>
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 dark:text-white">Verifikasi Status Pendaftaran</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed mt-2">
               Masukkan NIK calon siswa untuk melihat status pendaftaran secara aman.
             </p>
@@ -158,7 +158,7 @@ export default function VerificationPage() {
           <div className="hidden md:block absolute -bottom-3.5 left-[66.67%] -translate-x-1/2 w-7 h-7 rounded-full bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-900 z-20 transition-colors" />
 
           {/* Ticket Top bar */}
-          <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/5 pb-4 mb-4 transition-colors">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-4 mb-4 transition-colors">
             <div className="flex items-center gap-3">
               <img src="/logo_smktb.png" alt="Logo TB" className="w-9 h-9 object-contain" />
               <div>
@@ -195,7 +195,7 @@ export default function VerificationPage() {
                 <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Calon Peserta Didik Baru</span>
               </div>
               
-              <h2 className="text-3xl md:text-4xl font-black text-slate-850 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-indigo-200 uppercase tracking-tight leading-tight truncate mb-4">
+              <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-indigo-200 uppercase tracking-tight leading-tight truncate mb-4">
                 {data.nama}
               </h2>
               
@@ -225,8 +225,8 @@ export default function VerificationPage() {
                     src={getMajorLogoUrl(data.jurusan_1)}
                     alt="Logo Jurusan"
                     className="w-full h-full object-contain rounded-full"
-                    onError={(e: any) => {
-                      e.target.src = "/logo_smktb.png";
+                    onError={(e: unknown) => {
+                      (e as any).target.src = "/logo_smktb.png";
                     }}
                   />
                 </div>
@@ -244,7 +244,7 @@ export default function VerificationPage() {
           </div>
 
           {/* Ticket Footer */}
-          <div className="border-t border-slate-200 dark:border-white/5 pt-3.5 mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[9px] font-bold text-slate-450 dark:text-slate-400 tracking-wider transition-colors">
+          <div className="border-t border-slate-100 dark:border-white/5 pt-3.5 mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[9px] font-bold text-slate-400 dark:text-slate-400 tracking-wider transition-colors">
             <div></div>
             <span className="text-slate-500 dark:text-slate-400 font-black">TERVERIFIKASI SISTEM PPDB</span>
           </div>
@@ -259,19 +259,19 @@ export default function VerificationPage() {
             </div>
             <div className="space-y-1">
               <h3 className="text-emerald-700 dark:text-emerald-400 text-sm font-black uppercase tracking-wider">Pendaftaran Terverifikasi Sah</h3>
-              <p className="text-slate-700 dark:text-slate-350 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
+              <p className="text-slate-700 dark:text-slate-400 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
                 Selamat, <span className="underline font-black text-slate-800 dark:text-white uppercase tracking-wider">{data.nama}</span>! Data pendaftaran Anda telah secara resmi diverifikasi sah oleh Panitia PPDB SMK Taruna Bhakti.
               </p>
             </div>
           </div>
         ) : data.status === "Rejected" ? (
-          <div className="bg-rose-50/70 dark:bg-rose-950/20 border border-rose-250 dark:border-rose-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 duration-300">
+          <div className="bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 duration-300">
             <div className="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 shrink-0 border border-rose-400 dark:border-rose-600">
               <XCircle size={24} />
             </div>
             <div className="space-y-2">
               <h3 className="text-rose-750 dark:text-rose-400 text-sm font-black uppercase tracking-wider">Pendaftaran Gugur / Ditolak</h3>
-              <p className="text-slate-700 dark:text-slate-350 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
+              <p className="text-slate-700 dark:text-slate-400 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
                 Mohon maaf, pendaftaran atas nama <span className="font-black text-rose-600 dark:text-rose-450 uppercase tracking-wider">{data.nama}</span> dinyatakan <strong className="text-rose-600 dark:text-rose-400">ditolak / tidak memenuhi syarat</strong>.
               </p>
               {data.alasan_ditolak && (
@@ -300,14 +300,14 @@ export default function VerificationPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link 
             href={`/${schoolSlug}`}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 hover:border-slate-350 hover:bg-slate-50 dark:bg-slate-800/50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 hover:border-slate-400 hover:bg-slate-50 dark:bg-slate-800/50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
           >
             <ArrowLeft size={14} />
             Ke Halaman Utama
           </Link>
           
           <a
-            href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Admin%20PPDB%20SMK%20Taruna%20Bhakti.%20Saya%20ingin%20bertanya%20terkait%20status%20pendaftaran%20atas%20nama%20${encodeURIComponent(data.nama)}`}
+            href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Admin%20PPDB.%20Saya%20ingin%20bertanya%20terkait%20status%20pendaftaran%20atas%20nama%20${encodeURIComponent(data.nama)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white text-xs font-black uppercase tracking-wider text-[#075E54] dark:text-[#25D366] transition-all shadow-sm w-full sm:w-auto"

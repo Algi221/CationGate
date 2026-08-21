@@ -38,8 +38,9 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: isGlobalConfigLoaded } = usePPDB();
   const [isDark, setIsDark] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [majors, setMajors] = useState<any[]>([]);
-  const pathname = usePathname();
+  const _pathname = usePathname();
 
   useEffect(() => {
     // Check initial theme
@@ -64,6 +65,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
         if (data.success && data.data && data.data.ppdb_majors_config) {
           const config = data.data;
           if (Array.isArray(config.ppdb_majors_config)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const iconMap: Record<string, any> = {
               RPL: Cpu,
               TJKT: Layers,
@@ -72,11 +74,13 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
               ANM: Palette,
               TE: Cpu
             };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mapped = config.ppdb_majors_config.map((m: any) => ({
               ...m,
               icon: iconMap[m.code] || Cpu
             }));
             setMajors(mapped);
+            return;
           }
         }
       } catch (e) {
@@ -86,6 +90,15 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
 
     if (schoolSlug && schoolSlug !== "sekolah" && schoolSlug !== "demo") {
       loadMajors();
+    } else {
+      setMajors([
+        { code: "RPL", title: "Rekayasa Perangkat Lunak", desc: "Software engineering, web, cloud & AI", icon: Cpu },
+        { code: "TJKT", title: "Teknik Jaringan Komputer & Telkom", desc: "Jaringan, server & cyber security", icon: Layers },
+        { code: "DKV", title: "Desain Komunikasi Visual", desc: "UI/UX, visual design & digital art", icon: BookOpen },
+        { code: "BC", title: "Broadcasting & Perfilman", desc: "Penyiaran, sinematografi & editing", icon: Video },
+        { code: "ANM", title: "Animasi", desc: "2D/3D animation, rigging & modeling", icon: Palette },
+        { code: "TE", title: "Teknik Elektronika", desc: "IoT, robotics & microcontroller", icon: Cpu }
+      ]);
     }
   }, [schoolSlug]);
 
@@ -108,10 +121,10 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
           <div className="flex items-center shrink-0 min-w-0">
             <Link href={`/${schoolSlug}`} className="flex items-center gap-3 overflow-visible group min-w-0">
               <div className="relative h-10 w-10 shrink-0 overflow-visible">
-                <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
+                <SafeImage src={schoolSlug === 'demo' ? "/assets/logo_sekolah/logo_smktb.png" : (ppdbLogo || "/assets/logo_sekolah/logo_smktb.png")} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
               </div>
               <span className="text-xl font-extrabold text-slate-900 dark:text-white truncate max-w-[180px] sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                {isGlobalConfigLoaded ? ppdbTitle : "\u00A0"}
+                {schoolSlug === 'demo' ? "SMK TB" : (ppdbTitle || "SPMB SMK Taruna Bhakti")}
               </span>
             </Link>
           </div>
@@ -216,8 +229,8 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <Link href={`/${schoolSlug}/daftar`} className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
-              Daftar
+            <Link href={schoolSlug === 'demo' ? "/demo/dashboard" : `/${schoolSlug}/daftar`} className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
+              {schoolSlug === 'demo' ? "Dashboard Demo" : "Daftar"}
             </Link>
 
             {/* Hamburger Button visible only on mobile/tablet */}
@@ -250,9 +263,9 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href={`/${schoolSlug}`} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              {ppdbLogo && <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />}
+              <SafeImage src={schoolSlug === 'demo' ? "/assets/logo_sekolah/logo_smktb.png" : (ppdbLogo || "/assets/logo_sekolah/logo_smktb.png")} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
               <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                {isGlobalConfigLoaded ? ppdbTitle : "\u00A0"}
+                {schoolSlug === 'demo' ? "SMK TB" : (ppdbTitle || "SPMB SMK Taruna Bhakti")}
               </span>
             </Link>
 
@@ -289,11 +302,11 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
 
             <div className="mt-8 w-full flex flex-col gap-3">
               <Link
-                href={`/${schoolSlug}/daftar`}
+                href={schoolSlug === 'demo' ? "/demo/dashboard" : `/${schoolSlug}/daftar`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-95"
               >
-                Daftar Sekarang
+                {schoolSlug === 'demo' ? "Buka Dashboard Demo" : "Daftar Sekarang"}
               </Link>
             </div>
           </div>

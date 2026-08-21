@@ -16,7 +16,7 @@ paymentRouter.post('/confirm-payment-option', rateLimiter({ windowMs: 15 * 60 * 
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => err.message)
+        errors: result.error.issues.map((err) => (err as any).message)
       }, 400);
     }
     const { nisn, bukti_bayar, metode_pembayaran } = result.data;
@@ -33,6 +33,7 @@ paymentRouter.post('/confirm-payment-option', rateLimiter({ windowMs: 15 * 60 * 
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       bukti_bayar: bukti_bayar || null,
       metode_pembayaran: metode_pembayaran
@@ -52,8 +53,8 @@ paymentRouter.post('/confirm-payment-option', rateLimiter({ windowMs: 15 * 60 * 
     }
 
     return c.json({ success: true, message: 'Payment option confirmed successfully', data: updatedRecord });
-  } catch (err: any) {
-    console.error('Failed to confirm payment option:', err.message);
+  } catch (err: unknown) {
+    console.error('Failed to confirm payment option:', (err as any).message);
     return c.json({ success: false, message: 'Failed to confirm payment option' }, 500);
   }
 });

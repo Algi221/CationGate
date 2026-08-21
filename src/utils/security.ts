@@ -14,7 +14,7 @@ export function sanitizeUrl(url: string | undefined | null): string {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/(png|jpeg|jpg|gif|webp);base64,|data:application\/pdf;base64,|data:video\/)/i
     });
     return sanitized || "#";
-  } catch (e) {
+  } catch (_e) {
     return "#";
   }
 }

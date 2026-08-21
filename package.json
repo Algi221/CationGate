@@ -47,6 +47,7 @@
     "react-apexcharts": "^2.1.1",
     "react-dom": "19.2.4",
     "react-easy-crop": "^6.2.2",
+    "react-wrap-balancer": "^1.1.1",
     "resend": "^6.19.0",
     "shadcn": "^4.16.2",
     "sharp": "^0.35.3",
@@ -67,6 +68,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
     "typescript": "^5"

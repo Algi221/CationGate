@@ -17,7 +17,7 @@ export default function VerifyAccountPage() {
   const [step, setStep] = useState<VerifyStep>('form');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [schoolStatus, setSchoolStatus] = useState('');
+  const [_schoolStatus, setSchoolStatus] = useState('');
   const [schoolId, setSchoolId] = useState('');
 
   const [formData, setFormData] = useState({
@@ -95,7 +95,7 @@ export default function VerifyAccountPage() {
       } else {
         setError(data.message || 'Gagal menyimpan data verifikasi');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
       setLoading(false);
@@ -127,7 +127,7 @@ export default function VerifyAccountPage() {
       } else {
         setError(data.message || 'Kode OTP tidak valid atau sudah kedaluwarsa.');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
       setLoading(false);
@@ -147,7 +147,7 @@ export default function VerifyAccountPage() {
       if (!data.success) {
         setError(data.message || 'Gagal mengirim ulang OTP');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Gagal mengirim ulang kode OTP.');
     } finally {
       setLoading(false);
@@ -342,7 +342,7 @@ export default function VerifyAccountPage() {
               </div>
             </div>
 
-            <Button onClick={() => router.push(`/${schoolSlug}/auth/login`)} variant="outline" className="mt-8 rounded-xl border-zinc-200 h-12 px-8 font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-all">
+            <Button onClick={() => router.push('/masuk')} variant="outline" className="mt-8 rounded-xl border-zinc-200 h-12 px-8 font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-all">
               Kembali ke Login
             </Button>
           </div>

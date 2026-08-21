@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Building2, Wallet, Activity, Settings, 
-  ShieldCheck, ChevronLeft, ChevronRight, ChevronDown, AlertCircle
+  ShieldCheck, ChevronLeft, ChevronRight, ChevronDown
 } from "lucide-react";
 
 interface GatekeeperSidebarProps {
@@ -58,18 +59,24 @@ export function GatekeeperSidebar({
           icon: <Building2 size={18} />,
           label: "Manajemen Sekolah",
           subItems: [
+            { label: "Verifikasi Sekolah", href: "/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION" },
             { label: "Sekolah Aktif (Verified)", href: "/gatekeeper/dashboard/schools?filter=FULL_VERIFIED" },
-            { label: "Menunggu Verifikasi", href: "/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION" },
-            { label: "Takedown / Suspended", href: "/gatekeeper/dashboard/schools?filter=TAKEDOWN" },
           ]
         }
       ]
     },
     {
-      category: "Billing & Subscription",
+      category: "Keuangan & Langganan",
       items: [
-        { href: "/gatekeeper/dashboard/billing", icon: <Wallet size={18} />, label: "Pendapatan & Tagihan" },
-        { href: "/gatekeeper/dashboard/plans", icon: <Activity size={18} />, label: "Paket Berlangganan" }
+        {
+          href: "/gatekeeper/dashboard/billing",
+          icon: <Wallet size={18} />,
+          label: "Billing & Paket",
+          subItems: [
+            { label: "Manajemen Paket", href: "/gatekeeper/dashboard/plans" },
+            { label: "Riwayat Transaksi", href: "/gatekeeper/dashboard/billing/transactions" },
+          ]
+        }
       ]
     },
     {
@@ -90,12 +97,12 @@ export function GatekeeperSidebar({
     {
       category: "Pengaturan Platform",
       items: [
-        { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Global Settings" },
-        { href: "/gatekeeper/dashboard/settings/admins", icon: <ShieldCheck size={18} />, label: "Super Admins" },
+        { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Sistem" }
       ]
     }
   ];
 
+  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
   const renderMenuItem = (item: any, delayIndex: number) => {
     const fullHref = item.href;
     const hasSub = !!item.subItems;
@@ -187,6 +194,7 @@ export function GatekeeperSidebar({
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                   className="pl-4 ml-6 pr-2 py-1.5 space-y-1 border-l-2 border-slate-200 dark:border-slate-800"
                 >
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {item.subItems.map((sub: any) => {
                     const fullSubHref = sub.href;
                     const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");
@@ -251,8 +259,14 @@ export function GatekeeperSidebar({
 
         <div className={`h-20 px-6 flex items-center border-b border-slate-100 dark:border-slate-800/50 shrink-0 ${isCollapsed ? "justify-center px-0" : ""}`}>
           <Link href="/gatekeeper/dashboard" className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black shadow-lg shadow-blue-500/20 shrink-0">
-              <ShieldCheck size={22} strokeWidth={2.5} />
+            <div className="w-10 h-10 rounded-2xl bg-slate-900 dark:bg-slate-800 border border-slate-700/40 text-white flex items-center justify-center p-1.5 shadow-md shrink-0">
+              <Image
+                src="/assets/logo_cationgate/CationGate_Logo.png"
+                alt="CationGate Logo"
+                width={32}
+                height={32}
+                className="w-full h-full object-contain"
+              />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
@@ -304,8 +318,14 @@ export function GatekeeperSidebar({
             >
               <div className="h-16 px-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
-                    <ShieldCheck size={18} />
+                  <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-slate-800 border border-slate-700/40 text-white flex items-center justify-center p-1 font-bold">
+                    <Image
+                      src="/assets/logo_cationgate/CationGate_Logo.png"
+                      alt="CationGate Logo"
+                      width={24}
+                      height={24}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <span className="font-extrabold text-slate-900 dark:text-white text-lg">CationGate</span>
                 </div>

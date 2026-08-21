@@ -2,7 +2,6 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '../db/supabase';
-import { pool } from '../db/client';
 import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 import { broadcast } from '../ws/handler';
@@ -60,7 +59,7 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
     const supabase = getSupabaseClient();
     
     // Check gatekeeper_users table
-    let { data: gatekeeper } = await supabase
+    const { data: gatekeeper } = await supabase
       .from('gatekeeper_users')
       .select('*')
       .or(`username.eq.${username},email.eq.${username}`)
@@ -99,8 +98,8 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
       }
     });
 
-  } catch (err: any) {
-    console.error('Gatekeeper login error:', err?.message);
+  } catch (err: unknown) {
+    console.error('Gatekeeper login error:', (err as any)?.message);
     return c.json({ success: false, message: 'Terjadi kesalahan server saat login.' }, 500);
   }
 });
@@ -114,19 +113,21 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
     const { data: dbSchools } = await supabase.from('schools').select('*').order('created_at', { ascending: false });
     
     // Fetch candidate/prospective schools
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let prospectiveList: any[] = [];
     try {
       const { data: ps } = await supabase.from('prospective_schools').select('*').order('created_at', { ascending: false });
       if (ps) prospectiveList = ps;
-    } catch (e) {}
+    } catch (_e) {}
 
     if (prospectiveList.length === 0) {
       try {
         const { data: cs } = await supabase.from('calon_sekolah').select('*').order('created_at', { ascending: false });
         if (cs) prospectiveList = cs;
-      } catch (e) {}
+      } catch (_e) {}
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const combinedMap = new Map<string, any>();
     
     if (dbSchools && Array.isArray(dbSchools)) {
@@ -149,7 +150,7 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
 
     const schoolsList = Array.from(combinedMap.values());
     return c.json({ success: true, data: schoolsList });
-  } catch (err) {
+  } catch (_err) {
     const schoolsList = Array.from(fontInMemSchools.values());
     return c.json({ success: true, data: schoolsList });
   }
@@ -169,6 +170,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
     const isNumericId = !isNaN(Number(idOrSlug)) && Number(idOrSlug) > 0;
 
     // 1. Find school details in memory or DB
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let targetSchool: any = null;
     fontInMemSchools.forEach((s, keySlug) => {
       if (String(s.id) === idOrSlug || String(s.slug) === idOrSlug || keySlug === idOrSlug) {
@@ -182,7 +184,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
         psQuery = isNumericId ? psQuery.eq('id', Number(idOrSlug)) : psQuery.eq('slug', idOrSlug);
         const { data: ps } = await psQuery.maybeSingle();
         if (ps) targetSchool = ps;
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     if (!targetSchool) {
@@ -191,7 +193,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
         scQuery = isNumericId ? scQuery.eq('id', Number(idOrSlug)) : scQuery.eq('slug', idOrSlug);
         const { data: sc } = await scQuery.maybeSingle();
         if (sc) targetSchool = sc;
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     const sName = targetSchool?.name || 'Sekolah Terverifikasi';
@@ -203,7 +205,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
       let psUpdate = supabase.from('prospective_schools').update({ status: 'FULL_VERIFIED', is_verified: true });
       psUpdate = isNumericId ? psUpdate.eq('id', Number(idOrSlug)) : psUpdate.eq('slug', sSlug);
       await psUpdate;
-    } catch (e) {}
+    } catch (_e) {}
 
     // 3. Upsert into 'schools' table in Supabase
     try {
@@ -222,8 +224,8 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
           accreditation: targetSchool?.accreditation || 'A',
           admin_name: candidateSchoolAdmin(targetSchool)
         }, { onConflict: 'slug' });
-    } catch (sbErr: any) {
-      console.warn('Supabase schools upsert warning:', sbErr.message);
+    } catch (sbErr: unknown) {
+      console.warn('Supabase schools upsert warning:', (sbErr as any).message);
     }
 
     // 4. Update fontInMemSchools map for instant slug resolution & active state
@@ -251,12 +253,13 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
       success: true,
       message: `Verifikasi sekolah '${sName}' telah disetujui.`
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Approve school error:', err);
-    return c.json({ success: false, message: 'Gagal meng-approve sekolah: ' + err.message }, 500);
+    return c.json({ success: false, message: 'Gagal meng-approve sekolah: ' + (err as any).message }, 500);
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function candidateSchoolAdmin(targetSchool: any): string {
   if (targetSchool?.admin_name) return targetSchool.admin_name;
   return 'Kepala Sekolah';
@@ -276,8 +279,8 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
           .from('schools')
           .update({ status: 'TAKEDOWN', is_verified: false })
           .eq('id', resolvedId);
-      } catch (err: any) {
-        console.warn('Supabase takedown warning:', err.message);
+      } catch (err: unknown) {
+        console.warn('Supabase takedown warning:', (err as any).message);
       }
     }
 
@@ -289,7 +292,7 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
     });
 
     return c.json({ success: true, message: 'Instansi sekolah berhasil di-takedown (Non-Aktif).' });
-  } catch (err: any) {
+  } catch (_err: unknown) {
     return c.json({ success: true, message: 'Instansi sekolah berhasil di-takedown (Non-Aktif).' });
   }
 });
@@ -301,10 +304,16 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
 // GET /api/gatekeeper/plans - List all plans
 gatekeeperRouter.get('/plans', gatekeeperAuth, async (c) => {
   try {
-    const pgRes = await pool.query('SELECT * FROM plans ORDER BY id ASC');
-    return c.json({ success: true, data: pgRes.rows || [] });
-  } catch (err: any) {
-    console.error('Get plans error:', err?.message);
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    return c.json({ success: true, data: data || [] });
+  } catch (err: unknown) {
+    console.error('Get plans error:', (err as any)?.message);
     return c.json({ success: false, message: 'Gagal mengambil data paket' }, 500);
   }
 });
@@ -317,16 +326,18 @@ gatekeeperRouter.post('/plans', gatekeeperAuth, async (c) => {
       return c.json({ success: false, message: 'Nama, harga bulanan, dan harga tahunan wajib diisi' }, 400);
     }
 
-    const pgRes = await pool.query(
-      `INSERT INTO plans (name, price_monthly, price_yearly, features, is_active)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, price_monthly, price_yearly, features || [], is_active !== false]
-    );
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .insert({ name, price_monthly, price_yearly, features: features || [], is_active: is_active !== false })
+      .select()
+      .single();
 
-    return c.json({ success: true, data: pgRes.rows[0] });
-  } catch (err: any) {
-    console.error('Create plan error:', err?.message);
-    return c.json({ success: false, message: 'Gagal membuat paket: ' + err?.message }, 500);
+    if (error) throw error;
+    return c.json({ success: true, data });
+  } catch (err: unknown) {
+    console.error('Create plan error:', (err as any)?.message);
+    return c.json({ success: false, message: 'Gagal membuat paket: ' + (err as any)?.message }, 500);
   }
 });
 
@@ -336,30 +347,26 @@ gatekeeperRouter.put('/plans/:id', gatekeeperAuth, async (c) => {
     const planId = Number(c.req.param('id'));
     const updates = await c.req.json();
 
-    // Fetch existing first to handle partial updates cleanly in SQL
-    const existRes = await pool.query('SELECT * FROM plans WHERE id = $1', [planId]);
-    if (existRes.rows.length === 0) {
-      return c.json({ success: false, message: 'Paket tidak ditemukan' }, 404);
-    }
-    const existing = existRes.rows[0];
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .update({
+        ...(updates.name && { name: updates.name }),
+        ...(updates.price_monthly != null && { price_monthly: updates.price_monthly }),
+        ...(updates.price_yearly != null && { price_yearly: updates.price_yearly }),
+        ...(updates.features != null && { features: updates.features }),
+        ...(updates.is_active != null && { is_active: updates.is_active }),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', planId)
+      .select()
+      .single();
 
-    const name = updates.name !== undefined ? updates.name : existing.name;
-    const price_monthly = updates.price_monthly !== undefined ? updates.price_monthly : existing.price_monthly;
-    const price_yearly = updates.price_yearly !== undefined ? updates.price_yearly : existing.price_yearly;
-    const features = updates.features !== undefined ? updates.features : existing.features;
-    const is_active = updates.is_active !== undefined ? updates.is_active : existing.is_active;
-
-    const pgRes = await pool.query(
-      `UPDATE plans 
-       SET name = $1, price_monthly = $2, price_yearly = $3, features = $4, is_active = $5, updated_at = NOW()
-       WHERE id = $6 RETURNING *`,
-      [name, price_monthly, price_yearly, features, is_active, planId]
-    );
-
-    return c.json({ success: true, data: pgRes.rows[0] });
-  } catch (err: any) {
-    console.error('Update plan error:', err?.message);
-    return c.json({ success: false, message: 'Gagal mengupdate paket: ' + err?.message }, 500);
+    if (error) throw error;
+    return c.json({ success: true, data });
+  } catch (err: unknown) {
+    console.error('Update plan error:', (err as any)?.message);
+    return c.json({ success: false, message: 'Gagal mengupdate paket: ' + (err as any)?.message }, 500);
   }
 });
 
@@ -367,12 +374,14 @@ gatekeeperRouter.put('/plans/:id', gatekeeperAuth, async (c) => {
 gatekeeperRouter.delete('/plans/:id', gatekeeperAuth, async (c) => {
   try {
     const planId = Number(c.req.param('id'));
-    await pool.query('DELETE FROM plans WHERE id = $1', [planId]);
+    const supabase = getSupabaseClient();
+    const { error } = await supabase.from('plans').delete().eq('id', planId);
 
+    if (error) throw error;
     return c.json({ success: true, message: 'Paket berhasil dihapus' });
-  } catch (err: any) {
-    console.error('Delete plan error:', err?.message);
-    return c.json({ success: false, message: 'Gagal menghapus paket: ' + err?.message }, 500);
+  } catch (err: unknown) {
+    console.error('Delete plan error:', (err as any)?.message);
+    return c.json({ success: false, message: 'Gagal menghapus paket: ' + (err as any)?.message }, 500);
   }
 });
 

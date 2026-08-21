@@ -27,7 +27,9 @@ import {
   ArrowLeft,
   Calendar,
   Database,
-  Building
+  Building,
+  Globe,
+  Power
 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadFileDirect, base64ToFile } from "@/utils/storage";
@@ -362,6 +364,7 @@ export default function KelolaUserInterface() {
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab && ["hero", "majors", "alur", "form", "faq", "revisions", "bank", "partners"].includes(tab)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setActiveTab(tab as any);
     }
   }, [searchParams]);
@@ -431,14 +434,12 @@ export default function KelolaUserInterface() {
   const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
   const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB Online");
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.");
-  const [heroMediaUrl, setHeroMediaUrl] = useState("");
-  const [heroMediaType, setHeroMediaType] = useState<"video" | "image" | "none">("none");
-  const [compressing, setCompressing] = useState(false);
   const [phone, setPhone] = useState("-");
   const [email, setEmail] = useState("info@sekolah.sch.id");
   const [address, setAddress] = useState("Alamat Lengkap Sekolah");
   const [mapTitle, setMapTitle] = useState("Kunjungi Kampus Kami");
-  // Logo and Title moved to Profil Sekolah
+  const [schoolLogo, setSchoolLogo] = useState("");
+  const [schoolTitle, setSchoolTitle] = useState("Portal PPDB");
   const [footerDesc, setFooterDesc] = useState("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
 
   const [gelombangConfig, setGelombangConfig] = useState({
@@ -501,6 +502,7 @@ export default function KelolaUserInterface() {
   const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
   const [formFee, setFormFee] = useState("250000");
+  const [isLandingPageActive, setIsLandingPageActive] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -513,11 +515,10 @@ export default function KelolaUserInterface() {
     if (!mounted || loading) return;
 
     const draft = {
+      ppdb_landing_active: isLandingPageActive,
       ppdb_hero_title: heroTitle,
       ppdb_hero_title_sub: heroTitleSub,
       ppdb_hero_subtitle: heroSubtitle,
-      ppdb_hero_media_url: heroMediaUrl,
-      ppdb_hero_media_type: heroMediaType,
       ppdb_phone: phone,
       ppdb_email: email,
       ppdb_address: address,
@@ -533,10 +534,9 @@ export default function KelolaUserInterface() {
       ppdb_alur_config: alurList,
       ppdb_majors_config: majorsList,
       ppdb_faq_config: faqList,
-      ppdb_faq_title: faqTitle,
-      ppdb_faq_subtitle: faqSubtitle,
       ppdb_partners_config: partnersList,
-
+      ppdb_logo_url: schoolLogo,
+      ppdb_title: schoolTitle,
       ppdb_footer_desc: footerDesc,
     };
 
@@ -544,11 +544,10 @@ export default function KelolaUserInterface() {
   }, [
     mounted,
     loading,
+    isLandingPageActive,
     heroTitle,
     heroTitleSub,
     heroSubtitle,
-    heroMediaUrl,
-    heroMediaType,
     phone,
     email,
     address,
@@ -564,10 +563,9 @@ export default function KelolaUserInterface() {
     alurList,
     majorsList,
     faqList,
-    faqTitle,
-    faqSubtitle,
     partnersList,
-    footerDesc
+    schoolLogo,
+    schoolTitle,
   ]);
 
   const showToastMsg = (message: string, type: "success" | "error" | "info" = "success") => {
@@ -577,9 +575,10 @@ export default function KelolaUserInterface() {
 
   async function fetchCurrentConfig() {
     try {
+      setLoading(true);
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
-      const res = await fetch(`/api/config?_t=${Date.now()}`, {
-        cache: 'no-store',
+      const url = slug ? `/api/config?school_slug=${slug}` : "/api/config";
+      const res = await fetch(url, {
         headers: token ? { "Authorization": `Bearer ${token}` } : {}
       });
       const json = await res.json();
@@ -587,6 +586,7 @@ export default function KelolaUserInterface() {
 
       // Load draft from localStorage if present
       const savedDraft = localStorage.getItem(draftKey);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let draft: any = null;
       if (savedDraft) {
         try {
@@ -601,8 +601,6 @@ export default function KelolaUserInterface() {
       else if (!draft) setHeroTitleSub(`Portal PPDB ${ppdbTitle || 'Online'}`);
       
       if (activeConfig.ppdb_hero_subtitle) setHeroSubtitle(activeConfig.ppdb_hero_subtitle);
-      if (activeConfig.ppdb_hero_media_url) setHeroMediaUrl(activeConfig.ppdb_hero_media_url);
-      if (activeConfig.ppdb_hero_media_type) setHeroMediaType(activeConfig.ppdb_hero_media_type);
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
       if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
@@ -614,7 +612,11 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(activeConfig.ppdb_wa_admin));
       if (activeConfig.ppdb_form_guideline) setFormGuideline(activeConfig.ppdb_form_guideline);
       if (activeConfig.ppdb_form_fee) setFormFee(activeConfig.ppdb_form_fee);
+      if (activeConfig.ppdb_logo_url) setSchoolLogo(activeConfig.ppdb_logo_url);
+      
+      if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
       if (activeConfig.ppdb_footer_desc) setFooterDesc(activeConfig.ppdb_footer_desc);
+      else if (!draft) setSchoolTitle(`PPDB ${ppdbTitle || 'Sekolah'}`);
       
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
         setAlurList(activeConfig.ppdb_alur_config);
@@ -633,6 +635,7 @@ export default function KelolaUserInterface() {
         const dbMajors = activeConfig.ppdb_majors_config;
         const mergedMajors: MajorItem[] = [];
         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dbMajors.forEach((dbMajor: any) => {
           const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
           mergedMajors.push({
@@ -668,6 +671,9 @@ export default function KelolaUserInterface() {
           setBankConfigList([bankData]);
         }
       }
+      if (activeConfig.ppdb_landing_active !== undefined) {
+        setIsLandingPageActive(activeConfig.ppdb_landing_active === true || activeConfig.ppdb_landing_active === "true");
+      }
       if (activeConfig.ppdb_fields_config && typeof activeConfig.ppdb_fields_config === "object") {
         setFieldsConfigUI(prev => ({ ...prev, ...activeConfig.ppdb_fields_config }));
       }
@@ -685,6 +691,7 @@ export default function KelolaUserInterface() {
 
   useEffect(() => {
     if (ppdbTitle && ppdbTitle !== "PPDB SMK TB") {
+      setSchoolTitle(prev => prev === "Portal PPDB" || prev.startsWith("PPDB PPDB") ? `PPDB ${ppdbTitle}` : prev);
       setHeroTitleSub(prev => prev === "Portal PPDB Online" || prev.startsWith("Portal PPDB PPDB") ? `Portal PPDB ${ppdbTitle}` : prev);
     }
   }, [ppdbTitle]);
@@ -835,11 +842,10 @@ export default function KelolaUserInterface() {
       }
 
       const configsPayload = {
+        ppdb_landing_active: isLandingPageActive,
         ppdb_hero_title: heroTitle,
         ppdb_hero_title_sub: heroTitleSub,
         ppdb_hero_subtitle: heroSubtitle,
-        ppdb_hero_media_url: heroMediaUrl,
-        ppdb_hero_media_type: heroMediaType,
         ppdb_phone: phone,
         ppdb_email: email,
         ppdb_address: address,
@@ -853,12 +859,11 @@ export default function KelolaUserInterface() {
         ppdb_alur_config: alurList,
         ppdb_majors_config: finalMajors,
         ppdb_faq_config: faqList,
-        ppdb_faq_title: faqTitle,
-        ppdb_faq_subtitle: faqSubtitle,
         ppdb_gelombang_config: gelombangConfig,
         ppdb_bank_config: bankConfigList,
         ppdb_partners_config: partnersList,
-
+        ppdb_logo_url: schoolLogo,
+        ppdb_title: schoolTitle,
       ppdb_footer_desc: footerDesc,
         ppdb_fields_config: fieldsConfigUI
       };
@@ -918,7 +923,7 @@ export default function KelolaUserInterface() {
       } else {
         showToastMsg(json.message || "Gagal menyimpan perubahan.", "error");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       showToastMsg("Terjadi kesalahan server.", "error");
     } finally {
@@ -927,36 +932,19 @@ export default function KelolaUserInterface() {
   };
 
 
-  const handleHeroMediaFileChange = async (file: File) => {
+  const handleSchoolLogoChange = async (file: File) => {
     try {
-      setCompressing(true);
-      if (file.type.startsWith("video/")) {
-        showToastMsg("Memproses video...");
-        const result = await compressVideo(file);
-        
-        showToastMsg("Mengunggah video ke cloud...", "info");
-        const processedFile = base64ToFile(result.base64, file.name);
-        const publicUrl = await uploadFileDirect(processedFile, 'hero_video');
-        
-        setHeroMediaUrl(publicUrl);
-        setHeroMediaType("video");
-        showToastMsg("✨ Video Hero berhasil diunggah!", "success");
-      } else {
-        showToastMsg("Mengompresi gambar...");
-        const result = await compressImage(file, 1600, 1000, 0.8);
-        
-        showToastMsg("Mengunggah gambar ke cloud...", "info");
-        const compressedFile = base64ToFile(result.base64, file.name);
-        const publicUrl = await uploadFileDirect(compressedFile, 'hero_image');
-        
-        setHeroMediaUrl(publicUrl);
-        setHeroMediaType("image");
-        showToastMsg(`✨ Foto Hero berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
-      }
-    } catch (e) {
-      showToastMsg("Gagal memproses media Hero.", "error");
-    } finally {
-      setCompressing(false);
+      showToastMsg("Mengompresi logo...");
+      const result = await compressImage(file, 400, 400, 0.85);
+      
+      showToastMsg("Mengunggah logo ke cloud...", "info");
+      const compressedFile = base64ToFile(result.base64, file.name);
+      const publicUrl = await uploadFileDirect(compressedFile, 'school_logo');
+      
+      setSchoolLogo(publicUrl);
+      showToastMsg(`✨ Logo berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
+    } catch (_e) {
+      showToastMsg("Gagal memproses logo.", "error");
     }
   };
 
@@ -994,6 +982,48 @@ export default function KelolaUserInterface() {
     }
   };
 
+  const handleToggleLandingPageStatus = async () => {
+    const nextStatus = !isLandingPageActive;
+    const statusText = nextStatus ? "DIBUKA (PUBLIK)" : "DITUTUP (DRAFT / MAINTENANCE)";
+    
+    Swal.fire({
+      title: `Ubah Status Landing Page ke ${nextStatus ? 'Buka' : 'Tutup'}?`,
+      text: nextStatus 
+        ? "Landing page / subdomain sekolah akan dapat diakses publik oleh calon pendaftar."
+        : "Landing page / subdomain sekolah akan dinonaktifkan sementara dan menampilkan informasi pemeliharaan.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: nextStatus ? "#10B981" : "#F43F5E",
+      confirmButtonText: `Ya, ${nextStatus ? 'Buka' : 'Tutup'} Landing Page`,
+      cancelButtonText: "Batal",
+      customClass: { popup: "rounded-3xl" }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setIsLandingPageActive(nextStatus);
+        try {
+          const token = adminToken || localStorage.getItem("ppdb_admin_token");
+          await fetch("/api/config/save-all", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({
+              configs: { ppdb_landing_active: nextStatus },
+              description: `Ubah status publikasi landing page ke ${statusText}`
+            })
+          });
+          Swal.fire({
+            title: "Status Berhasil Diperbarui!",
+            text: `Landing page sekolah sekarang ${statusText}.`,
+            icon: "success",
+            confirmButtonColor: "#2563EB",
+            customClass: { popup: "rounded-2xl" }
+          });
+        } catch (_e) {
+          showToastMsg("Gagal memperbarui status landing page.", "error");
+        }
+      }
+    });
+  };
+
   const formatDate = (dateString: string) => {
     try {
       const options: Intl.DateTimeFormatOptions = { 
@@ -1004,7 +1034,7 @@ export default function KelolaUserInterface() {
         minute: '2-digit'
       };
       return new Date(dateString).toLocaleDateString('id-ID', options);
-    } catch (e) {
+    } catch (_e) {
       return dateString;
     }
   };
@@ -1018,10 +1048,10 @@ export default function KelolaUserInterface() {
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border text-xs font-bold animate-in slide-in-from-bottom duration-300 ${
           toast.type === "success" 
-            ? "bg-emerald-50 dark:bg-emerald-950/90 text-emerald-600 dark:text-emerald-300 border-emerald-250 dark:border-emerald-900" 
+            ? "bg-emerald-50 dark:bg-emerald-950/90 text-emerald-600 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900" 
             : toast.type === "error"
-            ? "bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-300 border-rose-250 dark:border-rose-900"
-            : "bg-indigo-50 dark:bg-indigo-950/90 text-indigo-600 dark:text-indigo-300 border-indigo-250 dark:border-indigo-900"
+            ? "bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-300 border-rose-200 dark:border-rose-900"
+            : "bg-indigo-50 dark:bg-indigo-950/90 text-indigo-600 dark:text-indigo-300 border-indigo-200 dark:border-indigo-900"
         }`}>
           {toast.type === "success" ? <Check size={16} /> : toast.type === "error" ? <X size={16} /> : <Info size={16} />}
           <span>{toast.message}</span>
@@ -1090,6 +1120,61 @@ export default function KelolaUserInterface() {
         </div>
       </div>
 
+      {/* Landing Page & Subdomain Public Status Control Banner */}
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold shrink-0 ${
+            isLandingPageActive
+              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
+              : "bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-800"
+          }`}>
+            <Globe className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-black text-slate-800 dark:text-white">
+                Status Landing Page / Subdomain Sekolah
+              </h3>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                isLandingPageActive 
+                  ? "bg-emerald-500 text-white" 
+                  : "bg-rose-500 text-white"
+              }`}>
+                {isLandingPageActive ? "PUBLIK (LIVE)" : "DITUTUP (DRAFT)"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {isLandingPageActive 
+                ? "Landing page publik aktif. Pengunjung dapat mengakses portal & mendaftar."
+                : "Landing page ditutup sementara. Pengunjung akan melihat informasi pemeliharaan."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <a
+            href={`/${slug || "demo"}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Lihat Website</span>
+          </a>
+          <button
+            onClick={handleToggleLandingPageStatus}
+            className={`flex-1 md:flex-none px-5 py-2.5 rounded-xl font-bold text-xs text-white transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
+              isLandingPageActive
+                ? "bg-rose-600 hover:bg-rose-700 shadow-rose-600/15"
+                : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/15"
+            }`}
+          >
+            <Power className="w-3.5 h-3.5" />
+            <span>{isLandingPageActive ? "Tutup Landing Page" : "Buka Landing Page"}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Navigation Tabs */}
       <div className="bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/70 dark:border-slate-800/40 flex flex-wrap gap-1 mb-6 transition-all duration-300">
         {[
@@ -1108,6 +1193,7 @@ export default function KelolaUserInterface() {
               key={tab.id}
               disabled={editingMajor !== null && tab.id !== "majors"}
               onClick={() => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 setActiveTab(tab.id as any);
                 router.push(`?tab=${tab.id}`);
               }}
@@ -1141,6 +1227,67 @@ export default function KelolaUserInterface() {
             {/* TAB 1: General / Umum */}
             {activeTab === "hero" && (
               <div className="space-y-6">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-6">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Building size={18} className="text-blue-600 dark:text-blue-500" />
+                    <span>Logo &amp; Nama Instansi (Header Website)</span>
+                  </h3>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-8 items-start bg-white dark:bg-[#0f172a] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                  {/* Logo Drag & Drop */}
+                  <div className="flex flex-col items-start gap-3 shrink-0">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Logo Instansi (Header)</label>
+                    <div
+                      className={`w-full md:w-56 h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-300 ${
+                        dragActiveStates["school_logo"]
+                          ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800/50"
+                      }`}
+                      onDragEnter={(e) => handleDragState(e, "school_logo", true)}
+                      onDragOver={(e) => handleDragState(e, "school_logo", true)}
+                      onDragLeave={(e) => handleDragState(e, "school_logo", false)}
+                      onDrop={(e) => {
+                        handleDragState(e, "school_logo", false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) handleSchoolLogoChange(file);
+                      }}
+                    >
+                      {schoolLogo && (schoolLogo.startsWith('data:image/') || schoolLogo.startsWith('https://')) ? (
+                        <img src={schoolLogo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain rounded-lg" />
+                      ) : (
+                        <div className="text-center text-slate-500 dark:text-slate-400">
+                          <Upload size={24} className="mx-auto mb-2 text-slate-400 dark:text-slate-500 dark:text-slate-400" />
+                          <span className="text-xs font-medium">Upload Logo</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleSchoolLogoChange(file);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nama Sekolah / Title */}
+                  <div className="flex-1 space-y-4 text-left w-full">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nama Instansi / Singkatan (Header)</label>
+                      <input
+                        type="text"
+                        value={schoolTitle}
+                        onChange={(e) => setSchoolTitle(e.target.value)}
+                        placeholder="Contoh: PPDB SMK TB"
+                        className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mt-8 mb-6">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <FileText size={18} className="text-blue-600 dark:text-blue-500" />
@@ -1181,101 +1328,6 @@ export default function KelolaUserInterface() {
                       className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors resize-y"
                     />
                   </div>
-
-                  {/* Hero Background Media Editor (Video or Photo Upload with Auto-Compressor) */}
-                  <div className="space-y-3 md:col-span-2 bg-slate-50 dark:bg-[#020617]/40 p-5 rounded-2xl border border-slate-200 dark:border-slate-800/60 dark:border-white/5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Video size={16} className="text-blue-500" />
-                        <label className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-wider">Media Background Hero (Foto / Video)</label>
-                      </div>
-                      <span className="text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-900">
-                        Auto-Compress Enabled
-                      </span>
-                    </div>
-
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                      Pilih tipe media background halaman utama. Berkas gambar/video yang diunggah akan otomatis di-kompres secara otomatis.
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => { setHeroMediaType("none"); setHeroMediaUrl(""); }}
-                        className={`p-3 rounded-xl border text-xs font-bold transition-all ${
-                          heroMediaType === "none"
-                            ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                            : "bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700"
-                        }`}
-                      >
-                        Default Mesh Gradient
-                      </button>
-
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleHeroMediaFileChange(file);
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className={`w-full p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                            heroMediaType === "image"
-                              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                              : "bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700"
-                          }`}
-                        >
-                          <ImageIcon size={14} />
-                          <span>Upload Foto Hero</span>
-                        </button>
-                      </div>
-
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="video/*"
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleHeroMediaFileChange(file);
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className={`w-full p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                            heroMediaType === "video"
-                              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                              : "bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700"
-                          }`}
-                        >
-                          <Video size={14} />
-                          <span>Upload Video Hero</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {heroMediaUrl && (
-                      <div className="mt-3 p-3 bg-white dark:bg-[#0f172a] rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 truncate max-w-xs">
-                          {heroMediaType === "video" ? <Video size={14} className="text-blue-500 shrink-0" /> : <ImageIcon size={14} className="text-emerald-500 shrink-0" />}
-                          <span className="truncate font-semibold text-slate-700 dark:text-slate-300">
-                            Media Aktif: {heroMediaType.toUpperCase()} ({heroMediaUrl.substring(0, 30)}...)
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { setHeroMediaType("none"); setHeroMediaUrl(""); }}
-                          className="text-rose-500 hover:text-rose-700 text-[11px] font-bold underline"
-                        >
-                          Hapus Media
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mt-8 mb-6">
@@ -1298,14 +1350,27 @@ export default function KelolaUserInterface() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Google Maps Embed iFrame URL</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Google Maps Embed iFrame URL</label>
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">Auto-Extract &lt;iframe&gt; src</span>
+                    </div>
                     <input
                       type="text"
                       value={mapUrl}
-                      onChange={(e) => setMapUrl(e.target.value)}
+                      onChange={(e) => {
+                        let val = e.target.value.trim();
+                        const srcMatch = val.match(/src=["']([^"']+)["']/i);
+                        if (srcMatch && srcMatch[1]) {
+                          val = srcMatch[1];
+                        }
+                        setMapUrl(val);
+                      }}
                       placeholder="https://www.google.com/maps/embed?pb=..."
                       className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
                     />
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      💡 <strong>Cara ambil:</strong> Buka Google Maps ➔ Cari lokasi sekolah ➔ Klik tombol <strong>Bagikan (Share)</strong> ➔ Pilih tab <strong>Sematkan peta (Embed a map)</strong> ➔ Klik <strong>Salin HTML</strong> lalu tempel (paste) langsung ke kotak ini.
+                    </p>
                   </div>
                   
                   <div className="space-y-2">
@@ -1440,7 +1505,7 @@ export default function KelolaUserInterface() {
                   <>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-white/5 pb-4">
                       <div>
-                        <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                        <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                           <GraduationCap size={16} className="text-blue-500" />
                           <span>Kompetensi Keahlian (Jurusan)</span>
                         </h3>
@@ -1531,7 +1596,7 @@ export default function KelolaUserInterface() {
                               <h4 className="font-extrabold text-sm text-slate-800 dark:text-white mb-2 group-hover:text-blue-500 transition-colors">
                                 {major.title}
                               </h4>
-                              <p className="text-xs text-slate-450 dark:text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed font-semibold">
+                              <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed font-semibold">
                                 {major.desc}
                               </p>
                             </div>
@@ -1554,7 +1619,7 @@ export default function KelolaUserInterface() {
                           setEditingMajor(null);
                           setIsNewMajor(false);
                         }}
-                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-350 transition-colors cursor-pointer"
+                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-400 transition-colors cursor-pointer"
                       >
                         <ArrowLeft size={12} />
                         <span>Kembali ke List Kartu</span>
@@ -1562,7 +1627,7 @@ export default function KelolaUserInterface() {
 
                       <div className="flex items-center gap-3">
                         <span className="w-3 h-6 rounded-full" style={{ backgroundColor: editingMajor.color }} />
-                        <h3 className="text-sm font-black uppercase tracking-wider text-slate-850 dark:text-white">
+                        <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-white">
                           {isNewMajor ? "WORKSPACE BARU JURUSAN" : `WORKSPACE EDITOR JURUSAN: ${editingMajor.code}`}
                         </h3>
                       </div>
@@ -1573,7 +1638,7 @@ export default function KelolaUserInterface() {
                       <div className="lg:col-span-1 space-y-6">
                         
                         {/* 2.1 Logo Drag & Drop - Custom Adjusted Size as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Logo Kompetensi</span>
@@ -1581,7 +1646,7 @@ export default function KelolaUserInterface() {
                             </div>
                             
                             {/* Adjusted circular logo size display as requested */}
-                            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-slate-850 border shadow p-0.5 flex items-center justify-center text-slate-400">
+                            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 border shadow p-0.5 flex items-center justify-center text-slate-400">
                               {editingMajor.logo ? (
                                 <img src={DOMPurify.sanitize(sanitizeSrc(editingMajor.logo))} alt="" className="w-full h-full object-cover rounded-xl" />
                               ) : (
@@ -1628,13 +1693,13 @@ export default function KelolaUserInterface() {
                             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-90 group-hover:opacity-95 flex flex-col items-center justify-center text-white p-3">
                               <Upload size={20} className="animate-bounce text-blue-400 mb-1" />
                               <span className="text-[9px] font-black uppercase tracking-wider">Drag / Ganti Logo</span>
-                              <span className="text-[7px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                              <span className="text-[7px] font-bold text-slate-400 uppercase mt-0.5">Atau Klik Explorer</span>
                             </div>
                           </div>
                         </div>
 
                         {/* 2.2 Banner Image Drag & Drop - Custom Backdrop cue */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div>
                             <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Banner Utama Unsplash</span>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">Tampil di header visual detail halaman</span>
@@ -1678,20 +1743,20 @@ export default function KelolaUserInterface() {
                             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-90 group-hover:opacity-95 flex flex-col items-center justify-center text-white p-3">
                               <Upload size={20} className="animate-bounce text-blue-400 mb-1" />
                               <span className="text-[9px] font-black uppercase tracking-wider">Drag / Ganti Banner</span>
-                              <span className="text-[7px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                              <span className="text-[7px] font-bold text-slate-400 uppercase mt-0.5">Atau Klik Explorer</span>
                             </div>
                           </div>
                         </div>
 
                         {/* 2.3 Video Upload Picker - Local File Explorer Uploader + Preview Player as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
                           <div>
                             <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Video Profil Jurusan</span>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">Upload dari file explorer (Maks. 15MB MP4/WebM)</span>
                           </div>
 
                           {editingMajor.video ? (
-                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-850">
+                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-800">
                               <video src={DOMPurify.sanitize(sanitizeSrc(editingMajor.video))} controls className="w-full h-full object-cover" />
                               <button
                                 type="button"
@@ -1747,34 +1812,34 @@ export default function KelolaUserInterface() {
                       <div className="lg:col-span-2 space-y-6">
                         
                         {/* 2.4 General Texts */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">Informasi Umum</h4>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                              <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Kode Jurusan (e.g. RPL, TJKT)</label>
+                              <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Kode Jurusan (e.g. RPL, TJKT)</label>
                               <input
                                 type="text"
                                 value={editingMajor.code}
                                 disabled={!isNewMajor}
                                 onChange={(e) => setEditingMajor({ ...editingMajor, code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") })}
                                 placeholder="Masukkan kode jurusan..."
-                                className={`w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none ${!isNewMajor ? "opacity-50 cursor-not-allowed" : ""}`}
+                                className={`w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none ${!isNewMajor ? "opacity-50 cursor-not-allowed" : ""}`}
                               />
                             </div>
 
                             <div className="space-y-1.5">
-                              <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Nama Program Studi</label>
+                              <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Nama Program Studi</label>
                               <input
                                 type="text"
                                 value={editingMajor.title}
                                 onChange={(e) => setEditingMajor({ ...editingMajor, title: e.target.value })}
-                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                                className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                               />
                             </div>
 
                             <div className="space-y-1.5 sm:col-span-2">
-                              <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Warna Hex Aksen</label>
+                              <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Warna Hex Aksen</label>
                               <div className="flex gap-2">
                                 <input
                                   type="color"
@@ -1786,28 +1851,28 @@ export default function KelolaUserInterface() {
                                   type="text"
                                   value={editingMajor.color}
                                   onChange={(e) => setEditingMajor({ ...editingMajor, color: e.target.value })}
-                                  className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs uppercase focus:outline-none"
+                                  className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs uppercase focus:outline-none"
                                 />
                               </div>
                             </div>
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Deskripsi Lengkap</label>
+                            <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Deskripsi Lengkap</label>
                             <textarea
                               value={editingMajor.desc}
                               onChange={(e) => setEditingMajor({ ...editingMajor, desc: e.target.value })}
                               rows={3}
-                              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none resize-none"
+                              className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none resize-none"
                             />
                           </div>
                         </div>
 
                         {/* 2.5 Dynamic Gallery Slots - All 4 unsplash photos are completely editable from File Explorer with faded background cue as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <div>
                             <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">Galeri Aktivitas (4 Foto &amp; Caption)</h4>
-                            <span className="text-[8px] text-slate-450 font-bold block mt-1 uppercase">Ganti foto standard Unsplash menggunakan File Explorer Anda secara visual</span>
+                            <span className="text-[8px] text-slate-400 font-bold block mt-1 uppercase">Ganti foto standard Unsplash menggunakan File Explorer Anda secara visual</span>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1827,6 +1892,7 @@ export default function KelolaUserInterface() {
                                       e.preventDefault(); e.stopPropagation();
                                       setDragActiveStates(prev => ({ ...prev, [elementId]: false }));
                                       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         processMediaFile(e.dataTransfer.files[0], `gallery-${slotIdx}` as any);
                                       }
                                     }}
@@ -1848,6 +1914,7 @@ export default function KelolaUserInterface() {
                                       accept="image/*"
                                       onChange={(e) => {
                                         if (e.target.files && e.target.files[0]) {
+                                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                           processMediaFile(e.target.files[0], `gallery-${slotIdx}` as any);
                                         }
                                       }}
@@ -1858,7 +1925,7 @@ export default function KelolaUserInterface() {
                                     <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-[1px] opacity-80 group-hover:opacity-90 transition-opacity flex flex-col items-center justify-center text-white p-2">
                                       <ImageIcon size={18} className="text-blue-400 mb-1 animate-pulse" />
                                       <span className="text-[8px] font-black uppercase tracking-wider">Ganti Foto Galeri #{slotIdx+1}</span>
-                                      <span className="text-[6px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                                      <span className="text-[6px] font-bold text-slate-400 uppercase mt-0.5">Atau Klik Explorer</span>
                                     </div>
                                   </div>
 
@@ -1881,7 +1948,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.6 Interactive Careers (4 slots) */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
                             Peluang Kerja / Karir Lulusan (4 Item)
                           </h4>
@@ -1903,7 +1970,7 @@ export default function KelolaUserInterface() {
                                       setEditingMajor({ ...editingMajor, careers: updated });
                                     }}
                                     placeholder="Nama Profesi"
-                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                                   />
                                   <textarea
                                     value={career.desc}
@@ -1915,7 +1982,7 @@ export default function KelolaUserInterface() {
                                     }}
                                     rows={2}
                                     placeholder="Penjelasan profesi..."
-                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-850 dark:text-white font-semibold text-[10px] focus:outline-none resize-none"
+                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-800 dark:text-white font-semibold text-[10px] focus:outline-none resize-none"
                                   />
                                 </div>
                               );
@@ -1924,7 +1991,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.7 Interactive Laboratory Facilities */}
-                        <div className="bg-slate-50 dark:bg-slate-950/15 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
                             Fasilitas Laboratorium &amp; Sarana Utama
                           </h4>
@@ -1940,7 +2007,7 @@ export default function KelolaUserInterface() {
                                     updated[fIdx] = e.target.value;
                                     setEditingMajor({ ...editingMajor, facilities: updated });
                                   }}
-                                  className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                                  className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                                 />
                                 <button
                                   type="button"
@@ -2029,7 +2096,7 @@ export default function KelolaUserInterface() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                       <Settings size={16} className="text-blue-500" />
                       <span>Tahapan Proses / Alur Pendaftaran Calon Siswa</span>
                     </h3>
@@ -2057,22 +2124,22 @@ export default function KelolaUserInterface() {
 
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Judul Langkah</label>
+                          <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Judul Langkah</label>
                           <input
                             type="text"
                             value={item.title}
                             onChange={(e) => handleUpdateAlur(item.id, "title", e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                           />
                         </div>
 
                         <div className="space-y-1.5 md:col-span-2">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Deskripsi Singkat</label>
+                          <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Deskripsi Singkat</label>
                           <input
                             type="text"
                             value={item.desc}
                             onChange={(e) => handleUpdateAlur(item.id, "desc", e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none"
+                            className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none"
                           />
                         </div>
                       </div>
@@ -2121,7 +2188,7 @@ export default function KelolaUserInterface() {
             {activeTab === "form" && (
               <div className="space-y-6">
                 <div className="border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                     <Info size={16} className="text-blue-500" />
                     <span>Panduan Pengisian Formulir &amp; Biaya</span>
                   </h3>
@@ -2129,7 +2196,7 @@ export default function KelolaUserInterface() {
 
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Biaya Formulir Pendaftaran (Rupiah)</label>
+                    <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Biaya Formulir Pendaftaran (Rupiah)</label>
                     <input
                       type="text"
                       value={formatRupiah(formFee)}
@@ -2143,7 +2210,7 @@ export default function KelolaUserInterface() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Petunjuk / Panduan Registrasi (Form Wizard)</label>
+                    <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Petunjuk / Panduan Registrasi (Form Wizard)</label>
                     <textarea
                       value={formGuideline}
                       onChange={(e) => setFormGuideline(e.target.value)}
@@ -2184,7 +2251,7 @@ export default function KelolaUserInterface() {
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                         {Object.entries(fieldsConfigUI).map(([key, cfg]) => (
-                          <tr key={key} className="hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-colors">
+                          <tr key={key} className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-colors">
                             <td className="px-4 py-2.5">
                               <div>
                                 <span className="font-bold text-slate-800 dark:text-white text-xs">{cfg.label}</span>
@@ -2234,7 +2301,7 @@ export default function KelolaUserInterface() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                       <HelpCircle size={16} className="text-blue-500" />
                       <span>Daftar Pertanyaan Yang Sering Diajukan (FAQ)</span>
                     </h3>
@@ -2262,22 +2329,22 @@ export default function KelolaUserInterface() {
 
                       <div className="flex-1 grid grid-cols-1 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Pertanyaan (Question)</label>
+                          <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Pertanyaan (Question)</label>
                           <input
                             type="text"
                             value={item.q}
                             onChange={(e) => handleUpdateFaq(idx, "q", e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                           />
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Jawaban (Answer)</label>
+                          <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Jawaban (Answer)</label>
                           <textarea
                             value={item.a}
                             onChange={(e) => handleUpdateFaq(idx, "a", e.target.value)}
                             rows={3}
-                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none resize-y"
+                            className="w-full px-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none resize-y"
                           />
                         </div>
                       </div>
@@ -2326,7 +2393,7 @@ export default function KelolaUserInterface() {
             {activeTab === "revisions" && (
               <div className="space-y-6">
                 <div className="border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                     <Clock size={16} className="text-blue-500" />
                     <span>Riwayat &amp; Catatan Perubahan User Interface</span>
                   </h3>
@@ -2344,7 +2411,7 @@ export default function KelolaUserInterface() {
                           <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-extrabold rounded-lg text-[9px] uppercase tracking-wider">
                             Revisi #{rev.id}
                           </span>
-                          <span className="text-[10px] text-slate-450 dark:text-slate-500 dark:text-slate-400 font-extrabold uppercase">
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-extrabold uppercase">
                             Oleh: @{rev.changed_by}
                           </span>
                         </div>
@@ -2382,7 +2449,7 @@ export default function KelolaUserInterface() {
               <div className="space-y-6 animate-in fade-in duration-300">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                       <Database size={16} className="text-blue-500" />
                       <span>Daftar Rekening Bank Sekolah</span>
                     </h3>
@@ -2422,7 +2489,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Bank</label>
+                          <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Bank</label>
                           <input
                             type="text"
                             value={bank.bankName}
@@ -2437,7 +2504,7 @@ export default function KelolaUserInterface() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nomor Rekening</label>
+                            <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nomor Rekening</label>
                             <input
                               type="text"
                               value={bank.accountNumber}
@@ -2451,7 +2518,7 @@ export default function KelolaUserInterface() {
                           </div>
 
                           <div className="space-y-2">
-                            <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Pemilik Rekening</label>
+                            <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Pemilik Rekening</label>
                             <input
                               type="text"
                               value={bank.accountHolder}
@@ -2481,7 +2548,7 @@ export default function KelolaUserInterface() {
               <div className="space-y-6 animate-in fade-in duration-300">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
                       <Briefcase size={16} className="text-blue-500" />
                       <span>Daftar Partner Industri</span>
                     </h3>
@@ -2501,7 +2568,7 @@ export default function KelolaUserInterface() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {partnersList.map((partner, idx) => (
+                  {partnersList.map((partner, _idx) => (
                     <div 
                       key={partner.id}
                       className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-5 relative overflow-hidden transition-all duration-300"
@@ -2539,7 +2606,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Partner</label>
+                          <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Partner</label>
                           <input
                             type="text"
                             value={partner.name}
@@ -2553,7 +2620,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Link Website</label>
+                          <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Link Website</label>
                           <input
                             type="text"
                             value={partner.url}
@@ -2567,7 +2634,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Ukuran Logo</label>
+                          <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Ukuran Logo</label>
                           <select
                             value={partner.h}
                             onChange={(e) => {
@@ -2613,7 +2680,7 @@ export default function KelolaUserInterface() {
               <button 
                 type="button" 
                 onClick={() => setShowConfirmModal(false)}
-                className="p-1 text-slate-450 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white rounded-lg"
+                className="p-1 text-slate-400 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white rounded-lg"
               >
                 <X size={16} />
               </button>
@@ -2629,7 +2696,7 @@ export default function KelolaUserInterface() {
                 rows={3}
                 required
                 placeholder="Contoh: Mengubah judul utama, memperbarui logo RPL, dan memperbarui alur langkah 3"
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-none"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-none"
               />
             </div>
 

@@ -42,6 +42,9 @@ export async function initDb(): Promise<void> {
       await client.query(`
         ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS registration_no VARCHAR(50);
         ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS physical_doc_verified BOOLEAN DEFAULT FALSE;
+        -- Fix production naming mismatch (Supabase uses student_applicants)
+        ALTER TABLE student_applicants ADD COLUMN IF NOT EXISTS registration_no VARCHAR(50);
+        ALTER TABLE student_applicants ADD COLUMN IF NOT EXISTS physical_docs_checklist JSONB;
         -- Status sekolah lama: VERIFIED → FULL_VERIFIED
         UPDATE schools SET status = 'FULL_VERIFIED' WHERE status = 'VERIFIED' OR status = 'verified';
       `);
@@ -50,8 +53,8 @@ export async function initDb(): Promise<void> {
     } else {
       console.warn('Database schema.sql file not found at', schemaPath);
     }
-  } catch (error: any) {
-    console.error('Failed to connect or initialize PostgreSQL database:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to connect or initialize PostgreSQL database:', (error as any).message);
     console.warn('Berjalan dalam mode fallback mock-db. Kueri database mungkin gagal sebelum konfigurasi diperbarui.');
   } finally {
     if (client) client.release();

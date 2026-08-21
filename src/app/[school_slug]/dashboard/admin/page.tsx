@@ -17,6 +17,7 @@ function AdminManagementPageContent() {
   const activeTabParam = searchParams.get("tab") || "admin";
   const activeTab = activeTabParam as "admin" | "trash";
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [admins, setAdmins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -28,6 +29,7 @@ function AdminManagementPageContent() {
   const [formLoading, setFormLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [trashedAdmins, setTrashedAdmins] = useState<any[]>([]);
   const [trashLoading, setTrashLoading] = useState(false);
 
@@ -85,8 +87,8 @@ function AdminManagementPageContent() {
       } else {
         setError(data.message || 'Gagal mengambil data admin');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as any).message);
     } finally {
       setLoading(false);
     }
@@ -109,8 +111,8 @@ function AdminManagementPageContent() {
       } else {
         setError(data.message || 'Gagal mengambil data sampah admin');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as any).message);
     } finally {
       setTrashLoading(false);
     }
@@ -148,13 +150,14 @@ function AdminManagementPageContent() {
       } else {
         setError(data.message || 'Gagal membuat akun admin');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as any).message);
     } finally {
       setFormLoading(false);
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEditClick = (admin: any) => {
     setEditAdminId(admin.id);
     setFormData({
@@ -175,6 +178,7 @@ function AdminManagementPageContent() {
       setError("");
       setSuccessMsg("");
       const backendUrl = getBackendUrl();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
         username: formData.username,
         nama_lengkap: formData.nama_lengkap,
@@ -208,8 +212,8 @@ function AdminManagementPageContent() {
       } else {
         setError(data.message || 'Gagal memperbarui data admin');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as any).message);
     } finally {
       setFormLoading(false);
     }
@@ -245,8 +249,8 @@ function AdminManagementPageContent() {
           } else {
             setError(data.message || 'Gagal menghapus admin');
           }
-        } catch (err: any) {
-          setError(err.message);
+        } catch (err: unknown) {
+          setError((err as any).message);
         }
       }
     });
@@ -277,8 +281,8 @@ function AdminManagementPageContent() {
       } else {
         setError(data.message || 'Gagal memulihkan admin');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as any).message);
     }
   };
 
@@ -501,7 +505,7 @@ function AdminManagementPageContent() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {admins.map((adm) => (
-                      <tr key={adm.id} className="hover:bg-slate-50 dark:bg-slate-950/15 dark:hover:bg-slate-800/20 transition-colors">
+                      <tr key={adm.id} className="hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/20 transition-colors">
                         <td className="px-6 py-4">
                           <div className="font-extrabold text-slate-800 dark:text-white">{adm.nama_lengkap}</div>
                           <div className="text-slate-500 dark:text-slate-400 text-[11px] font-mono mt-0.5">@{adm.username}</div>
@@ -572,7 +576,7 @@ function AdminManagementPageContent() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {trashedAdmins.map((adm) => (
-                    <tr key={adm.id} className="hover:bg-slate-50 dark:bg-slate-950/15 dark:hover:bg-slate-800/20 transition-colors">
+                    <tr key={adm.id} className="hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/20 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-extrabold text-slate-800 dark:text-white line-through opacity-70">{adm.nama_lengkap}</div>
                         <div className="text-slate-500 dark:text-slate-400 text-[11px] font-mono">@{adm.username}</div>

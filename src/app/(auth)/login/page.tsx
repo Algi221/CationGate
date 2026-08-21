@@ -1,7 +1,13 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 export default function Page() {
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">src\app\(auth)\login</h1>
-    </div>
-  );
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/masuk");
+  }, [router]);
+
+  return null;
 }

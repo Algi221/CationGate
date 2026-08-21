@@ -48,7 +48,8 @@ export default function ProfilSekolahPage() {
     }
   }, [profilSekolah, ppdbTitle, ppdbLogo]);
 
-  const saveConfig = async (key: string, value: any, showSuccess = false) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const saveConfig = async (key: string, value: any) => {
     if (isDemoMode) return false;
     try {
       const res = await fetch(`/api/config?school_id=${schoolId}`, {
@@ -141,54 +142,71 @@ export default function ProfilSekolahPage() {
           <button
             onClick={handleSaveAll}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95 disabled:opacity-70"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
           >
-            {loading ? (
-              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            ) : (
-              <Save className="w-5 h-5" />
-            )}
-            Simpan Perubahan
+            <Save className="w-5 h-5" />
+            {loading ? "Menyimpan..." : "Simpan Semua Perubahan"}
           </button>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+        {/* Content Tabs */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
           
-          {/* Sidebar Tabs */}
-          <div className="w-full md:w-64 bg-slate-50 dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-800 shrink-0">
-            <div className="p-4 space-y-1">
-              {[
-                { id: "identitas", label: "Identitas Sekolah", icon: <School className="w-5 h-5" /> },
-                { id: "sejarah", label: "Sejarah", icon: <FileText className="w-5 h-5" /> },
-                { id: "visimisi", label: "Visi & Misi", icon: <Target className="w-5 h-5" /> },
-                { id: "tujuan", label: "Tujuan", icon: <ListChecks className="w-5 h-5" /> },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all ${
-                    activeTab === tab.id
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  {tab.icon}
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+          {/* Navigation Bar */}
+          <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab("identitas")}
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === "identitas"
+                  ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              <School className="w-4 h-4" />
+              Identitas &amp; Logo
+            </button>
+            <button
+              onClick={() => setActiveTab("visi_misi")}
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === "visi_misi"
+                  ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              <Target className="w-4 h-4" />
+              Visi &amp; Misi
+            </button>
+            <button
+              onClick={() => setActiveTab("sejarah")}
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === "sejarah"
+                  ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Sejarah Sekolah
+            </button>
+            <button
+              onClick={() => setActiveTab("tujuan")}
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === "tujuan"
+                  ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              <ListChecks className="w-4 h-4" />
+              Tujuan Institusi
+            </button>
           </div>
 
-          {/* Content Area */}
-          <div className="flex-1 p-6 md:p-8">
-            
+          <div className="p-6 md:p-8">
+            {/* Tab: Identitas & Logo */}
             {activeTab === "identitas" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg">
-                    <School className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Identitas Sekolah</h2>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Identitas Utama Sekolah</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Informasi pokok sekolah yang digunakan di profil dan kop surat sistem.</p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -218,110 +236,82 @@ export default function ProfilSekolahPage() {
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Sekolah</label>
                     <input type="text" name="nama" value={identitas.nama} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: SMK TARUNA BHAKTI" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Status Akreditasi</label>
-                    <input type="text" name="akreditasi" value={identitas.akreditasi} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: A / Nomor: ..." />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Alamat Lengkap</label>
-                    <textarea name="alamat" rows={3} value={identitas.alamat} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none" placeholder="Alamat jalan, kelurahan, kecamatan, kota, provinsi, dsb." />
-                  </div>
+                  
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NPSN</label>
                     <input type="text" name="npsn" value={identitas.npsn} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Pokok Sekolah Nasional" />
                   </div>
+
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NIS</label>
-                    <input type="text" name="nis" value={identitas.nis} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Induk Sekolah" />
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Status Akreditasi</label>
+                    <input type="text" name="akreditasi" value={identitas.akreditasi} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: A (Unggul)" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NSS</label>
-                    <input type="text" name="nss" value={identitas.nss} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Statistik Sekolah" />
-                  </div>
+
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Tahun Berdiri</label>
-                    <input type="text" name="tahun_berdiri" value={identitas.tahun_berdiri} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Tahun" />
+                    <input type="text" name="tahun_berdiri" value={identitas.tahun_berdiri} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: 2004" />
                   </div>
+
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email Utama</label>
-                    <input type="email" name="email" value={identitas.email} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="email@sekolah.com" />
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email Resmi</label>
+                    <input type="email" name="email" value={identitas.email} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="admin@sekolah.sch.id" />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Alamat Lengkap</label>
+                    <textarea name="alamat" value={identitas.alamat} onChange={handleIdentitasChange} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Jl. Pekapuran No. 1..." />
                   </div>
                 </div>
               </div>
             )}
 
+            {/* Tab: Visi & Misi */}
+            {activeTab === "visi_misi" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Visi &amp; Misi Sekolah</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Gunakan baris baru atau nomor urut untuk poin-poin misi.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Visi Institusi</label>
+                    <textarea value={visi} onChange={(e) => setVisi(e.target.value)} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Menjadi lembaga pendidikan unggul..." />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Misi Institusi</label>
+                    <textarea value={misi} onChange={(e) => setMisi(e.target.value)} rows={6} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="1. Menyelenggarakan proses pembelajaran...&#10;2. Membentuk karakter peserta didik..." />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Sejarah */}
             {activeTab === "sejarah" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 h-full flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Sejarah Singkat</h2>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Sejarah Singkat</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Ceritakan latar belakang pendirian institusi dan tonggak pencapaian penting.</p>
                 </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Ceritakan awal mula berdiri dan perkembangan sekolah.</p>
-                <textarea
-                  rows={15}
-                  value={sejarah}
-                  onChange={(e) => setSejarah(e.target.value)}
-                  className="w-full flex-1 px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
-                  placeholder="Tuliskan sejarah sekolah di sini..."
-                />
-              </div>
-            )}
 
-            {activeTab === "visimisi" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg">
-                    <Target className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Visi & Misi</h2>
-                </div>
-                
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Visi Sekolah</label>
-                  <textarea
-                    rows={4}
-                    value={visi}
-                    onChange={(e) => setVisi(e.target.value)}
-                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
-                    placeholder="Contoh: Menghasilkan Lulusan Yang Kompeten Dalam Ilmu Pengetahuan dan Teknologi..."
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Misi Sekolah</label>
-                  <textarea
-                    rows={8}
-                    value={misi}
-                    onChange={(e) => setMisi(e.target.value)}
-                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
-                    placeholder="Contoh:
-1. Menumbuhkan Semangat Kreatifitas...
-2. Melaksanakan Kurikulum...
-3. Meningkatkan kualitas sumber daya..."
-                  />
+                <div className="space-y-2">
+                  <textarea value={sejarah} onChange={(e) => setSejarah(e.target.value)} rows={10} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="SMK Taruna Bhakti didirikan pada tahun..." />
                 </div>
               </div>
             )}
 
+            {/* Tab: Tujuan */}
             {activeTab === "tujuan" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 h-full flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg">
-                    <ListChecks className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Tujuan Sekolah</h2>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Tujuan Pendidikan</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Target dan sasaran mutu lulusan yang ingin dicapai.</p>
                 </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Jabarkan tujuan utama yang ingin dicapai sekolah. Anda dapat menggunakan format daftar (list).</p>
-                <textarea
-                  rows={15}
-                  value={tujuan}
-                  onChange={(e) => setTujuan(e.target.value)}
-                  className="w-full flex-1 px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
-                  placeholder="Dalam mewujudkan visi dan misi, sekolah mempunyai tujuan sebagai berikut:
-- Menghasilkan lulusan yang kompeten
-- Meningkatkan kualitas pembelajaran..."
-                />
+
+                <div className="space-y-2">
+                  <textarea value={tujuan} onChange={(e) => setTujuan(e.target.value)} rows={8} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="1. Menghasilkan lulusan yang kompeten...&#10;2. Mewujudkan tata kelola institusi transparan..." />
+                </div>
               </div>
             )}
 

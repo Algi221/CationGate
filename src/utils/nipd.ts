@@ -10,6 +10,7 @@ export const getMajorOrderScore = (major: string) => {
   return 99;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const generateNipdMap = (applicants: any[]) => {
   // Only process approved/active students for NIPD
   const activeStudents = applicants.filter(a => a.status === 'Approved');
@@ -40,7 +41,7 @@ export const generateNipdMap = (applicants: any[]) => {
         const year2 = parts[1].slice(-2);
         yearPrefix = `${year1}${year2}`;
       }
-    } catch (e) {
+    } catch (_e) {
       // fallback
     }
 

@@ -4,6 +4,7 @@ export class ApplicantService {
   /**
    * Sync a candidate to the active students list if they are approved
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async syncToActive(candidate: any): Promise<void> {
     try {
       const supabase = getSupabaseClient(); // Background service role

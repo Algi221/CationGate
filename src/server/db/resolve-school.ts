@@ -21,6 +21,7 @@ export function isValidUUID(value: string): boolean {
  */
 export async function resolveSchoolUUID(
   schoolIdOrSlug: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inMemSchools?: Map<string, any>
 ): Promise<string | null> {
   if (!schoolIdOrSlug) return null;
@@ -77,7 +78,7 @@ export async function resolveSchoolUUID(
       const id = String(inMemSchools.get(strVal).id || strVal);
       if (isValidUUID(id)) return id;
     }
-    for (const [slug, school] of inMemSchools) {
+    for (const [_slug, school] of inMemSchools) {
       if (String(school.id) === strVal) {
         const id = String(school.id);
         if (isValidUUID(id)) return id;

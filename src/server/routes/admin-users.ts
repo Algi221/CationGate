@@ -20,6 +20,8 @@ adminUsersRouter.get('/ysbmo/staff', async (c) => {
 adminUsersRouter.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
@@ -32,8 +34,8 @@ adminUsersRouter.get('/', async (c) => {
     if (error) throw error;
 
     return c.json({ success: true, data: adminUsers });
-  } catch (error: any) {
-    return c.json({ success: false, message: error.message }, 500);
+  } catch (error: unknown) {
+    return c.json({ success: false, message: (error as any).message }, 500);
   }
 });
 
@@ -41,6 +43,8 @@ adminUsersRouter.get('/', async (c) => {
 adminUsersRouter.get('/trashed', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
@@ -56,8 +60,8 @@ adminUsersRouter.get('/trashed', async (c) => {
     if (error) throw error;
 
     return c.json({ success: true, data: trashedUsers });
-  } catch (error: any) {
-    return c.json({ success: false, message: error.message }, 500);
+  } catch (error: unknown) {
+    return c.json({ success: false, message: (error as any).message }, 500);
   }
 });
 
@@ -66,6 +70,8 @@ adminUsersRouter.post('/:id/restore', async (c) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
@@ -87,8 +93,8 @@ adminUsersRouter.post('/:id/restore', async (c) => {
     if (error) throw error;
 
     return c.json({ success: true, message: 'Admin berhasil dipulihkan.' });
-  } catch (error: any) {
-    return c.json({ success: false, message: error.message }, 500);
+  } catch (error: unknown) {
+    return c.json({ success: false, message: (error as any).message }, 500);
   }
 });
 
@@ -101,12 +107,14 @@ adminUsersRouter.post('/', async (c) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => err.message)
+        errors: result.error.issues.map((err) => (err as any).message)
       }, 400);
     }
     const { username, password, nama_lengkap, role } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
@@ -121,6 +129,7 @@ adminUsersRouter.post('/', async (c) => {
     }
 
     const passwordHash = bcrypt.hashSync(password, 10);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = {
       username,
       password_hash: passwordHash,
@@ -133,8 +142,8 @@ adminUsersRouter.post('/', async (c) => {
     if (error) throw error;
 
     return c.json({ success: true, data: newAdmin, message: 'Admin berhasil ditambahkan.' });
-  } catch (error: any) {
-    return c.json({ success: false, message: error.message }, 500);
+  } catch (error: unknown) {
+    return c.json({ success: false, message: (error as any).message }, 500);
   }
 });
 
@@ -147,12 +156,14 @@ adminUsersRouter.put('/:id', async (c) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => err.message)
+        errors: result.error.issues.map((err) => (err as any).message)
       }, 400);
     }
     const { username, password, nama_lengkap, role } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
@@ -175,6 +186,7 @@ adminUsersRouter.put('/:id', async (c) => {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dataToUpdate: any = {
       username: username || existing.username,
       nama_lengkap: nama_lengkap || existing.nama_lengkap,
@@ -192,8 +204,8 @@ adminUsersRouter.put('/:id', async (c) => {
     if (error) throw error;
 
     return c.json({ success: true, data: updated, message: 'Admin berhasil diperbarui.' });
-  } catch (error: any) {
-    return c.json({ success: false, message: error.message }, 500);
+  } catch (error: unknown) {
+    return c.json({ success: false, message: (error as any).message }, 500);
   }
 });
 
@@ -203,6 +215,8 @@ adminUsersRouter.delete('/:id', async (c) => {
     const id = parseInt(c.req.param('id') || '0');
     
     const supabase = getSupabaseClient(c.req.header('Authorization'));
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schoolId = ((c as any).get('admin') as any)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
@@ -234,8 +248,8 @@ adminUsersRouter.delete('/:id', async (c) => {
     } else {
       return c.json({ success: true, message: 'Admin berhasil dipindahkan ke tempat sampah.' });
     }
-  } catch (error: any) {
-    return c.json({ success: false, message: error.message }, 500);
+  } catch (error: unknown) {
+    return c.json({ success: false, message: (error as any).message }, 500);
   }
 });
 

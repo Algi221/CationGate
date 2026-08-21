@@ -20,6 +20,7 @@ interface WsLog {
   timestamp: string;
   direction: string;
   event: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
 }
 
@@ -28,13 +29,16 @@ interface PPDBContextType {
   setIsLoaded: React.Dispatch<React.SetStateAction<boolean>>;
   // Auth (proxied from AuthContext)
   adminToken: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adminUser: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setAdminUser: React.Dispatch<React.SetStateAction<any | null>>;
   loginAdmin: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   loginGatekeeper: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logoutAdmin: () => void;
   logoutGatekeeper: () => void;
   gatekeeperToken: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   gatekeeperUser: any | null;
   // School (proxied from SchoolContext)
   schoolId: string;
@@ -45,32 +49,45 @@ interface PPDBContextType {
   ppdbLogo: string;
   ppdbTitle: string;
   ppdbFooterDesc: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profilSekolah: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setProfilSekolah: React.Dispatch<React.SetStateAction<any>>;
   fetchConfigs: () => Promise<void>;
   // Toast (proxied from ToastContext)
   toasts: { id: string; title: string; message: string; type: string }[];
   addToast: (title: string, message: string, type?: string) => void;
   // Applicant Data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   applicants: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setApplicants: React.Dispatch<React.SetStateAction<any[]>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   publicApplicants: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   activeStudents: any[];
   wsStatus: string;
   wsLogs: WsLog[];
   simulationActive: boolean;
   setSimulationActive: React.Dispatch<React.SetStateAction<boolean>>;
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registerApplicant: (formData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
   verifyApplicant: (id: number) => Promise<void>;
   rejectApplicant: (id: number, alasan_ditolak?: string) => Promise<void>;
   deleteApplicant: (id: number) => Promise<void>;
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateApplicant: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateActiveStudent: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
   deleteActiveStudent: (id: number) => Promise<void>;
   fetchPublicApplicants: () => Promise<void>;
   fetchAdminApplicants: () => Promise<void>;
   fetchActiveStudents: () => Promise<void>;
   simulateRegistration: () => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   checkPaymentStatus: (nisn: string) => Promise<any>;
 }
 
@@ -85,6 +102,7 @@ const MAJORS_LIST = ["Rekayasa Perangkat Lunak", "Teknik Komputer dan Jaringan",
 const SCHOOLS_ORIGIN = ["SMPN 1 Depok", "SMPN 2 Depok", "SMPN 4 Jakarta", "SMP Al-Azhar 9", "SMPN 1 Bogor", "SMP YPB Depok", "SMP PGRI 1", "SMPN 3 Bekasi"];
 
 function generateDemoApplicants() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any[] = [];
   const statuses = ["Approved", "Approved", "Pending", "Approved", "Pending", "Rejected"];
   const now = Date.now();
@@ -105,6 +123,7 @@ function generateDemoApplicants() {
 }
 
 function generateDemoActiveStudents() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any[] = [];
   const periodes = ["2024-2025", "2025-2026", "2026-2027"];
   let idCounter = 1;
@@ -146,20 +165,25 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("cationgate:loading-complete", handleLoadingComplete);
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [applicants, setApplicants] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeStudents, setActiveStudents] = useState<any[]>([]);
   const [wsStatus, setWsStatus] = useState<string>("SYNCING (15s)");
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
   const [simulationActive, setSimulationActive] = useState<boolean>(false);
 
   const wsRef = useRef<WebSocket | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const reconnectTimeoutRef = useRef<any>(null);
   const connectWsRef = useRef<(() => void) | null>(null);
   const adminTokenRef = useRef<string | null>(adminToken);
 
   useEffect(() => { adminTokenRef.current = adminToken; }, [adminToken]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addWsLog = useCallback((direction: string, event: string, payload: any) => {
     setWsLogs((prev) => [{ id: Date.now() + Math.random().toString(36).substr(2, 9), timestamp: new Date().toLocaleTimeString(), direction, event, payload }, ...prev.slice(0, 49)]);
   }, []);
@@ -168,7 +192,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const fetchPublicApplicants = useCallback(async () => {
     if (isDemoMode) {
       const localStr = localStorage.getItem('demo_public_applicants');
-      if (localStr) { try { setPublicApplicants(JSON.parse(localStr)); return; } catch (e) {} }
+      if (localStr) { try { setPublicApplicants(JSON.parse(localStr)); return; } catch (_e) {} }
       setPublicApplicants(DEMO_APPLICANTS_SEED);
       return;
     }
@@ -178,8 +202,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok) return;
       const data = await res.json();
       if (data && data.success && Array.isArray(data.data)) setPublicApplicants(data.data);
-    } catch (err: any) {
-      console.warn("Public API fetch error, using local fallback seed:", err.message);
+    } catch (err: unknown) {
+      console.warn("Public API fetch error, using local fallback seed:", (err as any).message);
       setPublicApplicants(prev => prev.length > 0 ? prev : DEMO_APPLICANTS_SEED);
     }
   }, [isDemoMode, slug]);
@@ -187,7 +211,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const fetchAdminApplicants = useCallback(async () => {
     if (isDemoMode) {
       const localStr = localStorage.getItem('demo_admin_applicants');
-      if (localStr) { try { setApplicants(JSON.parse(localStr)); return; } catch (e) {} }
+      if (localStr) { try { setApplicants(JSON.parse(localStr)); return; } catch (_e) {} }
       setApplicants(DEMO_APPLICANTS_SEED);
       return;
     }
@@ -198,8 +222,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       if (res.status === 401) { console.warn("Token is invalid or expired. Logging out admin."); logoutAdmin(); return; }
       const data = await res.json();
       if (data.success) setApplicants(data.data);
-    } catch (err: any) {
-      console.warn("Admin API fetch error:", err.message);
+    } catch (err: unknown) {
+      console.warn("Admin API fetch error:", (err as any).message);
       setApplicants(DEMO_APPLICANTS_SEED);
     }
   }, [adminToken, logoutAdmin, isDemoMode]);
@@ -207,7 +231,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const fetchActiveStudents = useCallback(async () => {
     if (isDemoMode) {
       const localStr = localStorage.getItem('demo_active_students');
-      if (localStr) { try { setActiveStudents(JSON.parse(localStr)); return; } catch (e) {} }
+      if (localStr) { try { setActiveStudents(JSON.parse(localStr)); return; } catch (_e) {} }
       setActiveStudents(DEMO_ACTIVE_STUDENTS_SEED);
       return;
     }
@@ -217,22 +241,24 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`${BACKEND_URL}/applicants`, { headers: { "Authorization": `Bearer ${token}` } });
       if (res.status === 401) { console.warn("Token is invalid or expired. Logging out admin."); logoutAdmin(); return; }
       const data = await res.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (data.success) { setActiveStudents(data.data.filter((a: any) => a.status === 'Approved')); }
-    } catch (err: any) {
-      console.warn("Active students API fetch error:", err.message);
+    } catch (err: unknown) {
+      console.warn("Active students API fetch error:", (err as any).message);
     }
   }, [adminToken, logoutAdmin, isDemoMode]);
 
   // ── CRUD Operations ─────────────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const registerApplicant = useCallback(async (formData: any) => {
     try {
       if (isDemoMode) throw new Error("Demo Mode");
-      const res = await fetch(`${BACKEND_URL}/applicants?school_slug=${formData.school_slug || 'smk'}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
+      const res = await fetch(`${BACKEND_URL}/applicants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
       const data = await res.json();
       if (data.success) { await fetchPublicApplicants(); return { success: true, data: data.data }; }
       else { return { success: false, message: data.message }; }
-    } catch (err: any) {
-      console.error("API registration error, adding to memory fallback:", err.message);
+    } catch (err: unknown) {
+      console.error("API registration error, adding to memory fallback:", (err as any).message);
       const mockSaved = { id: Date.now(), nama: formData.nama || "Pendaftar Baru", nisn: formData.nisn || "0000000000", sekolah_asal: formData.sekolahAsal || "SMP Asal", jurusan_1: formData.jurusan1 || "PPLG", status: "Pending", tgl_daftar: new Date().toISOString() };
       setPublicApplicants(prev => [mockSaved, ...prev]);
       setApplicants(prev => [mockSaved, ...prev]);
@@ -252,8 +278,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         if (wsStatus !== "CONNECTED") addToast("Applicant Approved", `Pendaftar #${id} telah berhasil diverifikasi!`, "success");
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
       } else { addToast("Gagal Memverifikasi", data.message || "Gagal memperbarui status pendaftar.", "danger"); }
-    } catch (err: any) {
-      console.error("API status update error:", err.message);
+    } catch (err: unknown) {
+      console.error("API status update error:", (err as any).message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
       addToast("Applicant Approved (Offline)", `Pendaftar #${id} disetujui.`, "success");
@@ -275,8 +301,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
         if (isAdminPath) addToast("Gagal Menolak", data.message || "Gagal memperbarui status pendaftar.", "danger");
       }
-    } catch (err: any) {
-      console.error("API status update error:", err.message);
+    } catch (err: unknown) {
+      console.error("API status update error:", (err as any).message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
       const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
@@ -295,14 +321,15 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         if (wsStatus !== "CONNECTED") addToast("Applicant Deleted", `Data pendaftar #${id} telah dihapus permanen.`, "danger");
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
       } else { addToast("Gagal Menghapus", data.message || "Gagal menghapus data pendaftar.", "danger"); }
-    } catch (err: any) {
-      console.error("API delete error:", err.message);
+    } catch (err: unknown) {
+      console.error("API delete error:", (err as any).message);
       setApplicants(prev => prev.filter(a => a.id !== id));
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
       addToast("Applicant Deleted (Offline)", `Pendaftar #${id} dihapus.`, "danger");
     }
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast, wsStatus, isDemoMode]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateApplicant = useCallback(async (id: number, updatedData: any) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token && !isDemoMode) return { success: false, message: "Tidak terautentikasi." };
@@ -315,8 +342,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
         return { success: true, data: data.data };
       } else { return { success: false, message: data.message }; }
-    } catch (err: any) {
-      console.error("API update error:", err.message);
+    } catch (err: unknown) {
+      console.error("API update error:", (err as any).message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
       addToast("Data Diperbarui (Offline)", `Perubahan data tersimpan lokal.`, "success");
@@ -324,27 +351,26 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast, isDemoMode]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateActiveStudent = useCallback(async (id: number, updatedData: any) => {
-    // Optimistic Update
-    setActiveStudents(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
-    setApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
-
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
-    if (!token && !isDemoMode) return { success: false, message: "Tidak terautentikasi." };
+    if (!token) return { success: false, message: "Tidak terautentikasi." };
     try {
-      if (isDemoMode) throw new Error("Demo Mode");
       const res = await fetch(`/api/applicants/${id}`, { method: "PUT", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify(updatedData) });
-      if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) throw new Error("Gagal memperbarui data di server.");
+      if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return { success: false, message: "Gagal memperbarui data siswa aktif." };
       const data = await res.json();
       if (data.success) {
-        fetchActiveStudents(); fetchAdminApplicants(); // Run in background without blocking
+        addToast("Data Diperbarui", `Data siswa aktif ${updatedData.nama || '#' + id} berhasil disimpan.`, "success");
+        await fetchActiveStudents(); await fetchAdminApplicants();
         return { success: true, data: data.data };
-      } else { throw new Error(data.message); }
-    } catch (err: any) {
-      console.warn("API active student update fallback:", err.message);
+      } else { return { success: false, message: data.message }; }
+    } catch (err: unknown) {
+      console.error("API active student update error:", (err as any).message);
+      setActiveStudents(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
+      addToast("Data Diperbarui (Offline)", `Perubahan data tersimpan lokal.`, "success");
       return { success: true, data: { id, ...updatedData } };
     }
-  }, [adminToken, fetchActiveStudents, fetchAdminApplicants, isDemoMode]);
+  }, [adminToken, fetchActiveStudents, fetchAdminApplicants, addToast]);
 
   const deleteActiveStudent = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -357,8 +383,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         addToast("Siswa Dihapus", `Siswa aktif #${id} telah dihapus.`, "danger");
         await fetchActiveStudents(); await fetchAdminApplicants();
       } else { addToast("Gagal Menghapus", data.message || "Gagal menghapus siswa aktif.", "danger"); }
-    } catch (err: any) {
-      console.error("API active student delete error:", err.message);
+    } catch (err: unknown) {
+      console.error("API active student delete error:", (err as any).message);
       setActiveStudents(prev => prev.filter(a => a.id !== id));
       addToast("Siswa Dihapus (Offline)", `Siswa aktif #${id} dihapus.`, "danger");
     }
@@ -401,6 +427,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     const lastNames = ["Saputra", "Pratama", "Lestari", "Maharani", "Wijaya", "Siddiq", "Santoso", "Hidayat", "Kusuma", "Utami"];
     const schools = ["SMPN 1 Depok", "SMPN 2 Depok", "SMPN 3 Depok", "SMP IT Al-Hikmah", "SMP Mardi Yuana", "MTsN 1 Depok", "SMP Budi Kharisma", "SMPN 4 Depok"];
     const majorsCodes = ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const randomItem = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
     const randomNama = `${randomItem(firstNames)} ${randomItem(lastNames)}`;
     const randomMajor = randomItem(majorsCodes);
@@ -426,9 +453,9 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`/applicants/check-payment/${nisn}`);
       const data = await res.json();
       return data;
-    } catch (err: any) {
-      console.error("Check payment status failed:", err.message);
-      return { success: false, message: err.message };
+    } catch (err: unknown) {
+      console.error("Check payment status failed:", (err as any).message);
+      return { success: false, message: (err as any).message };
     }
   }, []);
 

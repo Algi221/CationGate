@@ -280,8 +280,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   if (!mounted) return null;
-  if (isSchoolNotFound || schoolStatus === 'TAKEDOWN') {
-    return <SchoolNotFound slug={schoolSlug} isTakedown={schoolStatus === 'TAKEDOWN'} />;
+  if (isSchoolNotFound || schoolStatus === 'TAKEDOWN' || schoolStatus === 'SUSPENDED') {
+    return <SchoolNotFound slug={schoolSlug} isTakedown={schoolStatus === 'TAKEDOWN' || schoolStatus === 'SUSPENDED'} />;
   }
   if (!adminToken && schoolSlug !== 'demo') {
     return (

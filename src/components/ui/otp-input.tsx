@@ -132,14 +132,18 @@ const OTPInputBox = ({
   };
 
   const onInput = (e: unknown) => {
-    const { value } = (e as any).target;
+    const target = (e as any).target;
+    let value = target.value.trim();
+    if (value.length > 1) {
+      value = value.slice(-1);
+    }
     if (value.match(/^[0-9]$/)) {
-      (e as any).target.value = value;
+      target.value = value;
       if (index < length - 1) {
         document.getElementById(`input-${index + 1}`)?.focus();
       }
     } else {
-      (e as any).target.value = "";
+      target.value = "";
     }
     verifyOTP();
   };
@@ -187,7 +191,7 @@ const OTPInputBox = ({
         onPaste={onPaste}
         onFocus={onFocus}
         onBlur={onBlur}
-        className="w-full h-full text-center text-2xl sm:text-3xl font-semibold outline-none caret-gray-900 dark:caret-gray-200 bg-slate-50 dark:bg-black dark:text-white"
+        className="w-full h-full text-center text-2xl sm:text-3xl font-semibold outline-none caret-gray-900 dark:caret-gray-200 bg-slate-50 text-slate-900 dark:bg-black dark:text-white"
         disabled={state === "success" || state === "loading"}
       />
     </motion.div>

@@ -175,6 +175,25 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
   const [simulationActive, setSimulationActive] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (applicants.length > 0 && typeof window !== 'undefined') {
+      localStorage.setItem('demo_admin_applicants', JSON.stringify(applicants));
+    }
+  }, [applicants]);
+
+  useEffect(() => {
+    if (publicApplicants.length > 0 && typeof window !== 'undefined') {
+      localStorage.setItem('demo_public_applicants', JSON.stringify(publicApplicants));
+    }
+  }, [publicApplicants]);
+
+  useEffect(() => {
+    if (activeStudents.length > 0 && typeof window !== 'undefined') {
+      localStorage.setItem('demo_active_students', JSON.stringify(activeStudents));
+    }
+  }, [activeStudents]);
+
+
   const wsRef = useRef<WebSocket | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const reconnectTimeoutRef = useRef<any>(null);
@@ -208,6 +227,20 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isDemoMode, slug]);
 
+  // Merge offline class-assignment overrides into API data so refreshes don't wipe them
+  const applyClassOverrides = (list: any[]): any[] => {
+    try {
+      const raw = localStorage.getItem('ppdb_class_overrides');
+      if (!raw) return list;
+      const overrides: Record<string, any> = JSON.parse(raw);
+      if (!Object.keys(overrides).length) return list;
+      return list.map(a => {
+        const o = overrides[String(a.id)];
+        return o ? { ...a, ...o } : a;
+      });
+    } catch { return list; }
+  };
+
   const fetchAdminApplicants = useCallback(async () => {
     if (isDemoMode) {
       const localStr = localStorage.getItem('demo_admin_applicants');
@@ -221,7 +254,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`${BACKEND_URL}/applicants`, { headers: { "Authorization": `Bearer ${token}` } });
       if (res.status === 401) { console.warn("Token is invalid or expired. Logging out admin."); logoutAdmin(); return; }
       const data = await res.json();
-      if (data.success) setApplicants(data.data);
+      if (data.success) setApplicants(applyClassOverrides(data.data));
     } catch (err: unknown) {
       console.warn("Admin API fetch error:", (err as any).message);
       setApplicants(DEMO_APPLICANTS_SEED);
@@ -242,7 +275,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       if (res.status === 401) { console.warn("Token is invalid or expired. Logging out admin."); logoutAdmin(); return; }
       const data = await res.json();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (data.success) { setActiveStudents(data.data.filter((a: any) => a.status === 'Approved')); }
+      if (data.success) { setActiveStudents(applyClassOverrides(data.data.filter((a: any) => a.status === 'Approved'))); }
     } catch (err: unknown) {
       console.warn("Active students API fetch error:", (err as any).message);
     }
@@ -273,11 +306,12 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isDemoMode) throw new Error("Demo Mode");
       const res = await fetch(`${BACKEND_URL}/applicants/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ status: "Approved" }) });
+      if (!res.ok) throw new Error("Gagal memperbarui status");
       const data = await res.json();
       if (data.success) {
         if (wsStatus !== "CONNECTED") addToast("Applicant Approved", `Pendaftar #${id} telah berhasil diverifikasi!`, "success");
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
-      } else { addToast("Gagal Memverifikasi", data.message || "Gagal memperbarui status pendaftar.", "danger"); }
+      } else { throw new Error(data.message || "Gagal memperbarui status pendaftar."); }
     } catch (err: unknown) {
       console.error("API status update error:", (err as any).message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
@@ -292,14 +326,14 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isDemoMode) throw new Error("Demo Mode");
       const res = await fetch(`${BACKEND_URL}/applicants/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ status: "Rejected", alasan_ditolak }) });
+      if (!res.ok) throw new Error("Gagal memperbarui status");
       const data = await res.json();
       if (data.success) {
         const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
         if (wsStatus !== "CONNECTED" && isAdminPath) addToast("Applicant Rejected", `Calon siswa #${id} telah ditolak.`, "warning");
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
       } else {
-        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
-        if (isAdminPath) addToast("Gagal Menolak", data.message || "Gagal memperbarui status pendaftar.", "danger");
+        throw new Error(data.message || "Gagal memperbarui status pendaftar.");
       }
     } catch (err: unknown) {
       console.error("API status update error:", (err as any).message);
@@ -316,11 +350,12 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isDemoMode) throw new Error("Demo Mode");
       const res = await fetch(`${BACKEND_URL}/applicants/${id}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
+      if (!res.ok) throw new Error("Gagal menghapus data");
       const data = await res.json();
       if (data.success) {
         if (wsStatus !== "CONNECTED") addToast("Applicant Deleted", `Data pendaftar #${id} telah dihapus permanen.`, "danger");
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
-      } else { addToast("Gagal Menghapus", data.message || "Gagal menghapus data pendaftar.", "danger"); }
+      } else { throw new Error(data.message || "Gagal menghapus data pendaftar."); }
     } catch (err: unknown) {
       console.error("API delete error:", (err as any).message);
       setApplicants(prev => prev.filter(a => a.id !== id));
@@ -336,12 +371,13 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isDemoMode) throw new Error("Demo Mode");
       const res = await fetch(`${BACKEND_URL}/applicants/${id}`, { method: "PUT", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify(updatedData) });
+      if (!res.ok) throw new Error("Gagal memperbarui data");
       const data = await res.json();
       if (data.success) {
         addToast("Data Diperbarui", `Data pendaftar ${updatedData.nama || '#' + id} berhasil disimpan.`, "success");
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
         return { success: true, data: data.data };
-      } else { return { success: false, message: data.message }; }
+      } else { throw new Error(data.message || "Gagal memperbarui data"); }
     } catch (err: unknown) {
       console.error("API update error:", (err as any).message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
@@ -354,41 +390,64 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateActiveStudent = useCallback(async (id: number, updatedData: any) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
-    if (!token) return { success: false, message: "Tidak terautentikasi." };
+    if (!token && !isDemoMode) return { success: false, message: "Tidak terautentikasi." };
     try {
+      if (isDemoMode) throw new Error("Demo Mode");
       const res = await fetch(`/api/applicants/${id}`, { method: "PUT", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify(updatedData) });
-      if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return { success: false, message: "Gagal memperbarui data siswa aktif." };
+      if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) throw new Error("Gagal memperbarui data siswa aktif.");
       const data = await res.json();
       if (data.success) {
         addToast("Data Diperbarui", `Data siswa aktif ${updatedData.nama || '#' + id} berhasil disimpan.`, "success");
         await fetchActiveStudents(); await fetchAdminApplicants();
         return { success: true, data: data.data };
-      } else { return { success: false, message: data.message }; }
+      } else { throw new Error(data.message || "Gagal memperbarui data siswa aktif."); }
     } catch (err: unknown) {
-      console.error("API active student update error:", (err as any).message);
-      setActiveStudents(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
+      // API unavailable or demo mode — apply update locally and persist
+      console.warn("Active student update falling back to local:", (err as any).message);
+      // Save override so it survives re-fetch from real API on refresh
+      try {
+        const raw = localStorage.getItem('ppdb_class_overrides') || '{}';
+        const overrides = JSON.parse(raw);
+        overrides[String(id)] = { ...overrides[String(id)], ...updatedData };
+        localStorage.setItem('ppdb_class_overrides', JSON.stringify(overrides));
+      } catch (_) {}
+      const updater = (prev: any[]) => prev.map((a: any) => a.id === id ? { ...a, ...updatedData } : a);
+      setActiveStudents(prev => {
+        const next = updater(prev);
+        try { localStorage.setItem('demo_active_students', JSON.stringify(next)); } catch (_) {}
+        return next;
+      });
+      setApplicants(prev => {
+        const next = updater(prev);
+        try { localStorage.setItem('demo_admin_applicants', JSON.stringify(next)); } catch (_) {}
+        return next;
+      });
+      setPublicApplicants(prev => updater(prev));
       addToast("Data Diperbarui (Offline)", `Perubahan data tersimpan lokal.`, "success");
       return { success: true, data: { id, ...updatedData } };
     }
-  }, [adminToken, fetchActiveStudents, fetchAdminApplicants, addToast]);
+  }, [adminToken, fetchActiveStudents, fetchAdminApplicants, addToast, isDemoMode]);
 
   const deleteActiveStudent = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
-    if (!token) return;
+    if (!token && !isDemoMode) return;
     try {
+      if (isDemoMode) throw new Error("Demo Mode");
       const res = await fetch(`/api/applicants/${id}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
-      if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
+      if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) throw new Error("Gagal menghapus siswa aktif.");
       const data = await res.json();
       if (data.success) {
         addToast("Siswa Dihapus", `Siswa aktif #${id} telah dihapus.`, "danger");
         await fetchActiveStudents(); await fetchAdminApplicants();
-      } else { addToast("Gagal Menghapus", data.message || "Gagal menghapus siswa aktif.", "danger"); }
+      } else { throw new Error(data.message || "Gagal menghapus siswa aktif."); }
     } catch (err: unknown) {
       console.error("API active student delete error:", (err as any).message);
       setActiveStudents(prev => prev.filter(a => a.id !== id));
+      setApplicants(prev => prev.filter(a => a.id !== id));
+      setPublicApplicants(prev => prev.filter(a => a.id !== id));
       addToast("Siswa Dihapus (Offline)", `Siswa aktif #${id} dihapus.`, "danger");
     }
-  }, [adminToken, fetchActiveStudents, fetchAdminApplicants, addToast]);
+  }, [adminToken, fetchActiveStudents, fetchAdminApplicants, addToast, isDemoMode]);
 
   // ── WebSocket / Real-Time ───────────────────────────────────────────────────
   const connectWs = useCallback(() => {

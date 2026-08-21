@@ -343,14 +343,17 @@ export default function DashboardOverview() {
         if (json.success && json.data?.ppdb_majors_config) {
           const dbMajors = json.data.ppdb_majors_config;
           if (Array.isArray(dbMajors) && dbMajors.length > 0) {
-          
-            const mapped = dbMajors.map((m: any) => ({
-              name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
-              dbName: m.title,
-              color: m.color || "#2E7CF6",
-            }));
-            setMajorsList(mapped);
-            localStorage.setItem("ppdb_majors_config", JSON.stringify(dbMajors));
+            const hasLocalMajors = !!localStorage.getItem("ppdb_majors_config");
+            const slugPath = window.location.pathname.split('/')[1] || "";
+            if (slugPath === "demo" || !hasLocalMajors) {
+              const mapped = dbMajors.map((m: any) => ({
+                name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
+                dbName: m.title,
+                color: m.color || "#2E7CF6",
+              }));
+              setMajorsList(mapped);
+              localStorage.setItem("ppdb_majors_config", JSON.stringify(dbMajors));
+            }
           }
         }
       })

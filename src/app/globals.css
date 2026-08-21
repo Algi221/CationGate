@@ -22,6 +22,7 @@
   --purple: #E86BC6;
   --orange: #FF9D67;
 
+  --dark-brown: #23191C;
   --primary: var(--dark-brown);
   --primary-foreground: #FFFFFF;
   --secondary: var(--yellow);

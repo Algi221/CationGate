@@ -65,7 +65,7 @@ export default function ProfilSekolahPublicPage() {
       </div>
     );
 
-  if (isSchoolNotFound || schoolStatus === "TAKEDOWN") {
+  if (isSchoolNotFound || schoolStatus === "TAKEDOWN" || schoolStatus === "SUSPENDED") {
     router.push("/");
     return null;
   }

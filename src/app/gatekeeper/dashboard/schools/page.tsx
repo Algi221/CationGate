@@ -56,8 +56,9 @@ function GatekeeperSchoolManagementContent() {
       setLoading(true);
       const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
       
-      const res = await fetch("/api/gatekeeper/schools", {
+      const res = await fetch(`/api/gatekeeper/schools?t=${Date.now()}`, {
         headers: {
+          "Cache-Control": "no-cache",
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
       });
@@ -167,46 +168,46 @@ function GatekeeperSchoolManagementContent() {
           customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
         });
       }
-    });
-  };
+      });
+    };
 
-  const handleTakedownSchool = (school: SchoolTenant) => {
-    Swal.fire({
-      title: `Takedown Instansi ${school.name}?`,
-      text: `Instansi ini akan dinonaktifkan dari platform CationGate (Status TAKEDOWN) karena belum memverifikasi legalitas.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#EF4444",
-      cancelButtonColor: "#64748B",
-      confirmButtonText: "Ya, Takedown Instansi",
-      cancelButtonText: "Batal",
-      customClass: {
-        popup: "rounded-2xl dark:bg-slate-900 dark:text-white border dark:border-slate-800"
-      }
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
-          await fetch("/api/gatekeeper/takedown-school", {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-              ...(token ? { "Authorization": `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify({ school_id: school.slug || school.id }),
-          });
-        } catch (_e) {}
-
-        await fetchSchools();
-
-        if (selectedSchoolModal?.id === school.id || selectedSchoolModal?.slug === school.slug) {
-          setSelectedSchoolModal(prev => prev ? { ...prev, status: "SUSPENDED" } : null);
+    const handleTakedownSchool = (school: SchoolTenant) => {
+      Swal.fire({
+        title: `Takedown Instansi ${school.name}?`,
+        text: `Instansi ini akan dinonaktifkan dari platform CationGate (Status TAKEDOWN) karena belum memverifikasi legalitas.`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#EF4444",
+        cancelButtonColor: "#64748B",
+        confirmButtonText: "Ya, Takedown Instansi",
+        cancelButtonText: "Batal",
+        customClass: {
+          popup: "rounded-2xl dark:bg-slate-900 dark:text-white border dark:border-slate-800"
         }
-        Swal.fire({
-          title: "Instansi Di-Takedown!",
-          text: `Sekolah ${school.name} telah di-takedown (Nonaktif).`,
-          icon: "success",
-          confirmButtonColor: "#2563EB",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
+            await fetch("/api/gatekeeper/takedown-school", {
+              method: "POST",
+              headers: { 
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+              },
+              body: JSON.stringify({ school_id: school.slug || school.id }),
+            });
+          } catch (_e) {}
+
+          await fetchSchools();
+
+          if (selectedSchoolModal?.id === school.id || selectedSchoolModal?.slug === school.slug) {
+            setSelectedSchoolModal(prev => prev ? { ...prev, status: "SUSPENDED" } : null);
+          }
+          Swal.fire({
+            title: "Instansi Di-Takedown!",
+            text: `Sekolah ${school.name} telah di-takedown (Nonaktif).`,
+            icon: "success",
+            confirmButtonColor: "#2563EB",
           customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
         });
       }

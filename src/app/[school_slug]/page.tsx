@@ -402,11 +402,37 @@ export default function Home() {
           }
         }
 
+        const localMajors = localStorage.getItem("ppdb_majors_config");
+        if (localMajors) {
+          try {
+            const parsedMajors = JSON.parse(localMajors);
+            if (Array.isArray(parsedMajors)) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const iconMap: Record<string, any> = {
+                RPL: Cpu,
+                TJKT: Layers,
+                DKV: BookOpen,
+                BC: Video,
+                ANM: Palette,
+                TE: Cpu
+              };
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const mapped = parsedMajors.map((m: any) => ({
+                ...m,
+                icon: iconMap[m.code] || Cpu
+              }));
+              setMajors(mapped);
+            }
+          } catch (e) {
+            console.error("Gagal parse majors dari localStorage", e);
+          }
+        }
+
         if (schoolSlug === 'demo') {
           setIsConfigLoaded(true);
           return;
         }
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}`);
+        const res = await fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`);
         const data = await res.json();
 
         if (data.success && data.data) {
@@ -439,21 +465,25 @@ export default function Home() {
             setPartnersList([]);
           }
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const iconMap: Record<string, any> = {
-              RPL: Cpu,
-              TJKT: Layers,
-              DKV: BookOpen,
-              BC: Video,
-              ANM: Palette,
-              TE: Cpu
-            };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const mapped = config.ppdb_majors_config.map((m: any) => ({
-              ...m,
-              icon: iconMap[m.code] || Cpu
-            }));
-            setMajors(mapped);
+            // Prioritize localStorage in demo mode so that local edits are visible on the landing page
+            const hasLocalMajors = !!localStorage.getItem("ppdb_majors_config");
+            if (schoolSlug === 'demo' || !hasLocalMajors) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const iconMap: Record<string, any> = {
+                RPL: Cpu,
+                TJKT: Layers,
+                DKV: BookOpen,
+                BC: Video,
+                ANM: Palette,
+                TE: Cpu
+              };
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const mapped = config.ppdb_majors_config.map((m: any) => ({
+                ...m,
+                icon: iconMap[m.code] || Cpu
+              }));
+              setMajors(mapped);
+            }
           }
         }
         setIsConfigLoaded(true);

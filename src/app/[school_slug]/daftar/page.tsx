@@ -195,6 +195,7 @@ export default function DaftarPage() {
   const [kuotaData, setKuotaData] = useState<any[] | null>(null);
   const [portalStatus, setPortalStatus] = useState("open");
   const [fieldsConfig, setFieldsConfig] = useState<Record<string, { label: string; required: boolean; active: boolean }>>({});
+  const [formGuideline, setFormGuideline] = useState("");
 
   const _getFieldLabel = (key: string, defaultLabel: string) => {
     return fieldsConfig[key]?.label || defaultLabel;
@@ -397,6 +398,9 @@ export default function DaftarPage() {
       setPortalStatus(savedPortalStatus);
     }
 
+    const savedGuideline = localStorage.getItem('ppdb_form_guideline');
+    if (savedGuideline) setFormGuideline(savedGuideline);
+
     const savedFieldsConfig = localStorage.getItem('ppdb_fields_config');
     if (savedFieldsConfig) {
       try {
@@ -436,7 +440,8 @@ export default function DaftarPage() {
     const loadLiveConfig = async () => {
       try {
         const BACKEND_URL = typeof window !== 'undefined' ? `/api` : "/api";
-        const res = await fetch(`${BACKEND_URL}/config`);
+        const slug = (params?.school_slug as string) || "smk";
+        const res = await fetch(`${BACKEND_URL}/config?school_slug=${slug}&t=${Date.now()}`);
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
@@ -464,6 +469,10 @@ export default function DaftarPage() {
             if (config.ppdb_portal_status) {
               setPortalStatus(config.ppdb_portal_status);
               localStorage.setItem('ppdb_portal_status', config.ppdb_portal_status);
+            }
+            if (config.ppdb_form_guideline) {
+              setFormGuideline(config.ppdb_form_guideline);
+              localStorage.setItem('ppdb_form_guideline', config.ppdb_form_guideline);
             }
             if (config.ppdb_fields_config) {
               setFieldsConfig(config.ppdb_fields_config);
@@ -789,10 +798,7 @@ export default function DaftarPage() {
     const fields = getStepFields(step);
     const errors: string[] = [];
     
-    if (step === 1) {
-      if (!formData.nama || formData.nama.trim() === '') errors.push("Nama Lengkap");
-      if (!formData.nisn || formData.nisn.trim() === '') errors.push("NISN");
-    }
+
     if (step === 14) {
       if (!formData.deklarasi) errors.push("Pernyataan Deklarasi");
     }
@@ -2472,42 +2478,53 @@ export default function DaftarPage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Masukkan informasi dasar sesuai dengan Kartu Keluarga / Akta Kelahiran.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("nama") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nama", "Nama Lengkap")} {_isFieldRequired("nama") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="nama" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai Ijazah" value={formData.nama} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("jenisKelamin") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Jenis Kelamin</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("jenisKelamin", "Jenis Kelamin")} {_isFieldRequired("jenisKelamin") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="jenisKelamin" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.jenisKelamin} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="L">Laki-Laki</option>
                   <option value="P">Perempuan</option>
                 </select>
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("nisn") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">NISN (10 Digit)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nisn", "NISN (10 Digit)")} {_isFieldRequired("nisn") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="nisn" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: 0081234567" value={formData.nisn} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("nik") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">NIK (16 Digit)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nik", "NIK (16 Digit)")} {_isFieldRequired("nik") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="nik" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KK" value={formData.nik} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
+{_isFieldActive("tempatLahir") && (
             <div className="form-group mb-4">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Tempat & Tanggal Lahir</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tempatLahir", "Tempat & Tanggal Lahir")} {_isFieldRequired("tempatLahir") && <span className="text-red-500 ml-1">*</span>}</label>
               <div className="flex gap-2">
                 <input type="text" name="tempatLahir" className="w-1/2 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Tempat" value={formData.tempatLahir} onChange={handleInputChange} />
                 <input type="date" name="tglLahir" className="w-1/2 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahir} onChange={handleInputChange} />
               </div>
             </div>
+)}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("agama") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Agama</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("agama", "Agama")} {_isFieldRequired("agama") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="agama" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agama} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Islam">Islam</option>
@@ -2517,14 +2534,17 @@ export default function DaftarPage() {
                   <option value="Buddha">Buddha</option>
                 </select>
               </div>
+)}
+{_isFieldActive("kewarganegaraan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Kewarganegaraan</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kewarganegaraan", "Kewarganegaraan")} {_isFieldRequired("kewarganegaraan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="kewarganegaraan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraan} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="WNI">Warga Negara Indonesia (WNI)</option>
                   <option value="WNA">Warga Negara Asing (WNA)</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -2535,51 +2555,68 @@ export default function DaftarPage() {
             <h3 className="text-xl font-extrabold text-slate-800 dark:text-white mb-1">Tahap 2: Data Tempat Tinggal</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Informasi alamat tempat tinggal dan kontak yang dapat dihubungi.</p>
 
+{_isFieldActive("alamat") && (
             <div className="form-group mb-4">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Alamat Rumah (Jalan, No. Rumah)</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alamat", "Alamat Rumah (Jalan, No. Rumah)")} {_isFieldRequired("alamat") && <span className="text-red-500 ml-1">*</span>}</label>
               <textarea name="alamat" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" rows={2} placeholder="Contoh: Jl. Pekapuran No. 10" value={formData.alamat} onChange={handleInputChange}></textarea>
             </div>
+)}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("rtRw") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">RT / RW</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("rtRw", "RT / RW")} {_isFieldRequired("rtRw") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="rtRw" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 002/005" value={formData.rtRw} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("kodePos") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Kode Pos</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kodePos", "Kode Pos")} {_isFieldRequired("kodePos") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="kodePos" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 16453" value={formData.kodePos} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("kelurahan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Kelurahan</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kelurahan", "Kelurahan")} {_isFieldRequired("kelurahan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="kelurahan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Curug" value={formData.kelurahan} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("kecamatan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Kecamatan</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kecamatan", "Kecamatan")} {_isFieldRequired("kecamatan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="kecamatan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Cimanggis" value={formData.kecamatan} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+{_isFieldActive("whatsapp") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Nomor Telepon / HP Siswa</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("whatsapp", "Nomor Telepon / HP Siswa")} {_isFieldRequired("whatsapp") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="tel" name="whatsapp" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 081234567890" value={formData.whatsapp} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("teleponOrtu") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Nomor Telepon Orang Tua (Ayah/Ibu/Wali)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("teleponOrtu", "Nomor Telepon Orang Tua (Ayah/Ibu/Wali)")} {_isFieldRequired("teleponOrtu") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="tel" name="teleponOrtu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Nomor yang mudah dihubungi" value={formData.teleponOrtu} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("email") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">E-mail Pribadi Siswa</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("email", "E-mail Pribadi Siswa")} {_isFieldRequired("email") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="email" name="email" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="nama@email.com" value={formData.email} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tinggalDengan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Tinggal Bersama dengan</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tinggalDengan", "Tinggal Bersama dengan")} {_isFieldRequired("tinggalDengan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="tinggalDengan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.tinggalDengan} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Orang Tua">Orang Tua</option>
@@ -2590,8 +2627,10 @@ export default function DaftarPage() {
                   <option value="Lainnya">Lainnya</option>
                 </select>
               </div>
+)}
+{_isFieldActive("transportasi") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Moda Transportasi</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("transportasi", "Moda Transportasi")} {_isFieldRequired("transportasi") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="transportasi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.transportasi} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Jalan Kaki">Jalan Kaki</option>
@@ -2605,6 +2644,7 @@ export default function DaftarPage() {
                   <option value="Lainnya">Lainnya</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -2616,25 +2656,30 @@ export default function DaftarPage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Mohon isi data periodik fisik dan perjalanan Anda ke sekolah.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tinggiBadan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Tinggi Badan (Cm)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tinggiBadan", "Tinggi Badan (Cm)")} {_isFieldRequired("tinggiBadan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="relative">
                   <input type="text" inputMode="numeric" pattern="[0-9]*" name="tinggiBadan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 165" value={formData.tinggiBadan} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Cm</span>
                 </div>
               </div>
+)}
+{_isFieldActive("beratBadan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Berat Badan (Kg)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("beratBadan", "Berat Badan (Kg)")} {_isFieldRequired("beratBadan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="relative">
                   <input type="text" inputMode="numeric" pattern="[0-9]*" name="beratBadan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 55" value={formData.beratBadan} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Kg</span>
                 </div>
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("jarakSekolah") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Jarak Rumah ke Sekolah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("jarakSekolah", "Jarak Rumah ke Sekolah")} {_isFieldRequired("jarakSekolah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4 mt-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="jarakSekolah" value="Kurang dari 1 km" checked={formData.jarakSekolah === "Kurang dari 1 km"} onChange={handleInputChange} className="w-4 h-4 accent-blue-600" />
@@ -2646,6 +2691,8 @@ export default function DaftarPage() {
                   </label>
                 </div>
               </div>
+)}
+{_isFieldActive("jarakKm") && (
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   {formData.jarakSekolah === "Kurang dari 1 km" ? "Sebutkan Jarak Tepatnya (Meter)" : "Sebutkan Jarak Tepatnya (Km)"}
@@ -2666,11 +2713,13 @@ export default function DaftarPage() {
                   </span>
                 </div>
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("waktuJam") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Waktu Tempuh ke Sekolah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("waktuJam", "Waktu Tempuh ke Sekolah")} {_isFieldRequired("waktuJam") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-2 items-center">
                   <div className="relative flex-1">
                     <input type="text" inputMode="numeric" pattern="[0-9]*" name="waktuJam" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="0" value={formData.waktuJam} onChange={handleInputChange} />
@@ -2683,13 +2732,16 @@ export default function DaftarPage() {
                   </div>
                 </div>
               </div>
+)}
+{_isFieldActive("jumlahSaudara") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Jumlah Saudara Kandung</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("jumlahSaudara", "Jumlah Saudara Kandung")} {_isFieldRequired("jumlahSaudara") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="relative">
                   <input type="text" inputMode="numeric" pattern="[0-9]*" name="jumlahSaudara" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl pl-4 pr-16 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2" value={formData.jumlahSaudara} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Orang</span>
                 </div>
               </div>
+)}
             </div>
           </div>
         )}
@@ -2701,8 +2753,9 @@ export default function DaftarPage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Mohon isi data golongan darah, riwayat penyakit, serta kebutuhan khusus jika ada.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+{_isFieldActive("golonganDarah") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Golongan Darah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("golonganDarah", "Golongan Darah")} {_isFieldRequired("golonganDarah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="golonganDarah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.golonganDarah} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="A">A</option>
@@ -2712,10 +2765,13 @@ export default function DaftarPage() {
                   <option value="Tidak Tahu">Tidak Tahu</option>
                 </select>
               </div>
+)}
+{_isFieldActive("penyakitDiderita") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Penyakit Yang Pernah Diderita</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penyakitDiderita", "Penyakit Yang Pernah Diderita")} {_isFieldRequired("penyakitDiderita") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="penyakitDiderita" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Asma, TBC, dll (kosongkan jika tidak ada)" value={formData.penyakitDiderita} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
             <div className="form-group">
@@ -2813,20 +2869,26 @@ export default function DaftarPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("uraianPrestasi") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Uraian Prestasi</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("uraianPrestasi", "3. Uraian Prestasi")} {_isFieldRequired("uraianPrestasi") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="uraianPrestasi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Juara 1 Olimpiade Matematika" value={formData.uraianPrestasi} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("tahunPrestasi") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Tahun Prestasi</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tahunPrestasi", "4. Tahun Prestasi")} {_isFieldRequired("tahunPrestasi") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunPrestasi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2024" value={formData.tahunPrestasi} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
+{_isFieldActive("penyelenggara") && (
             <div className="form-group mb-4">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Penyelenggara</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penyelenggara", "5. Penyelenggara")} {_isFieldRequired("penyelenggara") && <span className="text-red-500 ml-1">*</span>}</label>
               <input type="text" name="penyelenggara" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Dinas Pendidikan Kota Depok" value={formData.penyelenggara} onChange={handleInputChange} />
             </div>
+)}
 
             <div className="form-group">
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Bukti Prestasi</label>
@@ -2874,20 +2936,26 @@ export default function DaftarPage() {
               </div>
             </div>
 
+{_isFieldActive("uraianBeasiswa") && (
             <div className="form-group mb-4">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Uraian Beasiswa</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("uraianBeasiswa", "2. Uraian Beasiswa")} {_isFieldRequired("uraianBeasiswa") && <span className="text-red-500 ml-1">*</span>}</label>
               <input type="text" name="uraianBeasiswa" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Beasiswa Prestasi dari Pemkot Depok" value={formData.uraianBeasiswa} onChange={handleInputChange} />
             </div>
+)}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+{_isFieldActive("tahunMulaiBeasiswa") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Tahun Mulai Menerima Beasiswa</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tahunMulaiBeasiswa", "3. Tahun Mulai Menerima Beasiswa")} {_isFieldRequired("tahunMulaiBeasiswa") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunMulaiBeasiswa" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2022" value={formData.tahunMulaiBeasiswa} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("tahunSelesaiBeasiswa") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Tahun Selesai Menerima Beasiswa</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tahunSelesaiBeasiswa", "4. Tahun Selesai Menerima Beasiswa")} {_isFieldRequired("tahunSelesaiBeasiswa") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunSelesaiBeasiswa" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2024" value={formData.tahunSelesaiBeasiswa} onChange={handleInputChange} />
               </div>
+)}
             </div>
           </div>
         )}
@@ -2904,33 +2972,45 @@ export default function DaftarPage() {
                 1. Pendidikan Sebelumnya
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+{_isFieldActive("sekolahAsal") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">a. Lulusan dari SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("sekolahAsal", "a. Lulusan dari SMP/MTs")} {_isFieldRequired("sekolahAsal") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="sekolahAsal" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Nama sekolah asal" value={formData.sekolahAsal} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("tglLulus") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">b. Tanggal Lulus dari SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tglLulus", "b. Tanggal Lulus dari SMP/MTs")} {_isFieldRequired("tglLulus") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="date" name="tglLulus" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLulus} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("noIjazah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">c. Nomor Seri Ijazah SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("noIjazah", "c. Nomor Seri Ijazah SMP/MTs")} {_isFieldRequired("noIjazah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="noIjazah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noIjazah} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("noSKHUN") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">d. Nomor Seri SKHUN SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("noSKHUN", "d. Nomor Seri SKHUN SMP/MTs")} {_isFieldRequired("noSKHUN") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="noSKHUN" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noSKHUN} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("noPesertaUN") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">e. Nomor Peserta UN SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("noPesertaUN", "e. Nomor Peserta UN SMP/MTs")} {_isFieldRequired("noPesertaUN") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="noPesertaUN" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noPesertaUN} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("lamaBelajar") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">f. Lama Belajar (Tahun)</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("lamaBelajar", "f. Lama Belajar (Tahun)")} {_isFieldRequired("lamaBelajar") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex items-center gap-3">
                     <input type="number" name="lamaBelajar" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 3" value={formData.lamaBelajar} onChange={handleInputChange} />
                     <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Tahun</span>
                   </div>
                 </div>
+)}
               </div>
             </div>
 
@@ -2940,14 +3020,18 @@ export default function DaftarPage() {
                 Pindahan (Hanya Untuk Murid Pindahan)
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+{_isFieldActive("pindahanDari") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">a. Dari SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pindahanDari", "a. Dari SMP/MTs")} {_isFieldRequired("pindahanDari") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pindahanDari" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika bukan pindahan" value={formData.pindahanDari} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("alasanPindah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">b. Alasan Pindah Sekolah</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alasanPindah", "b. Alasan Pindah Sekolah")} {_isFieldRequired("alasanPindah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="alasanPindah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Opsional" value={formData.alasanPindah} onChange={handleInputChange} />
                 </div>
+)}
               </div>
             </div>
 
@@ -3054,25 +3138,32 @@ export default function DaftarPage() {
                 Data Ayah Kandung
               </h4>
 
+{_isFieldActive("namaAyah") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Nama Lengkap</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("namaAyah", "1. Nama Lengkap")} {_isFieldRequired("namaAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="namaAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KTP/KK" value={formData.namaAyah} onChange={handleInputChange} />
               </div>
+)}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tempatLahirAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tempat Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tempatLahirAyah", "2. Tempat Lahir")} {_isFieldRequired("tempatLahirAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="tempatLahirAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirAyah} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("tglLahirAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tanggal Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tglLahirAyah", "2. Tanggal Lahir")} {_isFieldRequired("tglLahirAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="date" name="tglLahirAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirAyah} onChange={handleInputChange} />
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("agamaAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Agama</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("agamaAyah", "3. Agama")} {_isFieldRequired("agamaAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="agamaAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaAyah} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
@@ -3083,26 +3174,34 @@ export default function DaftarPage() {
                     <option value="Konghucu">Konghucu</option>
                   </select>
                 </div>
+)}
+{_isFieldActive("kewarganegaraanAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Kewarganegaraan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kewarganegaraanAyah", "4. Kewarganegaraan")} {_isFieldRequired("kewarganegaraanAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="kewarganegaraanAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanAyah} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+{_isFieldActive("pendidikanAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Pendidikan Terakhir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pendidikanAyah", "5. Pendidikan Terakhir")} {_isFieldRequired("pendidikanAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pendidikanAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanAyah} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("pekerjaanAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Pekerjaan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pekerjaanAyah", "6. Pekerjaan")} {_isFieldRequired("pekerjaanAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pekerjaanAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanAyah} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("penghasilanAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">7. Penghasilan Per Bulan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penghasilanAyah", "7. Penghasilan Per Bulan")} {_isFieldRequired("penghasilanAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="penghasilanAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanAyah} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
@@ -3111,10 +3210,12 @@ export default function DaftarPage() {
                     <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
                   </select>
                 </div>
+)}
               </div>
 
+{_isFieldActive("alamatAyah") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">8. Alamat Rumah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alamatAyah", "8. Alamat Rumah")} {_isFieldRequired("alamatAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="alamatAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatAyah} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
@@ -3135,14 +3236,17 @@ export default function DaftarPage() {
                   </div>
                 </div>
               </div>
+)}
 
+{_isFieldActive("statusAyah") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("statusAyah", "9. Status Hidup/Meninggal Dunia")} {_isFieldRequired("statusAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="statusAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusAyah} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -3159,25 +3263,32 @@ export default function DaftarPage() {
                 Data Ibu Kandung
               </h4>
 
+{_isFieldActive("namaIbu") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Nama Lengkap</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("namaIbu", "1. Nama Lengkap")} {_isFieldRequired("namaIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="namaIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KTP/KK" value={formData.namaIbu} onChange={handleInputChange} />
               </div>
+)}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tempatLahirIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tempat Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tempatLahirIbu", "2. Tempat Lahir")} {_isFieldRequired("tempatLahirIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="tempatLahirIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirIbu} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("tglLahirIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tanggal Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tglLahirIbu", "2. Tanggal Lahir")} {_isFieldRequired("tglLahirIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="date" name="tglLahirIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirIbu} onChange={handleInputChange} />
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("agamaIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Agama</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("agamaIbu", "3. Agama")} {_isFieldRequired("agamaIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="agamaIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaIbu} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
@@ -3188,26 +3299,34 @@ export default function DaftarPage() {
                     <option value="Konghucu">Konghucu</option>
                   </select>
                 </div>
+)}
+{_isFieldActive("kewarganegaraanIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Kewarganegaraan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kewarganegaraanIbu", "4. Kewarganegaraan")} {_isFieldRequired("kewarganegaraanIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="kewarganegaraanIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanIbu} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+{_isFieldActive("pendidikanIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Pendidikan Terakhir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pendidikanIbu", "5. Pendidikan Terakhir")} {_isFieldRequired("pendidikanIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pendidikanIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanIbu} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("pekerjaanIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Pekerjaan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pekerjaanIbu", "6. Pekerjaan")} {_isFieldRequired("pekerjaanIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pekerjaanIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanIbu} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("penghasilanIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">7. Penghasilan Per Bulan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penghasilanIbu", "7. Penghasilan Per Bulan")} {_isFieldRequired("penghasilanIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="penghasilanIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanIbu} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
@@ -3216,10 +3335,12 @@ export default function DaftarPage() {
                     <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
                   </select>
                 </div>
+)}
               </div>
 
+{_isFieldActive("alamatIbu") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">8. Alamat Rumah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alamatIbu", "8. Alamat Rumah")} {_isFieldRequired("alamatIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="alamatIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatIbu} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
@@ -3240,14 +3361,17 @@ export default function DaftarPage() {
                   </div>
                 </div>
               </div>
+)}
 
+{_isFieldActive("statusIbu") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("statusIbu", "9. Status Hidup/Meninggal Dunia")} {_isFieldRequired("statusIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="statusIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusIbu} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -3264,25 +3388,32 @@ export default function DaftarPage() {
                 Data Wali Peserta Didik
               </h4>
 
+{_isFieldActive("namaWali") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Nama Lengkap</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("namaWali", "1. Nama Lengkap")} {_isFieldRequired("namaWali") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="namaWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada wali" value={formData.namaWali} onChange={handleInputChange} />
               </div>
+)}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tempatLahirWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tempat Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tempatLahirWali", "2. Tempat Lahir")} {_isFieldRequired("tempatLahirWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="tempatLahirWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirWali} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("tglLahirWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tanggal Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tglLahirWali", "2. Tanggal Lahir")} {_isFieldRequired("tglLahirWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="date" name="tglLahirWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirWali} onChange={handleInputChange} />
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("agamaWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Agama</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("agamaWali", "3. Agama")} {_isFieldRequired("agamaWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="agamaWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaWali} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
@@ -3293,26 +3424,34 @@ export default function DaftarPage() {
                     <option value="Konghucu">Konghucu</option>
                   </select>
                 </div>
+)}
+{_isFieldActive("kewarganegaraanWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Kewarganegaraan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kewarganegaraanWali", "4. Kewarganegaraan")} {_isFieldRequired("kewarganegaraanWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="kewarganegaraanWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanWali} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+{_isFieldActive("pendidikanWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Pendidikan Terakhir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pendidikanWali", "5. Pendidikan Terakhir")} {_isFieldRequired("pendidikanWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pendidikanWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanWali} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("pekerjaanWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Pekerjaan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pekerjaanWali", "6. Pekerjaan")} {_isFieldRequired("pekerjaanWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pekerjaanWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanWali} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("penghasilanWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">7. Penghasilan Per Bulan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penghasilanWali", "7. Penghasilan Per Bulan")} {_isFieldRequired("penghasilanWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="penghasilanWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanWali} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
@@ -3321,10 +3460,12 @@ export default function DaftarPage() {
                     <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
                   </select>
                 </div>
+)}
               </div>
 
+{_isFieldActive("alamatWali") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">8. Alamat Rumah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alamatWali", "8. Alamat Rumah")} {_isFieldRequired("alamatWali") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="alamatWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatWali} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
@@ -3345,14 +3486,17 @@ export default function DaftarPage() {
                   </div>
                 </div>
               </div>
+)}
 
+{_isFieldActive("statusWali") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("statusWali", "9. Status Hidup/Meninggal Dunia")} {_isFieldRequired("statusWali") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="statusWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusWali} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -3388,8 +3532,9 @@ export default function DaftarPage() {
                   })}
                 </div>
               </div>
+{_isFieldActive("citaCita") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">2. Cita-cita</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">{_getFieldLabel("citaCita", "2. Cita-cita")} {_isFieldRequired("citaCita") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="citaCita" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.citaCita} onChange={handleInputChange}>
                   <option value="">-- Pilih Cita-cita --</option>
                   <option value="PNS">PNS</option>
@@ -3402,6 +3547,7 @@ export default function DaftarPage() {
                   <option value="Lainnya">Lainnya</option>
                 </select>
               </div>
+)}
             </div>
 
             <div className="mb-6 p-5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
@@ -3410,21 +3556,28 @@ export default function DaftarPage() {
                 Data Minat dan Kemampuan
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("nilaiUSTeori") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Nilai US (Teori)</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nilaiUSTeori", "1. Nilai US (Teori)")} {_isFieldRequired("nilaiUSTeori") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="number" name="nilaiUSTeori" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiUSTeori} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("nilaiUSPraktik") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Nilai US (Praktik)</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nilaiUSPraktik", "2. Nilai US (Praktik)")} {_isFieldRequired("nilaiUSPraktik") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="number" name="nilaiUSPraktik" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiUSPraktik} onChange={handleInputChange} />
                 </div>
+)}
               </div>
+{_isFieldActive("nilaiMuatanLokal") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Nilai Muatan Lokal</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nilaiMuatanLokal", "2. Nilai Muatan Lokal")} {_isFieldRequired("nilaiMuatanLokal") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="number" name="nilaiMuatanLokal" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiMuatanLokal} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("alasanMemilih") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Memilih SMK Taruna Bhakti Karena</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alasanMemilih", "3. Memilih SMK Taruna Bhakti Karena")} {_isFieldRequired("alasanMemilih") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4">
                   {["Diri Sendiri", "Orang Tua/Wali"].map((option) => (
                     <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.alasanMemilih === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3435,24 +3588,33 @@ export default function DaftarPage() {
                   ))}
                 </div>
               </div>
+)}
+{_isFieldActive("citaCitaSetelahLulus") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Cita-cita Setelah Lulus SMK</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("citaCitaSetelahLulus", "4. Cita-cita Setelah Lulus SMK")} {_isFieldRequired("citaCitaSetelahLulus") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="citaCitaSetelahLulus" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Kuliah / Bekerja di Industri" value={formData.citaCitaSetelahLulus} onChange={handleInputChange} />
               </div>
+)}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("pelajaranDisenangi") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Pelajaran Yg Disenangi di SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pelajaranDisenangi", "5. Pelajaran Yg Disenangi di SMP/MTs")} {_isFieldRequired("pelajaranDisenangi") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pelajaranDisenangi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Matematika" value={formData.pelajaranDisenangi} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("alasanDisenangi") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Alasan Disenangi</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alasanDisenangi", "Alasan Disenangi")} {_isFieldRequired("alasanDisenangi") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="alasanDisenangi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Alasan" value={formData.alasanDisenangi} onChange={handleInputChange} />
                 </div>
+)}
               </div>
+{_isFieldActive("kesulitanBelajar") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Kesulitan Belajar di SMP/MTs</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kesulitanBelajar", "6. Kesulitan Belajar di SMP/MTs")} {_isFieldRequired("kesulitanBelajar") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="kesulitanBelajar" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Ada hambatan/kesulitan apa?" value={formData.kesulitanBelajar} onChange={handleInputChange} />
               </div>
+)}
             </div>
           </div>
         )}
@@ -3469,8 +3631,9 @@ export default function DaftarPage() {
                 Data Budi Pekerti
               </h4>
 
+{_isFieldActive("perkelahian") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Perkelahian antar Pelajar</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("perkelahian", "1. Perkelahian antar Pelajar")} {_isFieldRequired("perkelahian") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
                     <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.perkelahian === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3485,9 +3648,11 @@ export default function DaftarPage() {
                   <input type="text" name="ketPerkelahian" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 dark:bg-[#1e293b]" value={formData.ketPerkelahian} onChange={handleInputChange} disabled={formData.perkelahian !== "Pernah"} />
                 </div>
               </div>
+)}
 
+{_isFieldActive("narkoba") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Obat Terlarang, Minuman Keras, Narkotika</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("narkoba", "2. Obat Terlarang, Minuman Keras, Narkotika")} {_isFieldRequired("narkoba") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
                     <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.narkoba === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3502,9 +3667,11 @@ export default function DaftarPage() {
                   <input type="text" name="ketNarkoba" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 dark:bg-[#1e293b]" value={formData.ketNarkoba} onChange={handleInputChange} disabled={formData.narkoba !== "Pernah"} />
                 </div>
               </div>
+)}
 
+{_isFieldActive("pelanggaranLain") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Pelanggaran Tingkah Laku Sosial</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pelanggaranLain", "3. Pelanggaran Tingkah Laku Sosial")} {_isFieldRequired("pelanggaranLain") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
                     <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.pelanggaranLain === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3519,10 +3686,12 @@ export default function DaftarPage() {
                   <input type="text" name="ketPelanggaranLain" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 dark:bg-[#1e293b]" value={formData.ketPelanggaranLain} onChange={handleInputChange} disabled={formData.pelanggaranLain !== "Pernah"} />
                 </div>
               </div>
+)}
 
               <div className="space-y-4">
+{_isFieldActive("janjiTaat") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Apakah anda sanggup mentaati tata tertib yang berlaku di SMK Taruna Bhakti Depok ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiTaat", "4. Apakah anda sanggup mentaati tata tertib yang berlaku di SMK Taruna Bhakti Depok ?")} {_isFieldRequired("janjiTaat") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiTaat === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3533,9 +3702,11 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
 
+{_isFieldActive("janjiSanksi") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Apakah anda sanggup dikenakan sangsi apabila melanggar tata tertib peraturan sekolah ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiSanksi", "5. Apakah anda sanggup dikenakan sangsi apabila melanggar tata tertib peraturan sekolah ?")} {_isFieldRequired("janjiSanksi") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiSanksi === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3546,9 +3717,11 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
 
+{_isFieldActive("janjiAkrab") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Apakah Anda Sanggup Untuk Menjalin Keakraban dengan Sesama Rekan di Sekolah ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiAkrab", "6. Apakah Anda Sanggup Untuk Menjalin Keakraban dengan Sesama Rekan di Sekolah ?")} {_isFieldRequired("janjiAkrab") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiAkrab === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3559,9 +3732,11 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
 
+{_isFieldActive("janjiBelajar") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">7. Apakah anda sanggup belajar sungguh-sungguh ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiBelajar", "7. Apakah anda sanggup belajar sungguh-sungguh ?")} {_isFieldRequired("janjiBelajar") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiBelajar === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3572,9 +3747,11 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
 
+{_isFieldActive("janjiNamaBaik") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">8. Apakah anda sanggup menjaga nama baik sekolah baik didalam maupun diluar sekolah ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiNamaBaik", "8. Apakah anda sanggup menjaga nama baik sekolah baik didalam maupun diluar sekolah ?")} {_isFieldRequired("janjiNamaBaik") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiNamaBaik === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3585,6 +3762,7 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
               </div>
             </div>
 
@@ -3595,6 +3773,7 @@ export default function DaftarPage() {
               </h4>
 
               <div className="space-y-6">
+{_isFieldActive("punyaKPS") && (
                 <div className="form-group">
                   <div className="flex text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                     <span className="mr-2">1.</span>
@@ -3626,7 +3805,9 @@ export default function DaftarPage() {
                     </div>
                   </div>
                 </div>
+)}
 
+{_isFieldActive("punyaKIP") && (
                 <div className="form-group">
                   <div className="flex text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                     <span className="mr-2">2.</span>
@@ -3658,6 +3839,7 @@ export default function DaftarPage() {
                     </div>
                   </div>
                 </div>
+)}
               </div>
             </div>
           </div>
@@ -3919,3 +4101,4 @@ export default function DaftarPage() {
     </div>
   );
 }
+

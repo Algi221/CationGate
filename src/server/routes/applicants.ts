@@ -767,7 +767,7 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     const f = await c.req.json();
 
-    const result = updateApplicantSchema.safeParse(f);
+    console.log('PUT /:id payload:', f); const result = updateApplicantSchema.safeParse(f); if (!result.success) console.log('Validation error:', result.error.issues);
     if (!result.success) {
       return c.json({
         success: false,
@@ -785,7 +785,7 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
       .eq('school_id', schoolId);
     const { data: existingRecord } = await query.single();
 
-    if (!existingRecord) {
+    console.log('existingRecord:', existingRecord, 'for id:', id, 'schoolId:', schoolId); if (!existingRecord) {
       return c.json({ success: false, message: 'Calon siswa tidak ditemukan.' }, 404);
     }
 
@@ -917,6 +917,7 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
       gelombang: getVal('gelombang', ['gelombang']),
       status: getVal('status', ['status']),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       kebutuhan_khusus: f.kebutuhanKhusus !== undefined ? f.kebutuhanKhusus : (existingRecord as any).kebutuhan_khusus,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jenis_prestasi: f.jenisPrestasi !== undefined ? f.jenisPrestasi : (existingRecord as any).jenis_prestasi,

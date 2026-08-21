@@ -378,7 +378,12 @@ export default function KelolaUserInterface() {
     tglLahir: { label: "Tanggal Lahir", required: true, active: true },
     jenisKelamin: { label: "Jenis Kelamin", required: true, active: true },
     agama: { label: "Agama", required: true, active: true },
+    kewarganegaraan: { label: "Kewarganegaraan", required: true, active: true },
     alamat: { label: "Alamat Lengkap", required: true, active: true },
+    rtRw: { label: "RT / RW", required: true, active: true },
+    kelurahan: { label: "Kelurahan", required: true, active: true },
+    kecamatan: { label: "Kecamatan", required: true, active: true },
+    kodePos: { label: "Kode Pos", required: true, active: true },
     whatsapp: { label: "Nomor WhatsApp", required: true, active: true },
     email: { label: "Alamat Email", required: false, active: true },
     tinggalDengan: { label: "Tinggal Dengan", required: true, active: true },
@@ -393,34 +398,66 @@ export default function KelolaUserInterface() {
     uraianPrestasi: { label: "Uraian Prestasi", required: false, active: true },
     tahunPrestasi: { label: "Tahun Prestasi", required: false, active: true },
     penyelenggara: { label: "Penyelenggara Prestasi", required: false, active: true },
+    berkasPrestasi: { label: "Berkas Prestasi", required: false, active: true },
     jenisBeasiswa: { label: "Jenis Beasiswa", required: false, active: true },
     uraianBeasiswa: { label: "Uraian Beasiswa", required: false, active: true },
+    tahunMulaiBeasiswa: { label: "Tahun Mulai Beasiswa", required: false, active: true },
+    tahunSelesaiBeasiswa: { label: "Tahun Selesai Beasiswa", required: false, active: true },
     sekolahAsal: { label: "Sekolah Asal (SMP/MTs)", required: true, active: true },
     tglLulus: { label: "Tanggal Lulus SMP", required: true, active: true },
     noIjazah: { label: "No. Seri Ijazah", required: false, active: true },
     noSKHUN: { label: "No. Seri SKHUN", required: false, active: true },
     noPesertaUN: { label: "No. Peserta UN", required: false, active: true },
+    lamaBelajar: { label: "Lama Belajar (Tahun)", required: true, active: true },
+    pindahanDari: { label: "Pindahan Dari", required: false, active: true },
+    alasanPindah: { label: "Alasan Pindah", required: false, active: true },
+    diterimaKelas: { label: "Diterima Kelas", required: true, active: true },
     jurusan1: { label: "Program Keahlian (Jurusan)", required: true, active: true },
     alasanMemilih: { label: "Alasan Memilih Jurusan", required: false, active: true },
     namaAyah: { label: "Nama Ayah", required: true, active: true },
+    tempatLahirAyah: { label: "Tempat Lahir Ayah", required: true, active: true },
+    tglLahirAyah: { label: "Tanggal Lahir Ayah", required: true, active: true },
+    agamaAyah: { label: "Agama Ayah", required: true, active: true },
+    kewarganegaraanAyah: { label: "Kewarganegaraan Ayah", required: true, active: true },
     pendidikanAyah: { label: "Pendidikan Ayah", required: true, active: true },
     pekerjaanAyah: { label: "Pekerjaan Ayah", required: true, active: true },
     penghasilanAyah: { label: "Penghasilan Ayah", required: true, active: true },
+    alamatAyah: { label: "Alamat Lengkap Ayah", required: true, active: true },
+    statusAyah: { label: "Status Ayah", required: true, active: true },
     namaIbu: { label: "Nama Ibu", required: true, active: true },
+    tempatLahirIbu: { label: "Tempat Lahir Ibu", required: true, active: true },
+    tglLahirIbu: { label: "Tanggal Lahir Ibu", required: true, active: true },
+    agamaIbu: { label: "Agama Ibu", required: true, active: true },
+    kewarganegaraanIbu: { label: "Kewarganegaraan Ibu", required: true, active: true },
     pendidikanIbu: { label: "Pendidikan Ibu", required: true, active: true },
     pekerjaanIbu: { label: "Pekerjaan Ibu", required: true, active: true },
     penghasilanIbu: { label: "Penghasilan Ibu", required: true, active: true },
+    alamatIbu: { label: "Alamat Lengkap Ibu", required: true, active: true },
+    statusIbu: { label: "Status Ibu", required: true, active: true },
     namaWali: { label: "Nama Wali", required: false, active: true },
+    tempatLahirWali: { label: "Tempat Lahir Wali", required: false, active: true },
+    tglLahirWali: { label: "Tanggal Lahir Wali", required: false, active: true },
+    agamaWali: { label: "Agama Wali", required: false, active: true },
+    kewarganegaraanWali: { label: "Kewarganegaraan Wali", required: false, active: true },
+    pendidikanWali: { label: "Pendidikan Wali", required: false, active: true },
+    pekerjaanWali: { label: "Pekerjaan Wali", required: false, active: true },
+    penghasilanWali: { label: "Penghasilan Wali", required: false, active: true },
+    alamatWali: { label: "Alamat Lengkap Wali", required: false, active: true },
+    statusWali: { label: "Status Wali", required: false, active: true },
     teleponOrtu: { label: "Telepon Orang Tua", required: true, active: true },
     nilaiUSTeori: { label: "Nilai US Teori", required: false, active: true },
     nilaiUSPraktik: { label: "Nilai US Praktik", required: false, active: true },
     nilaiMuatanLokal: { label: "Nilai Muatan Lokal", required: false, active: true },
-    citaCita: { label: "Cita-cita", required: false, active: true },
+    citaCita: { label: "Cita-cita Utama", required: false, active: true },
     hobi: { label: "Hobi", required: false, active: true },
     pelajaranDisenangi: { label: "Pelajaran Disenangi", required: false, active: true },
+    alasanDisenangi: { label: "Alasan Menyenangi Pelajaran", required: false, active: true },
     kesulitanBelajar: { label: "Kesulitan Belajar", required: false, active: true },
+    citaCitaSetelahLulus: { label: "Rencana Setelah Lulus", required: false, active: true },
     punyaKPS: { label: "Status KPS", required: false, active: true },
+    noKPS: { label: "Nomor KPS", required: false, active: true },
     punyaKIP: { label: "Status KIP", required: false, active: true },
+    noKIP: { label: "Nomor KIP", required: false, active: true },
   };
   const [fieldsConfigUI, setFieldsConfigUI] = useState<Record<string, { label: string; required: boolean; active: boolean }>>(DEFAULT_FIELDS_CONFIG_UI);
 
@@ -540,7 +577,11 @@ export default function KelolaUserInterface() {
       ppdb_footer_desc: footerDesc,
     };
 
-    localStorage.setItem(draftKey, JSON.stringify(draft));
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(draft));
+    } catch (error) {
+      console.warn("Gagal menyimpan draft ke localStorage (kuota penuh):", error);
+    }
   }, [
     mounted,
     loading,
@@ -643,19 +684,13 @@ export default function KelolaUserInterface() {
             title: dbMajor.title || "",
             desc: dbMajor.desc || "",
             color: dbMajor.color || (defMajor?.color || "#0066ff"),
-            careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : (defMajor?.careers || []),
-            facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : (defMajor?.facilities || []),
-            logo: dbMajor.logo || (defMajor?.logo || ""),
-            banner: dbMajor.banner || (defMajor?.banner || ""),
-            video: dbMajor.video || (defMajor?.video || ""),
-            gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : (defMajor?.gallery || [])
+            careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : [],
+            facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : [],
+            logo: dbMajor.logo || "",
+            banner: dbMajor.banner || "",
+            video: dbMajor.video || "",
+            gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : []
           });
-        });
-        
-        DEFAULT_MAJORS.forEach(def => {
-          if (!mergedMajors.some(m => m.code === def.code)) {
-            mergedMajors.push(def);
-          }
         });
         
         setMajorsList(mergedMajors);
@@ -836,10 +871,32 @@ export default function KelolaUserInterface() {
 
       let finalMajors = [...majorsList];
       if (editingMajor) {
-        finalMajors = finalMajors.map(m => m.code === editingMajor.code ? editingMajor : m);
+        if (isNewMajor) {
+          const exists = finalMajors.some(m => m.code.toUpperCase() === editingMajor.code.toUpperCase());
+          if (!exists) {
+            finalMajors.push(editingMajor);
+          } else {
+            finalMajors = finalMajors.map(m => m.code === editingMajor.code ? editingMajor : m);
+          }
+          setIsNewMajor(false);
+        } else {
+          finalMajors = finalMajors.map(m => m.code === editingMajor.code ? editingMajor : m);
+        }
         setMajorsList(finalMajors);
         setEditingMajor(null);
       }
+
+      // Sanitize finalMajors gallery URLs to prevent Zod validation errors (expected string to have >=1 characters)
+      finalMajors = finalMajors.map(major => {
+        if (major.gallery && Array.isArray(major.gallery)) {
+          return {
+            ...major,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            gallery: major.gallery.filter((g: any) => g && typeof g.url === "string" && g.url.trim().length > 0)
+          };
+        }
+        return major;
+      });
 
       const configsPayload = {
         ppdb_landing_active: isLandingPageActive,
@@ -872,6 +929,13 @@ export default function KelolaUserInterface() {
       
       if (isDemoMode) {
         setLoading(false);
+        // Save to localStorage so that daftar/page.tsx can pick it up in offline/demo mode
+        Object.entries(configsPayload).forEach(([key, val]) => {
+          if (val !== undefined && val !== null) {
+            localStorage.setItem(key, typeof val === 'object' ? JSON.stringify(val) : String(val));
+          }
+        });
+        
         Swal.fire({
           icon: "success",
           title: "Berhasil Disimpan!",
@@ -915,6 +979,7 @@ export default function KelolaUserInterface() {
           localStorage.setItem("ppdb_wa_admin", waAdmin);
           localStorage.setItem("ppdb_bank_config", JSON.stringify(bankConfigList));
           localStorage.setItem("ppdb_gelombang_config", JSON.stringify(gelombangConfig));
+          localStorage.setItem("ppdb_fields_config", JSON.stringify(fieldsConfigUI));
         } catch (storageErr) {
           console.warn("Storage sync bypassed.", storageErr);
         }

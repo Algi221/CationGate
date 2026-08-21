@@ -214,7 +214,7 @@ export default function SubscriptionManagementPage() {
   };
 
   return (
-    <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-8 font-sans">
+    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 font-sans">
       {/* Midtrans Snap JS */}
       <Script
         src="https://app.sandbox.midtrans.com/snap/snap.js"
@@ -311,7 +311,7 @@ export default function SubscriptionManagementPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mx-auto items-stretch">
           {loadingPlans ? (
             <div className="col-span-1 md:col-span-2 py-12 flex justify-center text-slate-500 dark:text-slate-400 animate-pulse font-medium">
               Memuat harga paket...
@@ -346,7 +346,7 @@ export default function SubscriptionManagementPage() {
                   "Laporan & Statistik Lengkap"
                 ]
               }
-            ]).map((pkg) => {
+            ]).map((pkg, idx) => {
               const isFree = pkg.price_yearly === 0 || pkg.price_yearly === "0";
               const isProPlan = !isFree;
               const isActivePlan = isFree
@@ -369,7 +369,7 @@ export default function SubscriptionManagementPage() {
                       Paket Aktif
                     </div>
                   )}
-                  {isProPlan && !isActivePlan && (
+                  {idx === 1 && !isActivePlan && (
                     <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest py-1.5 px-4 rounded-bl-2xl flex items-center gap-1.5 shadow-sm">
                       <Star className="w-3 h-3 fill-current" /> Terpopuler
                     </div>
@@ -396,9 +396,9 @@ export default function SubscriptionManagementPage() {
 
                   {/* Price */}
                   <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-baseline gap-1.5">
+                    <div className="flex items-baseline flex-wrap gap-1.5">
                       <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                        {isFree ? "Rp 0" : "Rp 750.000"}
+                        {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(pkg.price_yearly || 0)}
                       </span>
                       <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">
                         / Tahun
@@ -406,7 +406,7 @@ export default function SubscriptionManagementPage() {
                     </div>
                     {isProPlan && (
                       <p className="text-xs text-blue-600 dark:text-blue-400 font-bold mt-1.5">
-                        Setara Rp 62.500 / bulan
+                        Setara {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format((pkg.price_yearly || 0) / 12)} / bulan
                       </p>
                     )}
                   </div>

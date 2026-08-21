@@ -53,9 +53,10 @@ Aturan Format:
 `;
 
 chatbotRouter.post('/', async (c) => {
+  let userMessage = '';
   try {
     const body = await c.req.json();
-    const userMessage = body.message?.trim();
+    userMessage = body.message?.trim() || '';
     const history = Array.isArray(body.history) ? body.history : [];
 
     if (!userMessage) {

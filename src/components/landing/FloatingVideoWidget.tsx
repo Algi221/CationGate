@@ -103,6 +103,12 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent('floatingVideoToggle', { detail: { isVisible: isVisible && !isMenuOpen } }));
+    }
+  }, [isVisible, isMenuOpen]);
+
+  useEffect(() => {
     const handleMenuToggle = (e: Event) => {
       setIsMenuOpen((e as CustomEvent).detail);
     };

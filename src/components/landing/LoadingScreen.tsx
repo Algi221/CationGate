@@ -8,22 +8,33 @@ const LOADING_KEY = "cationgate_loading_session";
 
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "show" | "exit">("start");
-  const [isMounted, setIsMounted] = useState<boolean>(true);
+  const [isMounted, setIsMounted] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const isInternalNav = sessionStorage.getItem("cationgate_internal_navigation") === "true";
+      return !isInternalNav;
+    }
+    return true;
+  });
 
   const premiumEasing = [0.85, 0, 0.15, 1] as const;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Check if user came back from internal navigation (e.g. clicking 'Beranda' from /daftar or /masuk)
-      const shouldSkip = sessionStorage.getItem("cationgate_skip_splash") === "true";
-      if (shouldSkip) {
-        sessionStorage.removeItem("cationgate_skip_splash");
+      // Clear flag on actual page reload (F5 / browser refresh / tab close)
+      const handleBeforeUnload = () => {
+        sessionStorage.removeItem("cationgate_internal_navigation");
+      };
+      window.addEventListener("beforeunload", handleBeforeUnload);
+
+      // If user came from client-side in-app navigation, skip animation immediately
+      const isInternalNav = sessionStorage.getItem("cationgate_internal_navigation") === "true";
+      if (isInternalNav) {
         setIsMounted(false);
         window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
-        return;
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
       }
 
-      // Lock scroll while splash is active
+      // Initial visit or page refresh (F5): play splash animation
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
 
@@ -33,6 +44,7 @@ export default function LoadingScreen() {
       return () => {
         clearTimeout(t1);
         clearTimeout(t2);
+        window.removeEventListener("beforeunload", handleBeforeUnload);
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
       };
@@ -44,6 +56,8 @@ export default function LoadingScreen() {
       setIsMounted(false);
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      // Mark that the splash has completed for this tab session so internal SPA routing skips it
+      sessionStorage.setItem("cationgate_internal_navigation", "true");
       window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
     }
   };

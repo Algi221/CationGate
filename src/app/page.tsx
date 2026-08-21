@@ -19,6 +19,7 @@ import { FloatingVideoWidget } from "@/components/landing/FloatingVideoWidget";
 import LoadingScreen from "@/components/landing/LoadingScreen";
 import { ContactScreen } from "@/components/landing/ContactScreen";
 import { AboutSection } from "@/components/landing/AboutSection";
+import { CatBotWidget } from "@/components/landing/CatBotWidget";
 
 const VIDEO_COLLECTION = {
   trailerAnime: "https://www.youtube-nocookie.com/embed/1FcVJxxPWh4",
@@ -48,6 +49,8 @@ export default function LandingPage() {
       </main>
 
       <CinematicFooter />
+
+      <CatBotWidget />
 
       <FloatingVideoWidget
         onClick={() => setActiveVideoUrl(VIDEO_COLLECTION.trailerAnime)}

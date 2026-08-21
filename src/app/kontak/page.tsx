@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Navbar } from "@/components/landing/Navbar";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, Plus } from "lucide-react";
 import Swal from "sweetalert2";
 
 export default function ContactPage() {
@@ -71,183 +71,188 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#2e3749] flex flex-col justify-between font-sans">
+    <div className="min-h-screen bg-white text-[#2e3749] flex flex-col justify-between font-sans overflow-x-hidden">
       <Navbar />
 
-      <main className="pt-32 pb-24 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full flex-1">
+      <main className="pt-28 pb-24 w-full flex-1">
         
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 lg:mb-16 gap-6">
-          <div>
-            <span className="inline-block px-4 py-1.5 bg-[#FFD33B] text-[#2e3749] rounded-full text-xs font-bold mb-6 shadow-sm">
-              Solusi Profil Sekolahmu
-            </span>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter text-[#2e3749]">
-              Hubungi Kami
-            </h1>
-          </div>
-          <p className="text-[#2e3749]/80 max-w-xs text-left md:text-right text-sm md:text-base leading-relaxed">
-            Konsultasikan kebutuhan platform sekolahmu. Tim kami siap membantu dan akan merespons dalam 1x24 jam kerja.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+        {/* ================= SECTION 1: HEADER & WORDS ================= */}
+        <section className="relative px-4 sm:px-8 lg:px-12 max-w-5xl mx-auto text-center py-12 lg:py-20 flex flex-col items-center justify-center">
           
-          {/* Section Form dengan Shape SVG Acak di Belakang */}
-          <div className="lg:col-span-7 flex flex-col justify-center relative p-8 sm:p-12">
-            
-            {/* SVG Shape Organik Acak Warna Kuning */}
-            <div className="absolute inset-0 pointer-events-none -z-0">
-              <svg
-                className="w-full h-full drop-shadow-md"
-                viewBox="0 0 600 650"
-                fill="none"
-                preserveAspectRatio="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M 40 20 
-                     C 150 -10, 480 -20, 560 30 
-                     C 620 90, 590 220, 580 380 
-                     C 570 520, 610 610, 490 640 
-                     C 350 670, 120 620, 30 580 
-                     C -30 520, 10 320, 10 180 
-                     C 10 70, -20 30, 40 20 Z"
-                  fill="#FFD33B"
-                />
-              </svg>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6 relative z-10 p-2 sm:p-4">
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-[#2e3749] mb-2">
-                    Nomor Telepon / WhatsApp
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="08xx-xxxx-xxxx"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-200 text-sm text-[#2e3749] placeholder:text-slate-400 focus:outline-none focus:border-[#2e3749] focus:ring-2 focus:ring-[#2e3749]/30 transition-all shadow-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-[#2e3749] mb-2">
-                    Email Instansi
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="admin@sekolah.sch.id"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-200 text-sm text-[#2e3749] placeholder:text-slate-400 focus:outline-none focus:border-[#2e3749] focus:ring-2 focus:ring-[#2e3749]/30 transition-all shadow-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#2e3749] mb-2">
-                  Nama Lengkap / Nama Sekolah
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Masukkan nama atau institusi..."
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-200 text-sm text-[#2e3749] placeholder:text-slate-400 focus:outline-none focus:border-[#2e3749] focus:ring-2 focus:ring-[#2e3749]/30 transition-all shadow-sm"
-                />
-              </div>
-
-              <div className="pt-2">
-                <label className="block text-sm font-bold text-[#2e3749] mb-2">
-                  Pesan / Kebutuhan Digitalisasi
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="Ceritakan kendala atau kebutuhan sistem di sekolahmu..."
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full px-4 py-4 rounded-xl bg-white border border-slate-200 text-sm text-[#2e3749] placeholder:text-slate-400 focus:outline-none focus:border-[#2e3749] focus:ring-2 focus:ring-[#2e3749]/30 transition-all resize-none shadow-sm"
-                />
-              </div>
-
-              <div className="pt-4">
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting} 
-                  className="disabled:opacity-50 transition-opacity"
-                >
-                  <InteractiveHoverButton className="bg-[#2e3749] hover:bg-[#202735] text-white border-none font-semibold">
-                    {isSubmitting ? "Mengirim Pesan..." : "Kirim Pertanyaan"}
-                  </InteractiveHoverButton>
-                </button>
-              </div>
-            </form>
+          {/* Floating Decorative Shapes Section 1 */}
+          <div className="absolute top-6 left-8 sm:left-16 text-[#2e3749]/20 pointer-events-none">
+            <Plus size={32} />
           </div>
+          <div className="absolute top-10 right-10 sm:right-20 w-8 h-8 border-4 border-[#FFD33B] rounded-full border-t-transparent border-r-transparent -rotate-45 pointer-events-none" />
+          <div className="absolute bottom-8 left-10 sm:left-24 text-[#FFD33B] pointer-events-none">
+            <Plus size={24} />
+          </div>
+          <div className="absolute bottom-6 right-8 sm:right-16 w-6 h-6 border-4 border-[#2e3749]/30 rounded-full border-b-transparent border-l-transparent rotate-45 pointer-events-none" />
 
-          {/* Section Informasi Kontak / Kanan */}
-          <div className="lg:col-span-5 h-[400px] lg:h-auto min-h-[500px] relative rounded-[32px] overflow-hidden shadow-md group cursor-pointer">
-            
-            <img 
-              src="/assets/landing/cationgate.jpeg" 
-              alt="Digitalisasi Sekolah" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
-            />
-            
-            <div className="absolute top-6 right-6 transition-opacity duration-300 group-hover:opacity-0 z-10">
-              <span className="px-5 py-2 border border-[#FFD33B]/50 text-white rounded-full text-sm font-medium backdrop-blur-sm bg-[#2e3749]/60">
-                Digital School Info
+          {/* Heading utama */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#2e3749] mb-6">
+            Let's Connect With Us
+          </h1>
+          
+          <p className="text-slate-500 max-w-2xl text-sm sm:text-base leading-relaxed mb-8">
+            Konsultasikan kebutuhan platform sekolahmu. Kirimkan pesan atau hubungi kami langsung, tim kami siap membantu dan akan merespons dalam 1x24 jam kerja.
+          </p>
+
+          {/* Quick Contact Info */}
+          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-10">
+            <div className="flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-full border border-slate-100">
+              <Phone size={18} className="text-[#2e3749]" />
+              <span className="text-sm font-semibold text-[#2e3749]">
+                +62 851-1051-1403
               </span>
             </div>
 
-            <div className="absolute inset-0 bg-[#2e3749]/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-center items-center p-8 z-20">
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-white mb-2">Kantor Pusat Kami</h3>
-                <p className="text-[#FFD33B] text-sm font-medium">Siap membantu transformasi digital sekolahmu.</p>
+            <div className="flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-full border border-slate-100">
+              <Mail size={18} className="text-[#2e3749]" />
+              <span className="text-sm font-semibold text-[#2e3749]">
+                hello@sekolahdigital.id
+              </span>
+            </div>
+          </div>
+        </section>
+
+
+        {/* ================= SECTION 2: INPUT FORM & LOKASI PERUSAHAAN ================= */}
+        <section className="relative px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto pt-4">
+          
+          {/* Floating Shape Aksen Antar Section */}
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-transparent via-[#FFD33B] to-transparent opacity-60 rounded-full" />
+          <div className="absolute top-12 -left-6 text-[#FFD33B]/40 pointer-events-none hidden sm:block">
+            <Plus size={40} />
+          </div>
+          <div className="absolute bottom-20 -right-6 w-12 h-12 border-4 border-[#FFD33B]/50 rounded-full border-t-transparent border-l-transparent pointer-events-none hidden sm:block" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start relative z-10">
+            
+            {/* Kolom Kiri: Form & Lokasi Kantor */}
+            <div className="lg:col-span-6 space-y-10">
+              
+              {/* Form Card dengan Latar Belakang Container */}
+              <div className="bg-slate-50/70 border border-slate-100/80 rounded-3xl p-6 sm:p-8 shadow-sm backdrop-blur-sm relative overflow-hidden">
+                
+                {/* Micro Shape Dekoratif di dalam Card Form */}
+                <div className="absolute -right-8 -top-8 w-24 h-24 bg-[#FFD33B]/10 rounded-full blur-xl pointer-events-none" />
+
+                <h2 className="text-2xl sm:text-3xl font-bold text-[#2e3749] mb-2">
+                  Kirim Pesan
+                </h2>
+                <p className="text-slate-500 text-sm mb-6">
+                  Isi formulir di bawah ini untuk memulai diskusi dengan tim kami.
+                </p>
+
+                <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nama Lengkap / Instansi"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-[#2e3749] placeholder:text-slate-400 focus:outline-none focus:border-[#FFD33B] focus:ring-2 focus:ring-[#FFD33B]/30 transition-all shadow-sm"
+                    />
+
+                    <input
+                      type="tel"
+                      placeholder="Nomor WhatsApp"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-[#2e3749] placeholder:text-slate-400 focus:outline-none focus:border-[#FFD33B] focus:ring-2 focus:ring-[#FFD33B]/30 transition-all shadow-sm"
+                    />
+                  </div>
+
+                  <input
+                    type="email"
+                    required
+                    placeholder="Email Instansi / Sekolah"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-[#2e3749] placeholder:text-slate-400 focus:outline-none focus:border-[#FFD33B] focus:ring-2 focus:ring-[#FFD33B]/30 transition-all shadow-sm"
+                  />
+
+                  <textarea
+                    rows={4}
+                    placeholder="Tuliskan pesan atau kebutuhan digitalisasi sekolahmu..."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-[#2e3749] placeholder:text-slate-400 focus:outline-none focus:border-[#FFD33B] focus:ring-2 focus:ring-[#FFD33B]/30 transition-all resize-none shadow-sm"
+                  />
+
+                  <div className="pt-2">
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting} 
+                      className="disabled:opacity-50 transition-opacity"
+                    >
+                      <InteractiveHoverButton className="bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] border-none font-bold px-8 py-3 shadow-sm">
+                        {isSubmitting ? "Mengirim..." : "Kirim Pesan"}
+                      </InteractiveHoverButton>
+                    </button>
+                  </div>
+                </form>
               </div>
 
-              <div className="w-full max-w-sm space-y-6">
-                <div className="flex items-center gap-4 bg-white/10 p-4 rounded-2xl border border-white/10">
-                  <div className="w-10 h-10 rounded-full bg-[#FFD33B]/20 flex items-center justify-center shrink-0">
-                    <Mail size={18} className="text-[#FFD33B]" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-300 block mb-0.5">Email Bantuan</span>
-                    <span className="text-sm font-medium text-white tracking-wide">hello@sekolahdigital.id</span>
+              {/* List Lokasi Kantor */}
+              <div className="px-2">
+                <h2 className="text-2xl font-bold text-[#2e3749] mb-6">
+                  Kantor Operasional Kami
+                </h2>
+
+                <div className="space-y-6">
+                  {/* Kantor 1 */}
+                
+
+                  {/* Kantor 2 */}
+                  <div className="flex items-start gap-4">
+                    <span className="w-3.5 h-3.5 rounded-full bg-[#2e3749] shrink-0 mt-1" />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-[#2e3749]">Jakarta Pusat</h3>
+                        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                          MAP
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+                        Sudirman Central Business District, Jakarta Pusat. Pusat layanan konsultasi digital.
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-4 bg-white/10 p-4 rounded-2xl border border-white/10">
-                  <div className="w-10 h-10 rounded-full bg-[#FFD33B]/20 flex items-center justify-center shrink-0">
-                    <Phone size={18} className="text-[#FFD33B]" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-300 block mb-0.5">WhatsApp / Telepon</span>
-                    <span className="text-sm font-medium text-white tracking-wide">+62 851-1051-1403</span>
-                  </div>
-                </div>
+            </div>
 
-                <div className="flex items-center gap-4 bg-white/10 p-4 rounded-2xl border border-white/10">
-                  <div className="w-10 h-10 rounded-full bg-[#FFD33B]/20 flex items-center justify-center shrink-0">
-                    <MapPin size={18} className="text-[#FFD33B]" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-300 block mb-0.5">Alamat</span>
-                    <span className="text-sm font-medium text-white leading-snug block">
-                      Jl. Ratu Bidadari 3 no 2, Ciputat, Tangerang Selatan
+            {/* Kolom Kanan: Gambar Perusahaan */}
+            <div className="lg:col-span-6 sticky top-28">
+              <div className="rounded-[32px] overflow-hidden shadow-xl border border-slate-100 bg-slate-100 h-[480px] lg:h-[580px] relative group">
+                
+                {/* Glow Aksen Kuning di Belakang Card Gambar */}
+                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FFD33B]/30 rounded-full blur-2xl z-0 pointer-events-none" />
+
+                <img 
+                  src="/assets/landing/cationgate.jpeg" 
+                  alt="Gedung Perusahaan" 
+                  className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105 relative z-10"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#2e3749]/90 via-black/20 to-transparent flex items-end p-8 z-20">
+                  <div className="text-white">
+                    <span className="px-3 py-1 bg-[#FFD33B] text-[#2e3749] text-xs font-bold rounded-full mb-2 inline-block">
+                      Headquarter
                     </span>
+                    <h3 className="text-2xl font-bold">Pusat Digitalisasi Sekolah</h3>
+                    <p className="text-sm text-slate-200 mt-1">Membangun ekosistem pendidikan modern yang terintegrasi.</p>
                   </div>
                 </div>
               </div>
             </div>
 
           </div>
+        </section>
 
-        </div>
       </main>
 
       <CinematicFooter />

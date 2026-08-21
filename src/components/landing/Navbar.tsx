@@ -344,20 +344,20 @@ export function Navbar() {
           <div className="flex items-center gap-3 shrink-0">
             {/* Tombol Masuk (Hanya muncul di Layar Besar/Desktop - lg:flex) */}
             <div className="hidden lg:flex items-center">
-              <Link href="/masuk" className="block">
+              <Link href="/masuk" className="group/masuk block">
                 <button
+                  type="button"
                   className="
                     h-10
                     rounded-full
                     bg-[#FFD33B]
+                    group-hover/masuk:bg-slate-950
                     hover:bg-slate-950
-                    text-slate-950
-                    hover:text-[#FFD33B]
                     font-bold
                     text-sm
                     px-7
                     border border-transparent
-                    hover:border-slate-900
+                    group-hover/masuk:border-slate-800
                     shadow-sm
                     hover:shadow-md
                     transition-all
@@ -370,7 +370,9 @@ export function Navbar() {
                     justify-center
                   "
                 >
-                  Masuk
+                  <span className="text-slate-950 group-hover/masuk:!text-[#FFD33B] hover:!text-[#FFD33B] transition-colors font-black">
+                    Masuk
+                  </span>
                 </button>
               </Link>
             </div>
@@ -408,9 +410,11 @@ export function Navbar() {
             }))}
             footer={
               <div className="flex flex-col w-full px-10 md:px-24 py-8 pb-12 gap-4">
-                <Link href="/masuk" onClick={() => setMobileMenuOpen(false)}>
-                  <button className="w-full justify-center bg-[#FFD33B] hover:bg-slate-950 text-slate-950 hover:text-[#FFD33B] font-bold text-base rounded-2xl h-14 transition-all duration-300 flex items-center shadow-sm cursor-pointer">
-                    Masuk
+                <Link href="/masuk" onClick={() => setMobileMenuOpen(false)} className="group/m-masuk block w-full">
+                  <button className="w-full justify-center bg-[#FFD33B] group-hover/m-masuk:bg-slate-950 hover:bg-slate-950 font-bold text-base rounded-2xl h-14 transition-all duration-300 flex items-center shadow-sm cursor-pointer">
+                    <span className="text-slate-950 group-hover/m-masuk:!text-[#FFD33B] hover:!text-[#FFD33B] font-black transition-colors">
+                      Masuk
+                    </span>
                   </button>
                 </Link>
               </div>

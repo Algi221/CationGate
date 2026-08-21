@@ -15,6 +15,7 @@ import verifyRouter from './routes/verify';
 import storageRouter from './routes/storage';
 import mailerRouter from './routes/mailer';
 import passwordRouter from './routes/password';
+import chatbotRouter from './routes/chatbot';
 import { secureHeaders } from 'hono/secure-headers';
 
 process.on('uncaughtException', (err) => {
@@ -96,6 +97,7 @@ app.route('/verify', verifyRouter);
 app.route('/storage', storageRouter);
 app.route('/mailer', mailerRouter);
 app.route('/password', passwordRouter);
+app.route('/chatbot', chatbotRouter);
 
 // Standard API health check
 app.get('/health', (c) => c.json({ status: 'OK', service: 'PPDB SMK Taruna Bhakti API Server v1.0.0 (Monolith)' }));

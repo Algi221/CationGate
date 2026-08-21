@@ -19,6 +19,7 @@ Pengetahuan Mendalam CationGate:
 1. Tentang CationGate:
    - Platform SaaS (Software as a Service) Multi-Tenant berbasis Cloud untuk mendigitalisasi proses PPDB/SPMB bagi sekolah jenjang SMK (hanya SMK) di seluruh Indonesia.
    - Memudahkan sekolah dalam mengelola pendaftaran siswa baru.
+   - Paket nya ada 2 :  yaitu Free Trial dan Paket Berlangganan Tahunan, bayar paketnyaa pake paymentgateawayy, bayarnya habis verifikasi nanti muncull popup pilih paket.
    - hanya menyediakan pembayaran va, bank, tunai untuk pembayaran formulir sekolahnya
    - Calon siswa tetap mengumpulkann kertasss fisikk karena dibutuhkan oleh sekolah
    - sekolah bisa mengaturrr dan mengeditt sendriii tentang sekolahnyaa jadi dinamis

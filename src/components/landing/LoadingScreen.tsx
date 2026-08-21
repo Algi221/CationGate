@@ -115,9 +115,10 @@ export default function LoadingScreen() {
               className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mb-6 flex items-center justify-center drop-shadow-xl"
             >
               <Image
-                src="/assets/catpeer/CationGate_Logo.png"
+                src="/assets/logo_cationgate/CationGate_Logo.png"
                 alt="CationGate Logo"
                 fill
+                sizes="(max-width: 768px) 160px, 192px"
                 priority
                 className="object-contain"
               />

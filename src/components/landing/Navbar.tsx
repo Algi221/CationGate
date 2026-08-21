@@ -208,7 +208,7 @@ export function Navbar() {
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="relative w-8 h-8 flex items-center justify-center group-hover:scale-105 transition-transform">
               <Image
-                src="/assets/catpeer/CationGate_Logo.png"
+                src="/assets/logo_cationgate/CationGate_Logo.png"
                 alt="CationGate Logo"
                 width={32}
                 height={32}

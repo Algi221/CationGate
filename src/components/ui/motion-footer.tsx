@@ -286,7 +286,7 @@ export function CinematicFooter() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2.5">
                   <Image
-                    src="/assets/catpeer/CationGate_Logo.png"
+                    src="/assets/logo_cationgate/CationGate_Logo.png"
                     alt="CationGate Logo"
                     width={32}
                     height={32}

@@ -122,27 +122,26 @@ const StepCard = ({
     if (step.layout === "image-left") {
       return (
         <div className="w-full h-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center md:justify-between gap-6 md:gap-16 px-6 md:px-16 pt-24 md:pt-0 relative z-10">
-          {/* UPDATED: Image wrapper with layers, shadows, & hover character */}
-          <div className="w-full md:w-1/2 h-[35vh] md:h-[70vh] relative p-2 md:p-8 shrink-0 group perspective-1000">
-            {/* Background offset card layer */}
-            <div className="absolute inset-4 md:inset-8 bg-black/10 rounded-3xl md:rounded-[2.5rem] transform -rotate-3 transition-transform duration-500 group-hover:-rotate-6 hidden md:block backdrop-blur-sm border border-black/5"></div>
+          {/* UPDATED: Sleek, thin-framed image container */}
+          <div className="w-full md:w-[58%] lg:w-[62%] flex items-center justify-center relative p-1 sm:p-2 shrink-0 group perspective-1000">
+            {/* Subtle background offset card layer */}
+            <div className="absolute inset-1 sm:inset-2 bg-black/5 rounded-2xl md:rounded-3xl transform -rotate-1.5 transition-transform duration-500 group-hover:-rotate-3 hidden md:block border border-black/5 -z-10 w-[98%] h-[98%]"></div>
 
-            {/* Main floating image container */}
-            <div className="absolute inset-4 md:inset-8 bg-white/60 backdrop-blur-md p-1.5 md:p-3 rounded-2xl md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] md:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-white/70 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-[0_40px_70px_rgba(0,0,0,0.2)]">
+            {/* Main floating image container with thin elegant bezel */}
+            <div className="w-full max-w-[660px] bg-white/95 backdrop-blur-md p-1 sm:p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-[0_15px_35px_rgba(0,0,0,0.08)] md:shadow-[0_25px_55px_rgba(0,0,0,0.12)] border border-slate-200/80 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-[0_30px_65px_rgba(0,0,0,0.16)] relative z-10 overflow-hidden">
               <img
                 src={step.image}
                 alt={step.title}
                 loading="eager"
                 decoding="async"
-                // object-top added so UI screenshots don't cut off at the header
-                className="w-full h-full object-cover object-top rounded-xl md:rounded-[2rem] shadow-sm bg-white"
+                className="w-full h-auto max-h-[46vh] sm:max-h-[54vh] md:max-h-[72vh] object-contain rounded-xl md:rounded-2xl bg-white block"
               />
               {/* Subtle light glare/reflection effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-[2rem]"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-2xl md:rounded-3xl"></div>
             </div>
           </div>
 
-          <div className="w-full md:w-1/2 flex flex-col justify-center space-y-3 md:space-y-6 relative">
+          <div className="w-full md:w-[42%] lg:w-[38%] flex flex-col justify-center space-y-3 md:space-y-6 relative">
             <div className="flex items-baseline gap-3 md:gap-4">
               <span className="text-lg md:text-2xl font-bold tracking-widest uppercase opacity-70">
                 Part.
@@ -167,7 +166,7 @@ const StepCard = ({
     if (step.layout === "image-right") {
       return (
         <div className="w-full h-full max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center md:justify-between gap-6 md:gap-16 px-6 md:px-16 pt-24 md:pt-0 relative z-10">
-          <div className="w-full md:w-1/2 flex items-center gap-12 relative">
+          <div className="w-full md:w-[42%] lg:w-[38%] flex items-center gap-6 md:gap-12 relative">
             <div
               className="hidden md:block transform -rotate-180"
               style={{ writingMode: "vertical-rl" }}
@@ -195,23 +194,22 @@ const StepCard = ({
             </div>
           </div>
 
-          {/* UPDATED: Image wrapper with layers, shadows, & hover character (Reverse rotation for right side) */}
-          <div className="w-full md:w-1/2 h-[35vh] md:h-[70vh] relative p-2 md:p-8 shrink-0 group perspective-1000">
-            {/* Background offset card layer */}
-            <div className="absolute inset-4 md:inset-8 bg-black/10 rounded-3xl md:rounded-[2.5rem] transform rotate-3 transition-transform duration-500 group-hover:rotate-6 hidden md:block backdrop-blur-sm border border-black/5"></div>
+          {/* UPDATED: Sleek, thin-framed image container */}
+          <div className="w-full md:w-[58%] lg:w-[62%] flex items-center justify-center relative p-1 sm:p-2 shrink-0 group perspective-1000">
+            {/* Subtle background offset card layer */}
+            <div className="absolute inset-1 sm:inset-2 bg-black/5 rounded-2xl md:rounded-3xl transform rotate-1.5 transition-transform duration-500 group-hover:rotate-3 hidden md:block border border-black/5 -z-10 w-[98%] h-[98%]"></div>
 
-            {/* Main floating image container */}
-            <div className="absolute inset-4 md:inset-8 bg-white/60 backdrop-blur-md p-1.5 md:p-3 rounded-2xl md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] md:shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-white/70 transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-[0_40px_70px_rgba(0,0,0,0.2)]">
+            {/* Main floating image container with thin elegant bezel */}
+            <div className="w-full max-w-[660px] bg-white/95 backdrop-blur-md p-1 sm:p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-[0_15px_35px_rgba(0,0,0,0.08)] md:shadow-[0_25px_55px_rgba(0,0,0,0.12)] border border-slate-200/80 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-[0_30px_65px_rgba(0,0,0,0.16)] relative z-10 overflow-hidden">
               <img
                 src={step.image}
                 alt={step.title}
                 loading="eager"
                 decoding="async"
-                // object-top added so UI screenshots don't cut off at the header
-                className="w-full h-full object-cover object-top rounded-xl md:rounded-[2rem] shadow-sm bg-white"
+                className="w-full h-auto max-h-[46vh] sm:max-h-[54vh] md:max-h-[72vh] object-contain rounded-xl md:rounded-2xl bg-white block"
               />
               {/* Subtle light glare/reflection effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-[2rem]"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-2xl md:rounded-3xl"></div>
             </div>
           </div>
         </div>

@@ -181,15 +181,32 @@ authRouter.post('/login', rateLimiter({
       console.error('[Telegram Bot] Gagal mengirim notifikasi login:', err);
     });
 
+    let schoolSlug = null;
+    const effectiveSchoolId = adminUser.school_id || schoolId;
+    if (effectiveSchoolId) {
+      for (const [, s] of fontInMemSchools) {
+        if (s.school_uuid === effectiveSchoolId || String(s.id) === String(effectiveSchoolId)) {
+          schoolSlug = s.slug;
+          break;
+        }
+      }
+      if (!schoolSlug) {
+        const { data: sch } = await supabase.from('schools').select('slug').eq('id', effectiveSchoolId).maybeSingle();
+        if (sch?.slug) schoolSlug = sch.slug;
+      }
+    }
+
     return c.json({
       success: true,
       message: 'Asyik! Kamu berhasil login. Selamat datang!',
       token,
+      school_slug: schoolSlug,
       admin: {
         username: adminUser.username,
         nama: adminUser.nama_lengkap,
         role: adminUser.role,
-        foto_profil: adminUser.foto_profil
+        foto_profil: adminUser.foto_profil,
+        school_id: effectiveSchoolId
       }
     });
 

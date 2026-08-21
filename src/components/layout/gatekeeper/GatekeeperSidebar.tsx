@@ -261,7 +261,7 @@ export function GatekeeperSidebar({
           <Link href="/gatekeeper/dashboard" className="flex items-center gap-3 overflow-hidden">
             <div className="w-10 h-10 rounded-2xl bg-slate-900 dark:bg-slate-800 border border-slate-700/40 text-white flex items-center justify-center p-1.5 shadow-md shrink-0">
               <Image
-                src="/assets/catpeer/CationGate_Logo.png"
+                src="/assets/logo_cationgate/CationGate_Logo.png"
                 alt="CationGate Logo"
                 width={32}
                 height={32}
@@ -320,7 +320,7 @@ export function GatekeeperSidebar({
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-slate-800 border border-slate-700/40 text-white flex items-center justify-center p-1 font-bold">
                     <Image
-                      src="/assets/catpeer/CationGate_Logo.png"
+                      src="/assets/logo_cationgate/CationGate_Logo.png"
                       alt="CationGate Logo"
                       width={24}
                       height={24}

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { AnimatePresence, motion } from "framer-motion";
 import Lottie from "lottie-react";
-import { ArrowRight, Info, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Info, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +35,7 @@ const stepEditorialVisuals = [
   },
   {
     step: 3,
-    path: "/assets/lottie_animation/Dunia.json",
+    path: "/assets/lottie_animation/Manbrown.json",
     title: "Konfirmasi\nAkhir",
     desc: "Verifikasi data dan aktifkan portal cloud.",
     svgPathMobile: "M 0 0 L 414 0 L 414 120 C 270 175, 130 160, 0 180 Z",
@@ -374,14 +374,33 @@ export default function DaftarSaaS() {
 
       {/* TOP NAVBAR */}
       <div className="relative lg:absolute top-2 lg:top-10 left-2 lg:left-10 right-2 lg:right-10 flex items-center justify-between z-10 mb-4 lg:mb-0">
-        <Link href="/" className="text-xl sm:text-2xl font-black tracking-tight text-slate-950 font-sans">
-          CationGate
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-700 hover:text-slate-950 hover:bg-white shadow-sm transition-all group"
+            title="Kembali ke Beranda"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+            <span className="text-xs font-bold hidden sm:inline">Beranda</span>
+          </Link>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <Image
+              src="/assets/logo_cationgate/CationGate_Logo.png"
+              alt="CationGate Logo"
+              width={32}
+              height={32}
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform group-hover:scale-105"
+            />
+            <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-950 font-sans">
+              CationGate
+            </span>
+          </Link>
+        </div>
         <div className="flex items-center gap-3 text-xs">
           <span className="hidden text-slate-400 sm:block">Sudah punya akun?</span>
           <Link
-            href="/auth/login"
-            className="rounded-full border border-slate-200 bg-white/80 backdrop-blur-sm px-4 py-1.5 font-semibold text-slate-700 transition hover:bg-slate-50"
+            href="/masuk"
+            className="rounded-full border border-slate-200 bg-white/90 backdrop-blur-sm px-4 py-1.5 font-bold text-slate-800 transition hover:bg-slate-950 hover:text-white shadow-sm"
           >
             Masuk
           </Link>
@@ -390,7 +409,7 @@ export default function DaftarSaaS() {
 
       {/* STEP BAR DI MOBILE (LANGSUNG DI ATAS FORM INPUT) */}
       <div className="lg:hidden flex justify-center z-30 relative my-3">
-        <div className="inline-flex items-center gap-1.5 bg-[#F1F3F5] p-1.5 rounded-full shadow-md border border-slate-200/80">
+        <div className="inline-flex items-center gap-1.5 bg-[#F1F3F6] p-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-200/80">
           {[1, 2, 3].map((s) => {
             const isActive = Math.min(step, 3) === s;
             const isAccessible = s <= maxReachedStep;
@@ -403,16 +422,18 @@ export default function DaftarSaaS() {
                 onClick={() => {
                   if (isAccessible) setStep(s);
                 }}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ${
                   isActive 
-                    ? "bg-slate-900 text-white shadow-md cursor-pointer" 
+                    ? "bg-[#FFC000] text-slate-950 shadow-sm cursor-pointer" 
                     : isAccessible
-                    ? "text-slate-600 hover:text-slate-900 hover:bg-white/50 cursor-pointer"
-                    : "text-slate-300 opacity-50 cursor-not-allowed"
+                    ? "text-slate-600 hover:text-slate-950 hover:bg-white/70 cursor-pointer"
+                    : "text-slate-400 opacity-50 cursor-not-allowed"
                 }`}
               >
-                <span>0{s}</span>
-                <span className="font-medium text-[11px]">
+                <span className={`font-black text-xs ${isActive ? "text-slate-950" : "text-slate-700"}`}>
+                  0{s}
+                </span>
+                <span className={`text-[12px] ${isActive ? "font-bold text-slate-950" : "font-medium text-slate-600"}`}>
                   {s === 1 ? 'Instansi' : s === 2 ? 'Admin' : 'Konfirmasi'}
                 </span>
               </button>
@@ -797,8 +818,8 @@ export default function DaftarSaaS() {
       </div>
 
       {/* STEP BAR DESKTOP (TETAP DI BOTTOM SCREEN) */}
-      <div className="hidden lg:flex justify-center z-0 relative pb-2 w-full max-w-7xl mx-auto">
-        <div className="inline-flex items-center gap-2 bg-[#F1F3F5] p-2 rounded-full shadow-md border border-slate-200/80 backdrop-blur-md">
+      <div className="hidden lg:flex justify-center z-20 relative pb-2 w-full max-w-7xl mx-auto">
+        <div className="inline-flex items-center gap-2 bg-[#F1F3F6] p-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-200/80">
           {[1, 2, 3].map((s) => {
             const isActive = Math.min(step, 3) === s;
             const isAccessible = s <= maxReachedStep;
@@ -813,14 +834,16 @@ export default function DaftarSaaS() {
                 }}
                 className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all duration-300 ${
                   isActive 
-                    ? "bg-yellow-400 text-black shadow-md cursor-pointer" 
+                    ? "bg-[#FFC000] text-slate-950 shadow-sm cursor-pointer" 
                     : isAccessible
-                    ? "text-slate-600 hover:text-slate-900 hover:bg-white/50 cursor-pointer"
-                    : "text-slate-300 opacity-50 cursor-not-allowed"
+                    ? "text-slate-600 hover:text-slate-950 hover:bg-white/70 cursor-pointer"
+                    : "text-slate-400 opacity-50 cursor-not-allowed"
                 }`}
               >
-                <span>0{s}</span>
-                <span className="hidden sm:inline font-medium text-[11px]">
+                <span className={`font-black text-xs ${isActive ? "text-slate-950" : "text-slate-700"}`}>
+                  0{s}
+                </span>
+                <span className={`text-[12px] ${isActive ? "font-bold text-slate-950" : "font-medium text-slate-600"}`}>
                   {s === 1 ? 'Instansi' : s === 2 ? 'Admin' : 'Konfirmasi'}
                 </span>
               </button>

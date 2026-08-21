@@ -215,7 +215,7 @@ export const CurvedNavbar: React.FC<
       {/* Header di dalam Sidebar (Logo) */}
       <div className="w-full px-6 md:px-24 pt-7 pb-4 flex items-center gap-3 z-20 shrink-0">
         <Image
-          src="/assets/catpeer/CationGate_Logo.png"
+          src="/assets/logo_cationgate/CationGate_Logo.png"
           alt="CationGate Logo"
           width={28}
           height={28}

@@ -185,9 +185,10 @@ export default function AboutPage() {
                   {/* Ukuran wrapper logo diperbesar dari w-24 h-24 jadi w-36 h-36 */}
                   <div className="w-36 h-36 relative mb-2 flex items-center justify-center">
                     <Image
-                      src="/assets/catpeer/CationGate_Logo.png"
+                      src="/assets/logo_cationgate/CationGate_Logo.png"
                       alt="CationGate Logo"
                       fill
+                      sizes="144px"
                       className="object-contain"
                     />
                   </div>
@@ -323,8 +324,7 @@ export default function AboutPage() {
                         `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(member.name)}`
                       }
                       alt={member.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill sizes="(max-width: 768px) 100vw, 360px"className="object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         const target = e.target as HTMLElement;
                         target.style.display = "none";

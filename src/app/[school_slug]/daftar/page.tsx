@@ -2433,18 +2433,15 @@ export default function DaftarPage() {
                 key={step}
                 onClick={() => goToStep(step)}
                 title={`Tahap ${step}`}
-                className={`rounded-full z-10 transition-all duration-500 ease-out cursor-pointer select-none relative ${
+                className={`rounded-full z-10 transition-all duration-500 ease-out cursor-pointer select-none relative flex items-center justify-center font-bold text-[10px] ${
                   isCurrent
-                    ? "w-7 h-7 bg-primary dark:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.65)] scale-125 ring-[6px] ring-primary/20"
+                    ? "w-7 h-7 bg-primary dark:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.65)] scale-125 ring-[6px] ring-primary/20"
                     : isCompleted
-                      ? "w-4.5 h-4.5 bg-primary dark:bg-blue-500 hover:bg-primary hover:bg-primary/90 ring-[4px] ring-primary/10"
-                      : "w-4 h-4 bg-white dark:bg-[#0f172a] border-2 border-slate-200 dark:border-slate-800 hover:border-primary"
+                      ? "w-6 h-6 bg-primary dark:bg-blue-500 text-white hover:bg-primary/90 ring-[3px] ring-primary/10"
+                      : "w-6 h-6 bg-white dark:bg-[#0f172a] text-slate-400 border-2 border-slate-200 dark:border-slate-800 hover:border-primary hover:text-primary"
                 }`}
               >
-                {/* Clean indicator dot for active step to look premium */}
-                {isCurrent && (
-                  <span className="absolute inset-1.5 bg-white dark:bg-[#0f172a] rounded-full animate-pulse"></span>
-                )}
+                {step}
               </div>
             );
           })}

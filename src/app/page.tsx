@@ -7,6 +7,7 @@ import _HeroSection from "@/components/landing/HeroSection";
 import { PartnersSection } from "@/components/landing/PartnersSection";
 import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
 import  SystemFlowSection from "@/components/landing/SystemFlowSection";
+import { ComparisonSection } from "@/components/landing/ComparisonSection";
 import HeroPPDB from "@/components/landing/HeroSection";
 import _SimGymSection from "@/components/landing/SimGymSection"; 
 import { TestimonialsSection } from "@/components/landing";
@@ -39,6 +40,7 @@ export default function LandingPage() {
         <PartnersSection/>
         {/* <AboutSection/> */}
         <SystemFlowSection />
+        <ComparisonSection />
         <TestimonialsSection />
         <ProductPacks />
         <FaqSection />

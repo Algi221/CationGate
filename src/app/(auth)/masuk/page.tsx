@@ -106,13 +106,26 @@ export default function MasukUniversal() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("cationgate_skip_splash", "true");
+              }
+            }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-700 hover:text-slate-950 hover:bg-white shadow-sm transition-all group"
             title="Kembali ke Beranda"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
             <span className="text-xs font-bold hidden sm:inline">Beranda</span>
           </Link>
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link 
+            href="/"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("cationgate_skip_splash", "true");
+              }
+            }}
+            className="flex items-center gap-2.5 group"
+          >
             <Image
               src="/assets/logo_cationgate/CationGate_Logo.png"
               alt="CationGate Logo"
@@ -182,7 +195,7 @@ export default function MasukUniversal() {
           <div className="w-full max-w-[460px] mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-950">
-                Masuk ke CationGate
+                Masuk ke Dashboard
               </h1>
               <p className="mt-1.5 text-xs text-slate-400">
                 Akses panel kontrol dan dashboard instansi Anda secara langsung.
@@ -246,33 +259,24 @@ export default function MasukUniversal() {
                 </div>
               </div>
 
-              <div className="pt-2">
-                <Button
+              <div className="pt-3">
+                <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 rounded-xl bg-slate-950 text-white font-bold text-xs hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-md"
+                  className="w-full h-12 rounded-xl bg-[#FFC000] hover:bg-[#F3C625] text-slate-950 font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
                       <span>Memverifikasi...</span>
                     </>
                   ) : (
                     <>
-                      <span>Masuk ke Dashboard</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <span>Masuk</span>
+                      <ArrowRight className="w-4 h-4 text-slate-950" />
                     </>
                   )}
-                </Button>
-              </div>
-
-              <div className="pt-4 text-center">
-                <p className="text-xs text-slate-400">
-                  Belum punya akun instansi?{" "}
-                  <Link href="/daftar" className="text-slate-900 font-bold hover:underline">
-                    Daftarkan Sekolah Sekarang
-                  </Link>
-                </p>
+                </button>
               </div>
             </form>
           </div>
@@ -280,7 +284,7 @@ export default function MasukUniversal() {
       </div>
 
       {/* FOOTER INFO */}
-      <div className="text-center text-[11px] text-slate-400 relative z-10">
+      <div className="w-full text-center text-xs text-slate-400 py-4 relative z-10">
         <p>&copy; {new Date().getFullYear()} CationGate. Hak Cipta Dilindungi.</p>
       </div>
     </main>

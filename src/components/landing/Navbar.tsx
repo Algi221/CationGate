@@ -342,31 +342,36 @@ export function Navbar() {
 
           {/* Right Action & Mobile Toggle Container */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Tombol Daftar Sekolah (Hanya muncul di Layar Besar/Desktop - lg:flex) */}
+            {/* Tombol Masuk (Hanya muncul di Layar Besar/Desktop - lg:flex) */}
             <div className="hidden lg:flex items-center">
-              <Link href="/daftar" className="group/daftar block p-1 -m-1">
-                <InteractiveHoverButton
+              <Link href="/masuk" className="block">
+                <button
                   className="
-          h-10
-          rounded-full
-          border-0
-          bg-[#FFD33B]
-          text-[#2A1B1D]
-          font-semibold
-          text-sm
-          px-6
-          shadow-none
-          transition-all
-          duration-300
-          group-hover/daftar:bg-[#F3C625]
-          group-hover/daftar:shadow-[0_6px_20px_rgba(255,211,59,0.25)]
-          group-hover/daftar:-translate-y-0.5
-          active:scale-95
-          whitespace-nowrap
-        "
+                    h-10
+                    rounded-full
+                    bg-[#FFD33B]
+                    hover:bg-slate-950
+                    text-slate-950
+                    hover:text-[#FFD33B]
+                    font-bold
+                    text-sm
+                    px-7
+                    border border-transparent
+                    hover:border-slate-900
+                    shadow-sm
+                    hover:shadow-md
+                    transition-all
+                    duration-300
+                    active:scale-95
+                    cursor-pointer
+                    whitespace-nowrap
+                    flex
+                    items-center
+                    justify-center
+                  "
                 >
-                  Daftar Sekolah
-                </InteractiveHoverButton>
+                  Masuk
+                </button>
               </Link>
             </div>
 
@@ -403,10 +408,10 @@ export function Navbar() {
             }))}
             footer={
               <div className="flex flex-col w-full px-10 md:px-24 py-8 pb-12 gap-4">
-                <Link href="/daftar" onClick={() => setMobileMenuOpen(false)}>
-                  <InteractiveHoverButton className="w-full justify-center bg-[#FFD33B] text-[#2A1B1D] font-bold text-base rounded-2xl h-14">
-                    Daftar Sekolah Sekarang
-                  </InteractiveHoverButton>
+                <Link href="/masuk" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full justify-center bg-[#FFD33B] hover:bg-slate-950 text-slate-950 hover:text-[#FFD33B] font-bold text-base rounded-2xl h-14 transition-all duration-300 flex items-center shadow-sm cursor-pointer">
+                    Masuk
+                  </button>
                 </Link>
               </div>
             }

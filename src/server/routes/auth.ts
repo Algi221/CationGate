@@ -185,14 +185,22 @@ authRouter.post('/login', rateLimiter({
     const effectiveSchoolId = adminUser.school_id || schoolId;
     if (effectiveSchoolId) {
       for (const [, s] of fontInMemSchools) {
-        if (s.school_uuid === effectiveSchoolId || String(s.id) === String(effectiveSchoolId)) {
+        if (s.school_uuid === effectiveSchoolId || String(s.id) === String(effectiveSchoolId) || s.slug === effectiveSchoolId) {
           schoolSlug = s.slug;
           break;
         }
       }
       if (!schoolSlug) {
-        const { data: sch } = await supabase.from('schools').select('slug').eq('id', effectiveSchoolId).maybeSingle();
-        if (sch?.slug) schoolSlug = sch.slug;
+        try {
+          const { data: sch } = await supabase.from('schools').select('slug').eq('id', effectiveSchoolId).maybeSingle();
+          if (sch?.slug) schoolSlug = sch.slug;
+        } catch (_) {}
+      }
+      if (!schoolSlug) {
+        try {
+          const { data: psch } = await supabase.from('prospective_schools').select('slug').eq('id', effectiveSchoolId).maybeSingle();
+          if (psch?.slug) schoolSlug = psch.slug;
+        } catch (_) {}
       }
     }
 

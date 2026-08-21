@@ -342,7 +342,7 @@ export default function VerifyAccountPage() {
               </div>
             </div>
 
-            <Button onClick={() => router.push(`/${schoolSlug}/auth/login`)} variant="outline" className="mt-8 rounded-xl border-zinc-200 h-12 px-8 font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-all">
+            <Button onClick={() => router.push('/masuk')} variant="outline" className="mt-8 rounded-xl border-zinc-200 h-12 px-8 font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-all">
               Kembali ke Login
             </Button>
           </div>

@@ -116,25 +116,19 @@ export function FaqSection() {
               </div>
 
               {/* Box CTA */}
-              <div className="p-8 rounded-3xl bg-zinc-900 text-white shadow-xl flex flex-col gap-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-700">
-                    <MessageSquare className="w-5 h-5 text-zinc-300" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-2">
-                      Punya pertanyaan lain?
-                    </h3>
-                    <p className="text-sm text-zinc-400 leading-relaxed">
-                      Tim ahli teknis kami selalu siap membantu Anda melakukan
-                      konsultasi 1-on-1 terkait implementasi sistem.
-                    </p>
-                  </div>
+              <div className="p-8 rounded-3xl bg-zinc-900 text-white shadow-xl flex flex-col gap-5">
+                <div>
+                  <h3 className="font-bold text-xl mb-2 text-white">
+                    Ingin Coba Langsung?
+                  </h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed">
+                    Uji coba alur pendaftaran siswa dan jelajahi dashboard admin simulasi kami secara instan tanpa perlu mendaftar.
+                  </p>
                 </div>
 
-                <a href="/hubungi-kami" className="mt-2 w-full">
+                <a href="/demo" className="mt-1 w-full">
                   <Button className="w-full bg-white text-zinc-900 hover:bg-zinc-200 font-bold h-12 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
-                    Hubungi Tim Teknis <ArrowUpRight className="w-4 h-4" />
+                    Buka Demo Interaktif <ArrowUpRight className="w-4 h-4" />
                   </Button>
                 </a>
               </div>

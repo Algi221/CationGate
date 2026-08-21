@@ -8,62 +8,36 @@ const LOADING_KEY = "cationgate_loading_session";
 
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "show" | "exit">("start");
-  const [isMounted, setIsMounted] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      // 1. If we already marked it as loaded in THIS javascript context, we NEVER show it again
-      // (This covers client-side navigation back to the page)
-      if ((window as any).__cationgate_loaded) {
-        return false;
-      }
-
-      // 2. We are in a fresh JS context (first visit, or hard refresh, or hard navigation)
-      try {
-        const navEntries = performance.getEntriesByType("navigation");
-        if (navEntries.length > 0) {
-          const navType = (navEntries[0] as PerformanceNavigationTiming).type;
-          // If it's a hard refresh, show it (user explicitly requested this)
-          if (navType === "reload") {
-            return true;
-          }
-        }
-        
-        // Otherwise, check if we've shown it in this tab session
-        if (sessionStorage.getItem("cationgate_loaded")) {
-          return false;
-        }
-        
-        // First visit in this tab
-        return true;
-      } catch (e) {
-        return true;
-      }
-    }
-    return true; // SSR
-  });
+  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   const premiumEasing = [0.85, 0, 0.15, 1] as const;
 
   useEffect(() => {
-    if (!isMounted) {
-      window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
-      return;
+    if (typeof window !== "undefined") {
+      // Check if user came back from internal navigation (e.g. clicking 'Beranda' from /daftar or /masuk)
+      const shouldSkip = sessionStorage.getItem("cationgate_skip_splash") === "true";
+      if (shouldSkip) {
+        sessionStorage.removeItem("cationgate_skip_splash");
+        setIsMounted(false);
+        window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
+        return;
+      }
+
+      // Lock scroll while splash is active
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+
+      const t1 = setTimeout(() => setPhase("show"), 100);
+      const t2 = setTimeout(() => setPhase("exit"), 4200);
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+      };
     }
-
-    (window as any).__cationgate_loaded = true;
-    sessionStorage.setItem("cationgate_loaded", "true");
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-
-    const t1 = setTimeout(() => setPhase("show"), 200);
-    const t2 = setTimeout(() => setPhase("exit"), 4500);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    };
-  }, [isMounted]);
+  }, []);
 
   const handleGateAnimationComplete = () => {
     if (phase === "exit") {

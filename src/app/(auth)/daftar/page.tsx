@@ -334,7 +334,7 @@ export default function DaftarSaaS() {
       });
       const data = await res.json();
       if (data.success) {
-        router.push(`/${formData.slug}/auth/login?registered=true`);
+        router.push(`/masuk?registered=true`);
       } else {
         setErrorMsg(data.message || "Gagal mendaftar");
       }
@@ -377,13 +377,26 @@ export default function DaftarSaaS() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("cationgate_skip_splash", "true");
+              }
+            }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-700 hover:text-slate-950 hover:bg-white shadow-sm transition-all group"
             title="Kembali ke Beranda"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
             <span className="text-xs font-bold hidden sm:inline">Beranda</span>
           </Link>
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link 
+            href="/"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("cationgate_skip_splash", "true");
+              }
+            }}
+            className="flex items-center gap-2.5 group"
+          >
             <Image
               src="/assets/logo_cationgate/CationGate_Logo.png"
               alt="CationGate Logo"
@@ -850,6 +863,11 @@ export default function DaftarSaaS() {
             );
           })}
         </div>
+      </div>
+
+      {/* FOOTER INFO */}
+      <div className="w-full text-center text-xs text-slate-400 py-3 relative z-10">
+        <p>&copy; {new Date().getFullYear()} CationGate. Hak Cipta Dilindungi.</p>
       </div>
 
     </main>

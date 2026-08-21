@@ -20,7 +20,7 @@ export function AboutSection() {
             className="space-y-6"
           >
             <span className="px-4 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-extrabold uppercase tracking-wider">
-              Tentang CationGate
+              Solusi Pendidikan
             </span>
             <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
               Lebih Dari Sekadar Sistem Pendaftaran

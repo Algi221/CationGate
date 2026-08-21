@@ -7,6 +7,7 @@ import { fontInMemSchools } from './saas';
 import { broadcast } from '../ws/handler';
 import { gatekeeperAuth } from '../middleware/auth';
 import { authLimiter } from '../middleware/rate-limiter';
+import { redis } from '../../utils/redis';
 
 const gatekeeperRouter = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -136,7 +137,10 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
 
     if (prospectiveList && Array.isArray(prospectiveList)) {
       prospectiveList.forEach(s => {
-        if (!combinedMap.has(s.slug)) {
+        if (combinedMap.has(s.slug)) {
+          const existing = combinedMap.get(s.slug);
+          combinedMap.set(s.slug, { ...s, ...existing, is_official: true });
+        } else {
           combinedMap.set(s.slug, { ...s, is_official: false });
         }
       });
@@ -216,13 +220,9 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
           slug: sSlug,
           official_email: sEmail,
           status: 'FULL_VERIFIED',
-          is_verified: true,
-          plan_type: targetSchool?.plan_type || 'PRO',
+          subscription_plan: targetSchool?.plan_type || 'PRO',
           npsn: targetSchool?.npsn || null,
-          dapodik_code: targetSchool?.dapodik_code || null,
-          legal_sk_number: targetSchool?.legal_sk_number || null,
-          accreditation: targetSchool?.accreditation || 'A',
-          admin_name: candidateSchoolAdmin(targetSchool)
+          dapodik_code: targetSchool?.dapodik_code || null
         }, { onConflict: 'slug' });
     } catch (sbErr: unknown) {
       console.warn('Supabase schools upsert warning:', (sbErr as any).message);
@@ -245,6 +245,14 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
         status: 'FULL_VERIFIED',
         is_verified: true
       });
+    }
+
+    if (sSlug) {
+      try {
+        await redis.del(`school:${sSlug}`);
+      } catch (e) {
+        console.warn('Failed to clear redis cache:', e);
+      }
     }
 
     broadcast({ event: 'SCHOOL_VERIFIED', data: { slug: sSlug, status: 'FULL_VERIFIED' } }, true);
@@ -277,19 +285,50 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
       try {
         await supabase
           .from('schools')
-          .update({ status: 'TAKEDOWN', is_verified: false })
+          .update({ status: 'SUSPENDED' })
           .eq('id', resolvedId);
+          
+        await supabase
+          .from('prospective_schools')
+          .update({ status: 'SUSPENDED' })
+          .eq('slug', String(school_id));
+          
+        await supabase
+          .from('calon_sekolah')
+          .update({ status: 'SUSPENDED' })
+          .eq('slug', String(school_id));
       } catch (err: unknown) {
         console.warn('Supabase takedown warning:', (err as any).message);
+      }
+    } else {
+      // If we couldn't resolve UUID for schools table, try to update prospective tables by slug anyway
+      try {
+        await supabase
+          .from('prospective_schools')
+          .update({ status: 'SUSPENDED' })
+          .eq('slug', String(school_id));
+          
+        await supabase
+          .from('calon_sekolah')
+          .update({ status: 'SUSPENDED' })
+          .eq('slug', String(school_id));
+      } catch (err: unknown) {
+        console.warn('Supabase takedown warning (prospective):', (err as any).message);
       }
     }
 
     fontInMemSchools.forEach((s, slug) => {
       if (String(s.id) === String(school_id) || slug === String(school_id)) {
-        s.status = 'TAKEDOWN';
+        s.status = 'SUSPENDED';
         s.is_verified = false;
       }
     });
+
+    try {
+      await redis.del(`school:${school_id}`);
+    } catch (e) {
+      console.warn('Failed to clear redis cache:', e);
+    }
 
     return c.json({ success: true, message: 'Instansi sekolah berhasil di-takedown (Non-Aktif).' });
   } catch (_err: unknown) {

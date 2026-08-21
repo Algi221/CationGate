@@ -50,7 +50,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const res = await fetch(`/api/config?school_slug=${slug}`);
+      const res = await fetch(`/api/config?school_slug=${slug}&t=${Date.now()}`);
       if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
       const data = await res.json();
       if (data.success && data.data) {
@@ -111,7 +111,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   // ── Resolve school slug to school data ─────────────────────────────────────
   useEffect(() => {
     if (slug) {
-      fetch(`/api/saas/school-by-slug/${slug}`)
+      fetch(`/api/saas/school-by-slug/${slug}?t=${Date.now()}`)
         .then(async (res) => {
           if (!res.headers.get("content-type")?.includes("application/json")) return null;
           return res.json();

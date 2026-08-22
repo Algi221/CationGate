@@ -8,44 +8,36 @@ const _LOADING_KEY = "cationgate_loading_session";
 
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "show" | "exit">("start");
-  const [isMounted, setIsMounted] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      const isInternalNav = sessionStorage.getItem("cationgate_internal_navigation") === "true";
-      return !isInternalNav;
-    }
-    return true;
-  });
+  const [isMounted, setIsMounted] = useState<boolean>(false);
 
   const premiumEasing = [0.85, 0, 0.15, 1] as const;
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem("cationgate_internal_navigation");
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
-      const handleBeforeUnload = () => {
-        sessionStorage.removeItem("cationgate_internal_navigation");
-      };
-      window.addEventListener("beforeunload", handleBeforeUnload);
-
-      const isInternalNav = sessionStorage.getItem("cationgate_internal_navigation") === "true";
-      if (isInternalNav) {
-        window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
-        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-      }
-
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-
-      const t1 = setTimeout(() => setPhase("show"), 100);
-      const t2 = setTimeout(() => setPhase("exit"), 4200);
-
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-        window.removeEventListener("beforeunload", handleBeforeUnload);
-        document.documentElement.style.overflow = "";
-        document.body.style.overflow = "";
-      };
+    const isInternalNav = sessionStorage.getItem("cationgate_internal_navigation") === "true";
+    if (isInternalNav) {
+      window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
+      return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }
+
+    setIsMounted(true);
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    const t1 = setTimeout(() => setPhase("show"), 100);
+    const t2 = setTimeout(() => setPhase("exit"), 4200);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
   }, []);
 
   const handleGateAnimationComplete = () => {

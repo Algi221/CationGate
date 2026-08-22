@@ -453,6 +453,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const connectWs = useCallback(() => {
     if (wsRef.current) return;
     if (typeof window === "undefined") return;
+    if (!schoolId && !adminToken) return;
 
     try {
       const isHttps = window.location.protocol === "https:";
@@ -494,16 +495,18 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       ws.onclose = () => {
         setWsStatus("DISCONNECTED");
         wsRef.current = null;
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connectWsRef.current?.();
-        }, 5000);
+        if (schoolId || adminToken) {
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connectWsRef.current?.();
+          }, 15000);
+        }
       };
 
       wsRef.current = ws;
     } catch {
       setWsStatus("ERROR");
     }
-  }, [schoolId, addToast]);
+  }, [schoolId, adminToken, addToast]);
 
   useEffect(() => {
     connectWsRef.current = connectWs;
@@ -560,12 +563,13 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   }, [fetchPublicApplicants]);
 
   useEffect(() => {
+    if (!schoolId && !adminToken) return;
     let ignore = false;
     const timer = setTimeout(() => {
       if (!ignore) {
         connectWs();
       }
-    }, 0);
+    }, 1000);
     const currentWs = wsRef.current;
     const currentTimer = reconnectTimeoutRef.current;
     return () => {
@@ -574,7 +578,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       if (currentWs) { currentWs.onclose = null; currentWs.close(); }
       if (currentTimer) clearTimeout(currentTimer);
     };
-  }, [adminToken, connectWs]);
+  }, [schoolId, adminToken, connectWs]);
 
   useEffect(() => {
     let ignore = false;

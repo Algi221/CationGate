@@ -101,8 +101,8 @@ export default function MasukUniversal() {
       </div>
 
       {/* HEADER / NAVBAR */}
-      <div className="w-full flex items-center justify-between z-10 relative mb-4 lg:mb-0">
-        <div className="flex items-center gap-3">
+      <div className="relative lg:absolute top-2 lg:top-8 left-2 lg:left-8 right-2 lg:right-8 flex items-center justify-between z-20 mb-4 lg:mb-0">
+        <div className="flex items-center gap-2">
           <Link
             href="/"
             onClick={() => {
@@ -110,40 +110,49 @@ export default function MasukUniversal() {
                 sessionStorage.setItem("cationgate_skip_splash", "true");
               }
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-700 hover:text-slate-950 hover:bg-white shadow-sm transition-all group"
+            className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-all group drop-shadow-sm"
             title="Kembali ke Beranda"
           >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-            <span className="text-xs font-bold hidden sm:inline">Beranda</span>
-          </Link>
-          <Link 
-            href="/"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                sessionStorage.setItem("cationgate_skip_splash", "true");
-              }
-            }}
-            className="flex items-center gap-2.5 group"
-          >
-            <Image
-              src="/assets/logo_cationgate/CationGate_Logo.png"
-              alt="CationGate Logo"
-              width={32}
-              height={32}
-              className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform group-hover:scale-105"
-            />
-            <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-950 font-sans">
-              Cation<span style={{ color: solidColor }}>Gate</span>
-            </span>
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Beranda</span>
           </Link>
         </div>
 
+        {/* Center: Brand Logo & Typography Split Between Wave and White Background */}
+        <Link 
+          href="/"
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("cationgate_skip_splash", "true");
+            }
+          }}
+          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102"
+        >
+          <Image
+            src="/assets/logo_cationgate/CationGate_Logo.png"
+            alt="CationGate Logo"
+            width={28}
+            height={28}
+            className="w-6 h-6 sm:w-7 sm:h-7 object-contain transition-transform group-hover:rotate-6 drop-shadow-sm"
+          />
+          <div className="text-xl sm:text-2xl font-black tracking-tight font-sans select-none flex items-center">
+            {/* 'Cation' in black */}
+            <span className="text-slate-950">
+              Cation
+            </span>
+            {/* 'Gate' in solid wave color */}
+            <span style={{ color: solidColor }} className="drop-shadow-none">
+              Gate
+            </span>
+          </div>
+        </Link>
+
         {/* LINK DAFTAR INSTANSI */}
-        <div className="flex items-center gap-3 text-xs">
-          <span className="hidden text-slate-400 sm:block">Belum mendaftarkan instansi?</span>
+        <div className="flex items-center gap-2.5 text-xs">
+          <span className="hidden text-slate-500 font-medium sm:block">Belum mendaftarkan instansi?</span>
           <Link
             href="/daftar"
-            className="rounded-full border border-slate-200 bg-white/90 backdrop-blur-sm px-4 py-1.5 font-bold text-slate-800 transition hover:bg-slate-900 hover:text-white shadow-sm"
+            className="rounded-full border border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-1.5 font-bold text-slate-700 transition-all hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-sm active:scale-95 shadow-xs"
           >
             Daftar Sekolah
           </Link>
@@ -278,6 +287,16 @@ export default function MasukUniversal() {
                     </>
                   )}
                 </button>
+              </div>
+
+              <div className="pt-2 text-center text-xs text-slate-500">
+                <span>Belum punya akun? </span>
+                <Link
+                  href="/daftar"
+                  className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+                >
+                  Daftar
+                </Link>
               </div>
             </form>
           </div>

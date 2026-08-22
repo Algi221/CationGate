@@ -134,7 +134,7 @@ export default function DaftarSaaS() {
           body: JSON.stringify({ email })
         });
         const data = await res.json();
-        if (data.exists) {
+        if (data.exists || !data.available) {
           setEmailErrorState('Email sudah terdaftar. Gunakan email lain.');
           setEmailSuccessState(false);
         } else {
@@ -360,7 +360,7 @@ export default function DaftarSaaS() {
       <Script
         src="https://app.sandbox.midtrans.com/snap/snap.js"
         data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
 
       {}
@@ -380,9 +380,9 @@ export default function DaftarSaaS() {
         </svg>
       </div>
 
-      {}
-      <div className="relative lg:absolute top-2 lg:top-10 left-2 lg:left-10 right-2 lg:right-10 flex items-center justify-between z-10 mb-4 lg:mb-0">
-        <div className="flex items-center gap-3">
+      {/* HEADER / NAVBAR */}
+      <div className="relative lg:absolute top-2 lg:top-8 left-2 lg:left-8 right-2 lg:right-8 flex items-center justify-between z-20 mb-4 lg:mb-0">
+        <div className="flex items-center gap-2">
           <Link
             href="/"
             onClick={() => {
@@ -390,38 +390,49 @@ export default function DaftarSaaS() {
                 sessionStorage.setItem("cationgate_skip_splash", "true");
               }
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-slate-700 hover:text-slate-950 hover:bg-white shadow-sm transition-all group"
+            className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 hover:text-slate-700 transition-all group"
             title="Kembali ke Beranda"
           >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-            <span className="text-xs font-bold hidden sm:inline">Beranda</span>
-          </Link>
-          <Link 
-            href="/"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                sessionStorage.setItem("cationgate_skip_splash", "true");
-              }
-            }}
-            className="flex items-center gap-2.5 group"
-          >
-            <Image
-              src="/assets/logo_cationgate/CationGate_Logo.png"
-              alt="CationGate Logo"
-              width={32}
-              height={32}
-              className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform group-hover:scale-105"
-            />
-            <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-950 font-sans">
-              Cation<span style={{ color: currentVisual.solidColor }}>Gate</span>
-            </span>
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Beranda</span>
           </Link>
         </div>
-        <div className="flex items-center gap-3 text-xs">
-          <span className="hidden text-slate-400 sm:block">Sudah punya akun?</span>
+
+        {/* Center: Brand Logo & Typography Split Between Wave and White Background */}
+        <Link 
+          href="/"
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("cationgate_skip_splash", "true");
+            }
+          }}
+          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102"
+        >
+          <Image
+            src="/assets/logo_cationgate/CationGate_Logo.png"
+            alt="CationGate Logo"
+            width={28}
+            height={28}
+            className="w-6 h-6 sm:w-7 sm:h-7 object-contain transition-transform group-hover:rotate-6 drop-shadow-sm"
+          />
+          <div className="text-xl sm:text-2xl font-black tracking-tight font-sans select-none flex items-center">
+            {/* 'Cation' in black */}
+            <span className="text-slate-950">
+              Cation
+            </span>
+            {/* 'Gate' in solid wave color */}
+            <span style={{ color: currentVisual.solidColor }} className="drop-shadow-none">
+              Gate
+            </span>
+          </div>
+        </Link>
+
+        {/* Right: Masuk CTA */}
+        <div className="flex items-center gap-2.5 text-xs">
+          <span className="hidden text-slate-500 font-medium sm:block">Sudah punya akun?</span>
           <Link
             href="/masuk"
-            className="rounded-full border border-slate-200 bg-white/90 backdrop-blur-sm px-4 py-1.5 font-bold text-slate-800 transition hover:bg-slate-950 hover:text-white shadow-sm"
+            className="rounded-full border border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-1.5 font-bold text-slate-700 transition-all hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-sm active:scale-95 shadow-xs"
           >
             Masuk
           </Link>

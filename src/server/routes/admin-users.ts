@@ -8,7 +8,6 @@ const adminUsersRouter = new Hono();
 
 adminUsersRouter.use('/*', superAdminAuth);
 
-// Legacy YSBMO Staff Route (Returns empty array for standalone admin management)
 adminUsersRouter.get('/ysbmo/staff', async (c) => {
   return c.json({
     success: true,
@@ -16,13 +15,15 @@ adminUsersRouter.get('/ysbmo/staff', async (c) => {
   });
 });
 
-// Ambil semua data admin yang aktif (tidak dihapus)
+function getSchoolId(c: { get: unknown }): string | undefined {
+  const admin = (c.get as (key: string) => unknown)('admin') as { school_id?: string } | undefined;
+  return admin?.school_id;
+}
+
 adminUsersRouter.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -35,17 +36,14 @@ adminUsersRouter.get('/', async (c) => {
 
     return c.json({ success: true, data: adminUsers });
   } catch (error: unknown) {
-    return c.json({ success: false, message: (error as any).message }, 500);
+    return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);
   }
 });
 
-// Ambil data admin yang ada di tempat sampah (trash)
 adminUsersRouter.get('/trashed', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -61,25 +59,22 @@ adminUsersRouter.get('/trashed', async (c) => {
 
     return c.json({ success: true, data: trashedUsers });
   } catch (error: unknown) {
-    return c.json({ success: false, message: (error as any).message }, 500);
+    return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);
   }
 });
 
-// Pulihkan admin dari tempat sampah
 adminUsersRouter.post('/:id/restore', async (c) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let checkQuery = supabase.from('admin_users').select('id').eq('id', id).not('deleted_at', 'is', null);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-    
+
     const { data: existing } = await checkQuery.single();
 
     if (!existing) {
@@ -94,11 +89,10 @@ adminUsersRouter.post('/:id/restore', async (c) => {
 
     return c.json({ success: true, message: 'Admin berhasil dipulihkan.' });
   } catch (error: unknown) {
-    return c.json({ success: false, message: (error as any).message }, 500);
+    return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);
   }
 });
 
-// Tambah admin baru
 adminUsersRouter.post('/', async (c) => {
   try {
     const body = await c.req.json();
@@ -107,15 +101,13 @@ adminUsersRouter.post('/', async (c) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     const { username, password, nama_lengkap, role } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -129,8 +121,7 @@ adminUsersRouter.post('/', async (c) => {
     }
 
     const passwordHash = bcrypt.hashSync(password, 10);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       username,
       password_hash: passwordHash,
       nama_lengkap,
@@ -143,7 +134,7 @@ adminUsersRouter.post('/', async (c) => {
 
     return c.json({ success: true, data: newAdmin, message: 'Admin berhasil ditambahkan.' });
   } catch (error: unknown) {
-    return c.json({ success: false, message: (error as any).message }, 500);
+    return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);
   }
 });
 
@@ -156,15 +147,13 @@ adminUsersRouter.put('/:id', async (c) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     const { username, password, nama_lengkap, role } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -186,8 +175,7 @@ adminUsersRouter.put('/:id', async (c) => {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dataToUpdate: any = {
+    const dataToUpdate: Record<string, unknown> = {
       username: username || existing.username,
       nama_lengkap: nama_lengkap || existing.nama_lengkap,
       role: role || existing.role
@@ -200,24 +188,21 @@ adminUsersRouter.put('/:id', async (c) => {
     let updateQuery = supabase.from('admin_users').update(dataToUpdate).eq('id', id);
     if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
     const { data: updated, error } = await updateQuery.select().single();
-    
+
     if (error) throw error;
 
     return c.json({ success: true, data: updated, message: 'Admin berhasil diperbarui.' });
   } catch (error: unknown) {
-    return c.json({ success: false, message: (error as any).message }, 500);
+    return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);
   }
 });
 
-// Hapus admin (Soft delete by default, Permanent if query ?permanent=true)
 adminUsersRouter.delete('/:id', async (c) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-    
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -249,7 +234,7 @@ adminUsersRouter.delete('/:id', async (c) => {
       return c.json({ success: true, message: 'Admin berhasil dipindahkan ke tempat sampah.' });
     }
   } catch (error: unknown) {
-    return c.json({ success: false, message: (error as any).message }, 500);
+    return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);
   }
 });
 

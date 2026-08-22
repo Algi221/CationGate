@@ -1,25 +1,19 @@
 "use client";
 
 import {
-  forwardRef,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type MouseEvent,
 } from "react";
 
 import Image, { type StaticImageData } from "next/image";
 
 import { AnimatePresence, motion } from "motion/react";
 
-import { ArrowLeft, ArrowRight, Check, Pause, Play } from "lucide-react";
+import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
-/* =========================================================
-   TYPES
-========================================================= */
 
 interface CardProps {
   title: string;
@@ -62,18 +56,10 @@ interface Step {
   description: string;
 }
 
-/* =========================================================
-   CONSTANTS
-========================================================= */
-
 const TOTAL_STEPS = 6;
 const AUTOPLAY_DURATION = 5000;
 
-/* =========================================================
-   STEPS
-========================================================= */
-
-const steps = [
+const steps: Step[] = [
   {
     id: "1",
     name: "Calon Siswa",
@@ -118,10 +104,6 @@ const steps = [
   },
 ] as const;
 
-/* =========================================================
-   IMAGE HELPER
-========================================================= */
-
 const getStepImages = (image: ImageSet, step: number) => {
   const images = [
     [image.step1light1, image.step1light2],
@@ -134,10 +116,6 @@ const getStepImages = (image: ImageSet, step: number) => {
 
   return images[step] ?? images[0];
 };
-
-/* =========================================================
-   AUTOPLAY HOOK
-========================================================= */
 
 function useFeatureCarousel(totalSteps: number) {
   const [current, setCurrent] = useState(0);
@@ -213,10 +191,6 @@ function useFeatureCarousel(totalSteps: number) {
   };
 }
 
-/* =========================================================
-   FEATURE CARD
-========================================================= */
-
 function FeatureCard({
   children,
   onMouseEnter,
@@ -254,10 +228,6 @@ function FeatureCard({
     </motion.div>
   );
 }
-
-/* =========================================================
-   BADGE NAVIGATION
-========================================================= */
 
 function StepNavigation({
   current,
@@ -322,7 +292,7 @@ function StepNavigation({
                 `,
             )}
           >
-            {/* Number / check */}
+            {}
             <span
               className={cn(
                 `
@@ -347,10 +317,10 @@ function StepNavigation({
               {completed ? <Check size={11} strokeWidth={3} /> : index + 1}
             </span>
 
-            {/* Name */}
+            {}
             <span>{step.name}</span>
 
-            {/* Active dot */}
+            {}
             {active && (
               <motion.span
                 layoutId="activeDot"
@@ -374,10 +344,6 @@ function StepNavigation({
     </nav>
   );
 }
-
-/* =========================================================
-   IMAGE SHOWCASE
-========================================================= */
 
 function ImageShowcase({
   image,
@@ -411,7 +377,7 @@ function ImageShowcase({
             duration: 0.35,
           }}
         >
-          {/* DESKTOP IMAGE */}
+          {}
           <motion.div
             initial={{
               opacity: 0,
@@ -456,7 +422,7 @@ function ImageShowcase({
                 shadow-[0_25px_70px_rgba(0,0,0,0.12)]
               "
             >
-              {/* Browser bar */}
+              {}
               <div
                 className="
                   flex
@@ -526,8 +492,8 @@ function ImageShowcase({
                 right-[5%]
                 z-20
                 w-[19%]
-                min-w-[110px]
-                max-w-[155px]
+                min-w-27.5
+                max-w-38.75
               `,
               mobileImgClass,
             )}
@@ -563,9 +529,8 @@ export function FeatureCarousel({
   image,
   desktopImgClass,
   mobileImgClass,
-  ...props
 }: FeatureCarouselProps) {
-  const { current, progress, isPaused, setIsPaused, next, previous, goTo } =
+  const { current, setIsPaused, goTo } =
     useFeatureCarousel(TOTAL_STEPS);
 
   return (
@@ -593,13 +558,13 @@ export function FeatureCarousel({
         className="
           relative
           flex
-          min-h-[580px]
+          min-h-145
           flex-col
           overflow-hidden
           px-6
           pb-14
           pt-8
-          md:min-h-[570px]
+          md:min-h-142.5
           md:flex-row
           md:px-10
           md:pt-5
@@ -676,7 +641,7 @@ export function FeatureCarousel({
                   delay: 0.08,
                 }}
                 className="
-                  max-w-[400px]
+                  max-w-100
                   text-3xl
                   font-semibold
                   leading-[1.08]
@@ -703,7 +668,7 @@ export function FeatureCarousel({
                 }}
                 className="
                   mt-5
-                  max-w-[390px]
+                  max-w-97.5
                   text-sm
                   leading-6
                   text-neutral-500
@@ -736,7 +701,7 @@ export function FeatureCarousel({
                   className="
                     text-3xl
                     font-semibold
-                    tracking-[-0.05em]
+                    tracking-tighter
                     text-neutral-200
                   "
                 >
@@ -763,7 +728,7 @@ export function FeatureCarousel({
         <div
           className="
             relative
-            min-h-[330px]
+            min-h-82.5
             flex-1
             md:min-h-0
           "

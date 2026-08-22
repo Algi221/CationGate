@@ -4,30 +4,17 @@ import React, { useEffect, useState } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import { motion, Variants } from "framer-motion";
 import {
-  Building2,
-  School,
-  Target,
-  ListChecks,
-  FileText,
-  MapPin,
-  Mail,
-  Play,
   Globe,
   Award,
-  Users,
   BookOpen,
   GraduationCap,
-  Sun,
-  Moon,
   X,
-  Menu,
-  ChevronDown,
 } from "lucide-react";
-import _SafeImage from "@/components/SafeImage";
 
 const fadeInVariant: Variants = {
   hidden: { opacity: 0, y: 25 },
@@ -39,23 +26,19 @@ const fadeInVariant: Variants = {
 };
 
 export default function ProfilSekolahPublicPage() {
-  const { ppdbLogo, ppdbTitle, profilSekolah, isSchoolNotFound, schoolStatus } =
+  const { ppdbTitle, profilSekolah, isSchoolNotFound, schoolStatus } =
     usePPDB();
   const params = useParams();
   const router = useRouter();
   const schoolSlug = params?.school_slug as string;
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [_dropdownOpen, _setDropdownOpen] = useState(false);
-
-  const [isDark, setIsDark] = useState(false);
-  const _toggleDark = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
-  };
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted)
@@ -70,9 +53,6 @@ export default function ProfilSekolahPublicPage() {
     return null;
   }
 
-  // =========================================================================
-  // DATA DINAMIS: Edit bagian ini untuk menyesuaikan konten setiap sekolah
-  // =========================================================================
   const identitas = profilSekolah?.identitas || {
     nama: ppdbTitle || "Institusi Pendidikan Unggulan",
     akreditasi: "A (Unggul)",
@@ -116,7 +96,7 @@ export default function ProfilSekolahPublicPage() {
 
       {/* Menu Mobile Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-slate-950 p-6 lg:hidden animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-slate-950 p-6 lg:hidden animate-in fade-in duration-200">
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="absolute top-6 right-6 p-3 rounded-full bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200"
@@ -184,14 +164,17 @@ export default function ProfilSekolahPublicPage() {
       {/* =================================================== */}
       {/* 1. HERO BANNER UTAMA                                */}
       {/* =================================================== */}
-      <div className="relative w-full h-[50vh] min-h-[380px] flex items-center justify-center overflow-hidden bg-slate-950">
+      <div className="relative w-full h-[50vh] min-h-95 flex items-center justify-center overflow-hidden bg-slate-950">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1920&auto=format&fit=crop"
             alt="Campus Background"
-            className="w-full h-full object-cover opacity-40 scale-105"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover opacity-40 scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
         </div>
 
         <motion.div
@@ -456,10 +439,12 @@ export default function ProfilSekolahPublicPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
             <div className="md:col-span-4 flex justify-center">
               <div className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-blue-900 dark:border-blue-500 shadow-md">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop"
                   alt="Kepala Sekolah"
-                  className="w-full h-full object-cover object-top"
+                  fill
+                  sizes="(max-width: 640px) 224px, 256px"
+                  className="object-cover object-top"
                 />
               </div>
             </div>
@@ -550,7 +535,7 @@ export default function ProfilSekolahPublicPage() {
               Visi Sekolah
             </h3>
             <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg leading-relaxed italic border-l-2 border-blue-900 dark:border-blue-500 pl-4 py-1">
-              "{visi}"
+              &quot;{visi}&quot;
             </p>
           </div>
 

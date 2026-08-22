@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { getSupabaseClient } from '../db/supabase';
-import { adminAuth, requireTenantId, TenantError } from '../middleware/auth';
+import { adminAuth, requireTenantId } from '../middleware/auth';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -32,10 +32,9 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
 
     const sizeInBytes = dataBuffer.length;
     const isVideo = contentType.startsWith('video/');
-    
-    // Limits: Image 8MB, Video 100MB
+
     const limitBytes = isVideo ? 100 * 1024 * 1024 : 8 * 1024 * 1024;
-    
+
     if (sizeInBytes > limitBytes) {
       console.warn(`File upload rejected: ${prefix} melebihi batas ${(limitBytes/1024/1024).toFixed(0)}MB`);
       return '';
@@ -49,7 +48,7 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
       console.warn(`File upload rejected: tipe ${contentType} tidak diperbolehkan.`);
       return '';
     }
-    
+
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
     }
@@ -63,17 +62,17 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
       console.info("Image optimized", { prefix, from: contentType, to: 'webp', originalBytes: sizeInBytes, optimizedBytes: optimizedBuffer.length });
       return `/assets/jurusan/uploads/${filename}`;
     }
-    
+
     // VIDEO OPTIMIZATION (FFmpeg)
     if (isVideo) {
       const tempExt = contentType.includes('mp4') ? 'mp4' : contentType.includes('webm') ? 'webm' : contentType.includes('ogg') ? 'ogg' : 'mov';
       const tempFilename = `temp_${prefix}_${Date.now()}.${tempExt}`;
       const tempPath = path.join(targetDir, tempFilename);
       fs.writeFileSync(tempPath, dataBuffer);
-      
+
       const filename = `${prefix}_${Date.now()}.mp4`;
       const targetPath = path.join(targetDir, filename);
-      
+
       try {
         await execPromise(`ffmpeg -i "${tempPath}" -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k "${targetPath}"`);
         fs.unlinkSync(tempPath); // delete temp
@@ -85,7 +84,7 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
         try { fs.unlinkSync(tempPath); } catch (_e) {} // ignore error if temp file already removed
       }
     }
-    
+
     // FALLBACK / OTHER FILES
     let ext = 'png';
     if (contentType.includes('svg')) ext = 'svg';
@@ -95,15 +94,15 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
     else if (contentType.includes('webm')) ext = 'webm';
     else if (contentType.includes('ogg')) ext = 'ogg';
     else if (contentType.includes('quicktime') || contentType.includes('mov')) ext = 'mov';
-    
+
     const filename = `${prefix}_${Date.now()}.${ext}`;
-    
+
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
     }
     const targetPath = path.join(targetDir, filename);
     fs.writeFileSync(targetPath, dataBuffer);
-    
+
     return `/assets/${subfolder}/uploads/${filename}`;
   } catch (err) {
     console.error(`Failed to save base64 for ${prefix}:`, err);
@@ -111,7 +110,6 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
   }
 }
 
- 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function processMajorsConfig(majors: any[]): Promise<any[]> {
   if (!Array.isArray(majors)) return majors;
@@ -157,10 +155,9 @@ configRouter.get('/', async (c) => {
     }
 
     const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
-    
+
     // 1. Try to get from Redis Cache first
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cachedData = await getCached<Record<string, any>>(cacheKey);
+    const cachedData = await getCached<Record<string, unknown>>(cacheKey);
     if (cachedData) {
       return c.json({
         success: true,
@@ -173,20 +170,18 @@ configRouter.get('/', async (c) => {
     if (schoolId) {
       query = query.eq('school_id', schoolId);
     }
-    
+
     const { data: configs, error } = await query;
     if (error) {
-      console.warn('Fetch config DB warning (using default config):', (error as any).message);
+      console.warn('Fetch config DB warning (using default config):', error.message);
       return c.json({
         success: true,
         data: {}
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const configMap: Record<string, any> = {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (configs || []).forEach((row: any) => {
+    const configMap: Record<string, unknown> = {};
+    (configs || []).forEach((row: { config_key: string; config_value: unknown }) => {
       configMap[row.config_key] = row.config_value;
     });
 
@@ -199,7 +194,7 @@ configRouter.get('/', async (c) => {
       source: 'db'
     });
   } catch (err: unknown) {
-    console.warn('Fetch config DB exception (using default config):', (err as any).message);
+    console.warn('Fetch config DB exception (using default config):', err instanceof Error ? err.message : String(err));
     return c.json({
       success: true,
       data: {}
@@ -218,7 +213,7 @@ configRouter.post('/', adminAuth, async (c) => {
       if (!result.success) {
         return c.json({
           success: false,
-          message: 'Parameter tidak valid: ' + result.error.issues.map((e: unknown) => `${(e as any).path.join('.')}: ${(e as any).message}`).join(', ')
+          message: 'Parameter tidak valid: ' + result.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
         }, 400);
       }
 
@@ -241,30 +236,29 @@ configRouter.post('/', adminAuth, async (c) => {
         school_id: schoolId
       }));
 
-      if (upsertRows.length > 0) {
-        const { error: upsertError } = await supabase
-          .from('landing_page_config')
-          .upsert(upsertRows, { onConflict: 'config_key,school_id' });
-        if (upsertError) {
-          // Fallback on config_key if school_id constraint differs
-          await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'config_key' });
-        }
+      const { error } = await supabase
+        .from('landing_page_config')
+        .upsert(upsertRows, { onConflict: 'config_key,school_id' });
+
+      if (error) {
+        console.warn('Upsert with compound key failed, attempting fallback to config_key:', error.message);
+        await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'config_key' });
       }
 
-      // Record revision
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const adminUser = (c as any).get('adminUser') || {};
-        await supabase.from('ui_revisions').insert({
-          school_id: schoolId,
-          changed_by: adminUser.username || 'Admin Sekolah',
-          description: description || 'Pembaruan konfigurasi antarmuka',
-          created_at: new Date().toISOString()
-        });
-      } catch (_revErr) {
-        // Revision logging optional
-      }
+      // Log UI Revision
+      const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string } | undefined;
+      const adminName = admin?.nama || admin?.username || 'Administrator';
 
+      const revPayload: Record<string, unknown> = {
+        config_values: processedConfigs,
+        changed_by: adminName,
+        description: description || 'Pembaruan Tampilan Sistem'
+      };
+      if (schoolId) revPayload.school_id = schoolId;
+
+      await supabase.from('ui_revisions').insert(revPayload);
+
+      // Invalidate Redis cache
       const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
       await delCached(cacheKey);
 
@@ -279,7 +273,7 @@ configRouter.post('/', adminAuth, async (c) => {
     if (!result.success) {
       return c.json({
         success: false,
-        message: 'Parameter tidak valid: ' + result.error.issues.map((e: unknown) => `${(e as any).path.join('.')}: ${(e as any).message}`).join(', ')
+        message: 'Parameter tidak valid: ' + result.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
       }, 400);
     }
     const { key, value } = result.data;
@@ -294,8 +288,7 @@ configRouter.post('/', adminAuth, async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       config_key: key,
       config_value: processedValue,
       updated_at: new Date().toISOString(),
@@ -305,7 +298,7 @@ configRouter.post('/', adminAuth, async (c) => {
     const { error } = await supabase
       .from('landing_page_config')
       .upsert(payload, { onConflict: 'config_key,school_id' });
-      
+
     if (error) {
       await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
     }
@@ -319,10 +312,10 @@ configRouter.post('/', adminAuth, async (c) => {
       message: 'Konfigurasi berhasil disimpan.'
     });
   } catch (err: unknown) {
-    console.error('Save config DB error:', (err as any).message);
+    console.error('Save config DB error:', err instanceof Error ? err.message : String(err));
     return c.json({
       success: false,
-      message: 'Gagal menyimpan konfigurasi: ' + (err as any).message
+      message: 'Gagal menyimpan konfigurasi: ' + (err instanceof Error ? err.message : String(err))
     }, 500);
   }
 });
@@ -346,10 +339,10 @@ configRouter.get('/revisions', adminAuth, async (c) => {
       data: revisions
     });
   } catch (err: unknown) {
-    console.error('Fetch revisions error:', (err as any).message);
+    console.error('Fetch revisions error:', err instanceof Error ? err.message : String(err));
     return c.json({
       success: false,
-      message: 'Gagal mengambil riwayat perubahan: ' + (err as any).message
+      message: 'Gagal mengambil riwayat perubahan: ' + (err instanceof Error ? err.message : String(err))
     }, 500);
   }
 });
@@ -360,13 +353,13 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     const contentLength = c.req.header('content-length') || 'unknown';
     console.log(`[INFO] Received bulk save request. Content-Length: ${contentLength} bytes.`);
     const body = await c.req.json();
-    
+
     const result = configSaveSchema.safeParse(body);
     if (!result.success) {
       console.warn('[WARN] Bulk save validation failed:', result.error.format());
       return c.json({
         success: false,
-        message: 'Parameter tidak valid: ' + result.error.issues.map((e: unknown) => `${(e as any).path.join('.')}: ${(e as any).message}`).join(', ')
+        message: 'Parameter tidak valid: ' + result.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
       }, 400);
     }
 
@@ -398,7 +391,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = (c as any).get('admin');
     const adminName = admin?.nama || admin?.username || 'Administrator';
-    
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const revPayload: any = {
       config_values: configs,
@@ -423,7 +416,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     console.error('[ERROR] Failed to parse/save configurations:', err);
     return c.json({
       success: false,
-      message: `Gagal menyimpan konfigurasi: ${(err as any).message || 'Error tidak diketahui'}`
+      message: `Gagal menyimpan konfigurasi: ${err instanceof Error ? err.message : 'Error tidak diketahui'}`
     }, 500);
   }
 });
@@ -447,7 +440,7 @@ configRouter.post('/restore', adminAuth, async (c) => {
     const query = supabase.from('ui_revisions').select('*').eq('id', parseInt(revisionId))
       .eq('school_id', schoolId);
     const { data: revision, error } = await query.single();
-    
+
     if (error || !revision) {
       return c.json({
         success: false,
@@ -466,8 +459,7 @@ configRouter.post('/restore', adminAuth, async (c) => {
     }
 
     for (const [key, value] of Object.entries(configs)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         config_key: key,
         config_value: value,
         updated_at: new Date().toISOString()
@@ -476,12 +468,10 @@ configRouter.post('/restore', adminAuth, async (c) => {
       await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const admin = (c as any).get('admin');
+    const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string } | undefined;
     const adminName = admin?.nama || admin?.username || 'Administrator';
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newRevPayload: any = {
+
+    const newRevPayload: Record<string, unknown> = {
       config_values: configs,
       changed_by: adminName,
       description: `Mengembalikan (Restore) tampilan ke versi riwayat #${revisionId} (dibuat oleh ${changed_by})`
@@ -498,11 +488,10 @@ configRouter.post('/restore', adminAuth, async (c) => {
     console.error('Failed to restore configuration revision:', err);
     return c.json({
       success: false,
-      message: `Gagal melakukan pemulihan konfigurasi: ${(err as any).message}`
+      message: `Gagal melakukan pemulihan konfigurasi: ${err instanceof Error ? err.message : String(err)}`
     }, 500);
   }
 });
-
 
 // ===================================================================
 // REGISTRATION FEE (SCHOOL-SPECIFIC)
@@ -537,11 +526,11 @@ configRouter.post('/registration_fee', adminAuth, async (c) => {
     const schoolId = await requireTenantId(c);
     const body = await c.req.json();
     const { amount } = body;
-    
+
     if (amount == null || isNaN(Number(amount))) {
       return c.json({ success: false, message: 'Amount must be a number' }, 400);
     }
-    
+
     const configValue = { amount: Number(amount) };
 
     const supabase = getSupabaseClient();
@@ -558,7 +547,7 @@ configRouter.post('/registration_fee', adminAuth, async (c) => {
 
     return c.json({ success: true, message: 'Registration fee updated', data });
   } catch (err: unknown) {
-    return c.json({ success: false, message: (err as any).message }, 500);
+    return c.json({ success: false, message: err instanceof Error ? err.message : String(err) }, 500);
   }
 });
 

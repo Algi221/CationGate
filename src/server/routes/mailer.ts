@@ -4,10 +4,8 @@ import { getSupabaseClient } from '../db/supabase';
 
 const mailerRouter = new Hono();
 
-// Helper to generate a 6 digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_build');
 
 mailerRouter.post('/send-otp', async (c) => {
@@ -17,7 +15,6 @@ mailerRouter.post('/send-otp', async (c) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
 
-    // If type is forgot-password, ensure email exists in admin_users
     if (type === 'forgot-password') {
       const { data: user } = await supabase.from('admin_users').select('id').eq('email', email).maybeSingle();
       if (!user) {
@@ -25,12 +22,10 @@ mailerRouter.post('/send-otp', async (c) => {
       }
     }
 
-    // Generate OTP
     const otp = generateOTP();
-    // Expires in 15 minutes
+
     const expiresAt = new Date(Date.now() + 15 * 60000).toISOString();
 
-    // Store in DB
     const { error: insertError } = await supabase.from('verification_otps').insert({
       email,
       otp_code: otp,
@@ -39,9 +34,8 @@ mailerRouter.post('/send-otp', async (c) => {
 
     if (insertError) throw insertError;
 
-    // Send email
     if (process.env.RESEND_API_KEY) {
-      const { data, error } = await resend.emails.send({
+      const { error } = await resend.emails.send({
         from: 'CationGate <noreply@cationgate.site>',
         to: email,
         subject: 'Kode Verifikasi OTP Anda',
@@ -56,14 +50,14 @@ mailerRouter.post('/send-otp', async (c) => {
       });
 
       if (error) {
-        throw new Error((error as any).message);
+        throw new Error(error.message);
       }
     } else {
       if (process.env.NODE_ENV === 'production') {
         console.error('FATAL: RESEND_API_KEY is not configured for production. Email will not be sent.');
         return c.json({ success: false, message: 'Gagal mengirim email: Konfigurasi server email tidak lengkap.' }, 500);
       }
-      
+
       console.warn('⚠️ RESEND_API_KEY not configured, skipping email send. OTP generated:', otp);
       // For local development when Resend is not set up
       return c.json({ success: true, message: 'OTP berhasil digenerate (Mode Dev)', dev_otp: otp });

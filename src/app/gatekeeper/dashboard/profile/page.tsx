@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import {
-  User, ShieldCheck, Key, Lock, Mail, Save, RefreshCw, CheckCircle2, Shield
+  User, Key, Lock, Save, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,8 +62,8 @@ export default function GatekeeperProfilePage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      
-      {/* Title */}
+
+      {}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-blue-500/20">
@@ -83,10 +83,10 @@ export default function GatekeeperProfilePage() {
         </div>
       </div>
 
-      {/* Two Column Grid */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* Profile Info Form */}
+
+        {}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
           <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
             <User className="w-5 h-5 text-blue-600" /> Informasi Identitas Admin
@@ -130,7 +130,7 @@ export default function GatekeeperProfilePage() {
           </div>
         </div>
 
-        {/* Change Password Form */}
+        {}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
           <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
             <Key className="w-5 h-5 text-indigo-600" /> Ubah Password Gatekeeper

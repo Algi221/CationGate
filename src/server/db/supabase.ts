@@ -1,15 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Cache the client so we don't create thousands of connections
 let supabaseServiceInstance: SupabaseClient | null = null;
 
-/**
- * Returns a Supabase client authenticated with the SERVICE_ROLE_KEY.
- * This bypasses RLS and should ONLY be used in backend route handlers.
- * 
- * SECURITY: Will throw immediately if SERVICE_ROLE_KEY is missing,
- * preventing the backend from silently running with anon privileges.
- */
 export const getSupabaseClient = (_authHeader?: string) => {
   if (supabaseServiceInstance) return supabaseServiceInstance;
 

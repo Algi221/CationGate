@@ -4,9 +4,8 @@ import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Lock, User, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, CheckCircle2, Sparkles, KeyRound } from "lucide-react";
+import { Lock, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LottiePlaceholder } from "@/components/ui/LottiePlaceholder";
 
 export default function GatekeeperLogin() {
   const { loginGatekeeper, gatekeeperToken } = usePPDB();
@@ -19,8 +18,11 @@ export default function GatekeeperLogin() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
     if (gatekeeperToken) window.location.href = "/gatekeeper/dashboard";
+    return () => clearTimeout(timer);
   }, [gatekeeperToken, router]);
 
   const handleSubmit = async (e?: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
@@ -52,13 +54,13 @@ export default function GatekeeperLogin() {
   return (
     <div data-dashboard="true" className="min-h-screen w-full flex flex-col lg:flex-row font-sans selection:bg-blue-600 selection:text-white">
 
-      {/* Left Panel - Dark Mode Design matching Image 2 */}
+      {}
       <div className="w-full lg:w-[45%] bg-[#0b1121] relative flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">
-        
-        {/* Dotted Pattern */}
+
+        {}
         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.2) 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
 
-        {/* Top Link & Logo */}
+        {}
         <div className="space-y-6 relative z-10">
           <Link 
             href="/" 
@@ -80,7 +82,7 @@ export default function GatekeeperLogin() {
           </div>
         </div>
 
-        {/* Center Content */}
+        {}
         <div className="my-10 space-y-8 max-w-md relative z-10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
             Selamat Datang, Gatekeeper CationGate.
@@ -112,18 +114,18 @@ export default function GatekeeperLogin() {
           </div>
         </div>
 
-        {/* Bottom Security Info */}
+        {}
         <div className="text-sm text-slate-500 flex items-center justify-between pt-6 relative z-10">
           <span>© 2026 CationGate. • ISO 27001 Certified</span>
         </div>
 
       </div>
 
-      {/* Right Panel – Gatekeeper Login Form */}
+      {}
       <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-white">
-        {/* Floating Card like in Image 2 */}
-        <div className="w-full max-w-[440px] bg-[#f8fafc] border border-slate-200 p-8 sm:p-10 rounded-3xl shadow-sm">
-          
+        {}
+        <div className="w-full max-w-110 bg-[#f8fafc] border border-slate-200 p-8 sm:p-10 rounded-3xl shadow-sm">
+
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Login Gatekeeper

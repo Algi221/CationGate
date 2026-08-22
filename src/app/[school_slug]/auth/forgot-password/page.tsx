@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { Lock, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
+import { Lock, Loader2, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { PasswordStrength } from "@/components/ui/password-strength";
 
 export default function ForgotPassword() {
@@ -12,22 +13,23 @@ export default function ForgotPassword() {
   const router = useRouter();
   const params = useParams();
   const schoolSlug = params?.school_slug as string;
-  
+
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [_showPassword, _setShowPassword] = useState(false);
-  const [step, setStep] = useState(1); // 1: Email, 2: OTP & New Password
-  
+  const [step, setStep] = useState(1); 
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
     if (cooldown > 0) {
@@ -129,11 +131,11 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-white font-sans selection:bg-blue-600 selection:text-white">
-      
+
       {/* Left Panel - Dark Mode Design matching Image 2 */}
       <div className="w-full lg:w-[45%] bg-[#0b1121] relative flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">
         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.2) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
-        
+
         <div className="relative z-10 space-y-6">
           <Link 
             href={`/${schoolSlug}`}
@@ -146,7 +148,7 @@ export default function ForgotPassword() {
           <div className="flex items-center gap-3 pt-2">
             <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center overflow-hidden">
               {ppdbLogo ? (
-                <img src={ppdbLogo || undefined} alt="Logo" className="w-8 h-8 object-contain" />
+                <Image src={ppdbLogo} alt="Logo" width={32} height={32} className="w-8 h-8 object-contain" unoptimized />
               ) : (
                 <ShieldCheck className="w-6 h-6 text-white" />
               )}
@@ -178,8 +180,8 @@ export default function ForgotPassword() {
 
       {/* Right Panel – Admin Login Form */}
       <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-white">
-        <div className="w-full max-w-[440px] bg-[#f8fafc] border border-slate-200 p-8 sm:p-10 rounded-3xl shadow-sm">
-          
+        <div className="w-full max-w-110 bg-[#f8fafc] border border-slate-200 p-8 sm:p-10 rounded-3xl shadow-sm">
+
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Lupa Password

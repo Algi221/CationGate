@@ -1,12 +1,12 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
 import { Box, Zap, Sparkles, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { TimelineAnimation } from "@/components/ui/product-packs-utils/timeline-animation";
 import Link from "next/link";
 
 export const ProductPacks = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -134,7 +134,7 @@ export const ProductPacks = () => {
                   <div className={`space-y-4 pt-6 border-t ${borderClass}`}>
                     {(plan.features || []).map((feature: string, i: number) => (
                       <div key={i} className="flex justify-start items-center gap-3">
-                        <CheckCircle2 className={`w-5 h-5 flex-shrink-0 ${isFirst ? 'text-black' : isSecond ? 'text-amber-300' : 'text-blue-500'}`} />
+                        <CheckCircle2 className={`w-5 h-5 shrink-0 ${isFirst ? 'text-black' : isSecond ? 'text-amber-300' : 'text-blue-500'}`} />
                         <span className={`text-sm font-medium ${isFirst ? 'text-neutral-800' : isSecond ? 'text-neutral-300' : 'text-slate-700 dark:text-slate-300'}`}>
                           {feature}
                         </span>
@@ -142,7 +142,7 @@ export const ProductPacks = () => {
                     ))}
                   </div>
 
-                  <div className="pt-4 flex-grow flex items-end">
+                  <div className="pt-4 grow flex items-end">
                     <Link
                       href="/daftar"
                       className={buttonClass}

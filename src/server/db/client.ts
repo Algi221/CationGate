@@ -17,7 +17,6 @@ pool.on('error', (err: Error) => {
   console.error('Unexpected error on idle PostgreSQL client', err);
 });
 
-
 export async function initDb(): Promise<void> {
   let client: PoolClient | undefined;
   try {
@@ -26,7 +25,7 @@ export async function initDb(): Promise<void> {
 
     const schemaPath = path.join(__dirname, 'schema.sql');
     if (fs.existsSync(schemaPath)) {
-      // Pra-migrasi: Pastikan kolom role di admin_users sudah ada sebelum SQL skema dijalankan
+
       await client.query(`
         CREATE TABLE IF NOT EXISTS admin_users (id SERIAL PRIMARY KEY);
         ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS username VARCHAR(50) UNIQUE;
@@ -38,7 +37,6 @@ export async function initDb(): Promise<void> {
       const sql = fs.readFileSync(schemaPath, 'utf8');
       await client.query(sql);
 
-      // Migrasi otomatis: Tambah kolom baru sesuai skema terbaru
       await client.query(`
         ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS registration_no VARCHAR(50);
         ALTER TABLE calon_siswa ADD COLUMN IF NOT EXISTS physical_doc_verified BOOLEAN DEFAULT FALSE;
@@ -54,7 +52,7 @@ export async function initDb(): Promise<void> {
       console.warn('Database schema.sql file not found at', schemaPath);
     }
   } catch (error: unknown) {
-    console.error('Failed to connect or initialize PostgreSQL database:', (error as any).message);
+    console.error('Failed to connect or initialize PostgreSQL database:', error instanceof Error ? error.message : String(error));
     console.warn('Berjalan dalam mode fallback mock-db. Kueri database mungkin gagal sebelum konfigurasi diperbarui.');
   } finally {
     if (client) client.release();

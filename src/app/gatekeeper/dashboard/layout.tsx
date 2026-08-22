@@ -7,14 +7,10 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
 import {
-  Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
-  Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, Building2, MessageSquare, Activity, Wallet, Receipt,
-  CheckCircle2, AlertCircle, TrendingUp, Bell
+  Sun, Moon, LogOut, Menu, ChevronDown, UserCircle, ShieldCheck
 } from "lucide-react";
 import { GatekeeperSidebar } from "@/components/layout/gatekeeper/GatekeeperSidebar";
 
-// ─── Gatekeeper Breadcrumbs ───────────────────────────────────────────────────
 function GatekeeperBreadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
   const _activeTab = searchParams.get("tab");
@@ -64,7 +60,6 @@ function GatekeeperBreadcrumbs({ pathname }: { pathname: string }) {
   );
 }
 
-// ─── Main Layout ──────────────────────────────────────────────────────────────
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const { gatekeeperToken, gatekeeperUser, logoutGatekeeper } = usePPDB();
   const router = useRouter();
@@ -77,10 +72,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [_hoveredItem, _setHoveredItem] = useState<string | null>(null);
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // ── Close user dropdown on outside click ─────────────────────────────────
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
@@ -91,40 +84,31 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [_openDropdowns, _setOpenDropdowns] = useState<Record<string, boolean>>({});
-
-  // ── Auto-open dropdown for current active sections ─────────────────────────
   useEffect(() => {
-    if (pathname) {
-      // Logic handled in GatekeeperSidebar
-    }
+    const timer = setTimeout(() => {
+      setIsMobileMenuOpen(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem("ppdb-theme");
-    if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    } else {
-      document.documentElement.classList.remove("dark");
-      setIsDark(false);
-    }
-    const savedCollapse = localStorage.getItem("ppdb-sidebar-collapsed");
-    if (savedCollapse === "true") {
-      setIsCollapsed(true);
-    }
+    const timer = setTimeout(() => {
+      setMounted(true);
+      const saved = localStorage.getItem("ppdb-theme");
+      if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.classList.add("dark");
+        setIsDark(true);
+      } else {
+        document.documentElement.classList.remove("dark");
+        setIsDark(false);
+      }
+      const savedCollapse = localStorage.getItem("ppdb-sidebar-collapsed");
+      if (savedCollapse === "true") {
+        setIsCollapsed(true);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
-
-  const _handleToggleCollapse = () => {
-    const nextVal = !isCollapsed;
-    setIsCollapsed(nextVal);
-    localStorage.setItem("ppdb-sidebar-collapsed", String(nextVal));
-  };
 
   const getTimeoutDuration = () => {
     if (typeof window === "undefined") return 60 * 60 * 1000;
@@ -148,15 +132,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         }
       }
       if (!gatekeeperToken) {
-        // Allow PPDBContext hydration to complete if token is in localStorage
+
         if (localStorage.getItem("gatekeeper_token")) {
            return;
         }
         router.push(`/gatekeeper/auth/login`);
         return;
       }
-      
-      // Ensure role is gatekeeper or superadmin
+
       if (gatekeeperUser && gatekeeperUser.role !== 'gatekeeper' && gatekeeperUser.role !== 'superadmin') {
          Swal.fire({
             title: "Akses Ditolak",
@@ -219,7 +202,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   if (!mounted) return null;
-  
+
   if (!gatekeeperToken || (gatekeeperUser && gatekeeperUser.role !== 'gatekeeper' && gatekeeperUser.role !== 'superadmin')) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-white transition-colors duration-300">
@@ -238,7 +221,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <div data-dashboard className="h-screen bg-slate-50 dark:bg-slate-950 flex font-sans overflow-hidden transition-colors duration-300">
-      
+
       <GatekeeperSidebar
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
@@ -246,11 +229,10 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         setIsCollapsed={setIsCollapsed}
       />
 
-
-      {/* ─── MAIN CONTENT ────────────────────────────────────────────────────── */}
+      {}
       <div className="flex-1 flex flex-col min-w-0 h-full relative z-10 bg-[#f8fafc] dark:bg-slate-950">
-        
-        {/* ─── HEADER ──────────────────────────────────────────────────────── */}
+
+        {}
         <header className="h-16 md:h-20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between px-4 md:px-8 shrink-0 z-20">
           <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
             <button
@@ -272,13 +254,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             >
               {isDark ? <Sun size={18} strokeWidth={2.2} /> : <Moon size={18} strokeWidth={2.2} />}
             </button>
-            
+
             <div className="relative" ref={userDropdownRef}>
               <button
                 onClick={() => setShowUserDropdown(!showUserDropdown)}
                 className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group focus:outline-none ml-1"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-white dark:ring-slate-900">
+                <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-white dark:ring-slate-900">
                   {userInitial}
                 </div>
                 <ChevronDown size={14} strokeWidth={2.5} className="text-slate-400 group-hover:text-slate-600 dark:text-slate-500 dark:group-hover:text-slate-300 mr-1" />
@@ -295,7 +277,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   >
                     <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                       <div className="flex items-center gap-3 w-full">
-                        <div className="h-9 w-9 bg-gradient-to-tr from-blue-600 to-cyan-500 rounded-full border-2 border-white dark:border-slate-800 shadow-md flex items-center justify-center shrink-0">
+                        <div className="h-9 w-9 bg-linear-to-tr from-blue-600 to-cyan-500 rounded-full border-2 border-white dark:border-slate-800 shadow-md flex items-center justify-center shrink-0">
                           <UserCircle className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1 text-left">
@@ -329,17 +311,17 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* ─── PAGE CONTENT ──────────────────────────────────────────────────── */}
+        {}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent relative">
           <div className="absolute inset-0 bg-slate-50 dark:bg-slate-950 -z-10" />
-          
+
           <div className="max-w-7xl mx-auto w-full p-4 md:p-8 animate-fade-in pb-24 md:pb-8">
             <div className="sm:hidden mb-6">
               <GatekeeperBreadcrumbs pathname={pathname} />
             </div>
-            
+
             <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[400px]">
+              <div className="flex items-center justify-center min-h-100">
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-8 h-8 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
                   <span className="text-slate-500 dark:text-slate-400 font-bold text-sm tracking-widest uppercase">Memuat Gatekeeper...</span>
@@ -353,13 +335,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       </div>
 
       <AnimatePresence>
-        {/* Rendered inside GatekeeperSidebar */}
+        {}
       </AnimatePresence>
 
-      {/* ─── LOGOUT CONFIRMATION MODAL ────────────────────────────────────── */}
+      {}
       <AnimatePresence>
         {showLogoutConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

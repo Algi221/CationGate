@@ -3,15 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, useMotionValue, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Globe,
-  Mail,
-  MessageCircle,
-  Smartphone,
-  ChevronDown,
-  X,
-} from "lucide-react";
-import { usePathname } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 
 interface iNavItem {
   heading: string;
@@ -54,7 +46,7 @@ const NavLink: React.FC<iNavLinkProps> = ({
   href,
   subItems,
   setIsActive,
-  index,
+  index: _index,
 }) => {
   const ref = useRef<HTMLAnchorElement | null>(null);
   const x = useMotionValue(0);
@@ -137,7 +129,7 @@ const NavLink: React.FC<iNavLinkProps> = ({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="flex flex-col gap-3 mt-4 ml-[4.5rem] md:ml-[5.5rem]">
+            <div className="flex flex-col gap-3 mt-4 ml-18 md:ml-22">
               {subItems.map((sub, i) => (
                 <Link
                   key={i}
@@ -157,10 +149,14 @@ const NavLink: React.FC<iNavLinkProps> = ({
 };
 
 const Curve: React.FC = () => {
-  const [windowHeight, setWindowHeight] = useState(0);
+  const [windowHeight, setWindowHeight] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerHeight;
+    }
+    return 0;
+  });
 
   useEffect(() => {
-    setWindowHeight(window.innerHeight);
     const handleResize = () => setWindowHeight(window.innerHeight);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -190,7 +186,7 @@ const Curve: React.FC = () => {
   };
 
   return (
-    <svg className="absolute top-0 -left-[99px] w-[100px] stroke-none h-full fill-white dark:fill-[#0F0F11]">
+    <svg className="absolute top-0 -left-24.75 w-25 stroke-none h-full fill-white dark:fill-[#0F0F11]">
       <motion.path
         variants={curve}
         initial="initial"
@@ -210,7 +206,7 @@ export const CurvedNavbar: React.FC<
       initial="initial"
       animate="enter"
       exit="exit"
-      className="h-[100dvh] w-screen fixed right-0 top-0 z-[200] bg-white dark:bg-[#0F0F11] overflow-hidden flex flex-col"
+      className="h-dvh w-screen fixed right-0 top-0 z-200 bg-white dark:bg-[#0F0F11] overflow-hidden flex flex-col"
     >
       {/* Header di dalam Sidebar (Logo) */}
       <div className="w-full px-6 md:px-24 pt-7 pb-4 flex items-center gap-3 z-20 shrink-0">
@@ -267,26 +263,26 @@ export const HamburgerButton = ({
       type="button"
       onClick={onClick}
       aria-label={isActive ? "Tutup menu" : "Buka menu"}
-      className={`relative z-[250] w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 shadow-sm border active:scale-95 focus:outline-none ${
+      className={`relative z-250 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 shadow-sm border active:scale-95 focus:outline-none ${
         isActive
           ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white"
           : "bg-white/90 dark:bg-[#0F0F11]/90 backdrop-blur-md border-black/5 dark:border-white/10 text-[#1A202C] dark:text-white"
       }`}
     >
-      <div className="relative w-5 h-[14px] flex flex-col justify-between items-center pointer-events-none">
+      <div className="relative w-5 h-3.5 flex flex-col justify-between items-center pointer-events-none">
         <span
-          className={`block h-[2px] w-full bg-current rounded-full transition-transform duration-300 origin-center ${
-            isActive ? "rotate-45 translate-y-[6px]" : ""
+          className={`block h-0.5 w-full bg-current rounded-full transition-transform duration-300 origin-center ${
+            isActive ? "rotate-45 translate-y-1.5" : ""
           }`}
         />
         <span
-          className={`block h-[2px] w-full bg-current rounded-full transition-opacity duration-300 ${
+          className={`block h-0.5 w-full bg-current rounded-full transition-opacity duration-300 ${
             isActive ? "opacity-0" : ""
           }`}
         />
         <span
-          className={`block h-[2px] w-full bg-current rounded-full transition-transform duration-300 origin-center ${
-            isActive ? "-rotate-45 -translate-y-[6px]" : ""
+          className={`block h-0.5 w-full bg-current rounded-full transition-transform duration-300 origin-center ${
+            isActive ? "-rotate-45 -translate-y-1.5" : ""
           }`}
         />
       </div>

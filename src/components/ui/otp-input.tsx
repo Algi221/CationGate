@@ -71,41 +71,37 @@ const OTPInputBox = ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: any) => {
   const animationControls = useAnimationControls();
-  const springTransition = {
-    type: "spring",
-    stiffness,
-    damping,
-    delay: index * 0.05,
-  };
   const noDelaySpringTransition = {
     type: "spring",
     stiffness,
     damping,
-  };
-  const slowSuccessTransition = {
-    type: "spring",
-    stiffness: 300,
-    damping: 30,
-    delay: index * 0.06,
   };
 
   useEffect(() => {
     animationControls.start({
       opacity: 1,
       y: 0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      transition: springTransition as any,
+      transition: {
+        type: "spring",
+        stiffness,
+        damping,
+        delay: index * 0.05,
+      },
     });
     return () => animationControls.stop();
-  }, []);
+  }, [animationControls, damping, index, stiffness]);
 
   useEffect(() => {
     if (state === "success") {
-      const transitionX = index * 68; // Adjusted gap
+      const transitionX = index * 68; 
       animationControls.start({
         x: -transitionX,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        transition: slowSuccessTransition as any,
+        transition: {
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+          delay: index * 0.06,
+        },
       });
     }
   }, [state, index, animationControls]);
@@ -120,19 +116,20 @@ const OTPInputBox = ({
     animationControls.start({ y: 0, transition: noDelaySpringTransition as any });
   };
 
-  const onKeyDown = (e: unknown) => {
-    const { value } = (e as any).target;
-    if ((e as any).key === "Backspace" && !value && index > 0) {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const target = e.currentTarget;
+    const value = target.value;
+    if (e.key === "Backspace" && !value && index > 0) {
       document.getElementById(`input-${index - 1}`)?.focus();
-    } else if ((e as any).key === "ArrowLeft" && index > 0) {
+    } else if (e.key === "ArrowLeft" && index > 0) {
       document.getElementById(`input-${index - 1}`)?.focus();
-    } else if ((e as any).key === "ArrowRight" && index < length - 1) {
+    } else if (e.key === "ArrowRight" && index < length - 1) {
       document.getElementById(`input-${index + 1}`)?.focus();
     }
   };
 
-  const onInput = (e: unknown) => {
-    const target = (e as any).target;
+  const onInput = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.currentTarget;
     let value = target.value.trim();
     if (value.length > 1) {
       value = value.slice(-1);
@@ -148,9 +145,9 @@ const OTPInputBox = ({
     verifyOTP();
   };
 
-  const onPaste = (e: unknown) => {
-    (e as any).preventDefault();
-    const pastedData = (e as any).clipboardData.getData("text").trim().slice(0, length);
+  const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").trim().slice(0, length);
     const digits = pastedData.split("").filter((char: string) => /^[0-9]$/.test(char));
 
     digits.forEach((digit: string, i: number) => {
@@ -262,7 +259,7 @@ export function OTPVerification({
     }
 
     setState("loading");
-    
+
     // Call the provided onVerify
     const isValid = await onVerify(code);
 
@@ -294,7 +291,7 @@ export function OTPVerification({
 
   return (
     <div
-      className={`rounded-3xl p-6 sm:p-8 w-full max-w-[450px] shadow-2xl dark:shadow-gray-900/50 relative overflow-hidden ${className}`}
+      className={`rounded-3xl p-6 sm:p-8 w-full max-w-112.5 shadow-2xl dark:shadow-gray-900/50 relative overflow-hidden ${className}`}
       style={{
         backgroundImage:
           "url('https://cdn.21st.dev/assets/localized/16c55696aea9e60fe904ded95cfa9615f3dd5850411f794c155beb28679fd3a4.gif')",

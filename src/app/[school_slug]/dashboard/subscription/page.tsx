@@ -20,10 +20,10 @@ interface SubscriptionData {
 }
 
 export default function SubscriptionManagementPage() {
-  const { adminUser, schoolStatus, ppdbTitle, isDemoMode, schoolId } = usePPDB();
+  const { schoolStatus, ppdbTitle, isDemoMode, schoolId } = usePPDB();
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "";
-  
+
   const [isPaying, setIsPaying] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [plans, setPlans] = useState<any[]>([]);
@@ -33,7 +33,6 @@ export default function SubscriptionManagementPage() {
 
   const isVerified = schoolStatus === "FULL_VERIFIED" || schoolStatus === "VERIFIED" || schoolStatus === "verified" || isDemoMode;
 
-  // Fetch plans
   useEffect(() => {
     const fetchPlans = async () => {
       try {
@@ -51,7 +50,6 @@ export default function SubscriptionManagementPage() {
     fetchPlans();
   }, []);
 
-  // Fetch subscription status
   useEffect(() => {
     const fetchSub = async () => {
       try {
@@ -387,7 +385,7 @@ export default function SubscriptionManagementPage() {
                         {pkg.name}
                       </h3>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 min-h-[20px]">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 min-h-5">
                       {isFree
                         ? "Coba seluruh fitur dasar PPDB sekolah tanpa biaya komitmen."
                         : "Akses lengkap tanpa batas untuk operasional PPDB sekolah profesional."}

@@ -6,7 +6,7 @@ import { usePPDB } from "@/context/PPDBContext";
 import Script from "next/script";
 import {
   ShieldCheck, Building2, Mail, FileText, CheckCircle2, Clock,
-  AlertTriangle, Upload, ArrowRight, ArrowLeft, Check, Lock, ShieldAlert, Sparkles, ExternalLink, CreditCard, Palette
+  Upload, ArrowRight, ArrowLeft, Check, Lock, ShieldAlert, Palette
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,67 +19,11 @@ export default function SchoolVerificationPage() {
   const params = useParams();
   const router = useRouter();
   const schoolSlug = params.school_slug as string;
-  const { schoolId, schoolStatus, ppdbTitle } = usePPDB();
+  const { schoolId, schoolStatus } = usePPDB();
 
   const [currentStep, setCurrentStep] = useState<VerificationStep>(1);
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
-
-  const handlePayMidtrans = async () => {
-    setIsPaying(true);
-    try {
-      const res = await fetch("/api/saas/create-payment-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          school_name: ppdbTitle || schoolSlug,
-          email: formData.official_email || "admin@school.sch.id",
-          amount: 750000
-        }),
-      });
-      const data = await res.json();
-      setIsPaying(false);
-
-      if (data.token) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((window as any).snap) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).snap.pay(data.token, {
-            onSuccess: async function () {
-              await fetch("/api/saas/activate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("ppdb_admin_token")}` },
-                body: JSON.stringify({ school_id: schoolId }),
-              });
-              Swal.fire({
-                title: "Pembayaran Berhasil!",
-                text: "Paket CationGate Pro (Rp 750.000 / Tahun) telah aktif.",
-                icon: "success",
-                confirmButtonColor: "#2563EB",
-              });
-            },
-            onPending: function () {
-              Swal.fire({ title: "Menunggu Pembayaran", text: "Silakan selesaikan pembayaran Midtrans Anda.", icon: "info" });
-            },
-            onError: function () {
-              Swal.fire({ title: "Pembayaran Gagal", text: "Terjadi kesalahan saat memproses transaksi.", icon: "error" });
-            }
-          });
-        } else {
-          Swal.fire({
-            title: "Sistem Midtrans Siap",
-            text: "Order ID: " + (data.order_id || "CG-PRO-750K") + ". Pembayaran Pro Rp 750.000 / Tahun terkonfirmasi.",
-            icon: "success",
-            confirmButtonColor: "#2563EB"
-          });
-        }
-      }
-    } catch (_e) {
-      setIsPaying(false);
-      Swal.fire({ title: "Gagal Membuka Midtrans", text: "Silakan coba lagi beberapa saat lagi.", icon: "error" });
-    }
-  };
 
   // Form State
   const [formData, setFormData] = useState({
@@ -257,7 +201,7 @@ export default function SchoolVerificationPage() {
         data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-lwrX66vs4ssU0E8r'}
         strategy="lazyOnload" 
       />
-      
+
       {/* Header Banner */}
       <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
@@ -316,12 +260,12 @@ export default function SchoolVerificationPage() {
                 }`}
               >
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
-                  isActive ? "bg-white !text-blue-600 shadow-sm" : isDone ? "bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200" : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+                  isActive ? "bg-white text-blue-600! shadow-sm" : isDone ? "bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200" : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
                 }`}>
                   {isDone ? (
                     <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-300 stroke-[2.5]" />
                   ) : (
-                    <Icon className={`w-4 h-4 ${isActive ? "!text-blue-600 stroke-[2.5]" : ""}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? "text-blue-600! stroke-[2.5]" : ""}`} />
                   )}
                 </div>
                 <div className="hidden sm:block min-w-0">
@@ -336,7 +280,7 @@ export default function SchoolVerificationPage() {
 
       {/* Main Step Form Container */}
       <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
-        
+
         {/* ── STEP 1: Identitas & Legalitas ────────────────────────────────────── */}
         {currentStep === 1 && (
           <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
@@ -519,7 +463,7 @@ export default function SchoolVerificationPage() {
                   processFile(e.dataTransfer.files[0]);
                 }
               }}
-              className="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-800/40 text-center space-y-4 cursor-pointer transition-all hover:bg-blue-50/20"
+              className="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl bg-slate-50 dark:bg-slate-800/50 text-center space-y-4 cursor-pointer transition-all hover:bg-blue-50/20"
             >
               <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-100 dark:border-blue-900">
                 <Upload className="w-7 h-7" />
@@ -592,7 +536,7 @@ export default function SchoolVerificationPage() {
         {/* ── STEP 4: Status Peninjauan Live Gatekeeper ──────────────────────────── */}
         {currentStep === 4 && (
           <div className="space-y-6 text-center animate-in fade-in zoom-in-95 duration-200 py-4">
-            
+
             {isVerified ? (
               <div className="space-y-4 max-w-md mx-auto">
                 <div className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">

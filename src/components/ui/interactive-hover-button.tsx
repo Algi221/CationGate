@@ -23,7 +23,7 @@ export function InteractiveHoverButton({
       )}
       {...props}
     >
-      {/* Normal */}
+      {}
       <div className="flex items-center justify-center gap-2">
         <div className="bg-primary h-2 w-2 rounded-full transition-all duration-300 group-hover:scale-[30]" />
 
@@ -40,8 +40,7 @@ export function InteractiveHoverButton({
         </span>
       </div>
 
-
-      {/* Hover */}
+      {}
       <div
         className="
           text-white 

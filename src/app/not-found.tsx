@@ -12,7 +12,6 @@ import {
   LayoutDashboard,
   GraduationCap,
   ArrowLeft,
-  BookOpen,
 } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
@@ -88,7 +87,7 @@ export default function GlobalNotFound() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Navbar */}
-      <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <nav className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="p-2 bg-orange-100 dark:bg-orange-950/40 rounded-lg group-hover:bg-orange-200 transition-colors">
@@ -138,7 +137,7 @@ export default function GlobalNotFound() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center">
+      <main className="grow flex items-center justify-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
           {mainElement}
         </div>

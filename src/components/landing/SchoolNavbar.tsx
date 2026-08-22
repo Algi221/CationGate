@@ -34,29 +34,39 @@ interface SchoolNavbarProps {
   schoolSlug: string;
 }
 
+const DEFAULT_MAJORS = [
+  { code: "RPL", title: "Rekayasa Perangkat Lunak", desc: "Software engineering, web, cloud & AI", icon: Cpu },
+  { code: "TJKT", title: "Teknik Jaringan Komputer & Telkom", desc: "Jaringan, server & cyber security", icon: Layers },
+  { code: "DKV", title: "Desain Komunikasi Visual", desc: "UI/UX, visual design & digital art", icon: BookOpen },
+  { code: "BC", title: "Broadcasting & Perfilman", desc: "Penyiaran, sinematografi & editing", icon: Video },
+  { code: "ANM", title: "Animasi", desc: "2D/3D animation, rigging & modeling", icon: Palette },
+  { code: "TE", title: "Teknik Elektronika", desc: "IoT, robotics & microcontroller", icon: Cpu }
+];
+
 export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
-  const { ppdbLogo, ppdbTitle, isConfigLoaded: isGlobalConfigLoaded } = usePPDB();
-  const [isDark, setIsDark] = useState(false);
+  const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("ppdb-theme");
+      if (savedTheme === "dark") return true;
+      if (savedTheme === "light") return false;
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return false;
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [majors, setMajors] = useState<any[]>([]);
+  const [majors, setMajors] = useState<any[]>(DEFAULT_MAJORS);
   const _pathname = usePathname();
 
   useEffect(() => {
-    // Check initial theme
     const savedTheme = localStorage.getItem("ppdb-theme");
-    if (savedTheme === "dark") {
-      setIsDark(true);
+    if (savedTheme === "dark" || (!savedTheme && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
       document.documentElement.classList.add("dark");
-    } else if (savedTheme === "light") {
-      setIsDark(false);
+    } else {
       document.documentElement.classList.remove("dark");
-    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setIsDark(true);
-      document.documentElement.classList.add("dark");
     }
-    
-    // Fetch majors dynamically
+
     const loadMajors = async () => {
       try {
         const res = await fetch(`/api/config?school_slug=${schoolSlug}`);
@@ -90,15 +100,6 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
 
     if (schoolSlug && schoolSlug !== "sekolah" && schoolSlug !== "demo") {
       loadMajors();
-    } else {
-      setMajors([
-        { code: "RPL", title: "Rekayasa Perangkat Lunak", desc: "Software engineering, web, cloud & AI", icon: Cpu },
-        { code: "TJKT", title: "Teknik Jaringan Komputer & Telkom", desc: "Jaringan, server & cyber security", icon: Layers },
-        { code: "DKV", title: "Desain Komunikasi Visual", desc: "UI/UX, visual design & digital art", icon: BookOpen },
-        { code: "BC", title: "Broadcasting & Perfilman", desc: "Penyiaran, sinematografi & editing", icon: Video },
-        { code: "ANM", title: "Animasi", desc: "2D/3D animation, rigging & modeling", icon: Palette },
-        { code: "TE", title: "Teknik Elektronika", desc: "IoT, robotics & microcontroller", icon: Cpu }
-      ]);
     }
   }, [schoolSlug]);
 
@@ -123,7 +124,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
               <div className="relative h-10 w-10 shrink-0 overflow-visible">
                 <SafeImage src={schoolSlug === 'demo' ? "/assets/logo_sekolah/logo_smktb.png" : (ppdbLogo || "/assets/logo_sekolah/logo_smktb.png")} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
               </div>
-              <span className="text-xl font-extrabold text-slate-900 dark:text-white truncate max-w-[180px] sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
+              <span className="text-xl font-extrabold text-slate-900 dark:text-white truncate max-w-45 sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
                 {schoolSlug === 'demo' ? "SMK TB" : (ppdbTitle || "SPMB SMK Taruna Bhakti")}
               </span>
             </Link>
@@ -147,7 +148,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                     Profil Sekolah
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="w-[180px] p-2 flex flex-col gap-1">
+                    <ul className="w-45 p-2 flex flex-col gap-1">
                       {[
                         { title: "Sejarah", href: `/${schoolSlug}/profil?section=sejarah` },
                         { title: "Identitas Sekolah", href: `/${schoolSlug}/profil?section=identitas` },
@@ -156,7 +157,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                       ].map((sub) => (
                         <li key={sub.title}>
                           <NavigationMenuLink
-                            render={<Link href={sub.href} className="block px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:text-white dark:hover:bg-slate-800 rounded-md transition-colors" />}
+                            render={<Link href={sub.href} className="block px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800 rounded-md transition-colors" />}
                           >
                             {sub.title}
                           </NavigationMenuLink>
@@ -172,19 +173,15 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                     Jurusan
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] md:w-[500px] lg:w-[600px] grid-cols-2 gap-2 p-4">
+                    <ul className="grid w-100 md:w-125 lg:w-150 grid-cols-2 gap-2 p-4">
                       {majors.length > 0 ? (
                         majors.map((major, idx) => (
                           <li key={idx}>
                             <NavigationMenuLink
-                              render={<Link href={`/${schoolSlug}/jurusan/${encodeURIComponent(major.code.toLowerCase())}`} className="flex flex-col gap-1 p-3 rounded-lg hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-800 transition-colors group/sub" />}
+                              render={<Link href={`/${schoolSlug}/jurusan/${encodeURIComponent(major.code.toLowerCase())}`} className="flex flex-col gap-1 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group/sub" />}
                             >
-                              <div className="text-sm font-bold text-slate-900 dark:text-white transition-colors truncate">
-                                {major.title || major.code}
-                              </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight line-clamp-2">
-                                {major.desc || "Program keahlian unggulan"}
-                              </div>
+                              <span className="text-sm font-bold text-slate-900 dark:text-white group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400 transition-colors">{major.title || major.code}</span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{major.desc || "Program keahlian unggulan"}</span>
                             </NavigationMenuLink>
                           </li>
                         ))
@@ -197,20 +194,12 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* Forum & Blog */}
+                {/* Informasi */}
                 <NavigationMenuItem>
                   <NavigationMenuLink
-                    render={<Link href={`/${schoolSlug}/forum`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                    render={<Link href={`/${schoolSlug}/dashboard/informasi`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
                   >
-                    Forum Informasi
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    render={<Link href={`/${schoolSlug}/blog`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
-                  >
-                    Blog
+                    Informasi
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               </NavigationMenuList>
@@ -224,10 +213,10 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={toggleDark}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
-              title={isDark ? 'Mode Terang' : 'Mode Gelap'}
+              className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label="Toggle Theme"
             >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              {isDark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
             </button>
             <Link href={schoolSlug === 'demo' ? "/demo/dashboard" : `/${schoolSlug}/daftar`} className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
               {schoolSlug === 'demo' ? "Dashboard Demo" : "Daftar"}
@@ -236,7 +225,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
             {/* Hamburger Button visible only on mobile/tablet */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex lg:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-[101]"
+              className="flex lg:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-101"
               aria-label="Toggle Mobile Menu"
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -247,11 +236,11 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
 
       {/* Fullscreen Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 lg:hidden">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 lg:hidden">
           {/* Close Button X in top right */}
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-6 right-6 p-2.5 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
+            className="absolute top-6 right-6 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
             aria-label="Close Mobile Menu"
           >
             <X size={20} />

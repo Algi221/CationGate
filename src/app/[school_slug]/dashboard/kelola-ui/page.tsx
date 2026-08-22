@@ -15,7 +15,6 @@ import {
   X, 
   ChevronUp, 
   ChevronDown, 
-  Sparkles, 
   Info,
   Clock,
   RotateCcw,
@@ -28,17 +27,14 @@ import {
   Calendar,
   Database,
   Building,
-  Globe,
   Power
 } from "lucide-react";
-import { toast } from "sonner";
 import { uploadFileDirect, base64ToFile } from "@/utils/storage";
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
 import DOMPurify from "dompurify";
 import Swal from 'sweetalert2';
-import { compressImage, compressVideo } from "@/utils/mediaCompressor";
-
+import { compressImage } from "@/utils/mediaCompressor";
 
 interface AlurItem {
   id: number;
@@ -136,11 +132,11 @@ const formatPhoneNumber = (value: string) => {
   if (clean.startsWith("0")) {
     clean = "+62" + clean.slice(1);
   }
-  // If it starts with '62', prepend '+'
+
   else if (clean.startsWith("62")) {
     clean = "+" + clean;
   }
-  // If it doesn't start with '+62' and isn't empty, prepend '+62'
+
   else if (clean && !clean.startsWith("+62")) {
     if (clean.startsWith("+")) {
       clean = "+62" + clean.slice(1);
@@ -148,7 +144,7 @@ const formatPhoneNumber = (value: string) => {
       clean = "+62" + clean;
     }
   }
-  
+
   return clean;
 };
 
@@ -352,20 +348,29 @@ const DEFAULT_MAJORS: MajorItem[] = [
 ];
 
 export default function KelolaUserInterface() {
-  const { adminToken, fetchConfigs, ppdbTitle, isDemoMode } = usePPDB();
+  const { adminToken, ppdbTitle, isDemoMode } = usePPDB();
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
   const searchParams = useSearchParams();
   const params = useParams();
   const slug = params?.school_slug as string || "";
   const draftKey = `ppdb_ui_editor_draft_${slug}`;
   const router = useRouter();
 
+  const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">(() => {
+    const tab = searchParams.get("tab");
+    if (tab && ["hero", "majors", "alur", "form", "faq", "revisions", "bank", "partners"].includes(tab)) {
+      return tab as "hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners";
+    }
+    return "hero";
+  });
+
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab && ["hero", "majors", "alur", "form", "faq", "revisions", "bank", "partners"].includes(tab)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setActiveTab(tab as any);
+      requestAnimationFrame(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setActiveTab((prev: any) => prev !== tab ? tab : prev);
+      });
     }
   }, [searchParams]);
 
@@ -542,9 +547,10 @@ export default function KelolaUserInterface() {
   const [isLandingPageActive, setIsLandingPageActive] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
+    requestAnimationFrame(() => setMounted(true));
     fetchCurrentConfig();
     fetchRevisions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-save unsaved draft to localStorage whenever form states change
@@ -607,6 +613,8 @@ export default function KelolaUserInterface() {
     partnersList,
     schoolLogo,
     schoolTitle,
+    footerDesc,
+    draftKey,
   ]);
 
   const showToastMsg = (message: string, type: "success" | "error" | "info" = "success") => {
@@ -640,7 +648,7 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_hero_title) setHeroTitle(activeConfig.ppdb_hero_title);
       if (activeConfig.ppdb_hero_title_sub) setHeroTitleSub(activeConfig.ppdb_hero_title_sub);
       else if (!draft) setHeroTitleSub(`Portal PPDB ${ppdbTitle || 'Online'}`);
-      
+
       if (activeConfig.ppdb_hero_subtitle) setHeroSubtitle(activeConfig.ppdb_hero_subtitle);
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
@@ -654,11 +662,11 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_form_guideline) setFormGuideline(activeConfig.ppdb_form_guideline);
       if (activeConfig.ppdb_form_fee) setFormFee(activeConfig.ppdb_form_fee);
       if (activeConfig.ppdb_logo_url) setSchoolLogo(activeConfig.ppdb_logo_url);
-      
+
       if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
       if (activeConfig.ppdb_footer_desc) setFooterDesc(activeConfig.ppdb_footer_desc);
       else if (!draft) setSchoolTitle(`PPDB ${ppdbTitle || 'Sekolah'}`);
-      
+
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
         setAlurList(activeConfig.ppdb_alur_config);
       }
@@ -675,7 +683,7 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_majors_config && Array.isArray(activeConfig.ppdb_majors_config)) {
         const dbMajors = activeConfig.ppdb_majors_config;
         const mergedMajors: MajorItem[] = [];
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dbMajors.forEach((dbMajor: any) => {
           const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
@@ -692,7 +700,6 @@ export default function KelolaUserInterface() {
             gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : []
           });
         });
-        
         setMajorsList(mergedMajors);
       }
       if (activeConfig.ppdb_gelombang_config) {
@@ -726,8 +733,10 @@ export default function KelolaUserInterface() {
 
   useEffect(() => {
     if (ppdbTitle && ppdbTitle !== "PPDB SMK TB") {
-      setSchoolTitle(prev => prev === "Portal PPDB" || prev.startsWith("PPDB PPDB") ? `PPDB ${ppdbTitle}` : prev);
-      setHeroTitleSub(prev => prev === "Portal PPDB Online" || prev.startsWith("Portal PPDB PPDB") ? `Portal PPDB ${ppdbTitle}` : prev);
+      requestAnimationFrame(() => {
+        setSchoolTitle(prev => prev === "Portal PPDB" || prev.startsWith("PPDB PPDB") ? `PPDB ${ppdbTitle}` : prev);
+        setHeroTitleSub(prev => prev === "Portal PPDB Online" || prev.startsWith("Portal PPDB PPDB") ? `Portal PPDB ${ppdbTitle}` : prev);
+      });
     }
   }, [ppdbTitle]);
 
@@ -757,7 +766,7 @@ export default function KelolaUserInterface() {
   const processMediaFile = async (file: File, type: "logo" | "banner" | "video" | "gallery-0" | "gallery-1" | "gallery-2" | "gallery-3") => {
     const isVideo = type === "video";
     const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
-    
+
     if (isVideo) {
       const allowedVideoExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi'];
       if (!file.type.startsWith("video/") && !allowedVideoExts.includes(fileExt)) {
@@ -783,7 +792,7 @@ export default function KelolaUserInterface() {
     try {
       showToastMsg("Mengunggah media ke cloud...", "info");
       const publicUrl = await uploadFileDirect(file, `major_${type}`);
-      
+
       if (editingMajor) {
         setEditingMajor(prev => {
           if (!prev) return null;
@@ -926,7 +935,7 @@ export default function KelolaUserInterface() {
       };
 
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
-      
+
       if (isDemoMode) {
         setLoading(false);
         // Save to localStorage so that daftar/page.tsx can pick it up in offline/demo mode
@@ -996,16 +1005,15 @@ export default function KelolaUserInterface() {
     }
   };
 
-
   const handleSchoolLogoChange = async (file: File) => {
     try {
       showToastMsg("Mengompresi logo...");
       const result = await compressImage(file, 400, 400, 0.85);
-      
+
       showToastMsg("Mengunggah logo ke cloud...", "info");
       const compressedFile = base64ToFile(result.base64, file.name);
       const publicUrl = await uploadFileDirect(compressedFile, 'school_logo');
-      
+
       setSchoolLogo(publicUrl);
       showToastMsg(`✨ Logo berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
     } catch (_e) {
@@ -1050,7 +1058,7 @@ export default function KelolaUserInterface() {
   const handleToggleLandingPageStatus = async () => {
     const nextStatus = !isLandingPageActive;
     const statusText = nextStatus ? "DIBUKA (PUBLIK)" : "DITUTUP (DRAFT / MAINTENANCE)";
-    
+
     Swal.fire({
       title: `Ubah Status Landing Page ke ${nextStatus ? 'Buka' : 'Tutup'}?`,
       text: nextStatus 
@@ -1108,7 +1116,7 @@ export default function KelolaUserInterface() {
 
   return (
     <div className="space-y-6 text-left animate-in fade-in duration-500 relative">
-      
+
       {/* Toast Alert */}
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border text-xs font-bold animate-in slide-in-from-bottom duration-300 ${
@@ -1125,7 +1133,7 @@ export default function KelolaUserInterface() {
 
       {/* Loading Overlay */}
       {saving && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm w-full mx-4">
             <svg className="animate-spin h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx={12} cy={12} r={10} stroke="currentColor" strokeWidth={4} />
@@ -1140,7 +1148,7 @@ export default function KelolaUserInterface() {
       )}
 
       {/* Header Info Panel */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-all">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-all">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center text-blue-500 border border-blue-100 dark:border-blue-900/40 shrink-0">
             <Palette size={22} />
@@ -1150,7 +1158,7 @@ export default function KelolaUserInterface() {
             <p className="text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider mt-0.5">Edit Semua Foto, Teks, Jurusan, dan Formulir PPDB secara Real-time</p>
           </div>
         </div>
-        
+
         <div className="flex gap-2.5">
           {mounted && typeof window !== "undefined" && localStorage.getItem(draftKey) && (
             <button
@@ -1168,13 +1176,13 @@ export default function KelolaUserInterface() {
                   fetchCurrentConfig();
                 }
               }}
-              className="px-4 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 cursor-pointer"
+              className="px-4 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 cursor-pointer"
             >
               <RotateCcw size={14} />
               <span>Reset Draf</span>
             </button>
           )}
-          
+
           <button
             onClick={() => setShowConfirmModal(true)}
             className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer"
@@ -1185,43 +1193,35 @@ export default function KelolaUserInterface() {
         </div>
       </div>
 
-      {/* Landing Page & Subdomain Public Status Control Banner */}
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold shrink-0 ${
-            isLandingPageActive
-              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
-              : "bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-800"
-          }`}>
-            <Globe className="w-5 h-5" />
-          </div>
+      {/* Website Preview Link & Toggle Banner */}
+      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-linear-to-r from-blue-50/60 to-indigo-50/60 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-100/80 dark:border-blue-900/40 rounded-3xl p-5 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className={`w-3 h-3 rounded-full shrink-0 ${isLandingPageActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-black text-slate-800 dark:text-white">
-                Status Landing Page / Subdomain Sekolah
-              </h3>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Status Landing Page:</h3>
+              <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
                 isLandingPageActive 
-                  ? "bg-emerald-500 text-white" 
-                  : "bg-rose-500 text-white"
+                  ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800" 
+                  : "bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
               }`}>
-                {isLandingPageActive ? "PUBLIK (LIVE)" : "DITUTUP (DRAFT)"}
+                {isLandingPageActive ? "Aktif & Dapat Diakses Publik" : "Nonaktif (Under Maintenance)"}
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
               {isLandingPageActive 
-                ? "Landing page publik aktif. Pengunjung dapat mengakses portal & mendaftar."
-                : "Landing page ditutup sementara. Pengunjung akan melihat informasi pemeliharaan."}
+                ? "Calon peserta didik dapat melihat landing page dan mengisi formulir pendaftaran."
+                : "Akses pendaftaran ditutup sementara. Pengunjung akan melihat halaman pemeliharaan sistem."}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-2 shrink-0">
           <a
-            href={`/${slug || "demo"}`}
+            href={`/${params?.school_slug}`}
             target="_blank"
-            rel="noreferrer"
-            className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+            rel="noopener noreferrer"
+            className="flex-1 md:flex-none px-4 py-2.5 rounded-xl font-bold text-xs bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" />
             <span>Lihat Website</span>
@@ -1241,7 +1241,7 @@ export default function KelolaUserInterface() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/70 dark:border-slate-800/40 flex flex-wrap gap-1 mb-6 transition-all duration-300">
+      <div className="bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/70 flex flex-wrap gap-1 mb-6 transition-all duration-300">
         {[
           { id: "hero", label: "General/Umum", icon: FileText },
           { id: "majors", label: "Program Keahlian (Jurusan)", icon: GraduationCap },
@@ -1267,7 +1267,7 @@ export default function KelolaUserInterface() {
               } ${
                 activeTab === tab.id
                   ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border-slate-200 dark:border-slate-700"
-                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-900/80"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-900/80"
               }`}
             >
               <Icon size={14} />
@@ -1278,7 +1278,7 @@ export default function KelolaUserInterface() {
       </div>
 
       {/* Main Tab Content */}
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors">
         {loading ? (
           <div className="py-20 flex flex-col items-center gap-3">
             <svg className="animate-spin h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24">
@@ -1319,10 +1319,11 @@ export default function KelolaUserInterface() {
                       }}
                     >
                       {schoolLogo && (schoolLogo.startsWith('data:image/') || schoolLogo.startsWith('https://')) ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={schoolLogo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain rounded-lg" />
                       ) : (
                         <div className="text-center text-slate-500 dark:text-slate-400">
-                          <Upload size={24} className="mx-auto mb-2 text-slate-400 dark:text-slate-500 dark:text-slate-400" />
+                          <Upload size={24} className="mx-auto mb-2 text-slate-400 dark:text-slate-500" />
                           <span className="text-xs font-medium">Upload Logo</span>
                         </div>
                       )}
@@ -1437,7 +1438,7 @@ export default function KelolaUserInterface() {
                       💡 <strong>Cara ambil:</strong> Buka Google Maps ➔ Cari lokasi sekolah ➔ Klik tombol <strong>Bagikan (Share)</strong> ➔ Pilih tab <strong>Sematkan peta (Embed a map)</strong> ➔ Klik <strong>Salin HTML</strong> lalu tempel (paste) langsung ke kotak ini.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nomor Telepon Sekolah</label>
                     <input
@@ -1491,7 +1492,6 @@ export default function KelolaUserInterface() {
                       className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors resize-y"
                     />
                   </div>
-
 
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Link Grup WhatsApp PPDB Calon Siswa</label>
@@ -1576,7 +1576,7 @@ export default function KelolaUserInterface() {
                         </h3>
                         <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Klik salah satu kartu jurusan untuk membuka Workspace Editor penuh secara inline.</p>
                       </div>
-                      
+
                       <button
                         type="button"
                         onClick={() => {
@@ -1595,13 +1595,14 @@ export default function KelolaUserInterface() {
                         <div
                           key={major.code}
                           onClick={() => setEditingMajor({ ...major })}
-                          className="bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/65 dark:border-white/5 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between group relative"
+                          className="bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/65 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between group relative"
                         >
                           <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: major.color }} />
-                          
+
                           {/* Card Preview Banner Frame */}
-                          <div className="h-40 w-full relative overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center border-b border-slate-200 dark:border-slate-800/60 dark:border-white/5">
+                          <div className="h-40 w-full relative overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center border-b border-slate-200 dark:border-slate-800/60">
                             {major.banner ? (
+                              /* eslint-disable-next-line @next/next/no-img-element */
                               <img 
                                 src={DOMPurify.sanitize(sanitizeSrc(major.banner))} 
                                 alt={major.title} 
@@ -1613,7 +1614,7 @@ export default function KelolaUserInterface() {
                                 <span className="text-[8px] font-black uppercase">Tanpa Banner</span>
                               </div>
                             )}
-                            
+
                             {/* Badges Overlay */}
                             <div className="absolute top-3 left-3 px-3 py-1 text-[9px] font-black uppercase text-white rounded-full shadow" style={{ backgroundColor: major.color }}>
                               {major.code}
@@ -1638,7 +1639,7 @@ export default function KelolaUserInterface() {
                                   showToastMsg(`Jurusan ${major.code} dihapus secara lokal. Silakan klik "Simpan Perubahan" di pojok kanan atas untuk menerapkannya secara permanen.`, "info");
                                 }
                               }}
-                              className="absolute top-3 right-3 p-2 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl shadow-lg border border-rose-500/30 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300 transform translate-y-[-4px] group-hover:translate-y-0 z-10 hover:scale-105 cursor-pointer"
+                              className="absolute top-3 right-3 p-2 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl shadow-lg border border-rose-500/30 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300 transform -translate-y-1 group-hover:translate-y-0 z-10 hover:scale-105 cursor-pointer"
                               title="Hapus Jurusan"
                             >
                               <Trash2 size={13} />
@@ -1646,6 +1647,7 @@ export default function KelolaUserInterface() {
 
                             <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl overflow-hidden bg-white dark:bg-[#0f172a]/90 p-0.5 border shadow border-white/20">
                               {major.logo ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
                                 <img src={DOMPurify.sanitize(sanitizeSrc(major.logo))} alt="" className="w-full h-full object-cover rounded-lg" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-400">
@@ -1661,11 +1663,11 @@ export default function KelolaUserInterface() {
                               <h4 className="font-extrabold text-sm text-slate-800 dark:text-white mb-2 group-hover:text-blue-500 transition-colors">
                                 {major.title}
                               </h4>
-                              <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed font-semibold">
+                              <p className="text-xs text-slate-400 dark:text-slate-500 line-clamp-3 leading-relaxed font-semibold">
                                 {major.desc}
                               </p>
                             </div>
-                            
+
                             <div className="mt-4 flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-blue-500 group-hover:text-blue-600">
                               <span>Ubah Program Studi</span>
                               <Eye size={12} className="group-hover:translate-x-1 transition-transform" />
@@ -1684,7 +1686,7 @@ export default function KelolaUserInterface() {
                           setEditingMajor(null);
                           setIsNewMajor(false);
                         }}
-                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-400 transition-colors cursor-pointer"
+                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-400 transition-colors cursor-pointer"
                       >
                         <ArrowLeft size={12} />
                         <span>Kembali ke List Kartu</span>
@@ -1701,18 +1703,19 @@ export default function KelolaUserInterface() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                       {/* Left: General & Media Uploaders */}
                       <div className="lg:col-span-1 space-y-6">
-                        
+
                         {/* 2.1 Logo Drag & Drop - Custom Adjusted Size as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 p-5 rounded-3xl space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Logo Kompetensi</span>
                               <span className="text-[8px] font-bold text-slate-400 uppercase">Akan tampil di badge lingkar beranda</span>
                             </div>
-                            
+
                             {/* Adjusted circular logo size display as requested */}
                             <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 border shadow p-0.5 flex items-center justify-center text-slate-400">
                               {editingMajor.logo ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
                                 <img src={DOMPurify.sanitize(sanitizeSrc(editingMajor.logo))} alt="" className="w-full h-full object-cover rounded-xl" />
                               ) : (
                                 <GraduationCap size={20} />
@@ -1764,7 +1767,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.2 Banner Image Drag & Drop - Custom Backdrop cue */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 p-5 rounded-3xl space-y-3">
                           <div>
                             <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Banner Utama Unsplash</span>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">Tampil di header visual detail halaman</span>
@@ -1814,7 +1817,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.3 Video Upload Picker - Local File Explorer Uploader + Preview Player as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-5 rounded-3xl space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 p-5 rounded-3xl space-y-3">
                           <div>
                             <span className="text-[9px] uppercase font-black tracking-widest text-slate-400 block">Video Profil Jurusan</span>
                             <span className="text-[8px] font-bold text-slate-400 uppercase">Upload dari file explorer (Maks. 15MB MP4/WebM)</span>
@@ -1875,11 +1878,11 @@ export default function KelolaUserInterface() {
 
                       {/* Right: Core Fields, Careers, Facilities, Gallery */}
                       <div className="lg:col-span-2 space-y-6">
-                        
+
                         {/* 2.4 General Texts */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">Informasi Umum</h4>
-                          
+
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                               <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Kode Jurusan (e.g. RPL, TJKT)</label>
@@ -1934,7 +1937,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.5 Dynamic Gallery Slots - All 4 unsplash photos are completely editable from File Explorer with faded background cue as requested */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 p-6 rounded-3xl space-y-4">
                           <div>
                             <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">Galeri Aktivitas (4 Foto &amp; Caption)</h4>
                             <span className="text-[8px] text-slate-400 font-bold block mt-1 uppercase">Ganti foto standard Unsplash menggunakan File Explorer Anda secara visual</span>
@@ -1944,10 +1947,10 @@ export default function KelolaUserInterface() {
                             {[0, 1, 2, 3].map((slotIdx) => {
                               const galItem = editingMajor.gallery[slotIdx] || { url: "", caption: "" };
                               const elementId = `gallery-${slotIdx}`;
-                              
+
                               return (
-                                <div key={slotIdx} className="border border-slate-200 dark:border-slate-800/60 dark:border-white/5 p-4.5 rounded-2xl bg-white dark:bg-[#0f172a] flex flex-col justify-between gap-3 shadow-sm">
-                                  
+                                <div key={slotIdx} className="border border-slate-200 dark:border-slate-800/60 p-4.5 rounded-2xl bg-white dark:bg-[#0f172a] flex flex-col justify-between gap-3 shadow-sm">
+
                                   {/* Faded logo/photo backdrop dropzone box */}
                                   <div
                                     onDragEnter={(e) => handleDragState(e, elementId, true)}
@@ -1985,7 +1988,7 @@ export default function KelolaUserInterface() {
                                       }}
                                       className="hidden"
                                     />
-                                    
+
                                     {/* Transparent backdrop overlay */}
                                     <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-[1px] opacity-80 group-hover:opacity-90 transition-opacity flex flex-col items-center justify-center text-white p-2">
                                       <ImageIcon size={18} className="text-blue-400 mb-1 animate-pulse" />
@@ -2013,7 +2016,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.6 Interactive Careers (4 slots) */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
                             Peluang Kerja / Karir Lulusan (4 Item)
                           </h4>
@@ -2021,9 +2024,9 @@ export default function KelolaUserInterface() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {[0, 1, 2, 3].map((idx) => {
                               const career = editingMajor.careers[idx] || { title: "", desc: "" };
-                              
+
                               return (
-                                <div key={idx} className="p-4 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 bg-white dark:bg-[#0f172a] rounded-2xl space-y-2">
+                                <div key={idx} className="p-4 border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-[#0f172a] rounded-2xl space-y-2">
                                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Karir Lulusan #{idx+1}</span>
                                   <input
                                     type="text"
@@ -2056,7 +2059,7 @@ export default function KelolaUserInterface() {
                         </div>
 
                         {/* 2.7 Interactive Laboratory Facilities */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 dark:border-white/5 p-6 rounded-3xl space-y-4">
+                        <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/50 p-6 rounded-3xl space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
                             Fasilitas Laboratorium &amp; Sarana Utama
                           </h4>
@@ -2127,7 +2130,7 @@ export default function KelolaUserInterface() {
                             showToastMsg("Nama Program Studi wajib diisi.", "error");
                             return;
                           }
-                          
+
                           if (isNewMajor) {
                             const exists = majorsList.some(m => m.code.toUpperCase() === editingMajor.code.toUpperCase());
                             if (exists) {
@@ -2139,7 +2142,7 @@ export default function KelolaUserInterface() {
                           } else {
                             setMajorsList(prev => prev.map(m => m.code === editingMajor.code ? editingMajor : m));
                           }
-                          
+
                           const savedCode = editingMajor.code;
                           setEditingMajor(null);
                           showToastMsg(`Workspace ${savedCode} tersimpan secara lokal. Silakan klik "Simpan Perubahan" di pojok kanan atas untuk menerapkannya secara permanen.`, "success");
@@ -2170,7 +2173,7 @@ export default function KelolaUserInterface() {
 
                   <button
                     onClick={handleAddAlur}
-                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
                   >
                     <Plus size={14} />
                     <span>Langkah Baru</span>
@@ -2181,7 +2184,7 @@ export default function KelolaUserInterface() {
                   {alurList.map((item, idx) => (
                     <div 
                       key={item.id}
-                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-5 flex items-start gap-4 transition-all"
+                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 rounded-3xl p-5 flex items-start gap-4 transition-all"
                     >
                       <div className="w-10 h-10 rounded-full bg-blue-500 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow shadow-blue-500/10">
                         {idx + 1}
@@ -2214,7 +2217,7 @@ export default function KelolaUserInterface() {
                         <button
                           onClick={() => handleMoveAlur(idx, "up")}
                           disabled={idx === 0}
-                          className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-[#1e293b] dark:border-white/5 dark:hover:bg-slate-900 transition-all ${
+                          className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-900 transition-all ${
                             idx === 0 ? "opacity-30 cursor-not-allowed" : ""
                           }`}
                         >
@@ -2223,7 +2226,7 @@ export default function KelolaUserInterface() {
                         <button
                           onClick={() => handleMoveAlur(idx, "down")}
                           disabled={idx === alurList.length - 1}
-                          className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-[#1e293b] dark:border-white/5 dark:hover:bg-slate-900 transition-all ${
+                          className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-900 transition-all ${
                             idx === alurList.length - 1 ? "opacity-30 cursor-not-allowed" : ""
                           }`}
                         >
@@ -2305,7 +2308,7 @@ export default function KelolaUserInterface() {
                     </button>
                   </div>
 
-                  <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800/60 dark:border-white/5">
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800/60">
                     <table className="w-full text-left text-xs">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-[#020617]/60 border-b border-slate-200 dark:border-white/5">
@@ -2316,7 +2319,7 @@ export default function KelolaUserInterface() {
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                         {Object.entries(fieldsConfigUI).map(([key, cfg]) => (
-                          <tr key={key} className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-colors">
+                          <tr key={key} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                             <td className="px-4 py-2.5">
                               <div>
                                 <span className="font-bold text-slate-800 dark:text-white text-xs">{cfg.label}</span>
@@ -2333,7 +2336,7 @@ export default function KelolaUserInterface() {
                                 title={cfg.active ? 'Nonaktifkan field' : 'Aktifkan field'}
                               >
                                 <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#0f172a] shadow transition-all duration-200 ${
-                                  cfg.active ? 'left-[18px]' : 'left-0.5'
+                                  cfg.active ? 'left-4.5' : 'left-0.5'
                                 }`} />
                               </button>
                             </td>
@@ -2348,7 +2351,7 @@ export default function KelolaUserInterface() {
                                 title={cfg.required ? 'Jadikan opsional' : 'Jadikan wajib'}
                               >
                                 <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#0f172a] shadow transition-all duration-200 ${
-                                  cfg.required && cfg.active ? 'left-[18px]' : 'left-0.5'
+                                  cfg.required && cfg.active ? 'left-4.5' : 'left-0.5'
                                 }`} />
                               </button>
                             </td>
@@ -2375,7 +2378,7 @@ export default function KelolaUserInterface() {
 
                   <button
                     onClick={handleAddFaq}
-                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
                   >
                     <Plus size={14} />
                     <span>Pertanyaan Baru</span>
@@ -2386,7 +2389,7 @@ export default function KelolaUserInterface() {
                   {faqList.map((item, idx) => (
                     <div 
                       key={idx}
-                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-5 flex items-start gap-4 transition-all"
+                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 rounded-3xl p-5 flex items-start gap-4 transition-all"
                     >
                       <div className="w-10 h-10 rounded-full bg-blue-500 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow shadow-blue-500/10">
                         {idx + 1}
@@ -2419,7 +2422,7 @@ export default function KelolaUserInterface() {
                         <button
                           onClick={() => handleMoveFaq(idx, "up")}
                           disabled={idx === 0}
-                          className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-[#1e293b] dark:border-white/5 dark:hover:bg-slate-900 transition-all ${
+                          className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-900 transition-all ${
                             idx === 0 ? "opacity-30 cursor-not-allowed" : ""
                           }`}
                         >
@@ -2428,7 +2431,7 @@ export default function KelolaUserInterface() {
                         <button
                           onClick={() => handleMoveFaq(idx, "down")}
                           disabled={idx === faqList.length - 1}
-                          className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-[#1e293b] dark:border-white/5 dark:hover:bg-slate-900 transition-all ${
+                          className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-900 transition-all ${
                             idx === faqList.length - 1 ? "opacity-30 cursor-not-allowed" : ""
                           }`}
                         >
@@ -2462,21 +2465,21 @@ export default function KelolaUserInterface() {
                     <Clock size={16} className="text-blue-500" />
                     <span>Riwayat &amp; Catatan Perubahan User Interface</span>
                   </h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Audit log revisi. Klik "Pulihkan" untuk rollback seluruh tampilan landing page dan form ke versi riwayat yang diinginkan</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Audit log revisi. Klik &quot;Pulihkan&quot; untuk rollback seluruh tampilan landing page dan form ke versi riwayat yang diinginkan</p>
                 </div>
 
                 <div className="space-y-4">
                   {revisions.map((rev) => (
                     <div 
                       key={rev.id}
-                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all"
+                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 rounded-3xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-extrabold rounded-lg text-[9px] uppercase tracking-wider">
                             Revisi #{rev.id}
                           </span>
-                          <span className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-extrabold uppercase">
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase">
                             Oleh: @{rev.changed_by}
                           </span>
                         </div>
@@ -2523,7 +2526,7 @@ export default function KelolaUserInterface() {
 
                   <button
                     onClick={() => setBankConfigList(prev => [...prev, { bankName: "", accountNumber: "", accountHolder: "" }])}
-                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
                   >
                     <Plus size={14} />
                     <span>Tambah Rekening Bank</span>
@@ -2534,7 +2537,7 @@ export default function KelolaUserInterface() {
                   {bankConfigList.map((bank, idx) => (
                     <div 
                       key={idx}
-                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300"
+                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 relative overflow-hidden transition-all duration-300"
                     >
                       <div className="absolute top-4 right-4 flex items-center gap-2">
                         <button
@@ -2625,7 +2628,7 @@ export default function KelolaUserInterface() {
                       const nextId = partnersList.length > 0 ? Math.max(...partnersList.map(p => p.id)) + 1 : 1;
                       setPartnersList(prev => [{ id: nextId, name: "Partner Baru", logo: "", url: "#", h: "h-12" }, ...prev]);
                     }}
-                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
                   >
                     <Plus size={14} />
                     <span>Tambah Partner</span>
@@ -2636,7 +2639,7 @@ export default function KelolaUserInterface() {
                   {partnersList.map((partner, _idx) => (
                     <div 
                       key={partner.id}
-                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-5 relative overflow-hidden transition-all duration-300"
+                      className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 rounded-3xl p-5 relative overflow-hidden transition-all duration-300"
                     >
                       <div className="absolute top-4 right-4 flex items-center gap-2">
                         <button
@@ -2652,12 +2655,13 @@ export default function KelolaUserInterface() {
                         <div className="flex flex-col items-center gap-3">
                           <div className="w-20 h-20 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center p-2">
                             {partner.logo ? (
+                              /* eslint-disable-next-line @next/next/no-img-element */
                               <img src={DOMPurify.sanitize(sanitizeSrc(partner.logo) || "") || undefined} alt="" className="max-w-full max-h-full object-contain" />
                             ) : (
                               <ImageIcon size={24} className="text-slate-300" />
                             )}
                           </div>
-                          
+
                           <input
                             type="text"
                             value={partner.logo}
@@ -2716,7 +2720,7 @@ export default function KelolaUserInterface() {
                             <option value="h-20">Raksasa (h-20)</option>
                           </select>
                         </div>
-                        
+
                       </div>
                     </div>
                   ))}
@@ -2735,7 +2739,7 @@ export default function KelolaUserInterface() {
 
       {/* CONFIRMATION & NOTE MODAL */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-110 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <form 
             onSubmit={handleSaveAll}
             className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200 space-y-4"
@@ -2761,7 +2765,7 @@ export default function KelolaUserInterface() {
                 rows={3}
                 required
                 placeholder="Contoh: Mengubah judul utama, memperbarui logo RPL, dan memperbarui alur langkah 3"
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-none"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-none"
               />
             </div>
 

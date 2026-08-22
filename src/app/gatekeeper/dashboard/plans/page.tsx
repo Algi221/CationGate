@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Wallet, Plus, Edit2, Trash2, CheckCircle2, XCircle, Settings, ChevronRight
+  Plus, Edit2, Trash2, CheckCircle2, XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Swal from "sweetalert2";
@@ -16,7 +16,6 @@ interface Plan {
   is_active: boolean;
 }
 
-/** Format number to "Rp 750.000" style with dots */
 function formatRupiahDisplay(num: number): string {
   return `Rp ${num.toLocaleString('id-ID')}`;
 }
@@ -40,7 +39,7 @@ export default function GatekeeperPlansPage() {
   // Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
-  
+
   // Form Fields
   const [name, setName] = useState("");
   const [priceYearly, setPriceYearly] = useState(0);
@@ -54,13 +53,13 @@ export default function GatekeeperPlansPage() {
       const token = typeof window !== 'undefined' 
         ? (localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token"))
         : null;
-      
+
       let res = await fetch("/api/gatekeeper/plans", {
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
       });
-      
+
       if (!res.ok) {
         // Fallback to saas public plans route if gatekeeper endpoint returns 401/500
         res = await fetch("/api/saas/plans");
@@ -240,7 +239,7 @@ export default function GatekeeperPlansPage() {
                 </div>
               )}
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{plan.name}</h3>
-              
+
               <div className="mt-4 mb-6">
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-black text-slate-900 dark:text-white">{formatRupiahDisplay(plan.price_yearly)}</span>
@@ -288,7 +287,7 @@ export default function GatekeeperPlansPage() {
                 <XCircle size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-5">
               {/* Nama Paket */}
               <div>
@@ -354,7 +353,7 @@ export default function GatekeeperPlansPage() {
                 </label>
               </div>
             </div>
-            
+
             <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50 sticky bottom-0">
               <Button variant="outline" onClick={() => setIsModalOpen(false)} className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
                 Batal

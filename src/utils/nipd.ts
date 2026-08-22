@@ -12,27 +12,25 @@ export const getMajorOrderScore = (major: string) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const generateNipdMap = (applicants: any[]) => {
-  // Only process approved/active students for NIPD
+
   const activeStudents = applicants.filter(a => a.status === 'Approved');
 
-  // Sort by Major Order, then Alphabetically by Name
   const sortedStudents = [...activeStudents].sort((a, b) => {
     const m1 = getMajorOrderScore(a.jurusan || a.jurusan_1 || a.jurusan1 || "");
     const m2 = getMajorOrderScore(b.jurusan || b.jurusan_1 || b.jurusan1 || "");
-    
+
     if (m1 !== m2) return m1 - m2;
-    
+
     return (a.nama || "").localeCompare(b.nama || "");
   });
 
   const nipdMap = new Map<number, string>();
-  
+
   sortedStudents.forEach((student, index) => {
     const sequenceNumber = index + 1;
-    // Format sequence to 3 digits minimum
+
     const paddedSequence = sequenceNumber.toString().padStart(3, "0");
-    
-    // Get year prefix from periode (e.g., 2026-2027 -> 2627)
+
     let yearPrefix = "2627";
     try {
       if (student.periode) {

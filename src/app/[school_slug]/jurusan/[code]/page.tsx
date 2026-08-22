@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
+import Image from "next/image";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import { useParams } from "next/navigation";
 import dompurify from "dompurify";
@@ -13,7 +13,7 @@ const sanitizeUrl = (url: string | undefined | null): string | null => {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
     }) || null;
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 };
@@ -33,10 +33,8 @@ import {
   Briefcase, 
   Award, 
   Sparkles, 
-  Cpu, 
-  Layers, 
-  Video, 
   Palette, 
+  Video, 
   ArrowRight,
   Check
 } from "lucide-react";
@@ -70,11 +68,18 @@ interface MajorDetail {
   glowColor: string;
   logo: string;
   banner: string;
+  video?: string;
   syllabus: SyllabusItem[];
   careers: CareerItem[];
   facilities: string[];
   gallery: GalleryItem[];
   partners: string;
+}
+
+interface KuotaItem {
+  key: string;
+  target: number;
+  jumlah: number;
 }
 
 function hexToRgb(hex: string): string {
@@ -370,59 +375,61 @@ export default function MajorPage() {
   const rawCode = params?.code ? params.code.toString().toLowerCase() : "";
   const code = rawCode === "anm" ? "an" : rawCode;
   const majorKeys = ["rpl", "tjkt", "dkv", "bc", "an", "te"];
-  const currentIndex = majorKeys.indexOf(code);
-  const [nextCode, setNextCode] = useState(() => {
+  const _currentIndex = majorKeys.indexOf(code);
+  const [nextCode, _setNextCode] = useState(() => {
     const otherKeys = majorKeys.filter(k => k !== code);
     return otherKeys[Math.floor(Math.random() * otherKeys.length)] || "rpl";
   });
 
-  const [major, setMajor] = useState<any>(null);
-  const [nextMajor, setNextMajor] = useState<any>(null);
+  const [major, setMajor] = useState<MajorDetail | null>(null);
+  const [nextMajor, setNextMajor] = useState<MajorDetail | null>(null);
   const [isDark, setIsDark] = useState(false);
-  const [kuotaData, setKuotaData] = useState<any[] | null>(null);
+  const [kuotaData, setKuotaData] = useState<KuotaItem[] | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("ppdb-theme");
     if (saved === "dark") {
       document.documentElement.classList.add("dark");
-      setIsDark(true);
+      setTimeout(() => setIsDark(true), 0);
     }
   }, []);
 
   useEffect(() => {
-    if (code && majorsData[code]) {
-      setMajor({ ...majorsData[code] });
-    } else if (code) {
-      setMajor({
-        code: code.toUpperCase(),
-        title: code.toUpperCase(),
-        alias: code.toUpperCase(),
-        subtitle: "Program Keahlian Baru",
-        tagline: "Coding the Future, Building Creative Solutions.",
-        desc: "",
-        color: "from-blue-600 to-indigo-600",
-        accentColor: "#0066ff",
-        bgAccent: "bg-blue-500/10 dark:bg-blue-500/20",
-        textAccent: "text-blue-600 dark:text-blue-400",
-        glowColor: "rgba(0,102,255,0.15)",
-        logo: "/logo_smktb.png",
-        banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
-        syllabus: [
-          { subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi baru." }
-        ],
-        careers: [
-          { title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }
-        ],
-        facilities: [
-          "Laboratorium Praktikum Baru"
-        ],
-        gallery: [],
-        partners: "Mitra Industri SMK Taruna Bhakti"
-      });
-    }
-    if (nextCode && majorsData[nextCode]) {
-      setNextMajor({ ...majorsData[nextCode] });
-    }
+    setTimeout(() => {
+      if (code && majorsData[code]) {
+        setMajor({ ...majorsData[code] });
+      } else if (code) {
+        setMajor({
+          code: code.toUpperCase(),
+          title: code.toUpperCase(),
+          alias: code.toUpperCase(),
+          subtitle: "Program Keahlian Baru",
+          tagline: "Coding the Future, Building Creative Solutions.",
+          desc: "",
+          color: "from-blue-600 to-indigo-600",
+          accentColor: "#0066ff",
+          bgAccent: "bg-blue-500/10 dark:bg-blue-500/20",
+          textAccent: "text-blue-600 dark:text-blue-400",
+          glowColor: "rgba(0,102,255,0.15)",
+          logo: "/logo_smktb.png",
+          banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
+          syllabus: [
+            { subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi baru." }
+          ],
+          careers: [
+            { title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }
+          ],
+          facilities: [
+            "Laboratorium Praktikum Baru"
+          ],
+          gallery: [],
+          partners: "Mitra Industri SMK Taruna Bhakti"
+        });
+      }
+      if (nextCode && majorsData[nextCode]) {
+        setNextMajor({ ...majorsData[nextCode] });
+      }
+    }, 0);
   }, [code, nextCode]);
 
   useEffect(() => {
@@ -433,47 +440,48 @@ export default function MajorPage() {
         if (json.success && json.data) {
           const config = json.data;
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-            const found = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === code || (m.code.toLowerCase() === "anm" && code === "an"));
+            const found = config.ppdb_majors_config.find((m: Record<string, unknown>) => (m.code as string).toLowerCase() === code || ((m.code as string).toLowerCase() === "anm" && code === "an"));
             if (found) {
-              setMajor((prev: any) => {
-                const base = prev || {
-                  code: found.code,
-                  title: found.title || found.code,
-                  alias: found.code,
-                  subtitle: found.title || found.code,
+              setMajor((prev: MajorDetail | null) => {
+                const base: MajorDetail = prev || {
+                  code: found.code as string,
+                  title: (found.title as string) || (found.code as string),
+                  alias: found.code as string,
+                  subtitle: (found.title as string) || (found.code as string),
                   tagline: "Coding the Future, Building Creative Solutions.",
-                  desc: found.desc || "",
+                  desc: (found.desc as string) || "",
                   color: "from-blue-600 to-indigo-600",
-                  accentColor: found.color || "#0066ff",
+                  accentColor: (found.color as string) || "#0066ff",
                   bgAccent: "bg-blue-500/10 dark:bg-blue-500/20",
                   textAccent: "text-blue-600 dark:text-blue-400",
                   glowColor: "rgba(0,102,255,0.15)",
-                  logo: found.logo || "/logo_smktb.png",
-                  banner: found.banner || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
+                  logo: (found.logo as string) || "/logo_smktb.png",
+                  banner: (found.banner as string) || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
+                  video: (found.video as string) || undefined,
                   syllabus: [{ subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi." }],
-                  careers: Array.isArray(found.careers) ? found.careers : [{ title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }],
-                  facilities: Array.isArray(found.facilities) ? found.facilities : ["Laboratorium Praktikum Baru"],
-                  gallery: Array.isArray(found.gallery) ? found.gallery : [],
+                  careers: Array.isArray(found.careers) ? (found.careers as CareerItem[]) : [{ title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }],
+                  facilities: Array.isArray(found.facilities) ? (found.facilities as string[]) : ["Laboratorium Praktikum Baru"],
+                  gallery: Array.isArray(found.gallery) ? (found.gallery as GalleryItem[]) : [],
                   partners: "Mitra Industri SMK Taruna Bhakti"
                 };
                 return {
                   ...base,
-                  title: found.title || base.title,
-                  desc: found.desc || base.desc,
-                  accentColor: found.color || base.accentColor,
-                  logo: found.logo || base.logo,
-                  banner: found.banner || base.banner,
-                  video: found.video || base.video,
-                  careers: Array.isArray(found.careers) ? found.careers : base.careers,
-                  facilities: Array.isArray(found.facilities) ? found.facilities : base.facilities,
-                  gallery: Array.isArray(found.gallery) ? found.gallery : base.gallery
+                  title: (found.title as string) || base.title,
+                  desc: (found.desc as string) || base.desc,
+                  accentColor: (found.color as string) || base.accentColor,
+                  logo: (found.logo as string) || base.logo,
+                  banner: (found.banner as string) || base.banner,
+                  video: (found.video as string) || base.video,
+                  careers: Array.isArray(found.careers) ? (found.careers as CareerItem[]) : base.careers,
+                  facilities: Array.isArray(found.facilities) ? (found.facilities as string[]) : base.facilities,
+                  gallery: Array.isArray(found.gallery) ? (found.gallery as GalleryItem[]) : base.gallery
                 };
               });
             }
 
-            const foundNext = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === nextCode || (m.code.toLowerCase() === "anm" && nextCode === "an"));
+            const foundNext = config.ppdb_majors_config.find((m: Record<string, unknown>) => (m.code as string).toLowerCase() === nextCode || ((m.code as string).toLowerCase() === "anm" && nextCode === "an"));
             if (foundNext) {
-              setNextMajor((prev: any) => {
+              setNextMajor((prev: MajorDetail | null) => {
                 if (!prev) return null;
                 return {
                   ...prev,
@@ -530,8 +538,8 @@ export default function MajorPage() {
           <div className="bg-glow bg-glow-1"></div>
           <div className="bg-glow bg-glow-2"></div>
         </div>
-        
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 p-10 rounded-[32px] max-w-md w-full text-center shadow-2xl relative z-10">
+
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 p-10 rounded-4xl max-w-md w-full text-center shadow-2xl relative z-10">
           <div className="w-20 h-20 bg-rose-500/10 dark:bg-rose-500/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Palette size={40} />
           </div>
@@ -612,7 +620,7 @@ export default function MajorPage() {
           color: var(--next-accent) !important;
         }
       `}</style>
-      
+
       {/* Floating Background Glow System */}
       <div className="absolute inset-0 bg-glow-container">
         <div 
@@ -627,7 +635,7 @@ export default function MajorPage() {
       <div className="fixed top-6 left-6 z-50">
         <Link 
           href={`/${params.school_slug}`} 
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -637,31 +645,35 @@ export default function MajorPage() {
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all" 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all" 
           title={isDark ? 'Mode Terang' : 'Mode Gelap'}
         >
-          {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
+          {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-700" />}
         </button>
       </div>
 
       {/* HERO SECTION - Premium Branding */}
-      <main className="flex-grow w-full">
+      <main className="grow w-full">
       <section className="pt-32 pb-16 px-6 max-w-6xl mx-auto w-full relative z-10 flex flex-col lg:flex-row gap-12 items-center">
-        
+
         {/* Left Copy Column */}
         <div className="w-full lg:w-1/2 text-left space-y-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md">
-              <img 
-                src={sanitizeSrc(major.logo)} 
+              <Image 
+                src={sanitizeSrc(major.logo) || "/icon.png"} 
                 alt={`Logo ${major.code}`} 
+                width={56}
+                height={56}
+                unoptimized
                 className="w-14 h-14 object-contain drop-shadow-sm"
-                onError={(e: any) => { 
-                  e.target.style.display = "none"; 
-                  const parent = e.target.parentElement;
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => { 
+                  const target = e.currentTarget;
+                  target.style.display = "none"; 
+                  const parent = target.parentElement;
                   if (parent) {
                     parent.style.backgroundImage = 'linear-gradient(135deg, var(--major-accent), var(--major-darker))';
-                    parent.querySelectorAll('.fallback-alias').forEach((el: any) => el.remove());
+                    parent.querySelectorAll('.fallback-alias').forEach((el: Element) => el.remove());
                     const fallbackDiv = document.createElement('div');
                     fallbackDiv.style.color = 'white';
                     fallbackDiv.style.display = 'flex';
@@ -704,16 +716,16 @@ export default function MajorPage() {
           <div className="pt-2 flex flex-wrap gap-4 items-center">
             {(() => {
               let isFull = false;
-              let remaining = -1;
-              let target = 0;
-              let jumlah = 0;
+              let _remaining = -1;
+              let _target = 0;
+              let _jumlah = 0;
               if (kuotaData && major) {
-                const k = kuotaData.find((k: any) => k.key === major.title);
+                const k = kuotaData.find((item: KuotaItem) => item.key === major.title);
                 if (k && k.target > 0) {
                   isFull = k.jumlah >= k.target;
-                  remaining = k.target - k.jumlah;
-                  target = k.target;
-                  jumlah = k.jumlah;
+                  _remaining = k.target - k.jumlah;
+                  _target = k.target;
+                  _jumlah = k.jumlah;
                 }
               }
 
@@ -721,7 +733,7 @@ export default function MajorPage() {
                 <div className="flex flex-col w-full gap-5 mt-2">
                   <div className="flex flex-wrap items-center gap-4">
 
-                    <Link href={`/${params.school_slug}`} className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 backdrop-blur-md">
+                    <Link href={`/${params.school_slug}`} className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 backdrop-blur-md">
                       <ArrowLeft size={16} /> Lihat Jurusan Lain
                     </Link>
 
@@ -743,12 +755,15 @@ export default function MajorPage() {
         {/* Right Hero Visual Column */}
         <div className="w-full lg:w-1/2 relative group">
           <div className="absolute -inset-1.5 major-gradient-bg rounded-[36px] blur-lg opacity-40 group-hover:opacity-60 transition duration-700 pointer-events-none"></div>
-          
-          <div className="relative bg-white dark:bg-[#0f172a] rounded-[32px] p-3 border border-slate-200 dark:border-slate-800/40 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
-            <img 
-              src={sanitizeSrc(major.banner)} 
+
+          <div className="relative bg-white dark:bg-[#0f172a] rounded-4xl p-3 border border-slate-200 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
+            <Image 
+              src={sanitizeSrc(major.banner) || "/icon.png"} 
               alt={`${major.title} Banner`}
-              className="w-full h-full object-cover rounded-[24px] transform group-hover:scale-[1.02] transition duration-700" 
+              width={800}
+              height={450}
+              unoptimized
+              className="w-full h-full object-cover rounded-3xl transform group-hover:scale-[1.02] transition duration-700" 
             />
           </div>
         </div>
@@ -758,9 +773,9 @@ export default function MajorPage() {
       {/* PROFILE VIDEO SECTION - Rendered only if video exists */}
       {major.video && (
         <section className="py-12 px-6 max-w-5xl mx-auto w-full relative z-10 animate-in fade-in duration-700">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 p-6 md:p-10 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col items-center text-center space-y-6">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 p-6 md:p-10 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col items-center text-center space-y-6">
             <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full major-gradient-bg opacity-10 dark:opacity-25 blur-3xl pointer-events-none"></div>
-            
+
             <div className="space-y-2">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider major-bg-accent major-text-accent">
                 <Video size={12} className="animate-pulse" />
@@ -774,7 +789,7 @@ export default function MajorPage() {
               </p>
             </div>
 
-            <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800/30 dark:border-slate-800 shadow-2xl flex items-center justify-center p-2">
+            <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-2xl flex items-center justify-center p-2">
               {major.video.startsWith("data:video") || major.video.includes(".mp4") || major.video.startsWith("blob:") ? (
                 <video 
                   src={sanitizeSrc(major.video)} 
@@ -797,9 +812,9 @@ export default function MajorPage() {
       )}
 
       {/* CORE SYLLABUS & CURRICULUM SECTION */}
-      <section className="py-20 bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-900/30 relative border-y border-slate-200 dark:border-slate-800/50 dark:border-slate-800">
+      <section className="py-20 bg-slate-100 dark:bg-slate-900/30 relative border-y border-slate-200 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-6">
-          
+
           <div className="text-center mb-16">
             <span className={`inline-block px-3 py-1 bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-xs font-bold uppercase tracking-wider mb-3`}>
               Materi Pembelajaran
@@ -818,12 +833,12 @@ export default function MajorPage() {
                 key={idx} 
                 className="bg-white dark:bg-[#0f172a] border border-white/50 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/20 transition-all duration-300 relative group overflow-hidden"
               >
-                <div className="absolute top-0 left-0 w-full h-[4px] major-gradient-bg opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-300"></div>
-                
+                <div className="absolute top-0 left-0 w-full h-1 major-gradient-bg opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-300"></div>
+
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 major-bg-accent major-text-accent">
                   <BookOpen size={20} />
                 </div>
-                
+
                 <h3 className="text-base font-extrabold text-slate-800 dark:text-white mb-2">
                   {item.subject}
                 </h3>
@@ -839,7 +854,7 @@ export default function MajorPage() {
 
       {/* STUDENT ACTIVITY GALLERY SECTION */}
       <section className="py-20 max-w-6xl mx-auto px-6 relative">
-        
+
         <div className="text-center mb-16">
           <span className={`inline-block px-3 py-1 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 rounded-full text-xs font-bold uppercase tracking-wider mb-3`}>
             Aktivitas Kelas &amp; Praktik
@@ -857,12 +872,15 @@ export default function MajorPage() {
           {major.gallery.map((img, index) => (
             <div 
               key={index} 
-              className="group bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 rounded-3xl p-3 shadow-md hover:shadow-xl transition-all duration-500 relative overflow-hidden"
+              className="group bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-3 shadow-md hover:shadow-xl transition-all duration-500 relative overflow-hidden"
             >
               <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100 dark:bg-[#1e293b]">
-                <img 
+                <Image 
                   src={img.url} 
                   alt={img.caption}
+                  width={400}
+                  height={400}
+                  unoptimized
                   className="w-full h-full object-cover transform group-hover:scale-110 transition duration-700"
                 />
                 <div className="absolute inset-x-2 bottom-2 bg-slate-950/70 dark:bg-slate-950/80 backdrop-blur-md border border-white/10 p-3 rounded-xl transition duration-500 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
@@ -881,9 +899,9 @@ export default function MajorPage() {
       </section>
 
       {/* CAREERS OPPORTUNITY SECTION */}
-      <section className="py-20 bg-slate-100 dark:bg-[#1e293b]/50 dark:bg-slate-900/30 relative border-y border-slate-200 dark:border-slate-800/50 dark:border-slate-800">
+      <section className="py-20 bg-slate-100 dark:bg-slate-900/30 relative border-y border-slate-200 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-6">
-          
+
           <div className="text-center mb-16">
             <span className={`inline-block px-3 py-1 bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-xs font-bold uppercase tracking-wider mb-3`}>
               Masa Depan Karir
@@ -923,7 +941,7 @@ export default function MajorPage() {
       {/* FACILITIES & PARTNERS SECTION */}
       <section className="py-20 max-w-6xl mx-auto px-6 relative">
         <div className="flex flex-col lg:flex-row gap-12">
-          
+
           {/* Facilities Column */}
           <div className="w-full lg:w-1/2 space-y-6">
             <div>
@@ -934,7 +952,7 @@ export default function MajorPage() {
                 Laboratorium Standar Industri
               </h2>
             </div>
-            
+
             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
               Untuk menjamin penyerapan kompetensi secara maksimal, praktikum dilakukan di ruangan laboratorium eksklusif dengan perangkat berspesifikasi tinggi.
             </p>
@@ -943,7 +961,7 @@ export default function MajorPage() {
               {major.facilities.map((fac, idx) => (
                 <div key={idx} className="flex items-center gap-3.5 text-slate-700 dark:text-slate-300 font-semibold text-sm">
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white bg-emerald-500 shadow-sm shrink-0`}>
-                    <Check size={12} className="stroke-[3]" />
+                    <Check size={18} className="shrink-0 stroke-3" style={{ color: accentColor }} />
                   </div>
                   <span>{fac}</span>
                 </div>
@@ -952,7 +970,7 @@ export default function MajorPage() {
           </div>
 
           {/* Partners Column */}
-          <div className="w-full lg:w-1/2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 backdrop-blur-md rounded-[32px] p-8 flex flex-col justify-between shadow-md">
+          <div className="w-full lg:w-1/2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 backdrop-blur-md rounded-4xl p-8 flex flex-col justify-between shadow-md">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                 <Award size={24} />
@@ -982,16 +1000,16 @@ export default function MajorPage() {
       <section className="py-16 max-w-6xl mx-auto px-6 w-full relative z-10">
         <div className="relative major-gradient-bg rounded-[40px] p-10 md:p-16 text-center text-white shadow-2xl overflow-hidden group">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_60%)] pointer-events-none"></div>
-          
+
           <div className="relative z-10 max-w-xl mx-auto space-y-6">
             <span className="inline-block px-3 py-1 bg-white dark:bg-[#0f172a]/20 backdrop-blur-md text-white rounded-full text-xs font-extrabold uppercase tracking-wider">
               PPDB TP. 2026/2027
             </span>
-            
+
             <h2 className="text-2xl md:text-4xl font-black leading-tight">
               Siap Mengukir Prestasi Di Bidang Teknologi Informasi?
             </h2>
-            
+
             <p className="text-sm md:text-base text-white/80 font-medium">
               Amankan slot pendaftaran Anda sekarang di Program Keahlian {major.title}. Dapatkan pembinaan intensif dari guru ahli dan mitra industri global.
             </p>
@@ -1000,7 +1018,7 @@ export default function MajorPage() {
               <Link href={`/${params.school_slug}/daftar`} className="bg-[#ffffff] text-slate-900 hover:bg-[#f8fafc] text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto">
                 Daftar Sekarang
               </Link>
-              <Link href={`/${params.school_slug}`} className="border border-white/30 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
+              <Link href={`/${params.school_slug}`} className="border border-white/30 bg-white/10 hover:bg-white/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
                 Kembali Ke Beranda
               </Link>
             </div>
@@ -1010,9 +1028,9 @@ export default function MajorPage() {
 
       {/* EXPLORE NEXT MAJOR CTA */}
       <section className="py-16 max-w-6xl mx-auto px-6 w-full relative z-10">
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/50 dark:border-slate-800 rounded-[3rem] p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-[3rem] p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
           <div className="absolute -right-24 -bottom-24 w-80 h-80 rounded-full next-gradient-bg opacity-10 dark:opacity-20 blur-3xl pointer-events-none group-hover:scale-110 transition duration-700"></div>
-          
+
           <div className="space-y-4 max-w-2xl text-left relative z-10">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider next-bg-accent next-text-accent">
               <Sparkles size={12} className="animate-pulse" />

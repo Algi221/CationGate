@@ -10,13 +10,13 @@ export function AboutSection() {
     <section className="py-24 bg-slate-50 dark:bg-slate-950 overflow-hidden relative border-b border-slate-200 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
-          {/* Bagian Teks (Narasi Deskriptif) */}
+
+          {}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            viewport={{ once: true }} // Animasi jalan sekali aja pas di-scroll ke area ini
+            viewport={{ once: true }} 
             className="space-y-6"
           >
             <span className="px-4 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-extrabold uppercase tracking-wider">
@@ -37,7 +37,7 @@ export function AboutSection() {
               </p>
             </div>
 
-            {/* Poin-poin mini penegasan */}
+            {}
             <div className="pt-4 flex flex-col sm:flex-row gap-4 sm:gap-6">
                <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
                   <CheckCircle2 className="text-blue-500" size={20} /> Antarmuka Modern
@@ -51,7 +51,7 @@ export function AboutSection() {
             </div>
           </motion.div>
 
-          {/* Bagian Gambar (Visual Pendukung) */}
+          {}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -59,20 +59,20 @@ export function AboutSection() {
             viewport={{ once: true }}
             className="relative"
           >
-            {/* Frame Gambar */}
-            <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl bg-slate-200 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 group">
-               {/* Nanti ganti src ini dengan gambar/ilustrasi kantor, sekolah, atau orang lagi buka laptop */}
+            {/* Image Card */}
+            <div className="relative w-full aspect-square md:aspect-4/3 lg:aspect-4/5 rounded-3xl overflow-hidden shadow-2xl bg-slate-200 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 group">
+               {/* Gunakan gambar representatif sekolah/teknologi */}
               <Image
                 src="/assets/landing/school.jpeg" 
                 alt="Tentang CationGate"
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
               />
-              {/* Overlay gradien halus biar teks atau gambar kerasa lebih nyatu */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 to-transparent mix-blend-overlay"></div>
+              {/* Overlay styling */}
+              <div className="absolute inset-0 bg-linear-to-tr from-blue-600/10 to-transparent mix-blend-overlay"></div>
             </div>
 
-            {/* Elemen Dekorasi Mengambang (Opsional biar ga kaku) */}
+            {}
             <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
             <div className="absolute -top-6 -right-6 w-32 h-32 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
           </motion.div>

@@ -130,7 +130,7 @@ export function StatusBadge({ status, label, className, size = "md" }: StatusBad
         "inline-flex items-center justify-center font-semibold rounded-xl transition-colors shrink-0",
         config.bg,
         config.border,
-        size === "sm" ? "h-[28px] px-3 text-[11px]" : "h-[34px] px-3.5 text-xs",
+        size === "sm" ? "h-7 px-3 text-[11px]" : "h-8.5 px-3.5 text-xs",
         className
       )}
     >

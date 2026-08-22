@@ -6,15 +6,15 @@ import { X } from "lucide-react";
 interface VideoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  videoUrl?: string | null; // Tambahkan prop ini
+  videoUrl?: string | null; 
 }
 
 export function VideoModal({ isOpen, onClose, videoUrl }: VideoModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#2A1B1D]/80 backdrop-blur-md">
-      {/* Background overlay klik untuk tutup */}
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-[#2A1B1D]/80 backdrop-blur-md">
+      {}
       <div className="absolute inset-0" onClick={onClose}></div>
 
       <div className="relative w-full max-w-4xl bg-[#2A1B1D] rounded-3xl overflow-hidden border border-border shadow-2xl z-10">
@@ -36,7 +36,7 @@ export function VideoModal({ isOpen, onClose, videoUrl }: VideoModalProps) {
         <div className="relative aspect-video w-full bg-black flex items-center justify-center">
           <iframe
             className="w-full h-full"
-            // Gunakan videoUrl dari prop di sini
+
             src={videoUrl ? `${videoUrl}?autoplay=1` : ""}
             title="Video Demo"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

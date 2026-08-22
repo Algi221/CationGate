@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { Palette, Save, RefreshCw, Check } from "lucide-react";
 import Swal from 'sweetalert2';
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 
 const PRESET_COLORS = [
   { name: "Ocean Blue", hex: "#2563EB" },
@@ -15,24 +15,22 @@ const PRESET_COLORS = [
 
 export default function AppearanceSettingsPage() {
   const { adminToken, addToast, schoolId } = usePPDB();
-  const [mounted, setMounted] = useState<boolean>(false);
-  const [themeColor, setThemeColor] = useState("#2563EB"); // Default blue
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const [themeColor, setThemeColor] = useState("#2563EB"); 
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const params = useParams();
   const _schoolSlug = params?.school_slug as string || "";
 
-  useEffect(() => {
-    setMounted(true);
-    fetchCurrentTheme();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schoolId, adminToken]);
-
-  const fetchCurrentTheme = async () => {
+  const fetchCurrentTheme = useCallback(async (showSpinner = false) => {
     if (!adminToken) return;
     try {
-      setIsLoading(true);
+      if (showSpinner) setIsLoading(true);
       const url = schoolId ? `/api/config?school_id=${schoolId}` : `/api/config`;
       const res = await fetch(url, {
         headers: {
@@ -48,7 +46,11 @@ export default function AppearanceSettingsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [adminToken, schoolId]);
+
+  useEffect(() => {
+    fetchCurrentTheme();
+  }, [fetchCurrentTheme]);
 
   const handleSaveTheme = async () => {
     if (!adminToken) return;
@@ -81,7 +83,8 @@ export default function AppearanceSettingsPage() {
       }
     } catch (err: unknown) {
       if (typeof addToast === "function") {
-        addToast("Error", (err as any).message || "Terjadi kesalahan saat menyimpan tema.", "danger");
+        const errorMsg = err instanceof Error ? err.message : "Terjadi kesalahan saat menyimpan tema.";
+        addToast("Error", errorMsg, "danger");
       }
     } finally {
       setIsSaving(false);
@@ -90,7 +93,7 @@ export default function AppearanceSettingsPage() {
 
   if (!mounted || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[300px]">
+      <div className="flex items-center justify-center min-h-75">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="animate-spin text-blue-500 dark:text-blue-400" size={32} />
           <span className="text-sm font-semibold text-slate-500 dark:text-slate-455">Memuat konfigurasi...</span>
@@ -101,7 +104,7 @@ export default function AppearanceSettingsPage() {
 
   return (
     <div className="space-y-8 max-w-4xl animate-in fade-in duration-500 text-left pb-16">
-      
+
       {/* Title Header */}
       <div>
         <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2.5">
@@ -113,8 +116,8 @@ export default function AppearanceSettingsPage() {
         </p>
       </div>
 
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
-        <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full blur-[80px] pointer-events-none opacity-20" style={{ backgroundColor: themeColor }}></div>
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+        <div className="absolute top-[-10%] right-[-10%] w-62.5 h-62.5 rounded-full blur-[80px] pointer-events-none opacity-20" style={{ backgroundColor: themeColor }}></div>
 
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6 relative z-10">
           <div className="flex items-center gap-3">
@@ -135,7 +138,7 @@ export default function AppearanceSettingsPage() {
         <div className="space-y-8 relative z-10">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             <div className="flex-1 space-y-6">
-              
+
               {/* Presets */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">
@@ -178,7 +181,7 @@ export default function AppearanceSettingsPage() {
                       className="w-14 h-14 rounded-2xl cursor-pointer border-0 bg-transparent p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform"
                     />
                   </div>
-                  <div className="flex-1 max-w-[200px]">
+                  <div className="flex-1 max-w-50">
                     <input
                       type="text"
                       value={themeColor}
@@ -194,7 +197,7 @@ export default function AppearanceSettingsPage() {
             </div>
 
             {/* Preview Box */}
-            <div className="w-full md:w-auto p-6 rounded-3xl border border-slate-200 dark:border-slate-800/80 dark:border-slate-700 flex flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-800/30 backdrop-blur-sm min-w-[220px]">
+            <div className="w-full md:w-auto p-6 rounded-3xl border border-slate-200 dark:border-slate-800/80 flex flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-slate-800/30 backdrop-blur-sm min-w-55">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Preview Tombol</span>
               <button 
                 className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 active:scale-95 w-full"
@@ -202,7 +205,7 @@ export default function AppearanceSettingsPage() {
               >
                 Tombol Contoh
               </button>
-              
+
               <div className="flex items-center gap-2 mt-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: themeColor }}></div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider" style={{ color: themeColor }}>Aksen Teks</span>
@@ -227,4 +230,3 @@ export default function AppearanceSettingsPage() {
     </div>
   );
 }
-

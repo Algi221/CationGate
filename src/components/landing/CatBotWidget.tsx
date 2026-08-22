@@ -21,7 +21,6 @@ const DEFAULT_SUGGESTIONS = [
   "Integrasi ekspor ke Dapodik?",
 ];
 
-// Mapping variasi aset maskot
 const MASCOT_ASSETS = {
   idle: "/assets/catpeer/catpeerStandup.svg",
   thinking: "/assets/catpeer/catpeerTodo.svg",
@@ -30,12 +29,12 @@ const MASCOT_ASSETS = {
   icon: "/assets/catpeer/catpeerIcon.svg",
 };
 
+const generateId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9));
+
 export function CatBotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVideoVisible, setIsVideoVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-
-  // State baru untuk menahan kemunculan ikon sampai loading selesai
   const [isPageLoaded, setIsPageLoaded] = useState(false);
 
   const [botMood, setBotMood] = useState<keyof typeof MASCOT_ASSETS>("idle");
@@ -57,9 +56,7 @@ export function CatBotWidget() {
   const inputRef = useRef<HTMLInputElement>(null);
   const constraintsRef = useRef<HTMLDivElement>(null);
 
-  // Efek untuk menunggu loading screen selesai (delay)
   useEffect(() => {
-    // Ubah angka 3000 (3 detik) ini sesuaikan dengan durasi komponen loading screen kamu
     const loadingTimer = setTimeout(() => {
       setIsPageLoaded(true);
     }, 3000);
@@ -106,7 +103,7 @@ export function CatBotWidget() {
     setInputText("");
 
     const userMsg: ChatMessage = {
-      id: Date.now().toString(),
+      id: generateId(),
       sender: "user",
       text: text,
       time: new Date().toLocaleTimeString("id-ID", {
@@ -136,7 +133,7 @@ export function CatBotWidget() {
         setBotMood("thinking");
 
         const replyText = data.reply;
-        const botMsgId = (Date.now() + 1).toString();
+        const botMsgId = generateId();
         const currentTime = new Date().toLocaleTimeString("id-ID", {
           hour: "2-digit",
           minute: "2-digit",
@@ -180,7 +177,7 @@ export function CatBotWidget() {
       }
     } catch (_err) {
       const errorMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: generateId(),
         sender: "bot",
         text: "Maaf, koneksi ke server sedang sibuk. Silakan coba lagi beberapa saat lagi ya. miaw",
         time: new Date().toLocaleTimeString("id-ID", {
@@ -213,7 +210,7 @@ export function CatBotWidget() {
   return (
     <div
       ref={constraintsRef}
-      className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"
+      className="fixed inset-0 pointer-events-none z-9999 overflow-hidden"
     >
       <AnimatePresence>
         {isPageLoaded && !isOpen && (
@@ -226,7 +223,7 @@ export function CatBotWidget() {
             }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="absolute right-6 pointer-events-auto flex items-center gap-3 z-[950]"
+            className="absolute right-6 pointer-events-auto flex items-center gap-3 z-950"
           >
             <div className="hidden sm:flex items-center relative bg-black text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-2xl border border-slate-800 select-none">
               <span className="text-slate-100 tracking-tight font-sans">
@@ -242,13 +239,12 @@ export function CatBotWidget() {
               <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Image
                   src={MASCOT_ASSETS.icon}
-                  alt="Catpeer"
-                  width={40}
-                  height={40}
+                  alt="Catpeer AI"
+                  width={36}
+                  height={36}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
             </button>
           </motion.div>
         )}
@@ -259,24 +255,21 @@ export function CatBotWidget() {
           <motion.div
             drag={!isMobile}
             dragConstraints={constraintsRef}
-            dragElastic={0.05}
+            dragElastic={0.1}
             dragMomentum={false}
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             style={{
-              bottom: isMobile ? 0 : isVideoVisible ? 150 : 24,
-              maxHeight: isMobile
-                ? "100%"
-                : `calc(100vh - ${isVideoVisible ? 180 : 54}px)`,
+              touchAction: "none",
             }}
             className={`
               pointer-events-auto absolute flex flex-col 
               shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border border-slate-800
               inset-0 w-full h-full rounded-none
-              sm:inset-auto sm:right-6 sm:w-[420px] sm:h-[720px]
-              sm:rounded-[2rem] overflow-hidden bg-black
+              sm:inset-auto sm:right-6 sm:w-105 sm:h-180
+              sm:rounded-4xl overflow-hidden bg-black
             `}
           >
             <div className="p-4 bg-black text-white border-b border-slate-800 flex items-center justify-between z-30 shrink-0 select-none">
@@ -338,11 +331,11 @@ export function CatBotWidget() {
                   alt="Watermark"
                   width={240}
                   height={240}
-                  className="w-[200px] h-auto object-contain"
+                  className="w-50 h-auto object-contain"
                 />
               </div>
 
-              <div className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
                 {messages.map((msg, index) => {
                   const isBot = msg.sender === "bot";
                   return (
@@ -369,7 +362,7 @@ export function CatBotWidget() {
                         <div
                           className={`px-4 py-3 rounded-2xl text-[13px] sm:text-[14px] leading-relaxed ${isBot ? "bg-white text-slate-900 font-normal rounded-tl-sm shadow-sm" : "bg-black text-white font-medium rounded-tr-sm shadow-md"}`}
                         >
-                          <div className="whitespace-pre-line break-words font-sans">
+                          <div className="whitespace-pre-line wrap-break-word font-sans">
                             {msg.text}
                           </div>
                         </div>
@@ -408,11 +401,11 @@ export function CatBotWidget() {
               </div>
 
               {messages.length <= 3 && !isLoading && (
-                <div className="relative z-20 px-4 py-3 bg-gradient-to-t from-[#FFC000] via-[#FFC000]/95 to-transparent shrink-0">
+                <div className="relative z-20 px-4 py-3 bg-linear-to-t from-[#FFC000] via-[#FFC000]/95 to-transparent shrink-0">
                   <p className="text-[10px] uppercase font-black text-black/80 tracking-wider mb-2">
                     Pertanyaan Populer:
                   </p>
-                  <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-[100px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-25 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
                     {DEFAULT_SUGGESTIONS.map((sug, i) => (
                       <button
                         key={i}

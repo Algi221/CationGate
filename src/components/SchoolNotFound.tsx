@@ -18,7 +18,7 @@ export default function SchoolNotFound({ slug, isTakedown }: SchoolNotFoundProps
         <div className="w-72 h-72 mx-auto flex items-center justify-center">
           <Lottie animationData={animationData} loop={true} />
         </div>
-        
+
         <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">
           {isTakedown ? "Akses Instansi Ditangguhkan (Taken Down) 🔒" : "Halaman Tidak Ditemukan"}
         </h1>
@@ -31,7 +31,7 @@ export default function SchoolNotFound({ slug, isTakedown }: SchoolNotFoundProps
         <div className="pt-4">
           <Link
             href="/"
-            className="px-6 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-md shadow-blue-500/20 hover:shadow-blue-500/40 transition-all inline-block"
+            className="px-6 py-3 bg-linear-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-md shadow-blue-500/20 hover:shadow-blue-500/40 transition-all inline-block"
           >
             Kembali ke Beranda CationGate
           </Link>

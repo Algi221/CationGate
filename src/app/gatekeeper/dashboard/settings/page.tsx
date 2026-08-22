@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import {
-  Settings, ShieldCheck, Key, Lock, Globe, Database, Server, Save,
-  AlertTriangle, Check, RefreshCw
+  Settings, Globe, Save, AlertTriangle, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,8 +32,8 @@ export default function GatekeeperSettingsPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      
-      {/* Title */}
+
+      {}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
@@ -56,7 +55,7 @@ export default function GatekeeperSettingsPage() {
         </Button>
       </div>
 
-      {/* Maintenance Mode Toggle */}
+      {}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
         <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-amber-500" /> Mode Pemeliharaan Platform (Maintenance)

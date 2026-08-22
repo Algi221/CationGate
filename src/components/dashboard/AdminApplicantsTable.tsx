@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useApplicants, useUpdateApplicantStatus } from "@/hooks/useApplicants";
 import { SkeletonTable } from "@/components/ui/skeleton-table";
-import { Button } from "@/components/ui/button"; // Assuming Shadcn UI
 import { Check, X } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -34,7 +33,7 @@ export function AdminApplicantsTable({ schoolId }: AdminApplicantsTableProps) {
   );
 
   const handleUpdateStatus = (id: number, status: string) => {
-    // Optimistic Update is handled automatically inside useUpdateApplicantStatus
+
     updateStatus(
       { id, status },
       {
@@ -46,8 +45,7 @@ export function AdminApplicantsTable({ schoolId }: AdminApplicantsTableProps) {
           });
         },
         onSuccess: () => {
-          // Toast or simple notification could go here if needed
-          // Optimistic UI already feels instant
+
         }
       }
     );

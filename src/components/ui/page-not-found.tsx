@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Home } from "lucide-react";
 import Link from "next/link";
 
-// Combined component for 404 page
 export default function NotFoundPage() {
   return (
     <div className="w-full h-screen bg-black overflow-x-hidden flex justify-center items-center relative">
@@ -16,7 +15,6 @@ export default function NotFoundPage() {
   );
 }
 
-// 1. Message Display Component
 function MessageDisplay() {
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
@@ -30,7 +28,7 @@ function MessageDisplay() {
   }, []);
 
   return (
-    <div className="absolute flex flex-col justify-center items-center w-[90%] h-[90%] z-[100]">
+    <div className="absolute flex flex-col justify-center items-center w-[90%] h-[90%] z-100">
       <div 
         className={`flex flex-col items-center transition-opacity duration-500 ${
           isVisible ? 'opacity-100' : 'opacity-0'
@@ -135,10 +133,10 @@ function CharactersAnimation() {
       // Set position
       if (figure.top) stick.style.top = figure.top;
       if (figure.bottom) stick.style.bottom = figure.bottom;
-      
+
       // Set image source
       stick.src = figure.src;
-      
+
       // Set initial transform if specified
       if (figure.transform) stick.style.transform = figure.transform;
 
@@ -166,10 +164,12 @@ function CharactersAnimation() {
       }
     });
 
+    const container = charactersRef.current;
+
     // Cleanup function
     return () => {
-      if (charactersRef.current) {
-        charactersRef.current.innerHTML = '';
+      if (container) {
+        container.innerHTML = '';
       }
     };
   }, []);
@@ -179,7 +179,7 @@ function CharactersAnimation() {
     const handleResize = () => {
       if (charactersRef.current) {
         charactersRef.current.innerHTML = '';
-        
+
         // Re-create animations after resize
         charactersRef.current.dispatchEvent(new Event('contentchanged'));
       }
@@ -214,105 +214,102 @@ function CircleAnimation() {
   const initArr = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     circulosRef.current = [];
-    
+
     for (let index = 0; index < 300; index++) {
       const randomX = Math.floor(
         Math.random() * ((canvas.width * 3) - (canvas.width * 1.2) + 1)
       ) + (canvas.width * 1.2);
-      
+
       const randomY = Math.floor(
         Math.random() * ((canvas.height) - (canvas.height * (-0.2) + 1))
       ) + (canvas.height * (-0.2));
-      
+
       const size = canvas.width / 1000;
-      
+
       circulosRef.current.push({ x: randomX, y: randomY, size });
     }
-  };
-
-  // Drawing function
-  const draw = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const context = canvas.getContext('2d');
-    if (!context) return;
-    
-    timerRef.current++;
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    
-    const distanceX = canvas.width / 80;
-    const growthRate = canvas.width / 1000;
-    
-    context.fillStyle = 'white';
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    
-    circulosRef.current.forEach((circulo) => {
-      context.beginPath();
-      
-      if (timerRef.current < 65) {
-        circulo.x = circulo.x - distanceX;
-        circulo.size = circulo.size + growthRate;
-      }
-      
-      if (timerRef.current > 65 && timerRef.current < 500) {
-        circulo.x = circulo.x - (distanceX * 0.02);
-        circulo.size = circulo.size + (growthRate * 0.2);
-      }
-      
-      context.arc(circulo.x, circulo.y, circulo.size, 0, 360);
-      context.fill();
-    });
-    
-    if (timerRef.current > 500) {
-      if (requestIdRef.current) {
-        cancelAnimationFrame(requestIdRef.current);
-      }
-      return;
-    }
-    
-    requestIdRef.current = requestAnimationFrame(draw);
   };
 
   // Initialize canvas and start animation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
+    // Drawing function
+    const draw = () => {
+      const context = canvas.getContext('2d');
+      if (!context) return;
+
+      timerRef.current++;
+      context.setTransform(1, 0, 0, 1, 0, 0);
+
+      const distanceX = canvas.width / 80;
+      const growthRate = canvas.width / 1000;
+
+      context.fillStyle = 'white';
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      circulosRef.current.forEach((circulo) => {
+        context.beginPath();
+
+        if (timerRef.current < 65) {
+          circulo.x = circulo.x - distanceX;
+          circulo.size = circulo.size + growthRate;
+        }
+
+        if (timerRef.current > 65 && timerRef.current < 500) {
+          circulo.x = circulo.x - (distanceX * 0.02);
+          circulo.size = circulo.size + (growthRate * 0.2);
+        }
+
+        context.arc(circulo.x, circulo.y, circulo.size, 0, 360);
+        context.fill();
+      });
+
+      if (timerRef.current > 500) {
+        if (requestIdRef.current) {
+          cancelAnimationFrame(requestIdRef.current);
+        }
+        return;
+      }
+
+      requestIdRef.current = requestAnimationFrame(draw);
+    };
+
     // Set canvas dimensions
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
+
     // Initialize and start animation
     timerRef.current = 0;
     initArr();
     draw();
-    
+
     // Handle window resize
     const handleResize = () => {
       if (!canvas) return;
-      
+
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      
+
       timerRef.current = 0;
       if (requestIdRef.current) {
         cancelAnimationFrame(requestIdRef.current);
       }
-      
+
       const context = canvas.getContext('2d');
       if (context) {
         context.reset();
       }
-      
+
       initArr();
       draw();
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     // Clean up
     return () => {
       window.removeEventListener('resize', handleResize);

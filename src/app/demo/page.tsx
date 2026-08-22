@@ -46,9 +46,10 @@ import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 const SafeImage = ({ src, alt, width, height, className, onError, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
   const isDataUrl = src && src.startsWith("data:");
-  
+
   if (isDataUrl || useFallbackImg || !src) {
     return (
+      /* eslint-disable-next-line @next/next/no-img-element */
       <img 
         src={src || "/assets/logo_sekolah/logo_smktb.png"} 
         alt={alt} 
@@ -60,7 +61,7 @@ const SafeImage = ({ src, alt, width, height, className, onError, ...props }: an
       />
     );
   }
-  
+
   return (
     <Image 
       src={src} 
@@ -126,9 +127,6 @@ export default function DemoPage() {
     setActiveFaq(activeFaq === idx ? null : idx);
   };
 
-  const heroTitle = "Penerimaan Peserta Didik Baru";
-  const heroTitleSub = "SPMB SMK Taruna Bhakti";
-  const heroSubtitle = "Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.";
   const phone = "(021) 8740756";
   const email = "info@smktarunabhakti.sch.id";
   const address = "Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453";
@@ -248,14 +246,14 @@ export default function DemoPage() {
 
   const getGelombangStatus = (startStr: string, endStr: string) => {
     if (!startStr || !endStr) return { label: "Belum Diatur", color: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700", active: false };
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const start = new Date(startStr);
     start.setHours(0, 0, 0, 0);
     const end = new Date(endStr);
     end.setHours(23, 59, 59, 999);
-    
+
     if (today < start) {
       return { label: "Akan Datang", color: "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/30", active: false };
     } else if (today >= start && today <= end) {
@@ -307,14 +305,14 @@ export default function DemoPage() {
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
 
-      {/* SCHOOL NAVBAR (SMK TB) */}
+      {}
       <SchoolNavbar schoolSlug="demo" />
 
-      {/* HERO SECTION WRAPPER */}
-      <main className="flex-grow w-full relative z-0">
+      {/* MAIN CONTAINER WITH RESPONSIVE LAYOUT */}
+      <main className="grow w-full relative z-0">
         <div className="relative w-full overflow-hidden">
-          {/* Video Background - Full Width */}
-          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+          {/* BACKGROUND VIDEO LAYER */}
+          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-linear-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
             {loadVideo && (
               <video
                 ref={videoRef}
@@ -334,10 +332,10 @@ export default function DemoPage() {
           </div>
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[85vh] flex flex-col justify-center">
-            {/* HERO SECTION */}
+            {}
             <section className="hero">
 
-              {/* Floating elements representing major names flanking left and right */}
+              {}
               <div className="badges-container">
                 {majors.map((m, index) => {
                   const isEven = index % 2 === 0;
@@ -426,7 +424,7 @@ export default function DemoPage() {
                 </div>
 
                 {/* Data Pendaftar Table View */}
-                <div className="dashboard-view block w-full p-6 h-[600px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
+                <div className="dashboard-view block w-full p-6 h-150 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
                   <DataPendaftarTable />
                 </div>
 
@@ -458,7 +456,7 @@ export default function DemoPage() {
               return (
                 <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border ${status.active ? 'border-blue-500/30 dark:border-blue-500/20 shadow-blue-500/5' : 'border-white/50 dark:border-slate-800'} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
                   {status.active && (
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-blue-500/10 to-transparent pointer-events-none" />
                   )}
                   <div className="flex justify-between items-start mb-6">
                     <div>
@@ -470,7 +468,7 @@ export default function DemoPage() {
                       {status.label}
                     </span>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-950/40 p-4.5 rounded-2xl border border-slate-150 dark:border-white/5">
                       <Calendar size={18} className="text-blue-500 shrink-0" />
@@ -492,7 +490,7 @@ export default function DemoPage() {
               return (
                 <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border ${status.active ? 'border-blue-500/30 dark:border-blue-500/20 shadow-blue-500/5' : 'border-white/50 dark:border-slate-800'} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
                   {status.active && (
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-blue-500/10 to-transparent pointer-events-none" />
                   )}
                   <div className="flex justify-between items-start mb-6">
                     <div>
@@ -504,7 +502,7 @@ export default function DemoPage() {
                       {status.label}
                     </span>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-950/40 p-4.5 rounded-2xl border border-slate-155 dark:border-white/5">
                       <Calendar size={18} className="text-blue-500 shrink-0" />
@@ -561,8 +559,8 @@ export default function DemoPage() {
             </div>
 
             <div className="relative">
-              <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
-              <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
+              <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-1 bg-linear-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
+              <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
 
               <div className="space-y-16 relative z-10 w-full">
                 {DEFAULT_ALUR.map((item, index) => {
@@ -661,7 +659,7 @@ export default function DemoPage() {
                   style={{ transitionDelay: `${index * 150}ms` }}
                 >
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
-                  <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
 
                   <div className="relative z-10">
                     <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white border border-slate-100 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
@@ -758,10 +756,11 @@ export default function DemoPage() {
                             className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
                             title={partner.name}
                           >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={partner.logo}
                               alt={partner.name}
-                              className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
+                              className={`w-auto object-contain ${partner.h} max-w-37.5 transition-all duration-300 drop-shadow-sm`}
                               loading="lazy"
                               width={width}
                               height={height}
@@ -770,7 +769,7 @@ export default function DemoPage() {
                         );
                       })}
                     </div>
-                    
+
                     {/* Show All Controls */}
                     {partnersList.length > 10 && (
                       <div className="flex justify-center items-center mt-12">
@@ -913,9 +912,9 @@ export default function DemoPage() {
               </ScrollFloat>
             </div>
 
-            <div className="relative w-full h-[500px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200/60 dark:border-slate-800/80 group">
+            <div className="relative w-full h-125 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200/60 dark:border-slate-800/80 group">
               <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
-              
+
               <iframe
                 src={mapUrl}
                 width="100%" 
@@ -924,11 +923,11 @@ export default function DemoPage() {
                 allowFullScreen={true} 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0 w-full h-full grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
+                className="absolute inset-0 w-full h-full grayscale-15 group-hover:grayscale-0 transition-all duration-700"
               ></iframe>
 
               {/* Floating Address Card */}
-              <div className="absolute bottom-6 left-6 right-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[450px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-white/20 dark:border-slate-800/50 shadow-2xl z-20 transition-transform duration-300 hover:-translate-y-2">
+              <div className="absolute bottom-6 left-6 right-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-112.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-white/20 dark:border-slate-800/50 shadow-2xl z-20 transition-transform duration-300 hover:-translate-y-2">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-500/20">
                     <MapPin size={24} className="text-emerald-500" />
@@ -951,19 +950,19 @@ export default function DemoPage() {
             <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
               <HelpCircle size={96} className="text-blue-600 animate-pulse" />
             </div>
-            
+
             <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Masih Mengalami Kendala atau Pertanyaan Lain?</h3>
             <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-lg mx-auto leading-relaxed">
               Tim panitia PPDB SMK Taruna Bhakti siap membantu Anda secara langsung. Klik tombol di bawah untuk konsultasi via WhatsApp.
             </p>
-            
+
             <a 
               href={`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
                 "Halo Admin PPDB SMK Taruna Bhakti, saya calon pendaftar PPDB TP 2026/2027. Saya ingin berkonsultasi mengenai proses pendaftaran karena mengalami kendala teknis."
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Phone size={14} />
               <span>Konsultasi Lewat WA Admin</span>

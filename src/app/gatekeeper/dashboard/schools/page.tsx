@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import _Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  Building2, ShieldCheck, CheckCircle2, XCircle, AlertCircle, Search,
-  Filter, Eye, ExternalLink, Lock, Unlock, FileText, Check, Sparkles,
-  RefreshCw, ChevronRight, X, ShieldAlert, Award, Clock
+  Building2, Search, Eye, ExternalLink, FileText, Check, RefreshCw, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +28,6 @@ interface SchoolTenant {
   admin_name?: string;
 }
 
-import { Suspense } from "react";
-
 function GatekeeperSchoolManagementContent() {
   const searchParams = useSearchParams();
   const rawFilter = searchParams?.get("filter") || "ALL";
@@ -44,25 +40,26 @@ function GatekeeperSchoolManagementContent() {
 
   useEffect(() => {
     const rf = searchParams?.get("filter") || "ALL";
-    setStatusFilter(rf === "TAKEDOWN" ? "SUSPENDED" : rf);
+    const nextFilter = rf === "TAKEDOWN" ? "SUSPENDED" : rf;
+    requestAnimationFrame(() => {
+      setStatusFilter(prev => prev !== nextFilter ? nextFilter : prev);
+    });
   }, [searchParams]);
 
-  // School Tenants State (Fetched Live from DB)
   const [schools, setSchools] = useState<SchoolTenant[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchSchools = async () => {
+  const fetchSchools = useCallback(async () => {
     try {
       setLoading(true);
       const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
-      
       const res = await fetch(`/api/gatekeeper/schools?t=${Date.now()}`, {
         headers: {
           "Cache-Control": "no-cache",
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
       });
-      
+
       if (!res.ok) {
         setSchools([]);
         return;
@@ -76,7 +73,7 @@ function GatekeeperSchoolManagementContent() {
         setSchools([]);
         return;
       }
-      
+
       if (json && json.success && Array.isArray(json.data)) {
         setSchools(json.data);
       } else {
@@ -88,10 +85,53 @@ function GatekeeperSchoolManagementContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchSchools();
+    let ignore = false;
+
+    async function loadSchools() {
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
+        const res = await fetch(`/api/gatekeeper/schools?t=${Date.now()}`, {
+          headers: {
+            "Cache-Control": "no-cache",
+            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+          }
+        });
+
+        if (!res.ok) {
+          if (!ignore) setSchools([]);
+          return;
+        }
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (_parseError) {
+          console.error("Invalid JSON from API:", text.substring(0, 150));
+          if (!ignore) setSchools([]);
+          return;
+        }
+
+        if (json && json.success && Array.isArray(json.data)) {
+          if (!ignore) setSchools(json.data);
+        } else {
+          if (!ignore) setSchools([]);
+        }
+      } catch (e) {
+        console.warn("Failed to fetch schools from API:", e);
+        if (!ignore) setSchools([]);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    loadSchools();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   // Action Handlers
@@ -235,7 +275,7 @@ function GatekeeperSchoolManagementContent() {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Header Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div>
@@ -264,7 +304,7 @@ function GatekeeperSchoolManagementContent() {
 
       {/* Filter Tabs & Search */}
       <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        
+
         {/* Search Bar */}
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -341,7 +381,7 @@ function GatekeeperSchoolManagementContent() {
                 </tr>
               ) : filteredSchools.map((sc) => (
                 <tr key={sc.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                  
+
                   {/* Sekolah */}
                   <td className="py-4 px-5">
                     <div className="flex items-center gap-3">
@@ -383,7 +423,7 @@ function GatekeeperSchoolManagementContent() {
                   {/* Aksi Platform */}
                   <td className="py-4 px-5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
-                      
+
                       {/* Lihat Detail Modal */}
                       <button
                         onClick={() => setSelectedSchoolModal(sc)}
@@ -448,7 +488,7 @@ function GatekeeperSchoolManagementContent() {
       {selectedSchoolModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 my-8">
-            
+
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-4">
@@ -476,9 +516,9 @@ function GatekeeperSchoolManagementContent() {
 
             {/* Legal Document Info Grid */}
             <div className="space-y-4">
-              
+
               <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Legalitas &amp; Identitas Instansi</h4>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-1">
                   <span className="text-slate-400 font-semibold block text-[11px]">Nomor SK Operasional:</span>

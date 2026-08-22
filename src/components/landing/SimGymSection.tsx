@@ -128,7 +128,7 @@ export default function SimGymSection() {
 
   return (
     <section className="relative w-full min-h-screen bg-[#e6e5dd][#0b1121] flex flex-col lg:flex-row transition-colors duration-500 overflow-hidden">
-      {/* 1. BAGIAN TEKS (z-40 agar berada di atas komentar jika overlap) */}
+      {}
       <div className="w-full lg:w-[40%] relative z-40 flex flex-col justify-center pt-24 pb-8 px-6 sm:px-12 md:px-20 lg:py-0 lg:pl-10 xl:pl-20 items-center lg:items-start text-center lg:text-left">
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-gray-900 tracking-tight leading-tight mb-4 transition-colors">
           Template SPMB SMK
@@ -143,14 +143,10 @@ export default function SimGymSection() {
         </button>
       </div>
 
-      {/* 2. BAGIAN VISUAL */}
-      {/* PERUBAHAN: Menghapus 'overflow-hidden' di sini agar tidak memotong elemen di pinggir */}
-      {/* PERUBAHAN: Menetapkan tinggi pasti h-[450px] untuk mobile agar whitespace tidak terlalu lebar */}
-      <div className="w-full lg:w-[60%] h-[450px] sm:h-[550px] lg:h-screen relative flex items-center justify-center">
-        {/* SCALING CANVAS */}
-        {/* PERUBAHAN: Scale di mobile diperbesar menjadi 0.45 & 0.6 supaya pas dan tidak kekecilan */}
-        <div className="absolute flex items-center justify-center w-[1000px] h-[800px] origin-center scale-[0.48] sm:scale-[0.65] md:scale-[0.8] lg:scale-[0.9] xl:scale-100 pointer-events-none z-30">
-          {/* Mockup Tengah */}
+      <div className="w-full lg:w-[60%] h-112.5 sm:h-137.5 lg:h-screen relative flex items-center justify-center">
+        {/* Kontainer Utama yang membatasi luas workspace kartu agar rapi dan responsif di semua device */}
+        <div className="absolute flex items-center justify-center w-250 h-200 origin-center scale-[0.48] sm:scale-[0.65] md:scale-[0.8] lg:scale-[0.9] xl:scale-100 pointer-events-none z-30">
+          {/* Main Card */}
           <motion.div
             animate={{
               scale: phase === "large" ? 1.1 : 0.75,
@@ -158,9 +154,10 @@ export default function SimGymSection() {
             transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
             className="relative flex gap-5 z-30 origin-center pointer-events-auto"
           >
-            {/* Mockup 1 (Kiri) */}
-            <div className="w-[320px] h-[220px] bg-white[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)][0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 transition-colors flex flex-col">
-              <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
+            {/* Card 1 */}
+            <div className="w-[320px] h-55 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-3 border border-gray-200 transition-colors flex flex-col">
+              <div className="w-full h-30 rounded-xl overflow-hidden mb-3 relative bg-slate-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/assets/landing/imageLanding.png"
                   alt="Formulir Interaktif"
@@ -177,9 +174,10 @@ export default function SimGymSection() {
               </div>
             </div>
 
-            {/* Mockup 2 (Kanan) */}
-            <div className="w-[320px] h-[220px] bg-white[#111827] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)][0_20px_50px_rgba(0,0,0,0.5)] p-3 border border-gray-200 transition-colors flex flex-col">
-              <div className="w-full h-[120px] rounded-xl overflow-hidden mb-3 relative bg-slate-100">
+            {/* Card 2 */}
+            <div className="w-[320px] h-55 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-3 border border-gray-200 transition-colors flex flex-col">
+              <div className="w-full h-30 rounded-xl overflow-hidden mb-3 relative bg-slate-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/assets/landing/imageLanding1.png"
                   alt="Landing Page Interaktif"
@@ -197,7 +195,7 @@ export default function SimGymSection() {
             </div>
           </motion.div>
 
-          {/* Komentar Floating */}
+          {}
           {COMMENTS_DATA.map((comment) => (
             <FloatingComment
               key={comment.id}

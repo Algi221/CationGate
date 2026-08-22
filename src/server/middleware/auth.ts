@@ -1,5 +1,4 @@
 import { createMiddleware } from 'hono/factory';
-import { Context, Next } from 'hono';
 import jwt from 'jsonwebtoken';
 
 const getJwtSecret = () => {
@@ -12,7 +11,7 @@ const getJwtSecret = () => {
 
 export const adminAuth = createMiddleware(async (c, next) => {
   const authHeader = c.req.header('Authorization');
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return c.json({
       message: 'Akses ditolak: Sesi Anda tidak valid atau telah berakhir.'
@@ -20,9 +19,7 @@ export const adminAuth = createMiddleware(async (c, next) => {
   }
 
   const token = authHeader.split(' ')[1];
-  
 
-  
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const decoded = jwt.verify(token, getJwtSecret()) as any;
@@ -78,11 +75,6 @@ export const gatekeeperAuth = createMiddleware(async (c, next) => {
   }
 });
 
-/**
- * SECURITY: Extracts school_id ONLY from the verified JWT token.
- * Never uses query parameters — prevents tenant impersonation attacks.
- * Returns 404 (not 403) so attackers can't tell if a record exists.
- */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const requireTenantId = async (c: any): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,21 +83,15 @@ export const requireTenantId = async (c: any): Promise<string> => {
     throw new TenantError();
   }
 
-  // Resolve to UUID if needed (handles legacy integer IDs)
   const { resolveSchoolUUID } = await import('../db/resolve-school');
   const { fontInMemSchools } = await import('../routes/saas');
   const resolved = await resolveSchoolUUID(String(admin.school_id), fontInMemSchools);
-  
+
   if (!resolved) {
     throw new TenantError();
   }
   return resolved;
 };
-
-/**
- * Custom error class for missing tenant context.
- * Route handlers should catch this and return c.json({ success: false }, 404).
- */
 export class TenantError extends Error {
   constructor() {
     super('Tenant not found');

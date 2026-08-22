@@ -35,18 +35,31 @@ function InvoiceContent() {
   const isAdmin = searchParams.get("isAdmin") === "true";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(null);
-  const [regCost, setRegCost] = useState(250000);
-  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [regCost, setRegCost] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedCost = localStorage.getItem('ppdb_reg_cost');
+      if (savedCost) {
+        const parsed = parseInt(savedCost);
+        if (!isNaN(parsed)) return parsed;
+      }
+    }
+    return 250000;
+  });
+  const [waGroupUrl, setWaGroupUrl] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('ppdb_wa_group_url') || "https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS";
+    }
+    return "https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS";
+  });
+  const [loading, setLoading] = useState(() => !!nisn);
+  const [error, setError] = useState<string | null>(() => !nisn ? "NISN tidak ditemukan." : null);
 
   // Bersihkan nomor WhatsApp calon siswa ke format internasional
   const getCleanWaNumber = () => {
     if (!data || !data.whatsapp) return "";
-    const rawPhone = data.whatsapp;
-    let cleanPhone = rawPhone.replace(/\D/g, '');
-    if (cleanPhone.startsWith('0')) {
-      cleanPhone = '62' + cleanPhone.substring(1);
+    let cleanPhone = data.whatsapp.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('08')) {
+      cleanPhone = '62' + cleanPhone.slice(1);
     } else if (cleanPhone.startsWith('8')) {
       cleanPhone = '62' + cleanPhone;
     }
@@ -69,7 +82,7 @@ function InvoiceContent() {
     const url = getWaSendUrl();
     if (url) {
       window.open(url, '_blank');
-      // Setelah membuka WA, kembalikan admin ke dashboard pendaftar
+
       setTimeout(() => {
         window.location.href = schoolSlug ? `/${schoolSlug}/dashboard/pendaftar` : "/dashboard/pendaftar";
       }, 1000);
@@ -80,16 +93,6 @@ function InvoiceContent() {
     const savedTheme = localStorage.getItem('ppdb-theme');
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark');
-    }
-
-    const savedCost = localStorage.getItem('ppdb_reg_cost');
-    if (savedCost) {
-      const parsed = parseInt(savedCost);
-      if (!isNaN(parsed)) setRegCost(parsed);
-    }
-    const savedWaGroup = localStorage.getItem('ppdb_wa_group_url');
-    if (savedWaGroup) {
-      setWaGroupUrl(savedWaGroup);
     }
 
     const loadLiveCost = async () => {
@@ -117,25 +120,21 @@ function InvoiceContent() {
   }, []);
 
   useEffect(() => {
-    if (!nisn) {
-      setError("NISN tidak ditemukan.");
-      setLoading(false);
-      return;
-    }
+    if (!nisn) return;
 
     const fetchInvoice = async () => {
       try {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "/api";
         const res = await fetch(`${backendUrl}/api/applicants/public-invoice/${nisn}`);
         const json = await res.json();
-        
+
         if (json.success && json.data) {
           setData(json.data);
         } else {
           setError(json.message || "Gagal mengambil data invoice.");
         }
       } catch (err: unknown) {
-        setError("Error: " + (err as any).message);
+        setError("Error: " + (err instanceof Error ? err.message : String(err)));
       } finally {
         setLoading(false);
       }
@@ -178,7 +177,7 @@ function InvoiceContent() {
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 py-8 px-4 print-root">
-      
+
       {/* Print-only styles */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
@@ -186,8 +185,7 @@ function InvoiceContent() {
             size: A4 portrait;
             margin: 10mm 12mm;
           }
-          
-          /* Hide everything except the invoice */
+
           body, html {
             background: white !important;
             margin: 0 !important;
@@ -196,13 +194,11 @@ function InvoiceContent() {
             min-height: auto !important;
             overflow: visible !important;
           }
-          
-          /* Hide non-print elements */
+
           .no-print, .action-panel, .signature-block, nav, header, footer, button, a {
             display: none !important;
           }
-          
-          /* Reset all wrappers */
+
           html,
           body,
           body > div,
@@ -235,14 +231,13 @@ function InvoiceContent() {
             overflow: visible !important;
             position: static !important;
           }
-          
+
           .invoice-inner {
             padding: 0 !important;
             width: 100% !important;
             background: white !important;
           }
 
-          /* Force text and lines inside invoice to be dark/visible */
           .invoice-sheet *,
           .invoice-sheet span,
           .invoice-sheet p,
@@ -255,28 +250,24 @@ function InvoiceContent() {
             background: transparent !important;
             background-color: transparent !important;
           }
-          
-          /* Keep specific colors for colored elements if print-color-adjust is supported */
+
           .invoice-sheet .text-blue-600,
           .invoice-sheet span[style*="color: rgb(37, 99, 235)"],
           .invoice-sheet span[style*="color:#2563eb"],
           .invoice-sheet span[style*="color: #2563eb"] {
             color: #2563eb !important;
           }
-          
-          /* Preserve colors in print */
+
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          
-          /* Prevent page breaks inside content */
+
           .invoice-sheet, .invoice-inner {
             page-break-inside: avoid;
           }
         }
 
-        /* Force light theme colors on invoice-sheet on screen in dark mode */
         html.dark .invoice-sheet,
         html.dark .invoice-sheet.bg-white dark:bg-[#0f172a] {
           background-color: #ffffff !important;
@@ -293,8 +284,7 @@ function InvoiceContent() {
           background-color: #f8fafc !important;
           background: #f8fafc !important;
         }
-        
-        /* Screen layout */
+
         @media screen {
           .screen-layout {
             display: flex;
@@ -303,17 +293,17 @@ function InvoiceContent() {
             margin: 0 auto;
             align-items: flex-start;
           }
-          
+
           .invoice-sheet {
             flex: 1;
             min-width: 0;
           }
-          
+
           .action-panel {
             width: 280px;
             flex-shrink: 0;
           }
-          
+
           @media (max-width: 1023px) {
             .screen-layout {
               flex-direction: column;
@@ -326,10 +316,10 @@ function InvoiceContent() {
       `}} />
 
       <div className="screen-layout">
-        
+
         {/* ===== INVOICE SHEET ===== */}
         <div className="invoice-sheet bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800/50 overflow-hidden" style={{ position: 'relative' }}>
-          
+
           {/* Stamp */}
           {data.payment_status === "Paid" ? (
             <div style={{
@@ -364,14 +354,17 @@ function InvoiceContent() {
           )}
 
           <div className="invoice-inner" style={{ padding: '32px' }}>
-            
+
             {/* ── KOPSURAT / LETTERHEAD ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', borderBottom: '3px double #1e293b', paddingBottom: '14px', marginBottom: '20px' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src="/logo_smktb.png" 
                 alt="Logo SMK Taruna Bhakti" 
                 style={{ width: '52px', height: '52px', objectFit: 'contain' }}
-                onError={(e:unknown) => (e as any).target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"}
+                onError={(e) => {
+                  e.currentTarget.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png";
+                }}
               />
               <div>
                 <p style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#64748b', margin: '0 0 2px 0' }}>
@@ -545,7 +538,7 @@ function InvoiceContent() {
 
         {/* ===== ACTION PANEL (screen only) ===== */}
         <div className="action-panel no-print" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
+
           {/* Himbauan Pengiriman Struk untuk Siswa */}
           {!isAdmin && data.payment_status === "Paid" && (
             <div className="bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300" style={{
@@ -563,11 +556,11 @@ function InvoiceContent() {
           )}
 
           {/* Print & Return */}
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800" style={{ borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800" style={{ borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
             <h3 className="text-slate-700 dark:text-slate-200" style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
               Tindakan Nota
             </h3>
-            
+
             <button 
               onClick={handlePrint}
               style={{
@@ -600,7 +593,7 @@ function InvoiceContent() {
           {/* WhatsApp Action */}
           {data.payment_status === "Paid" && (
             isAdmin ? (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
+              <div className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
                 borderRadius: '20px',
                 padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
                 textAlign: 'center'
@@ -634,7 +627,7 @@ function InvoiceContent() {
                 </button>
               </div>
             ) : (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
+              <div className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
                 borderRadius: '20px',
                 padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
                 textAlign: 'center'

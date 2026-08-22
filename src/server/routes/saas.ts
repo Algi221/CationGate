@@ -11,18 +11,15 @@ import { registerLimiter } from '../middleware/rate-limiter';
 
 const saasRouter = new Hono();
 
-// Midtrans Core Config
 const snap = new midtransClient.Snap({
   isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY || '',
     clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || '',
 });
 
-// In-Memory store for registered schools fallback (HMR Refreshed)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const fontInMemSchools = new Map<string, any>();
 
-// Helper function to check 3-day takedown expiry
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function checkThreeDayTakedown(schoolObj: any): boolean {
   if (!schoolObj || schoolObj.status === 'FULL_VERIFIED' || schoolObj.status === 'TAKEDOWN') {
@@ -38,12 +35,10 @@ function checkThreeDayTakedown(schoolObj: any): boolean {
   return false;
 }
 
-// Fetch school data by slug for frontend routing
 saasRouter.get('/school-by-slug/:slug', async (c) => {
   try {
     const slug = c.req.param('slug');
-    
-    // 0. Check Redis cache first
+
     try {
       const cached = await redis.get(`school:${slug}`);
       if (cached) {
@@ -54,18 +49,18 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
     }
 
     const supabase = getSupabaseClient();
-    
+
     // 1. Check verified 'schools' table first
     const { data: verifiedData } = await supabase
       .from('schools')
       .select('*')
       .eq('slug', slug)
       .maybeSingle();
-      
+
     if (verifiedData) {
       try {
         await redis.setex(`school:${slug}`, 300, verifiedData); // cache for 5 minutes
-      } catch (e) {}
+      } catch (_e) {}
       return c.json({ success: true, data: verifiedData });
     }
 
@@ -79,7 +74,7 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
         .eq('slug', slug)
         .maybeSingle();
       candidateData = psData;
-    } catch (e) {}
+    } catch (_e) {}
 
     if (!candidateData) {
       try {
@@ -89,7 +84,7 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
           .eq('slug', slug)
           .maybeSingle();
         candidateData = csData;
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     if (candidateData) {
@@ -101,7 +96,7 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
       }
       try {
         await redis.setex(`school:${slug}`, 300, candidateData);
-      } catch (e) {}
+      } catch (_e) {}
       return c.json({ success: true, data: candidateData });
     }
 
@@ -133,7 +128,7 @@ saasRouter.get('/school-by-slug/:slug', async (c) => {
       notFound: true,
       message: `Sekolah atau URL '${slug}' belum terdaftar di CationGate.`
     }, 404);
-  } catch (err) {
+  } catch (_err) {
     const slug = c.req.param('slug');
     const localSchool = fontInMemSchools.get(slug);
     if (localSchool) {
@@ -183,24 +178,24 @@ saasRouter.post('/check-email', async (c) => {
 // Register new school from Landing Page
 saasRouter.post('/register', registerLimiter, async (c) => {
   try {
-    const { school_name, slug, email, phone, address, plan_type, admin_name, admin_username, admin_password, admin_email } = await c.req.json();
-    
+    const { school_name, slug, email, phone: _phone, address: _address, plan_type, admin_name, admin_username, admin_password, admin_email } = await c.req.json();
+
     if (!school_name || !slug || !email || !admin_username || !admin_password) {
       return c.json({ success: false, message: 'Data tidak lengkap' }, 400);
     }
-    
+
     const isTrial = plan_type === 'trial';
     const supabase = getSupabaseClient();
-    
+
     // Check if slug exists in Supabase (schools or prospective_schools) or Memory
     const { data: existingVerifiedSlug } = await supabase.from('schools').select('id').eq('slug', slug).maybeSingle();
     const { data: existingCandidateSlug } = await supabase.from('prospective_schools').select('id').eq('slug', slug).maybeSingle();
-    
+
     // Check if name exists in Supabase
     const { data: existingVerifiedName } = await supabase.from('schools').select('id').ilike('name', school_name).maybeSingle();
     const { data: existingCandidateName } = await supabase.from('prospective_schools').select('id').ilike('name', school_name).maybeSingle();
 
-    let slugExists = !!(existingVerifiedSlug || existingCandidateSlug || fontInMemSchools.has(slug));
+    const slugExists = !!(existingVerifiedSlug || existingCandidateSlug || fontInMemSchools.has(slug));
     let nameExists = !!(existingVerifiedName || existingCandidateName);
 
     // Also check in-memory map for duplicate name
@@ -221,12 +216,11 @@ saasRouter.post('/register', registerLimiter, async (c) => {
           : 'Nama sekolah sudah terdaftar. Hubungi kami jika ini adalah sekolah Anda.'
       }, 400);
     }
-    
+
     const fallbackId = Math.floor(Date.now() / 1000);
     const createdAtIso = new Date().toISOString();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newSchoolObj: any = {
+    const newSchoolObj: Record<string, unknown> = {
       id: fallbackId,
       name: school_name,
       slug,
@@ -238,10 +232,9 @@ saasRouter.post('/register', registerLimiter, async (c) => {
       created_at: createdAtIso,
       logo_url: ''
     };
-    
+
     // 1. Insert into Supabase 'prospective_schools' table
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let insertedSchoolId: any = null;
+    let insertedSchoolId: number | string | null = null;
 
     // Generate a UUID for admin_users.school_id (since admin_users.school_id is UUID type)
     // This UUID will be used as the "virtual" school_id until the school is fully verified
@@ -250,7 +243,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
     const generatedSchoolUUID = randomUUID();
 
     try {
-      const { data: psData, error: psErr } = await supabase
+      const { data: psData } = await supabase
         .from('prospective_schools')
         .upsert({
           name: school_name,
@@ -270,7 +263,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
         newSchoolObj.id = insertedSchoolId;
       }
     } catch (sbErr: unknown) {
-      console.warn('Supabase client insert warning:', (sbErr as any).message);
+      console.warn('Supabase client insert warning:', sbErr instanceof Error ? sbErr.message : String(sbErr));
     }
 
     if (!insertedSchoolId) {
@@ -287,7 +280,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
           newSchoolObj.id = insertedSchoolId;
         }
       } catch (pgErr: unknown) {
-        console.error('PG Insert error during SaaS registration fallback:', (pgErr as any).message);
+        console.error('PG Insert error during SaaS registration fallback:', pgErr instanceof Error ? pgErr.message : String(pgErr));
         return c.json({ success: false, message: 'Gagal menyimpan data pendaftaran ke database' }, 500);
       }
     }
@@ -296,8 +289,9 @@ saasRouter.post('/register', registerLimiter, async (c) => {
     newSchoolObj.school_uuid = generatedSchoolUUID;
 
     // Store in memory map as well for instant routing & persistence across refreshes
-    fontInMemSchools.set(slug, newSchoolObj);
-    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fontInMemSchools.set(slug, newSchoolObj as any);
+
     // 2. Insert into 'schools' table first to satisfy foreign key constraint for admin_users
     try {
       await supabase.from('schools').insert({
@@ -308,7 +302,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
         status: 'unverified',
         subscription_plan: 'free'
       });
-    } catch (schoolsErr: unknown) {
+    } catch (_schoolsErr: unknown) {
       try {
         await pool.query(
           `INSERT INTO schools (id, name, slug, email, status, subscription_plan, created_at)
@@ -316,7 +310,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
            ON CONFLICT (id) DO NOTHING`,
           [generatedSchoolUUID, school_name, slug, email || '']
         );
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     // 3. Insert admin user into 'admin_users' table
@@ -332,7 +326,7 @@ saasRouter.post('/register', registerLimiter, async (c) => {
         role: 'superadmin',
         school_id: generatedSchoolUUID
       });
-    } catch (adminErr: unknown) {
+    } catch (_adminErr: unknown) {
       try {
         await pool.query(
           `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, school_id)
@@ -340,9 +334,8 @@ saasRouter.post('/register', registerLimiter, async (c) => {
            ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
           [admin_email || email, admin_email || email, hashedPassword, admin_name || admin_username, generatedSchoolUUID]
         );
-      } catch (e) {}
+      } catch (_e) {}
     }
-
 
     return c.json({ 
       success: true, 
@@ -350,12 +343,12 @@ saasRouter.post('/register', registerLimiter, async (c) => {
       slug: slug,
       message: 'Registrasi berhasil! Account instansi aktif.'
     });
-    
+
   } catch (err: unknown) {
-    console.error('SaaS register exception:', (err as any)?.message);
+    console.error('SaaS register exception:', err instanceof Error ? err.message : String(err));
     return c.json({ 
       success: false, 
-      message: 'Terjadi kesalahan sistem saat registrasi: ' + (err as any)?.message
+      message: 'Terjadi kesalahan sistem saat registrasi: ' + (err instanceof Error ? err.message : String(err))
     }, 500);
   }
 });
@@ -381,7 +374,7 @@ saasRouter.post('/activate', adminAuth, async (c) => {
           .from('orders')
           .update({ status: 'SETTLEMENT', updated_at: now.toISOString() })
           .eq('order_id', order_id);
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     // 1. Update Supabase 'prospective_schools'
@@ -393,14 +386,14 @@ saasRouter.post('/activate', adminAuth, async (c) => {
           is_verified: true,
           plan_type: 'PRO'
         });
-      
+
       const isNumericId = !isNaN(Number(idOrSlug)) && Number(idOrSlug) > 0;
       if (isNumericId) {
         psUpdate = psUpdate.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
       } else {
         psUpdate = psUpdate.eq('slug', idOrSlug);
       }
-      
+
       await psUpdate;
     } catch (e) {
       console.warn('Supabase prospective_schools update warning:', e);
@@ -423,7 +416,7 @@ saasRouter.post('/activate', adminAuth, async (c) => {
       } else {
         scUpdate = scUpdate.eq('slug', idOrSlug);
       }
-      
+
       const { data: updatedSchool } = await scUpdate.select('id').maybeSingle();
       if (updatedSchool) resolvedUUID = updatedSchool.id;
     } catch (e) {
@@ -479,7 +472,7 @@ saasRouter.post('/activate', adminAuth, async (c) => {
     });
   } catch (err: unknown) {
     console.error('Activate error:', err);
-    return c.json({ success: false, message: 'Gagal mengaktifkan lisensi: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal mengaktifkan lisensi: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
@@ -498,7 +491,7 @@ async function createMidtransOrder({
   customerEmail,
   itemId,
   itemName,
-  metadata = {}
+  _metadata = {}
 }: {
   orderType: 'SCHOOL_PLAN' | 'STUDENT_FORM';
   amount: number;
@@ -506,8 +499,7 @@ async function createMidtransOrder({
   customerEmail: string;
   itemId: string;
   itemName: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metadata?: any;
+  _metadata?: Record<string, unknown>;
 }) {
   const orderId = `CG-${orderType}-${Date.now()}`;
 
@@ -540,7 +532,6 @@ saasRouter.post('/create-payment-token', async (c) => {
   try {
     const { school_name, email, amount, plan_id, billing_cycle } = await c.req.json();
     const grossAmount = amount || 750000;
-    const orderId = `CG-PRO-${Date.now()}`;
 
     // Look up plan name if plan_id provided
     let itemName = 'Paket SaaS CationGate Pro (1 Tahun)';
@@ -551,7 +542,7 @@ saasRouter.post('/create-payment-token', async (c) => {
         if (plan) {
           itemName = `Paket ${plan.name} (${billing_cycle === 'monthly' ? 'Bulanan' : 'Tahunan'})`;
         }
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     const result = await createMidtransOrder({
@@ -584,7 +575,7 @@ saasRouter.post('/create-payment-token', async (c) => {
       order_id: result.order_id,
     });
   } catch (err: unknown) {
-    console.error('Midtrans token creation error:', (err as any)?.message);
+    console.error('Midtrans token creation error:', err instanceof Error ? err.message : String(err));
     // Return mock token for sandbox resilience
     return c.json({
       success: true,
@@ -597,7 +588,7 @@ saasRouter.post('/create-payment-token', async (c) => {
 // 2. POST /payment/student-form-token - Token for student registration fee
 saasRouter.post('/payment/student-form-token', async (c) => {
   try {
-    const { school_id, applicant_name, applicant_email, applicant_nisn } = await c.req.json();
+    const { school_id, applicant_name, applicant_email, applicant_nisn: _applicant_nisn } = await c.req.json();
     if (!school_id) {
       return c.json({ success: false, message: 'school_id is required' }, 400);
     }
@@ -609,7 +600,7 @@ saasRouter.post('/payment/student-form-token', async (c) => {
     try {
       const { data: school } = await supabase.from('schools').select('name').eq('id', school_id).maybeSingle();
       if (school) schoolName = school.name;
-    } catch (e) {}
+    } catch (_e) {}
 
     try {
       const { data: cfg } = await supabase
@@ -628,7 +619,7 @@ saasRouter.post('/payment/student-form-token', async (c) => {
           regFee = val;
         }
       }
-    } catch (e) {}
+    } catch (_e) {}
 
     const result = await createMidtransOrder({
       orderType: 'STUDENT_FORM',
@@ -660,7 +651,7 @@ saasRouter.post('/payment/student-form-token', async (c) => {
       amount: regFee,
     });
   } catch (err: unknown) {
-    console.error('Student form token error:', (err as any)?.message);
+    console.error('Student form token error:', err instanceof Error ? err.message : String(err));
     return c.json({
       success: true,
       token: `MOCK-SNAP-TOKEN-${Date.now()}`,
@@ -673,13 +664,13 @@ saasRouter.post('/payment/student-form-token', async (c) => {
 saasRouter.post('/midtrans-webhook', async (c) => {
   try {
     const notificationJson = await c.req.json();
-    
+
     // Security: Signature Verification
     const serverKey = process.env.MIDTRANS_SERVER_KEY || '';
     const hash = crypto.createHash('sha512')
       .update(`${notificationJson.order_id}${notificationJson.status_code}${notificationJson.gross_amount}${serverKey}`)
       .digest('hex');
-      
+
     if (notificationJson.signature_key !== hash) {
       console.warn(`[Midtrans Webhook] Invalid signature for OrderId: ${notificationJson.order_id}`);
       return c.json({ success: false, message: 'Invalid signature' }, 403);
@@ -714,7 +705,7 @@ saasRouter.post('/midtrans-webhook', async (c) => {
         .eq('order_id', orderId)
         .maybeSingle();
       orderRow = orderData;
-    } catch (e) {}
+    } catch (_e) {}
 
     // Always try to update order status
     try {
@@ -722,7 +713,7 @@ saasRouter.post('/midtrans-webhook', async (c) => {
         .from('orders')
         .update({ status: internalStatus, updated_at: new Date().toISOString() })
         .eq('order_id', orderId);
-    } catch (e) {}
+    } catch (_e) {}
 
     // If successful, trigger downstream effects based on order_type
     if (internalStatus === 'SETTLEMENT' && orderRow) {
@@ -757,7 +748,7 @@ saasRouter.post('/midtrans-webhook', async (c) => {
 
     return c.json({ success: true, message: 'Webhook processed' });
   } catch (err: unknown) {
-    console.warn('[Midtrans Webhook Error]:', (err as any).message);
+    console.warn('[Midtrans Webhook Error]:', err instanceof Error ? err.message : String(err));
     return c.json({ success: true, message: 'Webhook received' });
   }
 });
@@ -781,7 +772,7 @@ saasRouter.get('/plans', async (c) => {
     }
     return c.json({ success: true, data: data || [] });
   } catch (err: unknown) {
-    console.error('Fetch SaaS plans error:', (err as any)?.message);
+    console.error('Fetch SaaS plans error:', err instanceof Error ? err.message : String(err));
     return c.json({ success: false, message: 'Gagal mengambil data paket SaaS' }, 500);
   }
 });
@@ -915,7 +906,7 @@ saasRouter.get('/subscription-status', async (c) => {
       }
     });
   } catch (err: unknown) {
-    console.error('Subscription status error:', (err as any)?.message);
+    console.error('Subscription status error:', err instanceof Error ? err.message : String(err));
     return c.json({
       success: true,
       data: { plan: 'FREE_TRIAL', status: 'ACTIVE', daysLeft: 30, isExpired: false }
@@ -924,4 +915,3 @@ saasRouter.get('/subscription-status', async (c) => {
 });
 
 export default saasRouter;
-

@@ -6,7 +6,6 @@ import { rateLimiter } from '../middleware/rate-limiter';
 import { registerApplicantSchema, updateApplicantSchema } from '../validations/applicants';
 import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
-import { timingSafeEqual } from 'crypto';
 import _fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -20,9 +19,9 @@ const appRouter = new Hono();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const syncCandidateToSiswaAktif = async (candidate: any): Promise<void> => {
   try {
-    const supabase = getSupabaseClient(); // Background service role
+    const supabase = getSupabaseClient(); 
     const schoolId = candidate.school_id;
-    
+
     if (!schoolId) {
       console.warn('Sync ignored: Candidate missing school_id', candidate.id);
       return;
@@ -48,7 +47,6 @@ export const syncCandidateToSiswaAktif = async (candidate: any): Promise<void> =
         periode, gelombang, registration_no
       } = candidate;
 
-      // Hapus data siswa aktif yatim (orphan) yang memiliki NISN atau NIK sama tetapi calon_siswa_id berbeda
       if (nisn) {
         const { data: existingByNisn } = await supabase.from('active_students').select('id, calon_siswa_id').eq('nisn', nisn).eq('school_id', schoolId).maybeSingle();
         if (existingByNisn && existingByNisn.calon_siswa_id !== calon_siswa_id) {
@@ -102,7 +100,7 @@ export const syncAllExistingApprovedApplicants = async (): Promise<void> => {
   try {
     const supabase = getSupabaseClient();
     const { data: approvedCandidates } = await supabase.from('student_applicants').select('*').eq('status', 'Approved');
-    
+
     if (approvedCandidates) {
       console.log(`[Startup-Sync] Ditemukan ${approvedCandidates.length} calon siswa berstatus Approved. Mensinkronkan ke SiswaAktif...`);
       for (const candidate of approvedCandidates) {
@@ -111,14 +109,13 @@ export const syncAllExistingApprovedApplicants = async (): Promise<void> => {
       console.log(`[Startup-Sync] Sinkronisasi selesai.`);
     }
   } catch (err: unknown) {
-    console.error('Error syncing existing approved candidates to SiswaAktif:', (err as any).message);
+    console.error('Error syncing existing approved candidates to SiswaAktif:', (err as Error)?.message || String(err));
   }
 };
 
 export const checkAndDisqualifyExpiredApplicants = async (): Promise<void> => {
   try {
     const supabase = getSupabaseClient();
-    // Auto-gugur: pendaftar yang masih Pending lebih dari 30 hari tanpa aksi admin
     const batasWaktu = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
     const { data: expiredApplicants } = await supabase.from('student_applicants')
@@ -129,7 +126,7 @@ export const checkAndDisqualifyExpiredApplicants = async (): Promise<void> => {
 
     if (expiredApplicants && expiredApplicants.length > 0) {
       console.log(`[Auto-Gugur] Ditemukan ${expiredApplicants.length} pendaftar expired. Memproses...`);
-      
+
       for (const applicant of expiredApplicants) {
         await supabase.from('student_applicants')
           .update({ status: 'Rejected' })
@@ -151,7 +148,7 @@ export const checkAndDisqualifyExpiredApplicants = async (): Promise<void> => {
       }
     }
   } catch (err: unknown) {
-    console.error('Error saat menjalankan penjadwal auto-gugur:', (err as any).message);
+    console.error('Error saat menjalankan penjadwal auto-gugur:', (err as Error)?.message || String(err));
   }
 };
 
@@ -180,23 +177,23 @@ appRouter.post('/', rateLimiter({
 }), async (c: Context) => {
   try {
     const f = await c.req.json();
-    
+
     const result = registerApplicantSchema.safeParse(f);
     if (!result.success) {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     const validated = result.data;
-    
+
     const supabase = getSupabaseClient();
     const schoolSlug = c.req.query('school_slug');
     if (!schoolSlug) {
       return c.json({ success: false, message: 'Parameter school_slug wajib disertakan.' }, 400);
     }
-    
+
     // Resolve to actual UUID
     const schoolId = await resolveSchoolUUID(schoolSlug, fontInMemSchools);
     if (!schoolId) {
@@ -358,7 +355,7 @@ appRouter.post('/', rateLimiter({
         const todayStr = new Date().toISOString().split('T')[0];
         const g1 = gelombangConfig.gelombang1;
         const g2 = gelombangConfig.gelombang2;
-        
+
         if (g1 && g1.start && g1.end && todayStr >= g1.start && todayStr <= g1.end) {
           detectedGelombang = 'Gelombang 1';
         } else if (g2 && g2.start && g2.end && todayStr >= g2.start && todayStr <= g2.end) {
@@ -382,7 +379,7 @@ appRouter.post('/', rateLimiter({
       .eq('school_id', schoolId)
       .or(`nisn.eq.${mapped.nisn},nik.eq.${mapped.nik}`)
       .maybeSingle();
-    
+
     if (existing) {
       const field = existing.nisn === mapped.nisn ? 'NISN' : 'NIK';
       return c.json({
@@ -397,7 +394,7 @@ appRouter.post('/', rateLimiter({
       return c.json({ success: false, message: 'Pilihan Program Keahlian (Jurusan 1) wajib diisi.' }, 400);
     }
     const jurusanName = requestedJurusan.includes(' (') ? requestedJurusan.split(' (')[0] : requestedJurusan;
-    
+
     let targets: Record<string, number> = {
       "Teknik Jaringan Komputer & Telekomunikasi": 160,
       "Rekayasa Perangkat Lunak": 200,
@@ -446,9 +443,10 @@ appRouter.post('/', rateLimiter({
       if (dbErr) throw dbErr;
       savedRecord = insertData;
     } catch (dbErr: unknown) {
-      console.error("Supabase CalonSiswa create DB failure.", (dbErr as any).message);
-      if ((dbErr as any).code === '23505') {
-        const detail = (dbErr as any).details || (dbErr as any).message || '';
+      const pgErr = dbErr as { code?: string; details?: string; message?: string };
+      console.error("Supabase CalonSiswa create DB failure.", pgErr?.message || String(dbErr));
+      if (pgErr?.code === '23505') {
+        const detail = pgErr?.details || pgErr?.message || '';
         if (detail.includes('nisn')) {
           return c.json({ success: false, message: 'NISN ini sudah terdaftar di sistem PPDB. Silakan periksa kembali.' }, 400);
         }
@@ -456,23 +454,20 @@ appRouter.post('/', rateLimiter({
           return c.json({ success: false, message: 'NIK ini sudah terdaftar di sistem PPDB. Silakan periksa kembali.' }, 400);
         }
       }
-      return c.json({ success: false, message: 'Gagal memproses formulir pendaftaran: ' + (dbErr as any).message }, 500);
+      return c.json({ success: false, message: 'Gagal memproses formulir pendaftaran: ' + (pgErr?.message || String(dbErr)) }, 500);
     }
 
-    // The database id is unique and avoids count+1 collisions under concurrent registration.
     const registrationNo = `SPMB-${new Date().getFullYear()}-${String(savedRecord.id).padStart(5, '0')}`;
     const { error: registrationError } = await supabase.from('student_applicants')
       .update({ registration_no: registrationNo }).eq('id', savedRecord.id).eq('school_id', schoolId);
     if (registrationError) throw registrationError;
     savedRecord = { ...savedRecord, registration_no: registrationNo };
 
-    // Broadcast websocket notification to active admins!
     broadcast({
       event: 'NEW_APPLICANT',
       data: savedRecord
     }, true);
 
-    // Broadcast sanitized version to public
     broadcast({
       event: 'NEW_APPLICANT_PUBLIC',
       data: {
@@ -496,7 +491,7 @@ appRouter.post('/', rateLimiter({
 
   } catch (err: unknown) {
     console.error('Registration API error:', err);
-    return c.json({ success: false, message: 'Gagal memproses formulir pendaftaran: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal memproses formulir pendaftaran: ' + ((err as Error)?.message || String(err)) }, 500);
   }
 });
 
@@ -529,13 +524,13 @@ appRouter.get('/', adminAuth, async (c: Context) => {
       "janji_taat", "janji_sanksi", "janji_akrab", "janji_belajar", "janji_nama_baik",
       "periode", "gelombang", "registration_no", "status", "tgl_daftar", "verified_by", "rejected_by", "deleted_by"
     ];
-    
+
     const query = supabase.from('student_applicants')
       .select(calonSiswaFields.join(','))
       .is('deleted_at', null)
       .order('tgl_daftar', { ascending: false })
       .eq('school_id', schoolId);
-    
+
     const { data: rows, error } = await query;
     if (process.env.NODE_ENV !== 'production' && (!rows || rows.length === 0)) {
       // Development-only fallback seed data
@@ -590,20 +585,20 @@ appRouter.get('/trashed', adminAuth, async (c: Context) => {
       "janji_taat", "janji_sanksi", "janji_akrab", "janji_belajar", "janji_nama_baik",
       "periode", "gelombang", "registration_no", "status", "tgl_daftar", "deleted_at", "verified_by", "rejected_by", "deleted_by"
     ];
-    
+
     const query = supabase.from('student_applicants')
       .select(calonSiswaFields.join(','))
       .not('deleted_at', 'is', null)
       .order('deleted_at', { ascending: false })
       .eq('school_id', schoolId);
-    
+
     const { data: rows, error } = await query;
     if (error) throw error;
 
     return c.json({ success: true, data: rows });
   } catch (err: unknown) {
     console.error('Fetch trashed applicants list error:', err);
-    return c.json({ success: false, message: 'Gagal mengambil data pendaftar terhapus: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal mengambil data pendaftar terhapus: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
@@ -632,7 +627,6 @@ appRouter.get('/export', adminAuth, async (c: Context) => {
       { header: 'Tanggal Daftar', key: 'tgl_daftar', width: 20 }
     ];
 
-    // Styling header
     worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
     worksheet.getRow(1).fill = {
       type: 'pattern',
@@ -640,61 +634,37 @@ appRouter.get('/export', adminAuth, async (c: Context) => {
       fgColor: { argb: '1E3A8A' }
     };
 
-    // Streaming approach
-    const stream = new ReadableStream({
-      async start(controller) {
-        const BATCH_SIZE = 100;
-        let offset = 0;
-        let hasMore = true;
+    let exportQuery = supabase.from('student_applicants').select('*')
+      .is('deleted_at', null)
+      .order('tgl_daftar', { ascending: false });
 
-        while (hasMore) {
-          const query = supabase.from('student_applicants')
-            .select('*')
-            .is('deleted_at', null)
-            .order('tgl_daftar', { ascending: false })
-            .eq('school_id', schoolId)
-            .range(offset, offset + BATCH_SIZE - 1);
+    if (schoolId) exportQuery = exportQuery.eq('school_id', schoolId);
 
-          const { data, error } = await query;
-          if (error) {
-            console.error('Error fetching batch:', error);
-            controller.error(error);
-            return;
-          }
+    const { data: rows, error } = await exportQuery;
+    if (error) throw error;
 
-          if (!data || data.length === 0) {
-            hasMore = false;
-          } else {
-            for (const row of data) {
-              worksheet.addRow({
-                registration_no: row.registration_no || '-',
-                nama: row.nama || '-',
-                nisn: row.nisn || '-',
-                nik: row.nik || '-',
-                jenis_kelamin: row.jenis_kelamin === 'L' ? 'Laki-laki' : row.jenis_kelamin === 'P' ? 'Perempuan' : row.jenis_kelamin,
-                sekolah_asal: row.sekolah_asal || '-',
-                jurusan_1: row.jurusan_1 || '-',
-                whatsapp: row.whatsapp || '-',
-                email: row.email || '-',
-                status: row.status || 'Pending',
-                physical_doc_verified: row.physical_doc_verified ? 'Sudah Diterima' : 'Belum Diterima',
-                physical_doc_verified_by: row.physical_doc_verified_by || '-',
-                tgl_daftar: row.tgl_daftar ? new Date(row.tgl_daftar).toLocaleString('id-ID') : '-'
-              });
-            }
-            offset += BATCH_SIZE;
-            if (data.length < BATCH_SIZE) hasMore = false;
-          }
-        }
-
-        const buffer = await workbook.xlsx.writeBuffer();
-        controller.enqueue(buffer);
-        controller.close();
-      }
+    (rows || []).forEach((row: Record<string, unknown>) => {
+      worksheet.addRow({
+        registration_no: row.registration_no || '-',
+        nama: row.nama || '-',
+        nisn: row.nisn || '-',
+        nik: row.nik || '-',
+        jenis_kelamin: row.jenis_kelamin === 'L' ? 'Laki-laki' : row.jenis_kelamin === 'P' ? 'Perempuan' : row.jenis_kelamin,
+        sekolah_asal: row.sekolah_asal || '-',
+        jurusan_1: row.jurusan_1 || '-',
+        whatsapp: row.whatsapp || '-',
+        email: row.email || '-',
+        status: row.status || 'Pending',
+        physical_doc_verified: row.physical_doc_verified ? 'Sudah Diterima' : 'Belum Diterima',
+        physical_doc_verified_by: row.physical_doc_verified_by || '-',
+        tgl_daftar: row.tgl_daftar ? new Date(row.tgl_daftar as string).toLocaleString('id-ID') : '-'
+      });
     });
 
-    const filename = `Data_Calon_Siswa_${new Date().toISOString().split('T')[0]}.xlsx`;
-    return new Response(stream, {
+    const buffer = await workbook.xlsx.writeBuffer();
+    const filename = `Data-Calon-Siswa-${new Date().toISOString().split('T')[0]}.xlsx`;
+
+    return new Response(buffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -703,7 +673,7 @@ appRouter.get('/export', adminAuth, async (c: Context) => {
     });
   } catch (err: unknown) {
     console.error('Export Excel error:', err);
-    return c.json({ success: false, message: 'Gagal mengekspor data: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal mengekspor data: ' + ((err as Error)?.message || String(err)) }, 500);
   }
 });
 
@@ -711,7 +681,7 @@ appRouter.get('/export', adminAuth, async (c: Context) => {
 appRouter.post('/:id/restore', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-    
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
@@ -735,7 +705,7 @@ appRouter.post('/:id/restore', adminAuth, async (c: Context) => {
     return c.json({ success: true, message: 'Data calon siswa berhasil dipulihkan.', data: updated });
   } catch (err: unknown) {
     console.error('Restore applicant error:', err);
-    return c.json({ success: false, message: 'Gagal memulihkan data pendaftar: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal memulihkan data pendaftar: ' + ((err as Error)?.message || String(err)) }, 500);
   }
 });
 
@@ -748,7 +718,7 @@ appRouter.get('/:id', adminAuth, async (c: Context) => {
 
     const query = supabase.from('student_applicants').select('*').eq('id', id)
       .eq('school_id', schoolId);
-    
+
     const { data: applicant, error } = await query.single();
 
     if (error || !applicant) {
@@ -772,7 +742,7 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -916,19 +886,14 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
       diterima_tanggal: parseDate(getVal('diterima_tanggal', ['diterima_tanggal', 'diterimaTanggal'])),
       gelombang: getVal('gelombang', ['gelombang']),
       status: getVal('status', ['status']),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      
-      kebutuhan_khusus: f.kebutuhanKhusus !== undefined ? f.kebutuhanKhusus : (existingRecord as any).kebutuhan_khusus,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jenis_prestasi: f.jenisPrestasi !== undefined ? f.jenisPrestasi : (existingRecord as any).jenis_prestasi,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tingkat_prestasi: f.tingkatPrestasi !== undefined ? f.tingkatPrestasi : (existingRecord as any).tingkat_prestasi,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jenis_beasiswa: f.jenisBeasiswa !== undefined ? f.jenisBeasiswa : (existingRecord as any).jenis_beasiswa,
+      kebutuhan_khusus: f.kebutuhanKhusus !== undefined ? f.kebutuhanKhusus : (existingRecord as Record<string, unknown>).kebutuhan_khusus,
+      jenis_prestasi: f.jenisPrestasi !== undefined ? f.jenisPrestasi : (existingRecord as Record<string, unknown>).jenis_prestasi,
+      tingkat_prestasi: f.tingkatPrestasi !== undefined ? f.tingkatPrestasi : (existingRecord as Record<string, unknown>).tingkat_prestasi,
+      jenis_beasiswa: f.jenisBeasiswa !== undefined ? f.jenisBeasiswa : (existingRecord as Record<string, unknown>).jenis_beasiswa,
     };
 
     const updateQuery = supabase.from('student_applicants').update(fields).eq('id', id).eq('school_id', schoolId);
-    
+
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
 
@@ -938,11 +903,10 @@ appRouter.put('/:id', adminAuth, async (c: Context) => {
     return c.json({ success: true, message: 'Data pendaftar berhasil diperbarui.', data: updatedRecord });
   } catch (err: unknown) {
     console.error('Update applicant error:', err);
-    return c.json({ success: false, message: 'Gagal memperbarui data pendaftar: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal memperbarui data pendaftar: ' + ((err as Error)?.message || String(err)) }, 500);
   }
 });
 
-// 6. ADMIN ONLY: Approve/Verify or Reject applicant status (Protected)
 appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
@@ -985,7 +949,7 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
 
     const updateQuery = supabase.from('student_applicants').update(updateData).eq('id', id)
       .eq('school_id', schoolId);
-    
+
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
 
@@ -1008,12 +972,11 @@ appRouter.patch('/:id/status', adminAuth, async (c: Context) => {
   }
 });
 
-// 6. ADMIN ONLY: Delete applicant (Protected)
 appRouter.delete('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
     const permanent = c.req.query('permanent') === 'true';
-    
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
@@ -1042,11 +1005,10 @@ appRouter.delete('/:id', adminAuth, async (c: Context) => {
     }
   } catch (err: unknown) {
     console.error('Delete applicant error:', err);
-    return c.json({ success: false, message: 'Gagal menghapus data pendaftar: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal menghapus data pendaftar: ' + ((err as Error)?.message || String(err)) }, 500);
   }
 });
 
-// 7. ADMIN ONLY: Verifikasi Berkas Fisik (Physical Document Verification)
 appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
@@ -1076,7 +1038,7 @@ appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
     }
 
     const query = supabase.from('student_applicants').update(updateData).eq('id', id).eq('school_id', schoolId);
-    
+
     const { data: updatedRecord, error } = await query.select().single();
     if (error) throw error;
 
@@ -1093,7 +1055,7 @@ appRouter.patch('/:id/physical-doc', adminAuth, async (c: Context) => {
     return c.json({ success: true, message: 'Status verifikasi berkas fisik berhasil diperbarui.', data: updatedRecord });
   } catch (err: unknown) {
     console.error('Update physical doc status error:', err);
-    return c.json({ success: false, message: 'Gagal memperbarui status verifikasi berkas fisik: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal memperbarui status verifikasi berkas fisik: ' + ((err as Error)?.message || String(err)) }, 500);
   }
 });
 

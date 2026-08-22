@@ -1,8 +1,3 @@
-/**
- * Client-Side Asset Auto-Compression Tool for CationGate
- * Automatically compresses images and video files uploaded by school admins
- * before saving to localStorage / backend.
- */
 
 export interface CompressionResult {
   base64: string;
@@ -11,9 +6,6 @@ export interface CompressionResult {
   reductionPercentage: number;
 }
 
-/**
- * Auto-compress an image file using Canvas API
- */
 export async function compressImage(
   file: File,
   maxWidth = 1200,
@@ -29,7 +21,6 @@ export async function compressImage(
       img.onload = () => {
         let { width, height } = img;
 
-        // Calculate aspect ratio scaling
         if (width > maxWidth || height > maxHeight) {
           if (width / height > maxWidth / maxHeight) {
             height = Math.round((height * maxWidth) / width);
@@ -50,16 +41,13 @@ export async function compressImage(
           return;
         }
 
-        // Smooth image rendering
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convert to WebP or JPEG compressed format
         const outputFormat = file.type === "image/png" ? "image/webp" : "image/jpeg";
         const compressedBase64 = canvas.toDataURL(outputFormat, quality);
 
-        // Calculate size reduction
         const compressedSize = Math.round((compressedBase64.length * 3) / 4);
         const reductionPercentage = Math.round(
           ((originalSize - compressedSize) / originalSize) * 100
@@ -82,9 +70,6 @@ export async function compressImage(
   });
 }
 
-/**
- * Auto-compress video file by extracting keyframe / encoding preview Base64
- */
 export async function compressVideo(file: File): Promise<CompressionResult> {
   return new Promise((resolve, reject) => {
     const originalSize = file.size;

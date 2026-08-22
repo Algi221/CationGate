@@ -4,10 +4,9 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import Lottie from "lottie-react";
 import { ArrowLeft, ArrowRight, Info, Eye, EyeOff, Loader2, Lock, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -18,6 +17,7 @@ export default function MasukUniversal() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [animationData, setAnimationData] = useState<any>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -55,14 +55,13 @@ export default function MasukUniversal() {
       const data = await res.json();
 
       if (data.success && data.token) {
-        // Save session locally
+
         localStorage.setItem("ppdb_admin_token", data.token);
         if (data.admin) {
           localStorage.setItem("ppdb_admin_user", JSON.stringify(data.admin));
         }
         localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
 
-        // Redirect based on school_slug or role
         if (data.school_slug) {
           router.push(`/${data.school_slug}/dashboard`);
         } else if (data.admin?.role === "gatekeeper" || data.admin?.role === "superadmin") {
@@ -87,7 +86,7 @@ export default function MasukUniversal() {
   return (
     <main className="min-h-screen lg:h-screen w-screen bg-white text-slate-950 overflow-x-hidden relative flex flex-col justify-between p-4 sm:p-6 lg:p-10 pb-10">
       {/* BACKGROUND BUBBLE */}
-      <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-[180px] lg:h-[92vh] pointer-events-none z-0">
+      <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0">
         <svg
           viewBox={isMobile ? "0 0 414 200" : "0 0 600 700"}
           className="w-full h-full"
@@ -101,8 +100,8 @@ export default function MasukUniversal() {
         </svg>
       </div>
 
-      {/* TOP NAVBAR */}
-      <div className="relative lg:absolute top-2 lg:top-10 left-2 lg:left-10 right-2 lg:right-10 flex items-center justify-between z-10 mb-4 lg:mb-0">
+      {/* HEADER / NAVBAR */}
+      <div className="w-full flex items-center justify-between z-10 relative mb-4 lg:mb-0">
         <div className="flex items-center gap-3">
           <Link
             href="/"
@@ -134,10 +133,12 @@ export default function MasukUniversal() {
               className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform group-hover:scale-105"
             />
             <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-950 font-sans">
-              CationGate
+              Cation<span style={{ color: solidColor }}>Gate</span>
             </span>
           </Link>
         </div>
+
+        {/* LINK DAFTAR INSTANSI */}
         <div className="flex items-center gap-3 text-xs">
           <span className="hidden text-slate-400 sm:block">Belum mendaftarkan instansi?</span>
           <Link
@@ -150,7 +151,7 @@ export default function MasukUniversal() {
       </div>
 
       {/* KONTEN UTAMA GRID 50:50 */}
-      <div className="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto z-10 relative lg:pt-8">
+      <div className="w-full max-w-350 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto z-10 relative lg:pt-8">
         {/* SISI KIRI: HANYA MUNCUL DI DESKTOP */}
         <div className="hidden lg:flex lg:col-span-6 items-center justify-between relative pl-8 lg:pl-16 pr-4">
           {/* TEKS UTAMA */}
@@ -163,7 +164,7 @@ export default function MasukUniversal() {
               <h2 className="text-5xl lg:text-7xl font-black text-white tracking-tight leading-[0.98] whitespace-pre-line drop-shadow-md">
                 {"Portal\nAdmin"}
               </h2>
-              <p className="text-xs lg:text-sm text-white/90 mt-5 font-medium leading-relaxed max-w-[220px]">
+              <p className="text-xs lg:text-sm text-white/90 mt-5 font-medium leading-relaxed max-w-55">
                 Masuk untuk mengelola sistem PPDB & operasional sekolah Anda.
               </p>
             </motion.div>
@@ -177,7 +178,7 @@ export default function MasukUniversal() {
               className="absolute -right-2 top-0 w-16 h-8 rounded-full bg-white/30 backdrop-blur-md shadow-lg z-30"
             />
 
-            <div className="w-full max-w-[320px] h-[320px] z-20">
+            <div className="w-full max-w-80 h-80 z-20">
               {animationData && (
                 <Lottie
                   animationData={animationData}
@@ -192,7 +193,7 @@ export default function MasukUniversal() {
 
         {/* SISI KANAN: FORM INPUT */}
         <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-12 z-10">
-          <div className="w-full max-w-[460px] mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
+          <div className="w-full max-w-115 mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-950">
                 Masuk ke Dashboard

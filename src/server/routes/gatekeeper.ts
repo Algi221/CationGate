@@ -11,12 +11,60 @@ import { redis } from '../../utils/redis';
 
 const gatekeeperRouter = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET;
-const GATEKEEPER_USERNAME = process.env.GATEKEEPER_USERNAME;
-const GATEKEEPER_PASSWORD = process.env.GATEKEEPER_PASSWORD;
-if (!JWT_SECRET || !GATEKEEPER_USERNAME || !GATEKEEPER_PASSWORD) {
-  throw new Error('JWT_SECRET, GATEKEEPER_USERNAME, and GATEKEEPER_PASSWORD are required.');
+const GATEKEEPER_USERNAME = process.env.GATEKEEPER_USERNAME || 'uno';
+const GATEKEEPER_PASSWORD = process.env.GATEKEEPER_PASSWORD || 'reverse';
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is required.');
 }
 
+const GATEKEEPER_ACCOUNTS = [
+  { id: 1, username: 'algi', nama_lengkap: 'Algi', email: 'algi@cationgate.id', password: 'cihuahua123' },
+  { id: 2, username: 'farel', nama_lengkap: 'Farel', email: 'farel@cationgate.id', password: 'cihuahua123' },
+  { id: 3, username: 'jepan', nama_lengkap: 'Jepan', email: 'jepan@cationgate.id', password: 'cihuahua123' },
+  { id: 4, username: 'husein', nama_lengkap: 'Husein', email: 'husein@cationgate.id', password: 'cihuahua123' },
+  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id', password: GATEKEEPER_PASSWORD }
+];
+
+async function notifyTelegramGatekeeperLogin(params: {
+  username: string;
+  nama: string;
+  ip: string;
+  userAgent: string;
+}) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+
+  const now = new Date().toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    dateStyle: 'full',
+    timeStyle: 'medium'
+  });
+
+  const text = `🚨 <b>GATEKEEPER LOGIN DETECTED</b> 🚨\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
+    `👤 <b>Nama:</b> ${params.nama}\n` +
+    `🔑 <b>Username:</b> <code>${params.username}</code>\n` +
+    `🕒 <b>Waktu:</b> ${now} WIB\n` +
+    `🌐 <b>IP Address:</b> <code>${params.ip}</code>\n` +
+    `📱 <b>Device/UA:</b> <code>${params.userAgent}</code>\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
+    `🛡️ <i>Status: Login Berhasil</i>`;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'HTML'
+      })
+    });
+  } catch (e) {
+    console.error('[Telegram] Failed to send Gatekeeper login notification:', e);
+  }
+}
 
 gatekeeperRouter.post('/login', authLimiter, async (c) => {
   try {
@@ -25,17 +73,25 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
       return c.json({ success: false, message: 'Harap isi username dan password Gatekeeper' }, 400);
     }
 
-    // Env Credential Check
-    const currentUsername = process.env.GATEKEEPER_USERNAME || GATEKEEPER_USERNAME;
-    const currentPassword = process.env.GATEKEEPER_PASSWORD || GATEKEEPER_PASSWORD;
+    const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || '127.0.0.1';
+    const userAgent = c.req.header('user-agent') || 'Unknown Browser';
 
-    if (username === currentUsername && password === currentPassword) {
+    // 1. Check in predefined Gatekeeper accounts (Algi, Farel, Jepan, Husein, uno)
+    const matchedAccount = GATEKEEPER_ACCOUNTS.find(
+      (acc) =>
+        (acc.username.toLowerCase() === String(username).toLowerCase() ||
+         acc.email.toLowerCase() === String(username).toLowerCase() ||
+         acc.nama_lengkap.toLowerCase() === String(username).toLowerCase()) &&
+        acc.password === password
+    );
+
+    if (matchedAccount) {
       const defaultGatekeeper = {
-        id: 1,
-        username: GATEKEEPER_USERNAME,
-        nama_lengkap: 'Gatekeeper CationGate Platform',
+        id: matchedAccount.id,
+        username: matchedAccount.username,
+        nama_lengkap: matchedAccount.nama_lengkap,
         role: 'gatekeeper',
-        email: 'uno@cationgate.id'
+        email: matchedAccount.email
       };
 
       const token = jwt.sign(
@@ -50,6 +106,14 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
         { expiresIn: '7d' }
       );
 
+      // Trigger Telegram notification asynchronously
+      notifyTelegramGatekeeperLogin({
+        username: defaultGatekeeper.username,
+        nama: defaultGatekeeper.nama_lengkap,
+        ip,
+        userAgent
+      }).catch(() => {});
+
       return c.json({
         success: true,
         token,
@@ -57,9 +121,9 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
       });
     }
 
+    // 2. Fallback to Supabase gatekeeper_users table
     const supabase = getSupabaseClient();
-    
-    // Check gatekeeper_users table
+
     const { data: gatekeeper } = await supabase
       .from('gatekeeper_users')
       .select('*')
@@ -88,6 +152,13 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
       { expiresIn: '7d' }
     );
 
+    notifyTelegramGatekeeperLogin({
+      username: gatekeeper.username,
+      nama: gatekeeper.nama_lengkap,
+      ip,
+      userAgent
+    }).catch(() => {});
+
     return c.json({
       success: true,
       token,
@@ -100,7 +171,7 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
     });
 
   } catch (err: unknown) {
-    console.error('Gatekeeper login error:', (err as any)?.message);
+    console.error('Gatekeeper login error:', err instanceof Error ? err.message : String(err));
     return c.json({ success: false, message: 'Terjadi kesalahan server saat login.' }, 500);
   }
 });
@@ -109,10 +180,10 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
 gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
   try {
     const supabase = getSupabaseClient();
-    
+
     // Fetch verified schools
     const { data: dbSchools } = await supabase.from('schools').select('*').order('created_at', { ascending: false });
-    
+
     // Fetch candidate/prospective schools
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let prospectiveList: any[] = [];
@@ -130,7 +201,7 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const combinedMap = new Map<string, any>();
-    
+
     if (dbSchools && Array.isArray(dbSchools)) {
       dbSchools.forEach(s => combinedMap.set(s.slug, { ...s, is_official: true }));
     }
@@ -225,7 +296,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
           dapodik_code: targetSchool?.dapodik_code || null
         }, { onConflict: 'slug' });
     } catch (sbErr: unknown) {
-      console.warn('Supabase schools upsert warning:', (sbErr as any).message);
+      console.warn('Supabase schools upsert warning:', sbErr instanceof Error ? sbErr.message : String(sbErr));
     }
 
     // 4. Update fontInMemSchools map for instant slug resolution & active state
@@ -263,12 +334,11 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
     });
   } catch (err: unknown) {
     console.error('Approve school error:', err);
-    return c.json({ success: false, message: 'Gagal meng-approve sekolah: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal meng-approve sekolah: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function candidateSchoolAdmin(targetSchool: any): string {
+function _candidateSchoolAdmin(targetSchool: { admin_name?: string } | null | undefined): string {
   if (targetSchool?.admin_name) return targetSchool.admin_name;
   return 'Kepala Sekolah';
 }
@@ -278,9 +348,9 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
   try {
     const { school_id } = await c.req.json();
     const supabase = getSupabaseClient();
-    
+
     const resolvedId = await resolveSchoolUUID(String(school_id), fontInMemSchools);
-    
+
     if (resolvedId) {
       try {
         await supabase
@@ -298,7 +368,7 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
           .update({ status: 'SUSPENDED' })
           .eq('slug', String(school_id));
       } catch (err: unknown) {
-        console.warn('Supabase takedown warning:', (err as any).message);
+        console.warn('Supabase takedown warning:', err instanceof Error ? err.message : String(err));
       }
     } else {
       // If we couldn't resolve UUID for schools table, try to update prospective tables by slug anyway
@@ -313,7 +383,7 @@ gatekeeperRouter.post('/takedown-school', gatekeeperAuth, async (c) => {
           .update({ status: 'SUSPENDED' })
           .eq('slug', String(school_id));
       } catch (err: unknown) {
-        console.warn('Supabase takedown warning (prospective):', (err as any).message);
+        console.warn('Supabase takedown warning (prospective):', err instanceof Error ? err.message : String(err));
       }
     }
 
@@ -352,7 +422,7 @@ gatekeeperRouter.get('/plans', gatekeeperAuth, async (c) => {
     if (error) throw error;
     return c.json({ success: true, data: data || [] });
   } catch (err: unknown) {
-    console.error('Get plans error:', (err as any)?.message);
+    console.error('Get plans error:', err instanceof Error ? err.message : String(err));
     return c.json({ success: false, message: 'Gagal mengambil data paket' }, 500);
   }
 });
@@ -375,8 +445,8 @@ gatekeeperRouter.post('/plans', gatekeeperAuth, async (c) => {
     if (error) throw error;
     return c.json({ success: true, data });
   } catch (err: unknown) {
-    console.error('Create plan error:', (err as any)?.message);
-    return c.json({ success: false, message: 'Gagal membuat paket: ' + (err as any)?.message }, 500);
+    console.error('Create plan error:', err instanceof Error ? err.message : String(err));
+    return c.json({ success: false, message: 'Gagal membuat paket: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
@@ -404,8 +474,8 @@ gatekeeperRouter.put('/plans/:id', gatekeeperAuth, async (c) => {
     if (error) throw error;
     return c.json({ success: true, data });
   } catch (err: unknown) {
-    console.error('Update plan error:', (err as any)?.message);
-    return c.json({ success: false, message: 'Gagal mengupdate paket: ' + (err as any)?.message }, 500);
+    console.error('Update plan error:', err instanceof Error ? err.message : String(err));
+    return c.json({ success: false, message: 'Gagal mengupdate paket: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
@@ -419,11 +489,9 @@ gatekeeperRouter.delete('/plans/:id', gatekeeperAuth, async (c) => {
     if (error) throw error;
     return c.json({ success: true, message: 'Paket berhasil dihapus' });
   } catch (err: unknown) {
-    console.error('Delete plan error:', (err as any)?.message);
-    return c.json({ success: false, message: 'Gagal menghapus paket: ' + (err as any)?.message }, 500);
+    console.error('Delete plan error:', err instanceof Error ? err.message : String(err));
+    return c.json({ success: false, message: 'Gagal menghapus paket: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
-
-// ═══════════════════════════════════════════════════════════════
 
 export default gatekeeperRouter;

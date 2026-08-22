@@ -2,21 +2,14 @@ import { Redis } from '@upstash/redis';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load .env.local to ensure environment variables are available
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
-
-// Initialize Redis from Environment Variables
-// It automatically picks up UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
-// Wait, the user has KV_REST_API_URL and KV_REST_API_TOKEN.
-// Redis.fromEnv() expects UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN by default.
-// Let's pass the URL and Token explicitly to be safe.
 
 let redisClient: Redis | null = null;
 
 try {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  
+
   if (url && token) {
     redisClient = new Redis({
       url: url,
@@ -30,9 +23,6 @@ try {
   console.warn('⚠️ Redis client failed to initialize. Falling back to DB only.', error);
 }
 
-/**
- * Safely get an item from Redis
- */
 export async function getCached<T>(key: string): Promise<T | null> {
   if (!redisClient) return null;
   try {

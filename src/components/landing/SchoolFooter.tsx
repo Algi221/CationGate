@@ -12,12 +12,11 @@ interface SchoolFooterProps {
 export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
   const { ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah } = usePPDB();
 
-  // Ambil data identitas sekolah
   const identitas = profilSekolah?.identitas || {};
   const address = identitas.alamat || "Jl. Raya Tapos No. 123, Depok";
-  const phone = "(021) 876-5432"; // Idealnya dari API
+  const phone = "(021) 876-5432"; 
   const email = identitas.email || "info@sekolah.sch.id";
-  const schoolPeriod = "2026-2027"; // Idealnya dari API
+  const schoolPeriod = "2026-2027"; 
   const schoolDisplayName = ppdbTitle || schoolSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   return (
@@ -25,13 +24,13 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          {/* Col 1 */}
+          {}
           <div className="space-y-6">
             <Link href={`/${schoolSlug}`} className="flex items-center gap-3 group">
               <div className="relative h-12 w-12 shrink-0 bg-white/10 dark:bg-white/5 rounded-xl p-2 backdrop-blur-md border border-white/10">
                 <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
               </div>
-              <span className="text-xl font-extrabold text-slate-900 dark:text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <span className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {schoolDisplayName}
               </span>
             </Link>
@@ -92,7 +91,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
 
           {/* Col 2 */}
           <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-slate-900 dark:text-white">Program Keahlian</h4>
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Program Keahlian</h4>
             <ul className="space-y-2 text-xs font-semibold">
               <li><Link href={`/${schoolSlug}/jurusan/rpl`} className="hover:text-blue-500 transition-colors">Rekayasa Perangkat Lunak</Link></li>
               <li><Link href={`/${schoolSlug}/jurusan/tjkt`} className="hover:text-blue-500 transition-colors">Teknik Komputer Jaringan</Link></li>
@@ -103,7 +102,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
 
           {/* Col 3 */}
           <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-slate-900 dark:text-white">Link Terkait</h4>
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Link Terkait</h4>
             <ul className="space-y-2 text-xs font-semibold">
               <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-500 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
               <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-500 transition-colors">Syarat Pendaftaran</Link></li>
@@ -114,7 +113,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
 
           {/* Col 4 */}
           <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 dark:text-slate-900 dark:text-white">Sekretariat PPDB</h4>
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Sekretariat PPDB</h4>
             <p className="text-xs leading-relaxed font-semibold text-slate-400">
               {address}
             </p>

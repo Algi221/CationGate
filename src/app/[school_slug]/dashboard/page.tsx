@@ -11,6 +11,7 @@ import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import KuotaTab from "@/components/KuotaTab";
 import Swal from "sweetalert2";
+import type { ApexOptions } from "apexcharts";
 
 import dynamic from "next/dynamic";
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -22,29 +23,49 @@ interface MajorItem {
   count?: number;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Animated counter hook
-// ─────────────────────────────────────────────────────────────────────────────
+interface MajorConfigItem {
+  code?: string;
+  title?: string;
+  name?: string;
+  color?: string;
+}
+
+interface ApplicantItem {
+  id?: number | string;
+  nama?: string;
+  nisn?: string;
+  sekolah_asal?: string;
+  sekolahAsal?: string;
+  jurusan_1?: string;
+  jurusan1?: string;
+  status?: string;
+  tgl_daftar?: string;
+  created_at?: string;
+}
+
 function useCountUp(target: number, duration = 1400, trigger = false) {
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(() => (!trigger || target === 0 ? target : 0));
   useEffect(() => {
-    if (!trigger || target === 0) { setValue(target); return; }
+    if (!trigger || target === 0) {
+      return;
+    }
     let start: number | null = null;
+    let animId: number;
     const raf = (ts: number) => {
       if (!start) start = ts;
       const p = Math.min((ts - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3); // cubic ease-out
+      const eased = 1 - Math.pow(1 - p, 3); 
       setValue(Math.round(eased * target));
-      if (p < 1) requestAnimationFrame(raf);
+      if (p < 1) {
+        animId = requestAnimationFrame(raf);
+      }
     };
-    requestAnimationFrame(raf);
+    animId = requestAnimationFrame(raf);
+    return () => cancelAnimationFrame(animId);
   }, [target, duration, trigger]);
-  return value;
+  return !trigger || target === 0 ? target : value;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Animated Stat Card
-// ─────────────────────────────────────────────────────────────────────────────
 function StatCard({
   label, value, sub, color, icon, delay = 0, trigger = false
 }: {
@@ -65,14 +86,14 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: delay * 0.08 }}
-      className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800 rounded-xl p-5 shadow-sm transition-all duration-200`}
+      className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm transition-all duration-200"
     >
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">{label}</span>
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${c.iconBg} ${c.iconText}`}>{icon}</div>
       </div>
-      <h3 className={`text-3xl font-bold leading-none mb-1 tabular-nums text-slate-900 dark:text-white`}>{displayValue}</h3>
-      <span className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 font-medium">{sub}</span>
+      <h3 className="text-3xl font-bold leading-none mb-1 tabular-nums text-slate-900 dark:text-white">{displayValue}</h3>
+      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{sub}</span>
     </motion.div>
   );
 }
@@ -92,14 +113,16 @@ function AreaChart({
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains("dark"));
-    });
+    const checkDark = () => setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(checkDark);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
+    const id = requestAnimationFrame(checkDark);
+    return () => {
+      cancelAnimationFrame(id);
+      observer.disconnect();
+    };
   }, []);
-  
+
   const series = [
     {
       name: "Pendaftar",
@@ -107,29 +130,36 @@ function AreaChart({
     },
   ];
 
-  const options: any = {
-    legend: { show: false, position: "top", horizontalAlign: "left" },
-    colors: [color],
+  const options: ApexOptions = {
     chart: {
-      fontFamily: "inherit",
-      height: 335,
       type: "area",
-      toolbar: {
-        show: true,
-      },
+      height: 310,
+      fontFamily: "inherit",
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      parentHeightOffset: 0,
     },
+    colors: [color],
     fill: {
       type: "gradient",
       gradient: {
         shadeIntensity: 1,
-        opacityFrom: 0.55,
-        opacityTo: 0.15,
-        stops: [0, 90, 100]
+        opacityFrom: 0.45,
+        opacityTo: 0.05,
+        stops: [0, 90, 100],
       },
     },
+    dataLabels: { enabled: false },
     stroke: {
       curve: "smooth",
-      width: 2,
+      width: 2.5,
+    },
+    grid: {
+      borderColor: isDark ? "#1e293b" : "#f1f5f9",
+      strokeDashArray: 4,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+      padding: { top: 0, right: 10, bottom: 0, left: 10 },
     },
     xaxis: {
       categories: labels,
@@ -137,31 +167,31 @@ function AreaChart({
       axisTicks: { show: false },
       labels: {
         style: {
-          colors: "#64748b",
+          colors: isDark ? "#64748b" : "#94a3b8",
+          fontSize: "11px",
+          fontWeight: 500,
         },
       },
     },
     yaxis: {
       labels: {
         style: {
-          colors: "#64748b",
+          colors: isDark ? "#64748b" : "#94a3b8",
+          fontSize: "11px",
+          fontWeight: 500,
         },
+        formatter: (val: number) => `${Math.round(val)}`,
       },
+      min: 0,
+      forceNiceScale: true,
     },
-    grid: {
-      strokeDashArray: 5,
-      xaxis: { lines: { show: false } },
-      yaxis: { lines: { show: true } },
-      borderColor: isDark ? "#334155" : "#e2e8f0",
-    },
-    dataLabels: { enabled: false },
     tooltip: {
       theme: isDark ? "dark" : "light",
     },
   };
 
   return (
-    <div className="w-full h-[300px]">
+    <div className="w-full h-75">
       <div className="-ml-3">
         <ReactApexChart
           options={options}
@@ -310,33 +340,37 @@ export default function DashboardOverview() {
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "demo";
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
-  const [counterTrigger, setCounterTrigger] = useState(false);
+  const counterTrigger = (applicants?.length || 0) > 0;
 
   const isVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || isDemoMode;
 
-  const [majorsList, setMajorsList] = useState<MajorItem[]>([
-    { name: "PPLG", dbName: "Rekayasa Perangkat Lunak", color: "#2E7CF6" },
-    { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0BB0CE" },
-    { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#7957F5" },
-    { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#F7A325" },
-    { name: "Elektronika", dbName: "Teknik Elektronika", color: "#16C172" },
-    { name: "Animasi", dbName: "Animasi", color: "#EC4E9E" },
-  ]);
+  const [majorsList, setMajorsList] = useState<MajorItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ppdb_majors_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {   
+            return parsed.map((m: MajorConfigItem) => ({
+              name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : (m.code || m.name || ""))),
+              dbName: m.title || m.name || "",
+              color: m.color || "#2E7CF6",
+            }));
+          }
+        } catch { /* ignore */ }
+      }
+    }
+    return [
+      { name: "PPLG", dbName: "Rekayasa Perangkat Lunak", color: "#2E7CF6" },
+      { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0BB0CE" },
+      { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#7957F5" },
+      { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#F7A325" },
+      { name: "Elektronika", dbName: "Teknik Elektronika", color: "#16C172" },
+      { name: "Animasi", dbName: "Animasi", color: "#EC4E9E" },
+    ];
+  });
 
   useEffect(() => {
-    const saved = localStorage.getItem("ppdb_majors_config");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {   
-          setMajorsList(parsed.map((m: any) => ({
-            name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
-            dbName: m.title,
-            color: m.color || "#2E7CF6",
-          })));
-        }
-      } catch { /* ignore */ }
-    }
     fetch("/api/config")
       .then((r) => r.json())
       .then((json) => {
@@ -346,9 +380,9 @@ export default function DashboardOverview() {
             const hasLocalMajors = !!localStorage.getItem("ppdb_majors_config");
             const slugPath = window.location.pathname.split('/')[1] || "";
             if (slugPath === "demo" || !hasLocalMajors) {
-              const mapped = dbMajors.map((m: any) => ({
-                name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : m.code)),
-                dbName: m.title,
+              const mapped = dbMajors.map((m: MajorConfigItem) => ({
+                name: m.code === "RPL" ? "PPLG" : (m.code === "ANM" ? "Animasi" : (m.code === "BC" ? "Broadcasting" : (m.code || m.name || ""))),
+                dbName: m.title || m.name || "",
                 color: m.color || "#2E7CF6",
               }));
               setMajorsList(mapped);
@@ -362,20 +396,16 @@ export default function DashboardOverview() {
 
   // ── Derived Stats (computed dari data pendaftar) ───────────────────────────
   const computedStats = useMemo(() => {
-    const list = applicants || [];
-    const approved = list.filter((a: any) => a.status === "Approved").length;
-    const pending = list.filter((a: any) => a.status === "Pending").length;
-    const rejected = list.filter((a: any) => a.status === "Rejected").length;
+    const list: ApplicantItem[] = applicants || [];
+    const approved = list.filter((a: ApplicantItem) => a.status === "Approved").length;
+    const pending = list.filter((a: ApplicantItem) => a.status === "Pending").length;
+    const rejected = list.filter((a: ApplicantItem) => a.status === "Rejected").length;
     return { total: list.length, approved, pending, rejected };
   }, [applicants]);
 
-  useEffect(() => {
-    if (computedStats.total > 0) setCounterTrigger(true);
-  }, [computedStats.total]);
-
   const majorsMap = useMemo(() => {
     const counts: Record<string, number> = {};
-    (applicants || []).forEach((a: any) => {
+    (applicants || []).forEach((a: ApplicantItem) => {
       const name = a.jurusan_1 || a.jurusan1 || "";
       if (name) counts[name] = (counts[name] || 0) + 1;
     });
@@ -396,9 +426,12 @@ export default function DashboardOverview() {
     const dayMs = 86400000;
     const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
 
-    const registeredAt = (a: any) => {
-      const d = new Date(a.tgl_daftar || a.created_at || Date.now());
-      return isNaN(d.getTime()) ? Date.now() : d.getTime();
+    const nowTime = now.getTime();
+    const registeredAt = (a: { tgl_daftar?: string; created_at?: string }) => {
+      const dateStr = a.tgl_daftar || a.created_at;
+      if (!dateStr) return nowTime;
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? nowTime : d.getTime();
     };
 
     let buckets: { label: string; from: number; to: number }[] = [];
@@ -437,7 +470,7 @@ export default function DashboardOverview() {
     } else {
       const months = new Map<string, { from: number; to: number }>();
 
-      (applicants || []).forEach((a: any) => {
+      (applicants || []).forEach((a: ApplicantItem) => {
         const t = registeredAt(a);
         const d = new Date(t);
         const key = `${d.getFullYear()}-${d.getMonth()}`;
@@ -461,7 +494,7 @@ export default function DashboardOverview() {
     }
 
     const counts = buckets.map((b) =>
-      (applicants || []).filter((a: any) => {
+      (applicants || []).filter((a: ApplicantItem) => {
         const t = registeredAt(a);
         return t >= b.from && t < b.to;
       }).length
@@ -568,7 +601,7 @@ export default function DashboardOverview() {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
       >
         <div className="space-y-1 max-w-2xl">
           <div className="flex items-center gap-2">
@@ -583,38 +616,36 @@ export default function DashboardOverview() {
               {isSpmbOpen ? "DIBUKA (OPEN)" : "DITUTUP (CLOSED)"}
             </span>
           </div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
-            Status Resmi Pendaftaran SPMB
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+            {isSpmbOpen
+              ? "Pendaftaran Calon Siswa Baru Sedang Aktif"
+              : "Pendaftaran Calon Siswa Baru Sedang Ditutup Sementara"}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
             {isSpmbOpen
-              ? "Pendaftaran calon siswa baru saat ini aktif. Pengunjung landing page dapat mengisi formulir pendaftaran secara langsung."
-              : "Pendaftaran publik saat ini non-aktif. Pengunjung landing page tidak dapat mengisi formulir pendaftaran."}
+              ? "Formulir pendaftaran dan pemilihan jurusan dapat diakses secara publik oleh seluruh calon pendaftar."
+              : "Calon pendaftar yang mengakses link formulir akan melihat halaman pemberitahuan bahwa gelombang pendaftaran belum dibuka."}
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
-          <div className="hidden sm:block text-right">
-            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {isSpmbOpen ? "Matikan Pendaftaran" : "Buka Pendaftaran"}
-            </p>
-            <p className="text-[11px] text-slate-400">
-              Ubah akses formulir publik instansi
-            </p>
-          </div>
-          <button
-            onClick={handleToggleSpmbStatus}
-            disabled={isUpdatingSpmb}
-            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto ${
-              isSpmbOpen
-                ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/10"
-                : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/10"
-            }`}
-          >
+        <button
+          onClick={handleToggleSpmbStatus}
+          disabled={isUpdatingSpmb}
+          className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 shrink-0 cursor-pointer shadow-sm disabled:opacity-50 ${
+            isSpmbOpen
+              ? "bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+              : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20"
+          }`}
+        >
+          {isUpdatingSpmb ? (
+            <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          ) : isSpmbOpen ? (
+            <Lock className="w-4 h-4" />
+          ) : (
             <Power className="w-4 h-4" />
-            {isSpmbOpen ? "Matikan Pendaftaran" : "Buka Pendaftaran"}
-          </button>
-        </div>
+          )}
+          <span>{isSpmbOpen ? "Tutup Pendaftaran" : "Buka Pendaftaran"}</span>
+        </button>
       </motion.div>
 
       {!isVerified && (
@@ -663,15 +694,15 @@ export default function DashboardOverview() {
         transition={{ duration: 0.55, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Area Chart */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Tren Registrasi</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5">
                 Statistik pendaftaran – {trendView === "hari" ? "7 hari terakhir" : trendView === "minggu" ? "4 minggu terakhir" : trendView === "bulan" ? "6 bulan terakhir" : "per periode"}
               </p>
             </div>
-            <div className="flex bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-800/40 dark:border-white/5 shrink-0">
+            <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-800/40 shrink-0">
               {(["hari", "minggu", "bulan", "periode"] as const).map((v) => (
                 <button
                   key={v}
@@ -689,11 +720,11 @@ export default function DashboardOverview() {
         </div>
 
         {/* Kuota Panel */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col">
+        <div className="lg:col-span-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 rounded-2xl p-6 shadow-sm flex flex-col">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Data Keseluruhan</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Status kuota seluruh jurusan</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5">Status kuota seluruh jurusan</p>
             </div>
             <Link
               href={`/${schoolSlug}/dashboard/pendaftar?tab=kuota`}
@@ -711,7 +742,7 @@ export default function DashboardOverview() {
 
       {/* ── Bar Chart – Distribusi Jurusan ──────────────────────────────────── */}
       <motion.div
-        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm"
+        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 rounded-2xl p-6 shadow-sm"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -722,14 +753,14 @@ export default function DashboardOverview() {
               <BarChart2 size={14} className="text-indigo-500" />
               Distribusi Pendaftar per Jurusan
             </h3>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Jumlah calon siswa berdasarkan pilihan jurusan pertama</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5">Jumlah calon siswa berdasarkan pilihan jurusan pertama</p>
           </div>
           {/* Legend */}
           <div className="hidden sm:flex items-center flex-wrap gap-x-4 gap-y-1">
             {majorsList.slice(0, 6).map((m) => (
               <div key={m.name} className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: m.color }} />
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">{m.name}</span>
+                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">{m.name}</span>
               </div>
             ))}
           </div>
@@ -745,11 +776,11 @@ export default function DashboardOverview() {
         transition={{ duration: 0.55, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Recent Table */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
+        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftar Terbaru</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
             </div>
             <Link href={`/${schoolSlug}/dashboard/pendaftar`} className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
               Lihat Semua <ArrowRight size={12} />
@@ -758,7 +789,7 @@ export default function DashboardOverview() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-bold">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-600 dark:text-slate-300 text-[9px] uppercase tracking-widest">
+                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-400 text-[9px] uppercase tracking-widest">
                   <th className="pb-2 pt-1 pl-2">Nama</th>
                   <th className="pb-2 pt-1">Asal Sekolah</th>
                   <th className="pb-2 pt-1">Jurusan</th>
@@ -766,16 +797,16 @@ export default function DashboardOverview() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-white/5">
-                {applicants.slice(0, 7).map((a: any, idx: number) => (
+                {(applicants as ApplicantItem[]).slice(0, 7).map((a: ApplicantItem, idx: number) => (
                   <motion.tr
                     key={a.id || idx}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
-                    className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/3 transition-all"
+                    className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                   >
-                    <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[130px] truncate">{a.nama}</td>
-                    <td className="py-2.5 truncate max-w-[110px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
+                    <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-32.5 truncate">{a.nama}</td>
+                    <td className="py-2.5 truncate max-w-27.5 text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
                     <td className="py-2.5">
                       <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 text-[9px] font-bold uppercase tracking-wide">
                         {majorsList.find((m) => m.dbName === a.jurusan_1 || m.dbName === a.jurusan1)?.name || a.jurusan_1 || "PPLG"}
@@ -802,13 +833,13 @@ export default function DashboardOverview() {
 
         {/* Kuota Progress Charts */}
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
             <h3 className="text-[10px] font-black text-slate-800 dark:text-white tracking-wider uppercase mb-3 flex items-center gap-2">
               <BarChart2 size={12} className="text-blue-500" /> Progress Calon Siswa
             </h3>
             <KuotaTab type="pendaftar" variant="minimal" />
           </div>
-          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
             <h3 className="text-[10px] font-black text-slate-800 dark:text-white tracking-wider uppercase mb-3 flex items-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Progress Siswa Aktif
             </h3>

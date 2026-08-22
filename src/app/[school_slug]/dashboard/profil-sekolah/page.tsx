@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { usePPDB } from "@/context/PPDBContext";
-import { Save, HelpCircle, FileText, School, Target, ListChecks, Check, X, Building2, Upload, Image as ImageIcon } from "lucide-react";
+import { Save, FileText, School, Target, ListChecks, Building2, Upload, Image as ImageIcon } from "lucide-react";
 import Swal from "sweetalert2";
 import { uploadFileDirect, base64ToFile } from "@/utils/storage";
 import { compressImage } from "@/utils/mediaCompressor";
 
 export default function ProfilSekolahPage() {
-  const { adminToken, profilSekolah, setProfilSekolah, fetchConfigs, schoolId, isDemoMode, ppdbTitle, ppdbLogo } = usePPDB();
+  const { adminToken, profilSekolah, fetchConfigs, schoolId, isDemoMode, ppdbTitle, ppdbLogo } = usePPDB();
 
   const [loading, setLoading] = useState(false);
   const [logoInput, setLogoInput] = useState("");
@@ -26,7 +27,7 @@ export default function ProfilSekolahPage() {
   const [visi, setVisi] = useState("");
   const [misi, setMisi] = useState("");
   const [tujuan, setTujuan] = useState("");
-  
+
   const [activeTab, setActiveTab] = useState("identitas");
 
   useEffect(() => {
@@ -73,7 +74,7 @@ export default function ProfilSekolahPage() {
       Swal.fire({ icon: 'info', title: 'Mode Demo', text: 'Perubahan tidak disimpan permanen di mode demo.' });
       return;
     }
-    
+
     setLoading(true);
     const payload = {
       identitas,
@@ -90,7 +91,7 @@ export default function ProfilSekolahPage() {
     ]);
 
     setLoading(false);
-    
+
     if (results.every(r => r === true)) {
       Swal.fire({
         icon: "success",
@@ -128,7 +129,7 @@ export default function ProfilSekolahPage() {
   return (
     <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -138,7 +139,7 @@ export default function ProfilSekolahPage() {
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">Atur identitas, nama sekolah, logo, sejarah, visi-misi, dan tujuan.</p>
           </div>
-          
+
           <button
             onClick={handleSaveAll}
             disabled={loading}
@@ -151,7 +152,7 @@ export default function ProfilSekolahPage() {
 
         {/* Content Tabs */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-          
+
           {/* Navigation Bar */}
           <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
             <button
@@ -208,12 +209,12 @@ export default function ProfilSekolahPage() {
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white">Identitas Utama Sekolah</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">Informasi pokok sekolah yang digunakan di profil dan kop surat sistem.</p>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center gap-6">
-                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden group">
+                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden group">
                       {logoInput ? (
-                        <img src={logoInput} alt="Logo" className="w-full h-full object-contain p-2" />
+                        <Image src={logoInput} alt="Logo" width={128} height={128} className="w-full h-full object-contain p-2" unoptimized />
                       ) : (
                         <ImageIcon className="w-8 h-8 text-slate-400 mb-2" />
                       )}
@@ -236,7 +237,7 @@ export default function ProfilSekolahPage() {
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Sekolah</label>
                     <input type="text" name="nama" value={identitas.nama} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: SMK TARUNA BHAKTI" />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NPSN</label>
                     <input type="text" name="npsn" value={identitas.npsn} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Pokok Sekolah Nasional" />

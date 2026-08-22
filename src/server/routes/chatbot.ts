@@ -66,7 +66,7 @@ chatbotRouter.post('/', async (c) => {
     const geminiApiKey = process.env.GEMINI_API_KEY;
 
     if (!geminiApiKey) {
-      // Fallback response engine if API key is not yet configured
+
       const fallbackReply = generateFallbackResponse(userMessage);
       return c.json({
         success: true,
@@ -75,10 +75,8 @@ chatbotRouter.post('/', async (c) => {
       });
     }
 
-    // Format messages for Google Gemini API
-    const contents: any[] = [];
+    const contents: { role: string; parts: { text: string }[] }[] = [];
 
-    // Add conversation history if present
     for (const h of history.slice(-6)) {
       if (h.role && h.text) {
         contents.push({
@@ -88,7 +86,6 @@ chatbotRouter.post('/', async (c) => {
       }
     }
 
-    // Add current user message
     contents.push({
       role: 'user',
       parts: [{ text: userMessage }]
@@ -105,7 +102,6 @@ chatbotRouter.post('/', async (c) => {
       }
     };
 
-    // Try Gemini 1.5 Flash first, with fallback to gemini-2.0-flash
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
       {
@@ -118,7 +114,6 @@ chatbotRouter.post('/', async (c) => {
     if (!response.ok) {
       const errText = await response.text();
       console.warn('Gemini API Error:', errText);
-      // Fallback on Gemini error
       return c.json({
         success: true,
         reply: generateFallbackResponse(userMessage),
@@ -137,7 +132,6 @@ chatbotRouter.post('/', async (c) => {
       });
     }
 
-    // Strip any unexpected emojis from reply to enforce strict rule
     aiReply = aiReply.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}]/gu, '');
 
     return c.json({
@@ -146,8 +140,8 @@ chatbotRouter.post('/', async (c) => {
       source: 'gemini'
     });
 
-  } catch (error: any) {
-    console.error('Chatbot API Exception:', error?.message);
+  } catch (error: unknown) {
+    console.error('Chatbot API Exception:', (error as Error)?.message || String(error));
     return c.json({
       success: true,
       reply: generateFallbackResponse(userMessage || ""),

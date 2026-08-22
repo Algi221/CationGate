@@ -13,7 +13,6 @@ interface Plan {
   created_at: string;
 }
 
-/** Format number to "Rp 750.000" style with dots */
 function formatRupiahDisplay(num: number): string {
   return `Rp ${num.toLocaleString('id-ID')}`;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams, useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,9 +8,24 @@ import Swal from 'sweetalert2';
 import {
   LayoutDashboard, Users, Settings,
   Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, ChevronDown, ShieldCheck, Lock, CreditCard, Paintbrush
+  Palette, Layers, Shield, ChevronDown, ShieldCheck, CreditCard
 } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
+
+interface SubMenuItem {
+  href: string;
+  label: string;
+}
+
+interface MenuItem {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  exact?: boolean;
+  lockedIfUnverified?: boolean;
+  superAdminOnly?: boolean;
+  subItems?: SubMenuItem[];
+}
 
 interface AdminSidebarProps {
   isMobileMenuOpen: boolean;
@@ -36,16 +51,6 @@ export function AdminSidebar({
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
 
   const isSchoolVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || schoolSlug === 'demo';
-
-  useEffect(() => {
-    if (pathname) {
-      if (pathname.startsWith("/dashboard/pendaftar")) {
-        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/pendaftar": true }));
-      } else if (pathname.startsWith("/dashboard/kelola-ui")) {
-        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/kelola-ui": true }));
-      }
-    }
-  }, [pathname]);
 
   const handleToggleCollapse = () => {
     const nextVal = !isCollapsed;
@@ -117,15 +122,14 @@ export function AdminSidebar({
     }
   ];
 
-
-  const renderMenuItem = (item: any, delayIndex: number) => {
+  const renderMenuItem = (item: MenuItem, delayIndex: number) => {
     const fullHref = item.href;
     const hasSub = !!item.subItems;
-    const isOpen = !!openDropdowns[item.href];
+    const isOpen = openDropdowns[item.href] ?? (pathname?.startsWith(item.href) ?? false);
     const isLocked = !isSchoolVerified && item.href !== `/${schoolSlug}/dashboard/verification`;
     const isActive = item.exact
       ? pathname === fullHref || pathname === item.href
-      : pathname === fullHref || pathname === item.href || pathname.startsWith(fullHref + "/");
+      : pathname === fullHref || pathname === item.href || pathname?.startsWith(fullHref + "/");
 
     const currentTab = searchParams ? searchParams.get("tab") : null;
 
@@ -156,7 +160,7 @@ export function AdminSidebar({
           localStorage.setItem("ppdb-sidebar-collapsed", "false");
           setOpenDropdowns((prev) => ({ ...prev, [item.href]: true }));
         } else {
-          setOpenDropdowns((prev) => ({ ...prev, [item.href]: !prev[item.href] }));
+          setOpenDropdowns((prev) => ({ ...prev, [item.href]: !isOpen }));
         }
       }
     };
@@ -202,7 +206,7 @@ export function AdminSidebar({
               <span className="shrink-0">{item.icon}</span>
               <span
                 className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                  isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+                  isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-50 opacity-100 ml-3"
                 }`}
               >
                 {item.label}
@@ -220,7 +224,7 @@ export function AdminSidebar({
         </div>
 
         {/* Render submenu items */}
-        {hasSub && (
+        {hasSub && item.subItems && (
           <div className="overflow-hidden">
             <AnimatePresence initial={false}>
               {isOpen && !isCollapsed && (
@@ -231,7 +235,7 @@ export function AdminSidebar({
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                   className="pl-4 ml-6 pr-2 py-1.5 space-y-1 border-l-2 border-slate-200 dark:border-slate-800"
                 >
-                  {item.subItems.map((sub: any) => {
+                  {item.subItems.map((sub: SubMenuItem) => {
                     const fullSubHref = sub.href;
                     const defaultTab = sub.href.includes("pendaftar") ? "active" : "hero";
                     const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");
@@ -241,33 +245,20 @@ export function AdminSidebar({
                       tabVal === (currentTab || defaultTab);
 
                     return (
-                      <div
+                      <Link
                         key={sub.href}
-                        className="relative"
-                        onMouseEnter={() => setHoveredItem(sub.href)}
-                        onMouseLeave={() => setHoveredItem(null)}
+                        href={isLocked ? "#" : fullSubHref}
+                        onClick={handleItemClick}
+                        className={`block px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                          isLocked
+                            ? "opacity-35 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none hover:bg-transparent"
+                            : isSubActive
+                            ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold"
+                            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40"
+                        }`}
                       >
-                        {hoveredItem === sub.href && !isSubActive && (
-                          <motion.div
-                            layoutId="sidebar-hover"
-                            className="absolute inset-0 bg-slate-200/70 dark:bg-slate-800/70 rounded-xl"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 350, damping: 35 }}
-                          />
-                        )}
-                        <Link
-                          href={fullSubHref}
-                          className={`relative z-10 group flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-sm font-medium transition-colors duration-200 border ${
-                            isSubActive
-                              ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-semibold border-transparent"
-                              : "border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
-                          }`}
-                        >
-                          <span className="truncate">{sub.label}</span>
-                        </Link>
-                      </div>
+                        {sub.label}
+                      </Link>
                     );
                   })}
                 </motion.div>
@@ -280,10 +271,10 @@ export function AdminSidebar({
   };
 
   const sectionHeader = (label: string) => (
-    <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
+    <div className="flex items-center py-2 overflow-hidden min-h-8">
       <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-        <span className={`text-[11px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-          isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
+        <span className={`text-[11px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+          isCollapsed ? "max-w-0 opacity-0" : "max-w-37.5 opacity-100"
         }`}>
           {label}
         </span>
@@ -306,18 +297,19 @@ export function AdminSidebar({
         {/* Toggle Collapse Button */}
         <button
           onClick={handleToggleCollapse}
-          className="hidden md:flex absolute top-[24px] -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
+          className="hidden md:flex absolute top-6 -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
           title={isCollapsed ? "Perluas Sidebar" : "Sembunyikan Sidebar"}
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
 
         {/* Brand Header */}
-        <div className={`py-4 flex items-center border-b border-slate-300 dark:border-slate-700 min-h-[73px] transition-all duration-300 ${
+        <div className={`py-4 flex items-center border-b border-slate-300 dark:border-slate-700 min-h-18.25 transition-all duration-300 ${
           isCollapsed ? "justify-center px-0" : "px-5"
         }`}>
           <Link href={schoolSlug ? `/${schoolSlug}/dashboard` : "/dashboard"} className="flex items-center group">
             {ppdbLogo && (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={ppdbLogo || undefined}
                 alt="Logo Sekolah"
@@ -325,7 +317,7 @@ export function AdminSidebar({
               />
             )}
             <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col min-w-0 ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-37.5 opacity-100 ml-3"
             }`}>
               <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase whitespace-nowrap">
                 {ppdbTitle ? ppdbTitle.replace(/^(ppdb\s+)/i, '') : "SMK TB"}
@@ -371,7 +363,7 @@ export function AdminSidebar({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden shadow-2xl"
+              className="fixed inset-y-0 left-0 w-70 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden shadow-2xl"
             >
               <div className="h-16 px-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <div className="flex items-center gap-3">

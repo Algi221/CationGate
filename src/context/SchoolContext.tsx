@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useParams, usePathname } from "next/navigation";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 interface SchoolContextType {
   schoolId: string;
   schoolSlug: string;
@@ -23,7 +22,6 @@ interface SchoolContextType {
 
 const SchoolContext = createContext<SchoolContextType | null>(null);
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
 export function SchoolProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const params = useParams();
@@ -40,7 +38,6 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [profilSekolah, setProfilSekolah] = useState<any>(null);
 
-  // ── Fetch global config (logo, title, profil) ──────────────────────────────
   const fetchConfigs = useCallback(async () => {
     if (isDemoMode) {
       setPpdbTitle("SMK TB");
@@ -67,7 +64,16 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   }, [slug, isDemoMode]);
 
   useEffect(() => {
-    fetchConfigs();
+    let ignore = false;
+    const run = async () => {
+      if (!ignore) {
+        await fetchConfigs();
+      }
+    };
+    run();
+    return () => {
+      ignore = true;
+    };
   }, [fetchConfigs]);
 
   // ── Fetch school theme color ───────────────────────────────────────────────

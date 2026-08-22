@@ -2,13 +2,12 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '../db/supabase';
-import { adminAuth, requireTenantId, TenantError } from '../middleware/auth';
+import { adminAuth, requireTenantId } from '../middleware/auth';
 import { sendTelegramNotification } from '../utils/telegram';
 import { loginSchema, changePasswordSchema } from '../validations/auth';
 import { rateLimiter } from '../middleware/rate-limiter';
 import { isValidUUID, resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
-
 
 const authRouter = new Hono();
 const getJwtSecret = () => {
@@ -31,18 +30,15 @@ authRouter.post('/login', rateLimiter({
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     const { username, password } = result.data;
     const rawSchoolId = c.req.query('school_id') || null;
-    
-    // Resolve the school_id to a UUID if it's not already one.
-    // For prospective schools (integer IDs), we look up the in-memory mapping
-    // to find the UUID that was generated during registration.
+
     let schoolId: string | null = rawSchoolId;
     if (rawSchoolId && !isValidUUID(rawSchoolId)) {
-      // Try to find UUID from in-memory schools map
+
       let resolvedUUID: string | null = null;
       for (const [, school] of fontInMemSchools) {
         if (String(school.id) === rawSchoolId && school.school_uuid) {
@@ -50,25 +46,20 @@ authRouter.post('/login', rateLimiter({
           break;
         }
       }
-      // If not found in memory, try resolving from DB
+
       if (!resolvedUUID) {
         resolvedUUID = await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
       }
-      // If still not resolved, set to null so we do username-only lookup
-      // (this handles cases where the school was registered before the UUID fix)
+
       schoolId = resolvedUUID;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let adminUser: any = null;
     let ysboAuthenticated = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let ysboUser: any = null;
     let ysbmoToken: string | null = null;
-    
-    // Default supabase client (Service Role since login needs to access auth tables directly)
-    const supabase = getSupabaseClient();
 
+    const supabase = getSupabaseClient();
 
     const YSBO_API_URL = process.env.YSBO_API_URL;
     if (YSBO_API_URL) {
@@ -96,7 +87,7 @@ authRouter.post('/login', rateLimiter({
           }
         }
       } catch (fetchErr: unknown) {
-        console.warn('Koneksi API YSBMO gagal, beralih ke kredensial lokal:', (fetchErr as any).message);
+        console.warn('Koneksi API YSBMO gagal, beralih ke kredensial lokal:', fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
       }
     }
 
@@ -115,45 +106,83 @@ authRouter.post('/login', rateLimiter({
           password_hash: hashedPassword,
           nama_lengkap: name,
           role: mappedRole,
-          ysbmo_token: ysbmoToken || undefined
+          updated_at: new Date().toISOString()
         }).eq('id', existingUser.id);
         if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
-        const { data } = await updateQuery.select().single();
-        adminUser = data;
+        await updateQuery;
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const payload: any = {
+        const payload: Record<string, unknown> = {
           username: usernameKey,
           password_hash: hashedPassword,
           nama_lengkap: name,
-          role: mappedRole,
-          ysbmo_token: ysbmoToken
+          role: mappedRole
         };
         if (schoolId) payload.school_id = schoolId;
-        const { data } = await supabase.from('admin_users').insert(payload).select().single();
-        adminUser = data;
+        await supabase.from('admin_users').insert(payload);
       }
+
+      let fetchQuery = supabase.from('admin_users').select('*').eq('username', usernameKey);
+      if (schoolId) fetchQuery = fetchQuery.eq('school_id', schoolId);
+      const { data: finalUser } = await fetchQuery.single();
+
+      const token = jwt.sign(
+        {
+          id: finalUser?.id || ysboUser.id || 1,
+          username: finalUser?.username || usernameKey,
+          nama: finalUser?.nama_lengkap || name,
+          role: finalUser?.role || mappedRole,
+          school_id: schoolId || undefined,
+          isYSBMO: true
+        },
+        getJwtSecret(),
+        { expiresIn: '7d' }
+      );
+
+      sendTelegramNotification(
+        `🔐 <b>LOGIN BERHASIL (YSBMO)</b>\n\n` +
+        `👤 User: <code>${usernameKey}</code>\n` +
+        `🏷️ Role: ${mappedRole}\n` +
+        `🏫 Sekolah: <code>${schoolId || 'Multi-tenant'}</code>\n` +
+        `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
+      ).catch(() => {});
+
+      return c.json({
+        success: true,
+        token,
+        admin: {
+          id: finalUser?.id || ysboUser.id || 1,
+          username: finalUser?.username || usernameKey,
+          nama_lengkap: finalUser?.nama_lengkap || name,
+          role: finalUser?.role || mappedRole,
+          school_id: schoolId || undefined
+        },
+        ysbmoToken
+      });
     }
+
+    let query = supabase.from('admin_users').select('*').eq('username', username);
+    if (schoolId) query = query.eq('school_id', schoolId);
+    const { data: adminUser } = await query.maybeSingle();
 
     if (!adminUser) {
-      let query = supabase.from('admin_users').select('*').or(`username.eq.${username},email.eq.${username}`);
-      if (schoolId) query = query.eq('school_id', schoolId);
-      const { data } = await query.maybeSingle();
-      adminUser = data;
+      sendTelegramNotification(
+        `⚠️ <b>PERCOBAAN LOGIN GAGAL</b>\n\n` +
+        `👤 User: <code>${username}</code> (Tidak Ditemukan)\n` +
+        `🏫 Sekolah: <code>${schoolId || 'Multi-tenant'}</code>\n` +
+        `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
+      ).catch(() => {});
+      return c.json({ success: false, message: 'Username atau Password salah' }, 401);
     }
 
-    if (!adminUser) {
-      return c.json({ success: false, message: 'Username atau password salah.' }, 401);
-    }
-
-    if (!ysboAuthenticated) {
-      const passwordMatch = bcrypt.compareSync(password, adminUser.password_hash);
-      if (!passwordMatch) {
-        return c.json({
-          success: false,
-          message: 'Waduh, username atau password yang kamu masukkan salah. Coba periksa lagi ya.'
-        }, 401);
-      }
+    const match = bcrypt.compareSync(password, adminUser.password_hash);
+    if (!match) {
+      sendTelegramNotification(
+        `⚠️ <b>PERCOBAAN LOGIN GAGAL</b>\n\n` +
+        `👤 User: <code>${username}</code> (Password Salah)\n` +
+        `🏫 Sekolah: <code>${schoolId || 'Multi-tenant'}</code>\n` +
+        `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
+      ).catch(() => {});
+      return c.json({ success: false, message: 'Username atau Password salah' }, 401);
     }
 
     const token = jwt.sign(
@@ -162,22 +191,19 @@ authRouter.post('/login', rateLimiter({
         username: adminUser.username,
         nama: adminUser.nama_lengkap,
         role: adminUser.role,
-        school_id: adminUser.school_id || schoolId
+        school_id: adminUser.school_id || schoolId || undefined
       },
       getJwtSecret(),
-      { expiresIn: '12h' }
+      { expiresIn: '7d' }
     );
 
-    const timeString = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-    const notificationMessage = `<b>Notifikasi Login Baru Sistem PPDB</b>\n` +
-      `------------------------------------\n` +
-      `<b>Nama Lengkap:</b> ${adminUser.nama_lengkap}\n` +
-      `<b>Username:</b> ${adminUser.username}\n` +
-      `<b>Peran (Role):</b> ${adminUser.role}\n` +
-      `<b>Waktu:</b> ${timeString} WIB\n` +
-      `------------------------------------`;
-
-    sendTelegramNotification(notificationMessage).catch((err) => {
+    sendTelegramNotification(
+      `🔐 <b>LOGIN BERHASIL (Lokal)</b>\n\n` +
+      `👤 User: <code>${adminUser.username}</code>\n` +
+      `🏷️ Role: ${adminUser.role}\n` +
+      `🏫 Sekolah: <code>${adminUser.school_id || schoolId || 'Multi-tenant'}</code>\n` +
+      `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
+    ).catch((err) => {
       console.error('[Telegram Bot] Gagal mengirim notifikasi login:', err);
     });
 
@@ -229,19 +255,18 @@ authRouter.post('/login', rateLimiter({
 
 authRouter.patch('/change-password', adminAuth, async (c) => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const admin = (c as any).get('admin');
+    const admin = (c.get as (k: string) => unknown)('admin') as { id: number; username: string };
     const body = await c.req.json();
     const result = changePasswordSchema.safeParse(body);
     if (!result.success) {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     const { currentPassword, newPassword } = result.data;
-    
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
 
@@ -267,7 +292,7 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
     const newHash = bcrypt.hashSync(newPassword, 10);
     const updateQuery = supabase.from('admin_users').update({ password_hash: newHash }).eq('id', admin.id)
       .eq('school_id', schoolId);
-    
+
     await updateQuery;
 
     return c.json({

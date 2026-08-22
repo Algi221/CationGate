@@ -41,7 +41,7 @@ export default function GatekeeperBroadcastPage() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.2 }}
-        className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-[300px]"
+        className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-75"
       >
         <p className="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase text-xs">Modul Dalam Pengembangan</p>
       </motion.div>

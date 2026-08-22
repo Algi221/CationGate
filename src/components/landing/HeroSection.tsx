@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import Lottie from "lottie-react";
-import { ArrowRight, Play, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function HeroSPMB() {
   const [animationData, setAnimationData] = useState(null);
@@ -17,9 +18,9 @@ export default function HeroSPMB() {
 
   return (
     <section className="relative min-h-screen w-full bg-white overflow-hidden flex flex-col justify-between px-6 sm:px-12 pt-28 pb-8 font-sans selection:bg-amber-200">
-      {/* MAIN CONTENT AREA */}
+      {}
       <div className="w-full max-w-[1550px] mx-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-8 my-auto z-20">
-        {/* KIRI: HEADLINE & DESKRIPSI (Span 4) */}
+        {}
         <div className="lg:col-span-4 text-center lg:text-left space-y-6">
           <h1 className="text-4xl sm:text-5xl lg:text-[3.8rem] font-black text-gray-900 leading-[1.02] tracking-tight">
             BIKIN WEBSITE <br />
@@ -44,15 +45,15 @@ export default function HeroSPMB() {
           </div>
         </div>
 
-        {/* TENGAH: LOTTIE ANIMATION DIPERBESAR (Span 4) */}
+        {}
         <div className="lg:col-span-4 flex flex-col items-center justify-center relative">
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.8, type: "spring", damping: 20 }}
-            className="w-[320px] sm:w-[400px] lg:w-[460px] h-[320px] sm:h-[400px] lg:h-[460px] flex items-center justify-center relative my-2"
+            className="w-[320px] sm:w-100 lg:w-115 h-80 sm:h-100 lg:h-115 flex items-center justify-center relative my-2"
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-tr from-amber-400/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
             {animationData && (
               <Lottie
@@ -64,7 +65,7 @@ export default function HeroSPMB() {
           </motion.div>
         </div>
 
-        {/* KANAN: FITUR, KEUNGGULAN, & TOMBOL AKSI (Span 4) */}
+        {}
         <div className="lg:col-span-4 text-center lg:text-left space-y-6">
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight tracking-tight">
             TAMPILAN MODERN, <br />
@@ -75,7 +76,7 @@ export default function HeroSPMB() {
             Dilengkapi manajemen siswa pendaftar dan siswa aktif, export data, hingga integrasi pembayaran digital.
           </p>
 
-          {/* Micro-callout ajakan demo interaktif */}
+          {}
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-medium text-gray-500">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
@@ -83,28 +84,28 @@ export default function HeroSPMB() {
               <span>Eksplorasi langsung tanpa perlu login:</span>
             </div>
 
-            {/* Tombol Aksi: Redirect ke /demo/dashboard dan /demo */}
+            {}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-              <a
+              <Link
                 href="/demo/dashboard"
                 className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-[#172A35] text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-[#172A35]/20 flex items-center justify-center gap-2 hover:bg-black hover:scale-105 active:scale-95 transition-all"
               >
                 Dashboard Demo <ArrowRight size={15} />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/demo"
                 className="w-full sm:w-auto px-7 py-4 rounded-2xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:border-gray-900 hover:scale-105 active:scale-95 transition-all shadow-sm"
               >
                 <Play size={14} className="fill-gray-900" /> Landingpage Demo
-              </a>
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* FOOTER STATS BAWAH (DENGAN INDIKATOR SCROLL PAS DI TENGAH BAWAH) */}
+      {}
       <div className="relative w-full max-w-[1550px] mx-auto pt-6 flex flex-col md:flex-row justify-between items-center border-t border-gray-200/60 gap-4 px-2 z-30 bg-white">
-        {/* Kiri: Info Mitra */}
+        {}
         <div className="flex items-center gap-3 text-xs text-gray-500 font-bold">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>
@@ -112,7 +113,7 @@ export default function HeroSPMB() {
           </span>
         </div>
 
-        {/* TENGAH: INDIKATOR SCROLL (POSISI ABSOLUTE PERSIS DI TENGAH FOOTER) */}
+        {}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-2 flex flex-col items-center gap-1 pointer-events-none">
           <span className="text-[9px] font-black tracking-[0.25em] text-gray-400 uppercase">
             SCROLL
@@ -120,11 +121,11 @@ export default function HeroSPMB() {
           <motion.div
             animate={{ y: [0, 6, 0] }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-            className="w-[1.5px] h-4 bg-gradient-to-b from-gray-400 to-transparent rounded-full"
+            className="w-[1.5px] h-4 bg-linear-to-b from-gray-400 to-transparent rounded-full"
           />
         </div>
 
-        {/* Kanan: Statistik / Keunggulan SaaS */}
+        {}
         <div className="flex items-center gap-8 sm:gap-14">
           <div className="text-center md:text-right">
             <div className="text-lg sm:text-xl font-black text-gray-900">

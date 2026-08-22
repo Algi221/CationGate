@@ -11,7 +11,7 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log error to an error reporting service if needed
+
     console.error("Unhandled runtime error:", error);
   }, [error]);
 
@@ -29,16 +29,16 @@ export default function Error({ error, reset }: ErrorProps) {
           Maaf, halaman mengalami masalah atau tidak dapat dimuat saat ini.
         </p>
 
-        {(error as any).message && (
-          <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl text-[11px] font-mono text-red-600 dark:text-red-400 break-words max-w-xs mx-auto">
-            {(error as any).message}
+        {error?.message && (
+          <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl text-[11px] font-mono text-red-600 dark:text-red-400 wrap-break-word max-w-xs mx-auto">
+            {error.message}
           </div>
         )}
 
         <div className="mt-8 flex gap-4 justify-center">
           <button
             onClick={() => reset()}
-            className="px-6 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-md shadow-blue-500/20 hover:shadow-blue-500/40 transition-all cursor-pointer"
+            className="px-6 py-3 bg-linear-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-md shadow-blue-500/20 hover:shadow-blue-500/40 transition-all cursor-pointer"
           >
             Coba Lagi
           </button>

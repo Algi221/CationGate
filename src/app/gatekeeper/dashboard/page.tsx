@@ -1,5 +1,4 @@
 "use client";
-// Force Next.js rebuild
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -37,22 +36,25 @@ export default function GatekeeperOverviewPage() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchSchools = async () => {
     try {
       setLoading(true);
       setError("");
-      
+
       const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
-      
+
       const res = await fetch("/api/gatekeeper/schools", {
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
       });
-      
+
       if (!res.ok) {
         setSchools([]);
         return;
@@ -66,7 +68,7 @@ export default function GatekeeperOverviewPage() {
         setSchools([]);
         return;
       }
-      
+
       if (json && json.success && Array.isArray(json.data)) {
         setSchools(json.data);
       } else {
@@ -82,7 +84,7 @@ export default function GatekeeperOverviewPage() {
 
   useEffect(() => {
     fetchSchools();
-    
+
     const supabase = getBrowserSupabase();
     if (supabase) {
       const channel = supabase
@@ -96,7 +98,7 @@ export default function GatekeeperOverviewPage() {
           }
         )
         .subscribe();
-        
+
       return () => {
         supabase.removeChannel(channel);
       };
@@ -188,7 +190,7 @@ export default function GatekeeperOverviewPage() {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Real-time Notification Banner for Pending Verifications */}
       {pendingCount > 0 && (
         <div className="bg-amber-500 text-white rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
@@ -290,7 +292,7 @@ export default function GatekeeperOverviewPage() {
             <TrendingUp className="w-5 h-5" />
           </div>
         </div>
-        <div className="h-[280px] w-full">
+        <div className="h-70 w-full">
           {isMounted && (
             <Chart
               options={{
@@ -349,14 +351,14 @@ export default function GatekeeperOverviewPage() {
             <Map className="w-5 h-5" />
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           {/* Stylized Minimalist Map Graphic */}
           <div className="relative aspect-video bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-100/40 via-slate-50 to-slate-50 dark:from-indigo-900/20 dark:via-slate-950 dark:to-slate-950"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-indigo-100/40 via-slate-50 to-slate-50 dark:from-indigo-900/20 dark:via-slate-950 dark:to-slate-950"></div>
             {/* Simple dot grid to represent map/data */}
             <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#64748b 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
-            
+
             {/* Pulsing Pins */}
             <div className="absolute top-1/3 left-1/4">
               <span className="relative flex h-3 w-3">
@@ -377,7 +379,7 @@ export default function GatekeeperOverviewPage() {
               </span>
             </div>
           </div>
-          
+
           {/* Top Regions List */}
           <div className="space-y-4">
             {[
@@ -405,10 +407,10 @@ export default function GatekeeperOverviewPage() {
 
       {/* Two Column Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Left 2 Cols */}
         <div className="lg:col-span-2 space-y-6">
-          
+
           {/* High Priority Pending Verifications */}
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -446,7 +448,7 @@ export default function GatekeeperOverviewPage() {
                         <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">NPSN: {sc.npsn || "-"}</p>
                       </div>
                     </div>
-                    
+
                     <Link
                       href={`/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION`}
                       className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1 shrink-0"
@@ -467,7 +469,7 @@ export default function GatekeeperOverviewPage() {
             )}
           </div>
         </div>
-          
+
         {/* Recent Audit Trail (Log Aktivitas) */}
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -481,7 +483,7 @@ export default function GatekeeperOverviewPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="divide-y divide-slate-100 dark:divide-slate-800 flex-1 py-2">
               {[
                 { action: "Verifikasi SK Diterima", subject: "SMAN 1 Nusantara", time: "10 menit yang lalu", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/50" },
@@ -524,13 +526,13 @@ export default function GatekeeperOverviewPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Donut Chart: Verifikasi Status */}
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
             <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
               <PieChart className="w-4 h-4 text-blue-500" /> Rasio Status Verifikasi
             </h3>
-            
+
             <div className="relative pt-4">
               {isMounted && (
                 <Chart options={chartOptions} series={chartSeries} type="donut" height="240" />

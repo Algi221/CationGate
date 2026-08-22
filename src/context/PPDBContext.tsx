@@ -1,20 +1,16 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 
-// ─── Sub-context imports ──────────────────────────────────────────────────────
 import { ToastProvider, useToast } from "./ToastContext";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { SchoolProvider, useSchool } from "./SchoolContext";
 
-// Re-export sub-context hooks for direct usage
 export { useToast } from "./ToastContext";
 export { useAuth } from "./AuthContext";
 export { useSchool } from "./SchoolContext";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 interface WsLog {
   id: string;
   timestamp: string;
@@ -27,7 +23,7 @@ interface WsLog {
 interface PPDBContextType {
   isLoaded: boolean;
   setIsLoaded: React.Dispatch<React.SetStateAction<boolean>>;
-  // Auth (proxied from AuthContext)
+
   adminToken: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adminUser: any | null;
@@ -40,7 +36,7 @@ interface PPDBContextType {
   gatekeeperToken: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   gatekeeperUser: any | null;
-  // School (proxied from SchoolContext)
+
   schoolId: string;
   schoolStatus: string;
   isDemoMode: boolean;
@@ -54,10 +50,10 @@ interface PPDBContextType {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setProfilSekolah: React.Dispatch<React.SetStateAction<any>>;
   fetchConfigs: () => Promise<void>;
-  // Toast (proxied from ToastContext)
+
   toasts: { id: string; title: string; message: string; type: string }[];
   addToast: (title: string, message: string, type?: string) => void;
-  // Applicant Data
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   applicants: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,16 +66,16 @@ interface PPDBContextType {
   wsLogs: WsLog[];
   simulationActive: boolean;
   setSimulationActive: React.Dispatch<React.SetStateAction<boolean>>;
-   
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registerApplicant: (formData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
   verifyApplicant: (id: number) => Promise<void>;
   rejectApplicant: (id: number, alasan_ditolak?: string) => Promise<void>;
   deleteApplicant: (id: number) => Promise<void>;
-   
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateApplicant: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
-   
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateActiveStudent: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
   deleteActiveStudent: (id: number) => Promise<void>;
@@ -95,7 +91,6 @@ const PPDBContext = createContext<PPDBContextType | null>(null);
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
-// ─── Demo Data Generators ─────────────────────────────────────────────────────
 const NAMES_FIRST = ["Ahmad", "Budi", "Cinta", "Dewi", "Eka", "Fahri", "Gita", "Hani", "Indra", "Joko", "Kartika", "Lestari", "Muhammad", "Nabila", "Oktavia", "Putri", "Qori", "Rizky", "Siti", "Taufik", "Umar", "Vina", "Wahyu", "Xena", "Yusuf", "Zahra"];
 const NAMES_LAST = ["Pratama", "Wijaya", "Santoso", "Lestari", "Putra", "Kusuma", "Hidayat", "Saputra", "Ramadhan", "Nugraha", "Permana", "Wibowo", "Utami", "Sari", "Firmansyah", "Syahputra", "Subagyo", "Setiawan", "Bahri", "Hasanah"];
 const MAJORS_LIST = ["Rekayasa Perangkat Lunak", "Teknik Komputer dan Jaringan", "Desain Komunikasi Visual", "Broadcasting dan Perfilman", "Animasi", "Teknik Elektronika"];
@@ -152,15 +147,17 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const { schoolId, schoolStatus, isDemoMode, isSchoolNotFound, isConfigLoaded, ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah, setProfilSekolah, fetchConfigs } = useSchool();
   const { toasts, addToast } = useToast();
 
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("cationgate_loading_session") !== "active";
+    }
+    return true;
+  });
   const params = useParams();
   const slug = (params?.school_slug as string) || "";
 
   useEffect(() => {
     const handleLoadingComplete = () => setIsLoaded(true);
-    if (sessionStorage.getItem("cationgate_loading_session") !== "active") {
-        setIsLoaded(true);
-    }
     window.addEventListener("cationgate:loading-complete", handleLoadingComplete);
     return () => window.removeEventListener("cationgate:loading-complete", handleLoadingComplete);
   }, []);
@@ -203,7 +200,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { adminTokenRef.current = adminToken; }, [adminToken]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const addWsLog = useCallback((direction: string, event: string, payload: any) => {
+  const _addWsLog = useCallback((direction: string, event: string, payload: any) => {
     setWsLogs((prev) => [{ id: Date.now() + Math.random().toString(36).substr(2, 9), timestamp: new Date().toLocaleTimeString(), direction, event, payload }, ...prev.slice(0, 49)]);
   }, []);
 
@@ -222,16 +219,18 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       if (data && data.success && Array.isArray(data.data)) setPublicApplicants(data.data);
     } catch (err: unknown) {
-      console.warn("Public API fetch error, using local fallback seed:", (err as any).message);
+      console.warn("Public API fetch error, using local fallback seed:", err instanceof Error ? err.message : String(err));
       setPublicApplicants(prev => prev.length > 0 ? prev : DEMO_APPLICANTS_SEED);
     }
   }, [isDemoMode, slug]);
 
   // Merge offline class-assignment overrides into API data so refreshes don't wipe them
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const applyClassOverrides = (list: any[]): any[] => {
     try {
       const raw = localStorage.getItem('ppdb_class_overrides');
       if (!raw) return list;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const overrides: Record<string, any> = JSON.parse(raw);
       if (!Object.keys(overrides).length) return list;
       return list.map(a => {
@@ -256,7 +255,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       if (data.success) setApplicants(applyClassOverrides(data.data));
     } catch (err: unknown) {
-      console.warn("Admin API fetch error:", (err as any).message);
+      console.warn("Admin API fetch error:", err instanceof Error ? err.message : String(err));
       setApplicants(DEMO_APPLICANTS_SEED);
     }
   }, [adminToken, logoutAdmin, isDemoMode]);
@@ -277,7 +276,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (data.success) { setActiveStudents(applyClassOverrides(data.data.filter((a: any) => a.status === 'Approved'))); }
     } catch (err: unknown) {
-      console.warn("Active students API fetch error:", (err as any).message);
+      console.warn("Active students API fetch error:", err instanceof Error ? err.message : String(err));
     }
   }, [adminToken, logoutAdmin, isDemoMode]);
 
@@ -291,7 +290,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       if (data.success) { await fetchPublicApplicants(); return { success: true, data: data.data }; }
       else { return { success: false, message: data.message }; }
     } catch (err: unknown) {
-      console.error("API registration error, adding to memory fallback:", (err as any).message);
+      console.error("API registration error, adding to memory fallback:", err instanceof Error ? err.message : String(err));
       const mockSaved = { id: Date.now(), nama: formData.nama || "Pendaftar Baru", nisn: formData.nisn || "0000000000", sekolah_asal: formData.sekolahAsal || "SMP Asal", jurusan_1: formData.jurusan1 || "PPLG", status: "Pending", tgl_daftar: new Date().toISOString() };
       setPublicApplicants(prev => [mockSaved, ...prev]);
       setApplicants(prev => [mockSaved, ...prev]);
@@ -313,7 +312,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
       } else { throw new Error(data.message || "Gagal memperbarui status pendaftar."); }
     } catch (err: unknown) {
-      console.error("API status update error:", (err as any).message);
+      console.error("API status update error:", err instanceof Error ? err.message : String(err));
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
       addToast("Applicant Approved (Offline)", `Pendaftar #${id} disetujui.`, "success");
@@ -336,7 +335,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.message || "Gagal memperbarui status pendaftar.");
       }
     } catch (err: unknown) {
-      console.error("API status update error:", (err as any).message);
+      console.error("API status update error:", err instanceof Error ? err.message : String(err));
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
       const isAdminPath = typeof window !== 'undefined' && window.location.pathname.includes('/dashboard');
@@ -357,7 +356,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         await fetchAdminApplicants(); await fetchPublicApplicants(); await fetchActiveStudents();
       } else { throw new Error(data.message || "Gagal menghapus data pendaftar."); }
     } catch (err: unknown) {
-      console.error("API delete error:", (err as any).message);
+      console.error("API delete error:", err instanceof Error ? err.message : String(err));
       setApplicants(prev => prev.filter(a => a.id !== id));
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
       addToast("Applicant Deleted (Offline)", `Pendaftar #${id} dihapus.`, "danger");
@@ -379,7 +378,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         return { success: true, data: data.data };
       } else { throw new Error(data.message || "Gagal memperbarui data"); }
     } catch (err: unknown) {
-      console.error("API update error:", (err as any).message);
+      console.error("API update error:", err instanceof Error ? err.message : String(err));
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
       addToast("Data Diperbarui (Offline)", `Perubahan data tersimpan lokal.`, "success");
@@ -403,7 +402,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       } else { throw new Error(data.message || "Gagal memperbarui data siswa aktif."); }
     } catch (err: unknown) {
       // API unavailable or demo mode — apply update locally and persist
-      console.warn("Active student update falling back to local:", (err as any).message);
+      console.warn("Active student update falling back to local:", err instanceof Error ? err.message : String(err));
       // Save override so it survives re-fetch from real API on refresh
       try {
         const raw = localStorage.getItem('ppdb_class_overrides') || '{}';
@@ -411,6 +410,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         overrides[String(id)] = { ...overrides[String(id)], ...updatedData };
         localStorage.setItem('ppdb_class_overrides', JSON.stringify(overrides));
       } catch (_) {}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updater = (prev: any[]) => prev.map((a: any) => a.id === id ? { ...a, ...updatedData } : a);
       setActiveStudents(prev => {
         const next = updater(prev);
@@ -441,7 +441,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         await fetchActiveStudents(); await fetchAdminApplicants();
       } else { throw new Error(data.message || "Gagal menghapus siswa aktif."); }
     } catch (err: unknown) {
-      console.error("API active student delete error:", (err as any).message);
+      console.error("API active student delete error:", err instanceof Error ? err.message : String(err));
       setActiveStudents(prev => prev.filter(a => a.id !== id));
       setApplicants(prev => prev.filter(a => a.id !== id));
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
@@ -451,56 +451,77 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
 
   // ── WebSocket / Real-Time ───────────────────────────────────────────────────
   const connectWs = useCallback(() => {
-    setWsStatus("CONNECTED");
-    addWsLog("SYSTEM", "CONNECTED", { message: "Real-Time HTTP Polling Engine active." });
-  }, [addWsLog]);
+    if (wsRef.current) return;
+    if (typeof window === "undefined") return;
+
+    try {
+      const isHttps = window.location.protocol === "https:";
+      const wsUrl = `${isHttps ? "wss:" : "ws:"}//${window.location.host}/api/ws`;
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        setWsStatus("CONNECTED");
+        if (schoolId) {
+          ws.send(JSON.stringify({ type: "SUBSCRIBE_SCHOOL", school_id: schoolId }));
+        }
+      };
+
+      ws.onerror = () => {
+        // Silent error handler for environments where WebSocket endpoint is not running
+      };
+
+      ws.onmessage = (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          if (payload.type === "NEW_APPLICANT") {
+            const applicant = payload.data;
+            setApplicants((prev) => [applicant, ...prev]);
+            setPublicApplicants((prev) => [applicant, ...prev]);
+            addToast("Pendaftaran Baru", `${applicant.nama} - ${applicant.jurusan_1}`, "success");
+          } else if (payload.type === "STATUS_UPDATED") {
+            const updated = payload.data;
+            setApplicants((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+            setPublicApplicants((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+            if (updated.status === "Approved") {
+              setActiveStudents((prev) => [updated, ...prev.filter((a) => a.id !== updated.id)]);
+            } else {
+              setActiveStudents((prev) => prev.filter((a) => a.id !== updated.id));
+            }
+          }
+        } catch {}
+      };
+
+      ws.onclose = () => {
+        setWsStatus("DISCONNECTED");
+        wsRef.current = null;
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connectWsRef.current?.();
+        }, 5000);
+      };
+
+      wsRef.current = ws;
+    } catch {
+      setWsStatus("ERROR");
+    }
+  }, [schoolId, addToast]);
 
   useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (supabaseUrl && supabaseKey && schoolId) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const channel = supabase
-        .channel(`public:applicants:school_id=eq.${schoolId}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'student_applicants', filter: `school_id=eq.${schoolId}` }, (payload) => {
-          console.log('Real-Time Supabase Change Received (Applicants):', payload);
-          fetchPublicApplicants();
-          if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) fetchAdminApplicants();
-        })
-        .subscribe((status) => { if (status === 'SUBSCRIBED') setWsStatus("CONNECTED"); });
-      return () => { supabase.removeChannel(channel); };
-    } else {
-      const interval = setInterval(() => {
-        fetchPublicApplicants();
-        if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) fetchAdminApplicants();
-      }, 15000);
-      return () => clearInterval(interval);
-    }
-  }, [fetchPublicApplicants, fetchAdminApplicants, adminToken, adminUser, schoolId]);
-
-  useEffect(() => { connectWsRef.current = connectWs; }, [connectWs]);
+    connectWsRef.current = connectWs;
+  }, [connectWs]);
 
   // ── Simulation ──────────────────────────────────────────────────────────────
   const simulateRegistration = useCallback(async () => {
-    const firstNames = ["Ahmad", "Dian", "Budi", "Siti", "Kevin", "Rina", "Fajar", "Ayu", "Giri", "Reza", "Lutfi", "Indah"];
-    const lastNames = ["Saputra", "Pratama", "Lestari", "Maharani", "Wijaya", "Siddiq", "Santoso", "Hidayat", "Kusuma", "Utami"];
-    const schools = ["SMPN 1 Depok", "SMPN 2 Depok", "SMPN 3 Depok", "SMP IT Al-Hikmah", "SMP Mardi Yuana", "MTsN 1 Depok", "SMP Budi Kharisma", "SMPN 4 Depok"];
-    const majorsCodes = ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const randomItem = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
-    const randomNama = `${randomItem(firstNames)} ${randomItem(lastNames)}`;
-    const randomMajor = randomItem(majorsCodes);
-    const randomMajorAlt = majorsCodes.find(m => m !== randomMajor);
     const mockCandidate = {
-      nama: randomNama, nisn: "008" + Math.floor(1000000 + Math.random() * 9000000).toString(),
+      nama: "Siswa Simulasi " + Math.floor(Math.random() * 1000),
+      nisn: Math.floor(1000000000 + Math.random() * 9000000000).toString(),
       nik: "3276" + Math.floor(100000000000 + Math.random() * 900000000000).toString(),
-      tempatLahir: "Depok", tglLahir: "2010-06-15", jenisKelamin: Math.random() > 0.5 ? "Laki-laki" : "Perempuan",
-      agama: "Islam", alamat: "Jl. Pekapuran No. " + Math.floor(Math.random() * 100),
-      rtRw: "03/05", kelurahan: "Curug", kecamatan: "Cimanggis", kodePos: "16453",
-      whatsapp: "0812" + Math.floor(10000000 + Math.random() * 90000000).toString(),
-      email: randomNama.toLowerCase().replace(" ", "") + "@email.com",
-      sekolahAsal: randomItem(schools), tglLulus: "2026-06-10",
-      jurusan1: randomMajor, jurusan2: randomMajorAlt,
+      sekolahAsal: "SMP Negeri " + Math.floor(Math.random() * 20 + 1) + " Depok",
+      jurusan1: ["RPL", "TJKT", "DKV", "BC", "ANM", "TE"][Math.floor(Math.random() * 6)],
+      jurusan2: ["RPL", "TJKT", "DKV", "BC", "ANM", "TE"][Math.floor(Math.random() * 6)],
+      tempatLahir: "Depok", tanggalLahir: "2009-05-12", jenisKelamin: Math.random() > 0.5 ? "Laki-laki" : "Perempuan",
+      agama: "Islam", alamat: "Jl. Margonda Raya No. " + Math.floor(Math.random() * 100 + 1),
+      telepon: "08" + Math.floor(1000000000 + Math.random() * 9000000000).toString(),
+      email: `simulasi${Date.now()}@example.com`, namaOrtu: "Orang Tua Siswa", pekerjaanOrtu: "Karyawan Swasta",
       teleponOrtu: "0812" + Math.floor(10000000 + Math.random() * 90000000).toString(),
       janjiTaat: true, janjiSanksi: true, janjiAkrab: true, janjiBelajar: true, janjiNamaBaik: true
     };
@@ -513,8 +534,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       return data;
     } catch (err: unknown) {
-      console.error("Check payment status failed:", (err as any).message);
-      return { success: false, message: (err as any).message };
+      console.error("Check payment status failed:", err instanceof Error ? err.message : String(err));
+      return { success: false, message: err instanceof Error ? err.message : String(err) };
     }
   }, []);
 
@@ -525,23 +546,56 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(intervalId);
   }, [simulationActive, simulateRegistration]);
 
-  useEffect(() => { fetchPublicApplicants(); }, [fetchPublicApplicants]);
+  useEffect(() => {
+    let ignore = false;
+    const loadPublic = async () => {
+      if (!ignore) {
+        await fetchPublicApplicants();
+      }
+    };
+    loadPublic();
+    return () => {
+      ignore = true;
+    };
+  }, [fetchPublicApplicants]);
 
   useEffect(() => {
-    connectWs();
+    let ignore = false;
+    const timer = setTimeout(() => {
+      if (!ignore) {
+        connectWs();
+      }
+    }, 0);
+    const currentWs = wsRef.current;
+    const currentTimer = reconnectTimeoutRef.current;
     return () => {
-      if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); }
-      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+      ignore = true;
+      clearTimeout(timer);
+      if (currentWs) { currentWs.onclose = null; currentWs.close(); }
+      if (currentTimer) clearTimeout(currentTimer);
     };
   }, [adminToken, connectWs]);
 
   useEffect(() => {
-    if (isDemoMode) { fetchAdminApplicants(); fetchActiveStudents(); return; }
-    if (!adminToken) return;
-    if (adminUser && (adminUser.role === 'gatekeeper' || adminUser.isGatekeeper)) return;
-    fetchAdminApplicants();
-    fetchActiveStudents();
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    let ignore = false;
+    const loadAdmin = async () => {
+      if (!ignore) {
+        if (isDemoMode) {
+          await fetchAdminApplicants();
+          await fetchActiveStudents();
+        } else if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) {
+          await fetchAdminApplicants();
+          await fetchActiveStudents();
+        }
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission();
+        }
+      }
+    };
+    loadAdmin();
+    return () => {
+      ignore = true;
+    };
   }, [adminToken, adminUser, fetchAdminApplicants, fetchActiveStudents, isDemoMode]);
 
   return (

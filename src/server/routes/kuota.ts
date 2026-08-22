@@ -41,7 +41,7 @@ async function getTargets(supabase: any, schoolId: string | null): Promise<Recor
       .eq('school_id', schoolId)
       .eq('config_key', 'kuota_targets')
       .maybeSingle();
-    
+
     if (data && data.config_value) {
       return typeof data.config_value === 'string' ? JSON.parse(data.config_value) : data.config_value;
     }
@@ -79,7 +79,7 @@ router.get('/', async (c) => {
 
     let pendaftarDataQuery = supabase.from('student_applicants').select('jurusan_1');
     let siswaAktifDataQuery = supabase.from('active_students').select('jurusan');
-    
+
     if (schoolId) {
       pendaftarDataQuery = pendaftarDataQuery.eq('school_id', schoolId);
       siswaAktifDataQuery = siswaAktifDataQuery.eq('school_id', schoolId);
@@ -165,16 +165,16 @@ router.get('/', async (c) => {
     });
   } catch (error: unknown) {
     console.error('Error calculating kuota:', error);
-    return c.json({ success: false, message: 'Gagal mengambil data kuota jurusan: ' + (error as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal mengambil data kuota jurusan: ' + (error instanceof Error ? error.message : String(error)) }, 500);
   }
 });
 
 router.post('/targets', adminAuth, async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+
+    const admin = (c.get as (k: string) => unknown)('admin') as { school_id?: string } | undefined;
+    const schoolId = admin?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -203,7 +203,7 @@ router.post('/targets', adminAuth, async (c) => {
     });
   } catch (error: unknown) {
     console.error('Error saving targets:', error);
-    return c.json({ success: false, message: 'Gagal menyimpan target kuota: ' + (error as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal menyimpan target kuota: ' + (error instanceof Error ? error.message : String(error)) }, 500);
   }
 });
 

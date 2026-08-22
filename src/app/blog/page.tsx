@@ -21,63 +21,54 @@ interface BlogPost {
   content: React.ReactNode;
 }
 
-export default function BlogPage() {
-  const [activePostId, setActivePostId] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>("Semua");
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const posts: BlogPost[] = [
-    {
-      id: "startup-taruna-bhakti",
-      title:
-        "4 Siswa SMK Taruna Bhakti Mengembangkan Start Up Digital CationGate",
-      date: "13 Agustus 2026",
-      readTime: "5 min read",
-      category: ["Inovasi", "Kisah Sukses"],
-      author: "Admin CationGate",
-      authorRole: "Editor in Chief",
-      authorBio:
-        "Tim redaksi CationGate yang berdedikasi meliput perkembangan teknologi pendidikan dan karya-karya inovatif dari siswa vokasi di seluruh Indonesia.",
-      authorImg:
-        "https://ui-avatars.com/api/?name=Admin+CG&background=18181b&color=fff",
-      excerpt:
-        "Berawal dari tugas sekolah, empat siswa SMK Taruna Bhakti berhasil merancang ekosistem digital yang menghubungkan manajemen sekolah dalam satu pintu.",
-      image:
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1600",
-      content: (
-        <div className="space-y-6 text-[17px] md:text-lg text-zinc-700 leading-[1.8] font-serif">
-          <p>
-            Inovasi teknologi tidak hanya lahir dari perusahaan raksasa, tetapi
-            juga dari ruang kelas. Empat developer muda SMK Taruna Bhakti, yakni
-            Ahmad Faishal Majdii, Farel Al Fatir Fauzan, Hafiz Alviansyah, dan
-            Satria Arief Wibowo, membuktikan hal tersebut dengan membangun
-            ekosistem digital CationGate.
-          </p>
-          <p>
-            Mereka mengawali perjalanan dari proyek e-commerce hingga akhirnya
-            menyadari adanya kebutuhan mendesak di sektor pendidikan. Proses
-            manajemen sekolah dan pendaftaran siswa baru yang masih manual
-            memicu mereka untuk menciptakan solusi terintegrasi.
-          </p>
-          <blockquote className="border-l-[3px] border-zinc-900 pl-6 py-2 my-10 text-xl md:text-2xl font-medium text-zinc-900 italic tracking-tight">
-            "Kami ingin membuktikan bahwa siswa SMK tidak hanya bisa menjadi
-            pengguna teknologi, tetapi juga pencipta solusi nyata yang bisa
-            dipakai institusi secara luas."
-          </blockquote>
-          <p>
-            Dengan pembagian tugas yang jelas dalam pengembangan{" "}
-            <i className="font-sans">front-end</i> menggunakan Next.js dan{" "}
-            <i className="font-sans">back-end</i> yang kokoh, tim ini sukses
-            merancang antarmuka yang modern, cepat, dan responsif untuk berbagai
-            kebutuhan sekolah.
-          </p>
-        </div>
-      ),
-    },
+const posts: BlogPost[] = [
+  {
+    id: "startup-taruna-bhakti",
+    title:
+      "4 Siswa SMK Taruna Bhakti Mengembangkan Start Up Digital CationGate",
+    date: "13 Agustus 2026",
+    readTime: "5 min read",
+    category: ["Inovasi", "Kisah Sukses"],
+    author: "Admin CationGate",
+    authorRole: "Editor in Chief",
+    authorBio:
+      "Tim redaksi CationGate yang berdedikasi meliput perkembangan teknologi pendidikan dan karya-karya inovatif dari siswa vokasi di seluruh Indonesia.",
+    authorImg:
+      "https://ui-avatars.com/api/?name=Admin+CG&background=18181b&color=fff",
+    excerpt:
+      "Berawal dari tugas sekolah, empat siswa SMK Taruna Bhakti berhasil merancang ekosistem digital yang menghubungkan manajemen sekolah dalam satu pintu.",
+    image:
+      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1600",
+    content: (
+      <div className="space-y-6 text-[17px] md:text-lg text-zinc-700 leading-[1.8] font-serif">
+        <p>
+          Inovasi teknologi tidak hanya lahir dari perusahaan raksasa, tetapi
+          juga dari ruang kelas. Empat developer muda SMK Taruna Bhakti, yakni
+          Ahmad Faishal Majdii, Farel Al Fatir Fauzan, Hafiz Alviansyah, dan
+          Satria Arief Wibowo, membuktikan hal tersebut dengan membangun
+          ekosistem digital CationGate.
+        </p>
+        <p>
+          Mereka mengawali perjalanan dari proyek e-commerce hingga akhirnya
+          menyadari adanya kebutuhan mendesak di sektor pendidikan. Proses
+          manajemen sekolah dan pendaftaran siswa baru yang masih manual
+          memicu mereka untuk menciptakan solusi terintegrasi.
+        </p>
+        <blockquote className="border-l-[3px] border-zinc-900 pl-6 py-2 my-10 text-xl md:text-2xl font-medium text-zinc-900 italic tracking-tight">
+          &quot;Kami ingin membuktikan bahwa siswa SMK tidak hanya bisa menjadi
+          pengguna teknologi, tetapi juga pencipta solusi nyata yang bisa
+          dipakai institusi secara luas.&quot;
+        </blockquote>
+        <p>
+          Dengan pembagian tugas yang jelas dalam pengembangan{" "}
+          <i className="font-sans">front-end</i> menggunakan Next.js dan{" "}
+          <i className="font-sans">back-end</i> yang kokoh, tim ini sukses
+          merancang antarmuka yang modern, cepat, dan responsif untuk berbagai
+          kebutuhan sekolah.
+        </p>
+      </div>
+    ),
+  },
     {
       id: "digitalisasi-perpustakaan",
       title:
@@ -248,36 +239,48 @@ export default function BlogPage() {
         </div>
       ),
     },
-  ];
+];
 
-  const categories = [
-    "Semua",
-    ...Array.from(new Set(posts.flatMap((p) => p.category))),
-  ];
+const categories = [
+  "Semua",
+  ...Array.from(new Set(posts.flatMap((p) => p.category))),
+];
+
+export default function BlogPage() {
+  const [activePostId, setActivePostId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>("Semua");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const filteredPosts = useMemo(() => {
     return activeCategory === "Semua"
       ? posts
       : posts.filter((post) => post.category.includes(activeCategory));
-  }, [activeCategory, posts]);
+  }, [activeCategory]);
 
   const activePost = posts.find((p) => p.id === activePostId);
   const mainPost = filteredPosts[0];
   const sidePosts = filteredPosts.slice(1);
 
-  if (!isMounted) return null; // Mencegah hidration mismatch
+  if (!isMounted) return null; 
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-zinc-900 flex flex-col justify-between font-sans selection:bg-zinc-200 selection:text-zinc-900">
       <Navbar />
 
-      <main className="pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto w-full flex-1">
-        {/* ========================================= */}
-        {/* VIEW: DAFTAR ARTIKEL */}
-        {/* ========================================= */}
+      <main className="pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full flex-1">
+        {}
+        {}
+        {}
         {!activePost ? (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out">
-            {/* Header & Kategori Editorial */}
+            {}
             <div className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-zinc-200 pb-8">
               <div>
                 <h1 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900">
@@ -313,7 +316,7 @@ export default function BlogPage() {
                     className="lg:col-span-8 group cursor-pointer"
                     onClick={() => setActivePostId(mainPost.id)}
                   >
-                    <div className="relative aspect-[16/10] w-full overflow-hidden mb-6 bg-zinc-100">
+                    <div className="relative aspect-16/10 w-full overflow-hidden mb-6 bg-zinc-100">
                       <Image
                         src={mainPost.image}
                         alt={mainPost.title}
@@ -416,10 +419,12 @@ export default function BlogPage() {
               </h1>
 
               <div className="flex items-center gap-4 text-sm">
-                <img
+                <Image
                   src={activePost.authorImg}
                   alt={activePost.author}
-                  className="w-12 h-12 rounded-full bg-zinc-200"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 rounded-full bg-zinc-200 object-cover"
                 />
                 <div>
                   <div className="text-zinc-900 font-bold">
@@ -430,7 +435,7 @@ export default function BlogPage() {
               </div>
             </header>
 
-            <div className="relative w-full aspect-[16/9] md:aspect-[2.5/1] bg-zinc-100 mb-14">
+            <div className="relative w-full aspect-video md:aspect-2.5/1 bg-zinc-100 mb-14">
               <Image
                 src={activePost.image}
                 alt={activePost.title}
@@ -451,10 +456,12 @@ export default function BlogPage() {
 
                 {/* Author Info Minimalist */}
                 <div className="mt-20 pt-8 border-t border-zinc-200 flex flex-col sm:flex-row gap-6 items-start">
-                  <img
+                  <Image
                     src={activePost.authorImg}
                     alt={activePost.author}
-                    className="w-16 h-16 rounded-full bg-zinc-200 grayscale"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 rounded-full bg-zinc-200 grayscale object-cover"
                   />
                   <div>
                     <h3 className="text-lg font-bold text-zinc-900">

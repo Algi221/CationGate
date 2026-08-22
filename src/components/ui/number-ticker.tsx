@@ -31,25 +31,23 @@ export function NumberTicker({
   useEffect(() => {
     let isCancelled = false;
 
-    // Tunggu sebentar (50ms) agar LoadingScreen sempat merender dan menyetel sessionStorage
     const timer = setTimeout(() => {
       if (isCancelled) return;
-      
+
       const status = sessionStorage.getItem("cationgate_loading_session");
       if (status === "active") {
-        // LoadingScreen sedang berjalan, tunggu event selesainya
+
         const handleLoadingComplete = () => setIsReady(true);
         window.addEventListener("cationgate:loading-complete", handleLoadingComplete);
-        
-        // Safety fallback jika event gagal ditangkap
+
         const safety = setTimeout(() => setIsReady(true), 6000);
-        
+
         return () => {
           window.removeEventListener("cationgate:loading-complete", handleLoadingComplete);
           clearTimeout(safety);
         };
       } else {
-        // Tidak ada LoadingScreen, langsung jalankan animasi
+
         setIsReady(true);
       }
     }, 50);
@@ -62,7 +60,7 @@ export function NumberTicker({
 
   useEffect(() => {
     if (isReady) {
-      // Delay sedikit lagi untuk memastikan layout benar-benar siap dirender
+
       const timeoutId = setTimeout(() => {
         motionValue.set(direction === "down" ? startValue : value)
       }, 50)

@@ -41,7 +41,7 @@ export default function KartuPendaftaranPage({
     async function fetchData() {
       try {
         setLoading(true);
-        // Fetch School Data
+
         const schoolRes = await fetch(`/api/saas/school-by-slug/${school_slug}`);
         const schoolJson = await schoolRes.json();
         if (schoolJson.success) {
@@ -64,7 +64,7 @@ export default function KartuPendaftaranPage({
           setError(appJson.message || "Data pendaftar tidak ditemukan.");
         }
       } catch (err: unknown) {
-        setError("Gagal memuat kartu pendaftaran: " + (err as any).message);
+        setError("Gagal memuat kartu pendaftaran: " + (err instanceof Error ? err.message : String(err)));
       } finally {
         setLoading(false);
       }
@@ -115,7 +115,7 @@ export default function KartuPendaftaranPage({
       <div className="max-w-4xl mx-auto mb-6 flex items-center justify-between no-print">
         <Link
           href={`/${school_slug}/daftar`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-700 transition-all"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
         >
           <ArrowLeft className="w-4 h-4" /> Kembali
         </Link>
@@ -129,7 +129,7 @@ export default function KartuPendaftaranPage({
 
       {/* Printable Card Area */}
       <div id="printable-card" className="max-w-4xl mx-auto bg-white dark:bg-[#0f172a] text-slate-900 rounded-2xl shadow-xl p-8 sm:p-10 border border-slate-200 dark:border-slate-800">
-        
+
         {/* Header Sekolahan */}
         <div className="flex items-center justify-between pb-6 border-b-2 border-slate-800 mb-6">
           <div className="flex items-center gap-4">
@@ -164,22 +164,22 @@ export default function KartuPendaftaranPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider pb-1 border-b border-slate-200 dark:border-slate-800">Data Calon Siswa</h3>
-            
+
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">Nama Lengkap</span>
               <span className="font-bold text-slate-900">{applicant.nama}</span>
             </div>
-            
+
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">NISN</span>
               <span className="font-mono font-bold text-slate-900">{applicant.nisn}</span>
             </div>
-            
+
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">Jenis Kelamin</span>
               <span className="font-medium text-slate-900">{applicant.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'}</span>
             </div>
-            
+
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">Sekolah Asal</span>
               <span className="font-medium text-slate-900">{applicant.sekolah_asal}</span>
@@ -188,17 +188,17 @@ export default function KartuPendaftaranPage({
 
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider pb-1 border-b border-slate-200 dark:border-slate-800">Program & Status</h3>
-            
+
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">Program Keahlian</span>
               <span className="font-bold text-blue-700">{applicant.jurusan_1}</span>
             </div>
-            
+
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">Tanggal Pendaftaran</span>
               <span className="font-medium text-slate-900">{new Date(applicant.tgl_daftar).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
             </div>
-            
+
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">Status Pendaftaran</span>
               <span className="font-bold text-amber-600">{applicant.status}</span>

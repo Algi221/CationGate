@@ -14,7 +14,6 @@ export type Applicant = {
   [key: string]: any;
 };
 
-// Fetcher Function
 const fetchApplicants = async (schoolId: string): Promise<Applicant[]> => {
   if (!schoolId) return [];
   const res = await fetch(`/api/applicants?school_id=${schoolId}`);

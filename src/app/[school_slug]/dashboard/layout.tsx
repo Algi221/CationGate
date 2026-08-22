@@ -4,18 +4,17 @@ import React, { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import _Swal from 'sweetalert2';
 import {
-  Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
-  Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
-  Palette, Layers, Shield, Menu, ChevronDown, UserCircle, ShieldCheck, Lock, CreditCard, User, Paintbrush, Search
+  Sun, Moon, LogOut,
+  Globe, Menu, ChevronDown, UserCircle, User, Search
 } from "lucide-react";
 import SchoolNotFound from "@/components/SchoolNotFound";
 import { AdminSidebar } from "@/components/layout/admin-sekolah/AdminSidebar";
 import TrialExpiredPopup from "@/components/TrialExpiredPopup";
 
-// ─── Breadcrumbs ──────────────────────────────────────────────────────────────
 function Breadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab");
@@ -46,12 +45,12 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
     breadcrumbs.push({ label: "Sampah", href: `${paths[0] ? '/' + paths[0] : ''}/dashboard/pendaftar?tab=trash` });
 
   return (
-    <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium tracking-wide select-none">
+    <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-400 font-medium tracking-wide select-none">
       {breadcrumbs.map((bc, idx) => {
         const isLast = idx === breadcrumbs.length - 1;
         return (
           <React.Fragment key={idx}>
-            {idx > 0 && <span className="text-slate-300 dark:text-slate-700 dark:text-slate-200">›</span>}
+            {idx > 0 && <span className="text-slate-300 dark:text-slate-700">›</span>}
             {isLast ? (
               <span className="text-slate-600 dark:text-slate-300 font-semibold">{bc.label}</span>
             ) : (
@@ -68,7 +67,7 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
 
 // ─── Main Layout ──────────────────────────────────────────────────────────────
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
-  const { adminToken, adminUser, logoutAdmin, wsStatus, ppdbLogo, ppdbTitle, schoolStatus, isSchoolNotFound } = usePPDB();
+  const { adminToken, adminUser, logoutAdmin, schoolStatus, isSchoolNotFound } = usePPDB();
   const isSchoolVerified = schoolStatus === "verified";
   const router = useRouter();
   const pathname = usePathname();
@@ -77,9 +76,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const schoolSlugRaw = (params?.school_slug as string) || (pathname?.startsWith('/demo') ? 'demo' : '');
   const schoolSlug = schoolSlugRaw ? schoolSlugRaw.replace(/[^a-zA-Z0-9-]/g, '') : "demo";
 
-  const [mounted, setMounted] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const [isDark, setIsDark] = useState(() => typeof window !== 'undefined' ? localStorage.getItem("ppdb-theme") === "dark" || document.documentElement.classList.contains("dark") : false);
+  const [isCollapsed, setIsCollapsed] = useState(() => typeof window !== 'undefined' ? localStorage.getItem("ppdb-sidebar-collapsed") === "true" : false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -130,26 +133,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       // Logic handled in AdminSidebar
     }
   }, [pathname]);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem("ppdb-theme");
-    if (saved === "dark") {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    } else {
-      document.documentElement.classList.remove("dark");
-      setIsDark(false);
-    }
-    const savedCollapse = localStorage.getItem("ppdb-sidebar-collapsed");
-    if (savedCollapse === "true") {
-      setIsCollapsed(true);
-    }
-  }, []);
 
   const _handleToggleCollapse = () => {
     const nextVal = !isCollapsed;
@@ -224,7 +207,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = async () => {
     const nextIsDark = !isDark;
-    
+
     // Check if View Transitions API is supported
     if (!document.startViewTransition) {
       setIsDark(nextIsDark);
@@ -251,7 +234,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
     transition.ready.then(() => {
       const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
-      
+
       document.documentElement.animate(
         {
           clipPath: [
@@ -299,7 +282,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   const _userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
-
   return (
     <div data-dashboard className="h-screen bg-[#f7f7f7] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 flex font-sans overflow-hidden transition-colors duration-300">
 
@@ -309,7 +291,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
       />
-
 
       {/* ── MAIN PANEL ──────────────────────────────────────────────────────── */}
       <motion.div
@@ -321,7 +302,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
         {/* Top Header */}
         <motion.header
-          className="h-16 border-b border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 bg-white dark:bg-[#0f172a] flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300"
+          className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300"
           initial={{ y: -64, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
@@ -360,7 +341,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   setIsSearchOpen(true);
                 }}
                 onFocus={() => setIsSearchOpen(true)}
-                className="w-48 lg:w-56 h-9 pl-9 pr-3 text-xs font-bold bg-slate-100 dark:bg-[#1e293b]/80 border border-slate-200 dark:border-slate-700/60 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/20 text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400"
+                className="w-48 lg:w-56 h-9 pl-9 pr-3 text-xs font-bold bg-slate-100 dark:bg-[#1e293b]/80 border border-slate-200 dark:border-slate-700/60 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/20 text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <AnimatePresence>
                 {isSearchOpen && searchQuery.length > 0 && (
@@ -369,7 +350,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-12 left-0 w-64 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-xl shadow-xl overflow-hidden z-[100]"
+                    className="absolute top-12 left-0 w-64 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden z-100"
                   >
                     <div className="max-h-64 overflow-y-auto p-2">
                       {searchResults.length > 0 ? (
@@ -393,7 +374,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                         ))
                       ) : (
                         <div className="px-3 py-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                          Tidak ditemukan "{searchQuery}"
+                          Tidak ditemukan &quot;{searchQuery}&quot;
                         </div>
                       )}
                     </div>
@@ -405,7 +386,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow shrink-0"
+              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm hover:shadow shrink-0"
               title={isDark ? "Beralih ke Terang" : "Beralih ke Gelap"}
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
@@ -419,7 +400,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               >
                 <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-sm shadow-sm overflow-hidden shrink-0">
                   {adminUser?.foto_profil ? (
-                    <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
+                    <Image src={adminUser.foto_profil} alt="Profil" width={32} height={32} className="w-full h-full object-cover" unoptimized />
                   ) : (
                     <User size={16} className="text-slate-500 dark:text-slate-400" />
                   )}
@@ -435,20 +416,20 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
               {/* Dropdown */}
               {showUserDropdown && (
-                <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-700/60 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-slate-900/60 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-slate-900/60 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                   {/* User info */}
                   <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-base shadow-sm shrink-0 overflow-hidden">
                         {adminUser?.foto_profil ? (
-                          <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
+                          <Image src={adminUser.foto_profil} alt="Profil" width={40} height={40} className="w-full h-full object-cover" unoptimized />
                         ) : (
                           <User size={18} className="text-slate-500 dark:text-slate-400" />
                         )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{adminUser?.nama || "Admin TB"}</p>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium truncate">@{adminUser?.username || "admin"}</p>
+                        <p className="text-[10px] text-slate-400 font-medium truncate">@{adminUser?.username || "admin"}</p>
                         <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
                           isSchoolVerified
                             ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900"
@@ -465,7 +446,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                     <Link
                       href={schoolSlug ? `/${schoolSlug}/dashboard/profile` : "/dashboard/profile"}
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-white dark:bg-[#0f172a]/5 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-white transition-colors"
                     >
                       <UserCircle size={15} className="text-slate-400 shrink-0" />
                       <span className="text-xs font-semibold">Profil Saya</span>
@@ -474,7 +455,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                       href={schoolSlug ? `/${schoolSlug}` : "/"}
                       target="_blank"
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-white dark:bg-[#0f172a]/5 hover:text-slate-800 dark:text-white dark:hover:text-white transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-white transition-colors"
                     >
                       <Globe size={15} className="text-slate-400 shrink-0" />
                       <span className="text-xs font-semibold">Lihat Website</span>
@@ -515,7 +496,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* ── Logout Confirmation Modal ──────────────────────────────────────── */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 text-center max-w-sm w-full mx-4 backdrop-blur-xl animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 rounded-full flex items-center justify-center text-rose-600 dark:text-rose-500 border border-rose-100 dark:border-rose-900/40 shadow-inner">
               <LogOut size={28} className="animate-pulse" />
@@ -537,7 +518,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={confirmLogout}
-                className="flex-1 py-3 bg-gradient-to-tr from-[#f43f5e] to-[#e11d48] hover:from-[#fb7185] hover:to-[#f43f5e] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/30 hover:shadow-rose-500/50 transition-all cursor-pointer"
+                className="flex-1 py-3 bg-linear-to-tr from-[#f43f5e] to-[#e11d48] hover:from-[#fb7185] hover:to-[#f43f5e] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/30 hover:shadow-rose-500/50 transition-all cursor-pointer"
               >
                 Ya, Keluar
               </button>

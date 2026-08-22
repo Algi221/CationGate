@@ -55,8 +55,8 @@ export function ComparisonSection() {
   return (
     <section className="py-20 lg:py-28 bg-white border-t border-slate-200 relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* SECTION HEADER */}
+
+        {}
         <div className="text-center max-w-3xl mx-auto mb-14 lg:mb-20 space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-800 uppercase tracking-wider">
             <span className="w-2 h-2 rounded-full bg-[#FFC000]" />
@@ -72,10 +72,10 @@ export function ComparisonSection() {
           </p>
         </div>
 
-        {/* COMPARISON TWO-COLUMN CLEAN LAYOUT (ZERO NESTED CARDS) */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-          
-          {/* KOLOM KIRI: CARA KONVENSIONAL */}
+
+          {}
           <div className="flex flex-col rounded-3xl bg-slate-50 border border-slate-200 p-6 sm:p-8 lg:p-10">
             <div className="flex items-center justify-between pb-6 border-b border-slate-200 mb-6">
               <div>
@@ -95,7 +95,7 @@ export function ComparisonSection() {
               Membebani panitia dengan input data berulang, tumpukan berkas fisik yang rawan hilang, dan antrean panjang di loket sekolah.
             </p>
 
-            {/* List Rows with Clean Dividers */}
+            {}
             <div className="divide-y divide-slate-200 flex-1">
               {comparisonItems.map((item, idx) => (
                 <div key={idx} className="py-5 first:pt-0 last:pb-0 space-y-1.5">
@@ -124,7 +124,7 @@ export function ComparisonSection() {
             </div>
           </div>
 
-          {/* KOLOM KANAN: DENGAN CATIONGATE */}
+          {}
           <div className="flex flex-col rounded-3xl bg-slate-950 text-white border-2 border-[#FFC000] p-6 sm:p-8 lg:p-10 shadow-2xl relative">
             <div className="flex items-center justify-between pb-6 border-b border-slate-800 mb-6">
               <div>
@@ -136,7 +136,7 @@ export function ComparisonSection() {
                 </h3>
               </div>
               <div className="w-10 h-10 rounded-full bg-[#FFC000] flex items-center justify-center text-slate-950 shrink-0 font-bold">
-                <Check className="w-5 h-5 stroke-[3]" />
+                <Check className="w-5 h-5 stroke-3" />
               </div>
             </div>
 
@@ -144,7 +144,7 @@ export function ComparisonSection() {
               Pengisian formulir mandiri dari smartphone, verifikasi multi-metode pembayaran, dan manajemen berkas satu pintu melalui Dashboard Admin.
             </p>
 
-            {/* List Rows with Clean Dividers */}
+            {}
             <div className="divide-y divide-slate-800 flex-1">
               {comparisonItems.map((item, idx) => (
                 <div key={idx} className="py-5 first:pt-0 last:pb-0 space-y-1.5">
@@ -166,7 +166,7 @@ export function ComparisonSection() {
               ))}
             </div>
 
-            {/* Action Bar */}
+            {}
             <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-xs text-slate-400 font-medium">
                 100% Paperless • Siap Impor Dapodik
@@ -182,7 +182,7 @@ export function ComparisonSection() {
 
         </div>
 
-        {/* CLARIFICATION NOTE (CLEAN, NO NESTED CARDS) */}
+        {}
         <div className="mt-10 p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center max-w-3xl mx-auto">
           <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
             <strong className="font-bold text-slate-950">Catatan Layanan Pembayaran:</strong> CationGate secara spesifik memfasilitasi pencatatan dan verifikasi <strong className="font-bold text-slate-950">biaya formulir / administrasi pendaftaran siswa baru</strong>, baik melalui transfer online (Virtual Account & QRIS) maupun pembayaran tunai langsung di sekolah.

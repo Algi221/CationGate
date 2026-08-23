@@ -1,210 +1,219 @@
 "use client";
-import React, { useRef } from "react";
-import { Box, Zap, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { TimelineAnimation } from "@/components/ui/product-packs-utils/timeline-animation";
+
+import React, { useState, useRef } from "react";
+import { Check, Building2, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { TimelineAnimation } from "@/components/ui/product-packs-utils/timeline-animation";
 
 export const ProductPacks = () => {
+  const [isAnnual, setIsAnnual] = useState(true);
   const timelineRef = useRef<HTMLDivElement>(null);
+
   return (
     <section
       ref={timelineRef}
-      className="py-24 px-6 bg-yellow-50 dark:bg-slate-950 text-black dark:text-white min-h-screen"
+      className="py-24 px-4 sm:px-6 bg-slate-50 dark:bg-slate-950 text-[#2e3749] dark:text-white min-h-screen flex flex-col justify-center font-sans"
     >
-      <div className="max-w-5xl mx-auto ">
-        <TimelineAnimation
-          animationNum={1}
-          timelineRef={timelineRef}
-          className="text-center mb-16"
-        >
+      <div className="max-w-6xl mx-auto w-full">
+        
+        {/* Header Section */}
+        <div className="text-center mb-12">
           <TimelineAnimation
-            animationNum={2}
+            animationNum={1}
             timelineRef={timelineRef}
             as="h1"
-            className="text-4xl md:text-5xl font-semibold tracking-tight mb-4"
+            className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-[#2e3749] dark:text-white"
           >
             Pilihan Paket Fleksibel
           </TimelineAnimation>
+
+          <TimelineAnimation
+            animationNum={2}
+            timelineRef={timelineRef}
+            as="p"
+            className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm sm:text-base leading-relaxed"
+          >
+            Mulai dari uji coba gratis hingga solusi pro terpadu tanpa biaya tersembunyi untuk digitalisasi sekolah Anda.
+          </TimelineAnimation>
+
+          {/* Toggle Monthly / Annual */}
           <TimelineAnimation
             animationNum={3}
             timelineRef={timelineRef}
-            as="p"
-            className="text-neutral-500 text-pretty max-w-lg leading-relaxed mx-auto"
+            className="flex items-center justify-center gap-3 mt-8"
           >
-            Solusi manajemen PPDB terpadu untuk sekolah Anda. Mulai dari uji coba gratis hingga solusi pro lengkap tanpa biaya tersembunyi.
-          </TimelineAnimation>
-        </TimelineAnimation>
-        <TimelineAnimation
-          animationNum={4}
-          timelineRef={timelineRef}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-        >
-          {/* Demo Card */}
-          <TimelineAnimation
-            animationNum={5}
-            timelineRef={timelineRef}
-            className="bg-amber-300 dark:bg-amber-400 border border-neutral-100 dark:border-none rounded-4xl p-10 flex flex-col shadow-sm space-y-6 text-black"
-          >
-            <div className="space-y-2">
-              <h3 className="text-2xl font-semibold mb-2 flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                  color="#000000"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 11.5C12.4955 11.5 12.9562 11.3015 13.8775 10.9045L14.5423 10.618C16.1808 9.91202 17 9.55902 17 9C17 8.44098 16.1808 8.08798 14.5423 7.38197L13.8775 7.09549C12.9562 6.6985 12.4955 6.5 12 6.5C11.5045 6.5 11.0438 6.6985 10.1225 7.09549L9.45768 7.38197C7.81923 8.08798 7 8.44098 7 9C7 9.55902 7.81923 9.91202 9.45768 10.618L10.1225 10.9045C11.0438 11.3015 11.5045 11.5 12 11.5ZM12 11.5V17.5" />
-                  <path d="M17 9V15C17 15.559 16.1808 15.912 14.5423 16.618L13.8775 16.9045C12.9562 17.3015 12.4955 17.5 12 17.5C11.5045 17.5 11.0438 17.3015 10.1225 16.9045L9.45768 16.618C7.81923 15.912 7 15.559 7 15V9" />
-                  <path d="M9.14426 2.5C6.48724 2.56075 4.93529 2.81456 3.87493 3.87493C2.81456 4.93529 2.56075 6.48724 2.5 9.14426M14.8557 2.5C17.5128 2.56075 19.0647 2.81456 20.1251 3.87493C21.1854 4.93529 21.4392 6.48724 21.5 9.14426M14.8557 21.5C17.5128 21.4392 19.0647 21.1854 20.1251 20.1251C21.1854 19.0647 21.4392 17.5128 21.5 14.8557M9.14426 21.5C6.48724 21.4392 4.93529 21.1854 3.87493 20.1251C2.81456 19.0647 2.56075 17.5128 2.5 14.8557" />
-                </svg>
-                Free
-              </h3>
-              <p className="text-neutral-800 text-sm">
-                Cocok untuk uji coba sistem awal tanpa biaya
-              </p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <span className="text-5xl font-semibold">Gratis Trial</span>
-              <span className="text-xl font-medium text-neutral-700">
-                / 30 hari
+            <span className={`text-xs sm:text-sm font-semibold ${!isAnnual ? "text-[#2e3749] dark:text-white" : "text-slate-400"}`}>
+              BULANAN
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsAnnual(!isAnnual)}
+              className="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-slate-200 dark:bg-slate-800 transition-colors duration-200 ease-in-out focus:outline-none"
+            >
+              <span
+                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-[#FFD33B] shadow-md ring-0 transition duration-200 ease-in-out ${
+                  isAnnual ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+            <span className={`text-xs sm:text-sm font-semibold flex items-center gap-1.5 ${isAnnual ? "text-[#2e3749] dark:text-white" : "text-slate-400"}`}>
+              TAHUNAN
+              <span className="text-[10px] bg-[#FFD33B] text-[#2e3749] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                HEMAT 20%
               </span>
-            </div>
-            <div className="space-y-4 pt-6 border-t border-yellow-200">
-              {[
-                { label: "Kuota Siswa", val: "100 Pendaftar" },
-                { label: "Pendaftaran", val: "Form Standar" },
-                { label: "Verifikasi", val: "Manual" },
-                { label: "Export Data", val: "Excel" },
-                { label: "Dukungan", val: "Komunitas" },
-                { label: "Masa Berlaku", val: "Selamanya" },
-              ].map((item, i) => (
-                <div key={i} className="flex justify-between items-center">
-                  <div className="flex items-center gap-3 text-sm font-medium">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="w-5 h-5"
-                      color="#000000"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M14.2618 3.59937C13.1956 2.53312 12.6625 2 12 2C11.3375 2 10.8044 2.53312 9.73815 3.59937C9.09832 4.2392 8.46427 4.53626 7.55208 4.53626C6.7556 4.53626 5.62243 4.38178 5 5.00944C4.38249 5.63214 4.53628 6.76065 4.53628 7.55206C4.53628 8.46428 4.2392 9.09832 3.59935 9.73817C2.53312 10.8044 2.00001 11.3375 2 12C2.00002 12.6624 2.53314 13.1956 3.59938 14.2618C4.31616 14.9786 4.53628 15.4414 4.53628 16.4479C4.53628 17.2444 4.38181 18.3776 5.00949 19C5.63218 19.6175 6.76068 19.4637 7.55206 19.4637C8.52349 19.4637 8.99128 19.6537 9.68457 20.347C10.2749 20.9374 11.0663 22 12 22C12.9337 22 13.7251 20.9374 14.3154 20.347C15.0087 19.6537 15.4765 19.4637 16.4479 19.4637C17.2393 19.4637 18.3678 19.6175 18.9905 19M20.4006 9.73817C21.4669 10.8044 22 11.3375 22 12C22 12.6624 21.4669 13.1956 20.4006 14.2618C19.6838 14.9786 19.4637 15.4414 19.4637 16.4479C19.4637 17.2444 19.6182 18.3776 18.9905 19M18.9905 19H19" />
-                      <path d="M8 10.3077C8 10.3077 10.25 10 12 14C12 14 17.0588 4 22 2" />
-                    </svg>
-                    {item.label}
+            </span>
+          </TimelineAnimation>
+        </div>
+
+        {/* Pricing Layout (2 Rows on Left + Big Box on Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          {/* Left Column: Starter & Pro Rows */}
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            
+            {/* Row 1: STARTER / FREE */}
+            <TimelineAnimation
+              animationNum={4}
+              timelineRef={timelineRef}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="w-full sm:w-1/3 space-y-4">
+                <span className="inline-block px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold tracking-wider rounded-md uppercase">
+                  FREE TRIAL
+                </span>
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-[#2e3749] dark:text-white">Rp 0</span>
+                    <span className="text-slate-400 text-sm">/ 30 Hari</span>
                   </div>
-                  <span className="text-sm text-neutral-800 font-semibold">
-                    {item.val}
+                </div>
+                <Link
+                  href="/daftar"
+                  className="inline-flex justify-center items-center w-full py-2.5 px-4 bg-[#2e3749] hover:bg-[#202735] text-white text-xs font-semibold rounded-xl transition-all shadow-sm"
+                >
+                  Coba Gratis
+                </Link>
+              </div>
+
+              <div className="w-full sm:w-2/3 border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800 pt-4 sm:pt-0 sm:pl-8 space-y-3">
+                {[
+                  "Kuota hingga 100 Pendaftar",
+                  "Formulir pendaftaran standar",
+                  "Verifikasi data calon siswa manual",
+                  "Export data pendaftar ke Excel",
+                ].map((feature, idx) => (
+                  <div key={idx} className="flex items-center gap-3 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300">
+                    <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-[#2e3749] dark:text-[#FFD33B] flex items-center justify-center shrink-0">
+                      <Check size={12} strokeWidth={3} />
+                    </div>
+                    {feature}
+                  </div>
+                ))}
+              </div>
+            </TimelineAnimation>
+
+            {/* Row 2: PRO / MOST POPULAR */}
+            <TimelineAnimation
+              animationNum={5}
+              timelineRef={timelineRef}
+              className="bg-white dark:bg-slate-900 border-2 border-[#FFD33B] rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between shadow-md relative overflow-hidden"
+            >
+              <div className="w-full sm:w-1/3 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="inline-block px-3 py-1 bg-[#FFD33B] text-[#2e3749] text-xs font-bold tracking-wider rounded-md uppercase">
+                    PRO
                   </span>
                 </div>
-              ))}
-            </div>
-            
-            <div className="pt-4 flex-grow flex items-end">
-              <Link
-                href="/daftar"
-                className="w-full group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-md bg-neutral-100 border-2 border-black px-6 font-medium text-black transition-all duration-100 shadow-[5px_5px_rgb(0_0_0)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-white"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5 stroke-current mr-2"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M2.99969 17.0002C2.99969 17.9302 2.99969 18.3952 3.10192 18.7767C3.37932 19.8119 4.18796 20.6206 5.22324 20.898C5.60474 21.0002 6.06972 21.0002 6.99969 21.0002L16.9997 21.0002C17.9297 21.0002 18.3947 21.0002 18.7762 20.898C19.8114 20.6206 20.6201 19.8119 20.8975 18.7767C20.9997 18.3952 20.9997 17.9302 20.9997 17.0002" />
-                  <path d="M16.4998 11.5002C16.4998 11.5002 13.1856 16.0002 11.9997 16.0002C10.8139 16.0002 7.49976 11.5002 7.49976 11.5002M11.9997 15.0002V3.00016" />
-                </svg>
-                Mulai Uji Coba
-              </Link>
-            </div>
-          </TimelineAnimation>
 
-          {/* Full Pack Card */}
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-[#2e3749] dark:text-white">
+                      {isAnnual ? "Rp 60rb" : "Rp 75rb"}
+                    </span>
+                    <span className="text-slate-400 text-sm">/ Bulan</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {isAnnual ? "Ditagih Rp 720.000 / tahun" : "Ditagih bulanan"}
+                  </p>
+                </div>
+
+                <Link
+                  href="/daftar"
+                  className="inline-flex justify-center items-center w-full py-2.5 px-4 bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] text-xs font-bold rounded-xl transition-all shadow-sm"
+                >
+                  Pilih Paket Pro
+                </Link>
+              </div>
+
+              <div className="w-full sm:w-2/3 border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800 pt-4 sm:pt-0 sm:pl-8 space-y-3 relative">
+                <span className="hidden sm:inline-block absolute -top-4 right-0 text-[11px] font-semibold text-[#2e3749] bg-[#FFD33B]/30 px-3 py-1 rounded-full">
+                  Paling Populer
+                </span>
+
+                {[
+                  "Semua fitur di paket Free Trial",
+                  "Kuota pendaftar siswa tanpa batas",
+                  "CBT Ujian Online & Plotting Kelas otomatis",
+                  "Format Export Data Dapodik Ready",
+                  "Notifikasi WhatsApp Broadcast ke Orang Tua",
+                ].map((feature, idx) => (
+                  <div key={idx} className="flex items-center gap-3 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
+                    <div className="w-5 h-5 rounded-full bg-[#FFD33B] text-[#2e3749] flex items-center justify-center shrink-0">
+                      <Check size={12} strokeWidth={3} />
+                    </div>
+                    {feature}
+                  </div>
+                ))}
+              </div>
+            </TimelineAnimation>
+
+          </div>
+
+          {/* Right Column: Custom Enterprise / Big School Box */}
           <TimelineAnimation
             animationNum={6}
             timelineRef={timelineRef}
-            className="bg-neutral-900 text-white rounded-4xl p-10 flex flex-col shadow-2xl ring-1 ring-white/10 space-y-6"
+            className="lg:col-span-4 bg-[#2e3749] text-white rounded-3xl p-8 flex flex-col justify-between shadow-xl relative overflow-hidden border border-slate-800 min-h-[380px]"
           >
-            <div className="">
-              <h3 className="text-2xl font-semibold mb-2 flex items-center gap-2">
-                <Box className="size-8 " strokeWidth={1.5} />
-                Pro
-              </h3>
-              <TimelineAnimation
-                animationNum={7}
-                timelineRef={timelineRef}
-                className="text-neutral-400 text-sm"
-              >
-                Solusi lengkap pendaftaran, ujian online, dan manajemen penuh.
-              </TimelineAnimation>
-            </div>
-            <div className="flex flex-col gap-2">
-              <span className="text-5xl font-semibold ">Rp 750.000</span>
-              <TimelineAnimation
-                animationNum={8}
-                timelineRef={timelineRef}
-                className="text-xl font-medium text-neutral-400"
-              >
-                /tahun
-              </TimelineAnimation>
+            {/* Decorative Glow */}
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#FFD33B]/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="space-y-6 relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 text-[#FFD33B]">
+                <Building2 size={24} />
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold mb-3 text-white">
+                  Kebutuhan Khusus / Yayasan Besar?
+                </h3>
+                <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                  Dapatkan kustomisasi domain (.sch.id), integrasi Payment Gateway, server dedicated, serta pendampingan sistem langsung oleh tim ahli kami.
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-4 pt-6 border-t border-neutral-800">
-              {[
-                { label: "Kuota Siswa", val: "Tanpa Batas" },
-                { label: "Pendaftaran", val: "CBT Terintegrasi" },
-                { label: "Fitur Kelas", val: "Plotting Otomatis" },
-                { label: "Export Data", val: "Dapodik Ready" },
-                { label: "Notifikasi", val: "WhatsApp Broadcast" },
-                { label: "Dukungan", val: "Prioritas 24/7" },
-              ].map((item, i) => (
-                <div key={i} className="flex justify-between items-center">
-                  <div className="flex items-center gap-3 text-sm font-medium">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="w-5 h-5"
-                      color="#ffffff"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M14.2618 3.59937C13.1956 2.53312 12.6625 2 12 2C11.3375 2 10.8044 2.53312 9.73815 3.59937C9.09832 4.2392 8.46427 4.53626 7.55208 4.53626C6.7556 4.53626 5.62243 4.38178 5 5.00944C4.38249 5.63214 4.53628 6.76065 4.53628 7.55206C4.53628 8.46428 4.2392 9.09832 3.59935 9.73817C2.53312 10.8044 2.00001 11.3375 2 12C2.00002 12.6624 2.53314 13.1956 3.59938 14.2618C4.31616 14.9786 4.53628 15.4414 4.53628 16.4479C4.53628 17.2444 4.38181 18.3776 5.00949 19C5.63218 19.6175 6.76068 19.4637 7.55206 19.4637C8.52349 19.4637 8.99128 19.6537 9.68457 20.347C10.2749 20.9374 11.0663 22 12 22C12.9337 22 13.7251 20.9374 14.3154 20.347C15.0087 19.6537 15.4765 19.4637 16.4479 19.4637C17.2393 19.4637 18.3678 19.6175 18.9905 19M20.4006 9.73817C21.4669 10.8044 22 11.3375 22 12C22 12.6624 21.4669 13.1956 20.4006 14.2618C19.6838 14.9786 19.4637 15.4414 19.4637 16.4479C19.4637 17.2444 19.6182 18.3776 18.9905 19M18.9905 19H19" />
-                      <path d="M8 10.3077C8 10.3077 10.25 10 12 14C12 14 17.0588 4 22 2" />
-                    </svg>
-                    {item.label}
-                  </div>
-                  <span className="text-sm font-medium text-amber-300">
-                    {item.val}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-4 flex-grow flex items-end">
+            <div className="pt-8 relative z-10 space-y-3">
               <Link
-                href="/daftar"
-                className="w-full group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-md bg-neutral-50 border-2 border-amber-300 px-6 font-medium text-black transition-all duration-100 shadow-[5px_5px_rgb(255_210_48)] active:translate-x-[3px] active:translate-y-[3px] hover:bg-neutral-100 active:shadow-none"
+                href="/kontak"
+                className="w-full py-3.5 px-6 bg-white hover:bg-slate-100 text-[#2e3749] text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md"
               >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Beli Paket Pro
+                <Sparkles size={16} className="text-[#FFD33B] fill-[#FFD33B]" />
+                Konsultasi Kebutuhan
               </Link>
+              <p className="text-[11px] text-center text-slate-400">
+                • Solusi kustom khusus multi-sekolah & yayasan
+              </p>
             </div>
           </TimelineAnimation>
-        </TimelineAnimation>
+
+        </div>
+
+        {/* Footer Note */}
+        <p className="text-center text-xs text-slate-400 mt-10">
+          Semua paket sudah termasuk update sistem berkala, perlindungan data, dan panduan penggunaan.
+        </p>
+
       </div>
     </section>
   );

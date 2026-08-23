@@ -197,7 +197,7 @@ export function AdminSidebar({
               isLocked
                 ? "opacity-35 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none hover:bg-transparent"
                 : isActive && (!hasSub || isCollapsed)
-                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold"
+                ? "bg-[#FFD33B]/10 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] font-bold"
                 : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
             }`}
             title={isCollapsed ? (isLocked ? `${item.label} (Terkunci)` : item.label) : undefined}
@@ -216,7 +216,7 @@ export function AdminSidebar({
               <ChevronDown
                 size={14}
                 className={`text-slate-400 dark:text-slate-500 transition-transform duration-300 shrink-0 ml-2 ${
-                  isOpen ? "rotate-180 text-blue-500" : ""
+                  isOpen ? "rotate-180 text-[#F3C625]" : ""
                 }`}
               />
             ) : null}
@@ -253,7 +253,7 @@ export function AdminSidebar({
                           isLocked
                             ? "opacity-35 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none hover:bg-transparent"
                             : isSubActive
-                            ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold"
+                            ? "bg-[#FFD33B]/15 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] font-bold"
                             : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40"
                         }`}
                       >
@@ -297,7 +297,7 @@ export function AdminSidebar({
         {/* Toggle Collapse Button */}
         <button
           onClick={handleToggleCollapse}
-          className="hidden md:flex absolute top-6 -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
+          className="hidden md:flex absolute top-6 -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] text-slate-500 hover:text-[#F3C625] dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
           title={isCollapsed ? "Perluas Sidebar" : "Sembunyikan Sidebar"}
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -322,7 +322,7 @@ export function AdminSidebar({
               <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase whitespace-nowrap">
                 {ppdbTitle ? ppdbTitle.replace(/^(ppdb\s+)/i, '') : "SMK TB"}
               </h2>
-              <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest mt-1 block whitespace-nowrap">PPDB Admin Portal</span>
+              <span className="text-[10px] text-[#2e3749] dark:text-[#FFD33B] font-bold uppercase tracking-widest mt-1 block whitespace-nowrap">PPDB Admin Portal</span>
             </div>
           </Link>
         </div>
@@ -367,7 +367,7 @@ export function AdminSidebar({
             >
               <div className="h-16 px-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-xl bg-[#2e3749] text-white flex items-center justify-center font-bold">
                     <ShieldCheck size={18} />
                   </div>
                   <span className="font-extrabold text-slate-900 dark:text-white text-lg">CationGate</span>

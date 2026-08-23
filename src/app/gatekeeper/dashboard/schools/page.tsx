@@ -280,7 +280,7 @@ function GatekeeperSchoolManagementContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-            <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <Building2 className="w-6 h-6 text-[#2e3749] dark:text-[#FFD33B]" />
             Manajemen Sekolah SaaS (Tenants)
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -341,7 +341,7 @@ function GatekeeperSchoolManagementContent() {
                 onClick={() => setStatusFilter(tab.id)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   active
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                    ? "bg-[#FFD33B] text-[#2e3749] shadow-md shadow-[#FFD33B]/20"
                     : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               >
@@ -385,12 +385,12 @@ function GatekeeperSchoolManagementContent() {
                   {/* Sekolah */}
                   <td className="py-4 px-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                      <div className="w-10 h-10 rounded-xl bg-[#2e3749] text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
                         {sc.name.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{sc.name}</h4>
-                        <a href={`/${encodeURIComponent(sc.slug)}`} target="_blank" rel="noreferrer" className="text-xs text-blue-600 dark:text-blue-400 font-mono hover:underline">
+                        <a href={`/${encodeURIComponent(sc.slug)}`} target="_blank" rel="noreferrer" className="text-xs text-[#2e3749] dark:text-[#FFD33B] font-mono hover:underline">
                           /{sc.slug}
                         </a>
                       </div>
@@ -468,7 +468,7 @@ function GatekeeperSchoolManagementContent() {
                         href={`/${encodeURIComponent(sc.slug)}/dashboard`}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2e3749] dark:text-[#FFD33B] text-xs font-bold border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors"
                         title="Buka Dashboard Tenant Sekolah"
                       >
                         Dashboard
@@ -498,11 +498,11 @@ function GatekeeperSchoolManagementContent() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-extrabold text-slate-900 dark:text-white text-lg md:text-xl">{selectedSchoolModal.name}</h3>
-                    <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 text-xs font-bold uppercase">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#FFD33B]/10 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] text-xs font-bold uppercase">
                       {selectedSchoolModal.plan_type || "TRIAL"}
                     </span>
                   </div>
-                  <p className="text-xs text-blue-600 dark:text-blue-400 font-mono mt-0.5">URL Slug: /{selectedSchoolModal.slug}</p>
+                  <p className="text-xs text-[#2e3749] dark:text-[#FFD33B] font-mono mt-0.5">URL Slug: /{selectedSchoolModal.slug}</p>
                 </div>
               </div>
 
@@ -552,17 +552,17 @@ function GatekeeperSchoolManagementContent() {
               </div>
 
               {/* Document File Preview Section */}
-              <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 space-y-3">
+              <div className="p-4 rounded-2xl bg-[#FFD33B]/10 dark:bg-[#2e3749] border border-[#F3C625]/20 dark:border-[#FFD33B]/10 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
+                  <span className="text-xs font-extrabold text-[#2e3749] dark:text-[#FFD33B] flex items-center gap-1.5">
                     <FileText className="w-4 h-4 text-blue-600" /> Berkas SK Operasional Resmi yang Diunggah:
                   </span>
-                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">Dokumen Legal</span>
+                  <span className="text-[10px] font-bold text-[#2e3749] dark:text-[#FFD33B] uppercase">Dokumen Legal</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#FFD33B]/20 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] flex items-center justify-center shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
@@ -578,7 +578,7 @@ function GatekeeperSchoolManagementContent() {
                       href={selectedSchoolModal.sk_document_url && selectedSchoolModal.sk_document_url.startsWith('http') ? selectedSchoolModal.sk_document_url : '#'}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0"
+                      className="px-4 py-2 rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0"
                     >
                       <ExternalLink className="w-3.5 h-3.5" /> Buka Berkas PDF SK
                     </a>
@@ -587,7 +587,7 @@ function GatekeeperSchoolManagementContent() {
                       href={`/assets/docs/sk_sample.pdf`}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0"
+                      className="px-4 py-2 rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0"
                     >
                       <ExternalLink className="w-3.5 h-3.5" /> Preview Berkas PDF SK
                     </a>

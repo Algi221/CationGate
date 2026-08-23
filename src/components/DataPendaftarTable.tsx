@@ -136,7 +136,7 @@ export default function DataPendaftarTable() {
             {}
             <div className="inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full py-1.5 px-1.5 pr-5 w-fit mb-6 shadow-sm">
               <div className="w-7 h-7 rounded-full bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600 flex items-center justify-center shrink-0">
-                <User size={14} className="text-blue-500" strokeWidth={2.5} />
+                <User size={14} className="text-[#F3C625]" strokeWidth={2.5} />
               </div>
               <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.2em]">
                 Calon Peserta Didik
@@ -149,7 +149,7 @@ export default function DataPendaftarTable() {
 
             {}
             <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 w-fit shadow-sm">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-600/30">
+                <div className="w-12 h-12 rounded-xl bg-[#2e3749] flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-600/30">
                   <MapPin size={20} />
                 </div>
                 <div className="pr-6">
@@ -181,7 +181,7 @@ export default function DataPendaftarTable() {
             </div>
 
             <div className="flex flex-col items-center bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full px-8 py-3 shadow-sm">
-              <span className="text-[10px] font-black text-blue-500 dark:text-blue-400 tracking-[0.3em] uppercase block mb-1">
+              <span className="text-[10px] font-black text-[#F3C625] dark:text-blue-400 tracking-[0.3em] uppercase block mb-1">
                 VERIFIKASI DIGITAL
               </span>
               <span className="text-[8px] text-slate-500 dark:text-slate-400 font-extrabold uppercase block tracking-widest">SISTEM PPDB TERINTEGRASI</span>
@@ -201,7 +201,7 @@ export default function DataPendaftarTable() {
           <span className="text-slate-600 dark:text-slate-400">LIVE ENCRYPTED TICKET</span>
         </div>
         <div className="flex items-center">
-            <span className="text-blue-600 dark:text-blue-500 font-black text-[9px] uppercase tracking-[0.2em]">
+            <span className="text-[#2e3749] dark:text-[#F3C625] font-black text-[9px] uppercase tracking-[0.2em]">
               {selectedStudent.status === 'Approved' ? 'DATA TELAH DIVERIFIKASI PANITIA' : 
                 selectedStudent.status === 'Rejected' ? 'PENDAFTARAN DITOLAK' : 
                 'SEDANG DALAM PROSES VERIFIKASI'}
@@ -242,8 +242,8 @@ export default function DataPendaftarTable() {
           <h2 className="text-[22px] font-black text-slate-800 dark:text-white mb-1">Calon Peserta Didik Baru</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Data pendaftar PPDB Online secara real-time.</p>
         </div>
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-transparent border border-blue-200 dark:border-blue-800/50 shadow-sm text-blue-500 dark:text-blue-400 shrink-0">
-          <User size={16} className="text-blue-500" />
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-transparent border border-[#F3C625]/30 dark:border-blue-800/50 shadow-sm text-[#F3C625] dark:text-blue-400 shrink-0">
+          <User size={16} className="text-[#F3C625]" />
           <div className="text-sm font-bold">Total: {displayTotal}</div>
         </div>
       </div>
@@ -258,7 +258,7 @@ export default function DataPendaftarTable() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             aria-label="Cari nama atau NISN pendaftar"
-            className="w-full bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
+            className="w-full bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
           />
         </div>
         <div className="flex gap-2">
@@ -268,7 +268,7 @@ export default function DataPendaftarTable() {
             value={filterJurusan}
             onChange={(e) => setFilterJurusan(e.target.value)}
             aria-label="Filter berdasarkan jurusan"
-            className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all cursor-pointer min-w-45"
+            className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] text-slate-800 dark:text-white transition-all cursor-pointer min-w-45"
           >
             <option value="Semua">Semua Jurusan</option>
             {uniqueMajors.map((major: string) => (
@@ -325,7 +325,7 @@ export default function DataPendaftarTable() {
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedStudent(item); }}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-bold text-blue-500 dark:text-blue-300 hover:text-blue-600 transition-colors bg-blue-50 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/80 px-3 py-1.5 rounded-md relative z-50 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#F3C625] dark:text-blue-300 hover:text-[#2e3749] transition-colors bg-[#FFD33B]/10 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/80 px-3 py-1.5 rounded-md relative z-50 cursor-pointer"
                       >
                         Detail <ArrowRight size={14} />
                       </button>

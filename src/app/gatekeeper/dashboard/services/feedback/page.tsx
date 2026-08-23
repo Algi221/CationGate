@@ -97,7 +97,7 @@ export default function GatekeeperFeedbackPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-            <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <MessageSquare className="w-6 h-6 text-[#2e3749] dark:text-[#FFD33B]" />
             Feedback & Laporan Masukan Admin Sekolah
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -137,7 +137,7 @@ export default function GatekeeperFeedbackPage() {
               onClick={() => setCategoryFilter(cat.value)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 categoryFilter === cat.value
-                  ? "bg-blue-600 text-white shadow-sm"
+                  ? "bg-[#FFD33B] text-[#2e3749] shadow-sm"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
@@ -163,7 +163,7 @@ export default function GatekeeperFeedbackPage() {
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                   fb.priority === "Urgent"
                     ? "bg-red-50 text-red-600 border border-red-200"
-                    : "bg-blue-50 text-blue-600 border border-blue-200"
+                    : "bg-[#FFD33B]/10 text-[#2e3749] border border-[#F3C625]/30"
                 }`}>
                   {fb.priority}
                 </span>
@@ -180,7 +180,7 @@ export default function GatekeeperFeedbackPage() {
               </p>
 
               {fb.reply && (
-                <div className="p-3 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 text-xs text-blue-950 dark:text-blue-200 space-y-1">
+                <div className="p-3 rounded-2xl bg-[#FFD33B]/10 dark:bg-[#2e3749] border border-[#F3C625]/20 dark:border-[#FFD33B]/10 text-xs text-blue-950 dark:text-blue-200 space-y-1">
                   <p className="font-bold flex items-center gap-1 text-[11px] text-blue-600">
                     <ShieldCheck className="w-3.5 h-3.5" /> Balasan Gatekeeper:
                   </p>
@@ -200,7 +200,7 @@ export default function GatekeeperFeedbackPage() {
 
               <Button
                 onClick={() => setSelectedTicket(fb)}
-                className="h-8 px-3 text-xs rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold"
+                className="h-8 px-3 text-xs rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold"
               >
                 <Send className="w-3.5 h-3.5 mr-1" /> Balas Tiket
               </Button>
@@ -221,7 +221,7 @@ export default function GatekeeperFeedbackPage() {
               placeholder="Tulis balasan penjelasan atau solusi teknis untuk admin sekolah..."
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFD33B]"
             />
 
             <div className="flex justify-end gap-2 pt-2">

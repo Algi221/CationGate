@@ -72,8 +72,8 @@ export default function TrialExpiredPopup() {
         <div className="mt-6 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                <Crown className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="w-10 h-10 rounded-xl bg-[#FFD33B]/15 dark:bg-blue-900 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-[#2e3749] dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-sm font-black text-slate-800 dark:text-white">Pro Tahunan</p>
@@ -93,7 +93,7 @@ export default function TrialExpiredPopup() {
             setDismissed(true);
             router.push(`/${schoolSlug}/dashboard/subscription`);
           }}
-          className="w-full mt-6 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm tracking-wider transition-all shadow-lg shadow-blue-600/25 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full mt-6 py-4 rounded-2xl bg-[#FFD33B] hover:bg-[#F3C625] text-white font-bold text-sm tracking-wider transition-all shadow-lg shadow-[#FFD33B]/25 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
         >
           Upgrade ke Pro Sekarang
           <ArrowRight className="w-4 h-4" />

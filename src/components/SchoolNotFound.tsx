@@ -31,7 +31,7 @@ export default function SchoolNotFound({ slug, isTakedown }: SchoolNotFoundProps
         <div className="pt-4">
           <Link
             href="/"
-            className="px-6 py-3 bg-linear-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-md shadow-blue-500/20 hover:shadow-blue-500/40 transition-all inline-block"
+            className="px-6 py-3 bg-linear-to-tr from-[#FFD33B] to-[#2e3749] hover:from-[#F3C625] hover:to-[#2e3749] text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-md shadow-[#FFD33B]/20 hover:shadow-[#FFD33B]/40 transition-all inline-block"
           >
             Kembali ke Beranda CationGate
           </Link>

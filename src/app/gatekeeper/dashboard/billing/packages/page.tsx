@@ -185,7 +185,7 @@ export default function GatekeeperPackagesPage() {
       <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <Package className="text-blue-600" /> Paket Langganan
+            <Package className="text-[#2e3749]" /> Paket Langganan
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">
             Kelola tingkatan paket langganan untuk sekolah yang mendaftar. Data ini akan tampil di halaman Pricing Landing Page.
@@ -193,7 +193,7 @@ export default function GatekeeperPackagesPage() {
         </div>
         <button
           onClick={openCreateModal}
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2"
+          className="px-5 py-2.5 bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold text-sm rounded-xl transition-all shadow-lg shadow-[#FFD33B]/30 flex items-center gap-2"
         >
           <Plus size={16} /> Buat Paket Baru
         </button>
@@ -210,7 +210,7 @@ export default function GatekeeperPackagesPage() {
           <p className="text-slate-400 dark:text-slate-500 font-bold">Belum ada paket langganan</p>
           <button
             onClick={openCreateModal}
-            className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg text-sm font-bold transition-all"
+            className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-[#2e3749] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg text-sm font-bold transition-all"
           >
             Buat Paket Pertama
           </button>
@@ -245,7 +245,7 @@ export default function GatekeeperPackagesPage() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => openEditModal(plan)}
-                    className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg text-blue-600 transition-colors"
+                    className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg text-[#2e3749] transition-colors"
                     title="Edit"
                   >
                     <Pencil size={16} />
@@ -263,7 +263,7 @@ export default function GatekeeperPackagesPage() {
               {/* Plan Name & Price */}
               <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">{plan.name}</h3>
               <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-500">{formatRupiahDisplay(plan.price_yearly)}</span>
+                <span className="text-2xl font-extrabold text-[#2e3749] dark:text-blue-500">{formatRupiahDisplay(plan.price_yearly)}</span>
                 <span className="text-sm text-slate-400">/tahun</span>
               </div>
 
@@ -316,7 +316,7 @@ export default function GatekeeperPackagesPage() {
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="contoh: STARTER, PRO INSTITUTION"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm transition-all"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] outline-none text-sm transition-all"
                 />
               </div>
 
@@ -332,7 +332,7 @@ export default function GatekeeperPackagesPage() {
                         value={priceYearlyDisplay}
                         onChange={(e) => handlePriceChange(e.target.value)}
                         placeholder="750.000"
-                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm font-semibold tracking-wide transition-all"
+                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] outline-none text-sm font-semibold tracking-wide transition-all"
                     />
                 </div>
                 {formPriceYearly > 0 && (
@@ -349,7 +349,7 @@ export default function GatekeeperPackagesPage() {
                   onChange={(e) => setFormFeatures(e.target.value)}
                   placeholder={"Subdomain (sekolah.cationgate.id)\n250 Active Learner Capacity\nAI Lesson Plan Generation (50/mo)\nEmail Support"}
                   rows={6}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm resize-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] outline-none text-sm resize-none transition-all"
                 />
               </div>
             </div>

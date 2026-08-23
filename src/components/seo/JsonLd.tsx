@@ -36,7 +36,7 @@ export function SiteNavigationJsonLd() {
         "@type": "SiteNavigationElement",
         position: 1,
         name: "Beranda",
-        description: "Halaman utama platform manajemen PPDB & SPMB SMK CationGate",
+        description: "Halaman utama platform manajemen SPMB & PPDB khusus SMK CationGate",
         url: `${siteConfig.url}/`,
       },
       {

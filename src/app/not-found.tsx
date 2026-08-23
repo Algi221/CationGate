@@ -4,162 +4,121 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import {
-  Bug,
   Home,
-  Shield,
-  LogOut,
-  LayoutDashboard,
   GraduationCap,
   ArrowLeft,
+  Search
 } from "lucide-react";
-import { usePPDB } from "@/context/PPDBContext";
+import Image from "next/image";
+
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+import animationData from "../../public/assets/lottie_animation/404 Error Page.json";
 
 export default function GlobalNotFound() {
   const pathname = usePathname();
   const router = useRouter();
-  const { adminUser } = usePPDB();
-
-  let mainElement = null;
-
-  if (pathname?.startsWith('/dashboard') && adminUser) {
-    const extractedPath = pathname.substring('/dashboard'.length) || '/';
-
-    let errorTitle = "Halaman Tidak Ditemukan";
-    let errorDesc = "Halaman yang sedang Anda akses tidak ada atau telah dipindahkan.";
-    let detailText = `URL yang diminta: ${extractedPath}`;
-
-    if (extractedPath === '/profil-sekolah') {
-      errorTitle = "Profil Sekolah Belum Diisi";
-      errorDesc = "Anda harus melengkapi data profil sekolah terlebih dahulu sebelum mengakses halaman ini.";
-      detailText = "Silahkan lengkapi profil sekolah Anda di menu Pengaturan → Utama.";
-    } else if (extractedPath === '/settings/api') {
-      errorTitle = "Belum Mengaktifkan API";
-      errorDesc = "Halaman ini hanya dapat diakses setelah Anda mengaktifkan dan mengkonfigurasi API.";
-      detailText = "Aktifkan API melalui Pengaturan → Integrasi API.";
-    }
-
-    mainElement = (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-4"
-      >
-        <div className="flex items-center gap-3 text-orange-500">
-          <Bug className="w-10 h-10" />
-          <h1 className="text-2xl font-bold">{errorTitle}</h1>
-        </div>
-        <p className="text-muted-foreground text-lg">
-          {errorDesc}
-        </p>
-        <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900 rounded-lg p-4">
-          <p className="text-sm text-orange-700 dark:text-orange-300">
-            {detailText}
-          </p>
-        </div>
-      </motion.div>
-    );
-  } else {
-    mainElement = (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center space-y-6"
-      >
-        <div className="flex justify-center">
-          <div className="w-24 h-24 bg-orange-100 dark:bg-orange-950/40 rounded-full flex items-center justify-center">
-            <Bug className="w-12 h-12 text-orange-600 dark:text-orange-400" />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold text-foreground">Halaman Tidak Ditemukan</h1>
-          <p className="text-muted-foreground text-lg">
-            Halaman yang sedang Anda akses tidak ada atau telah dipindahkan.
-          </p>
-        </div>
-        <p className="text-sm text-muted-foreground font-mono">
-          URL: <code>{pathname}</code>
-        </p>
-      </motion.div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Navbar */}
-      <nav className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="p-2 bg-orange-100 dark:bg-orange-950/40 rounded-lg group-hover:bg-orange-200 transition-colors">
-              <Shield className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      {/* Top Navbar */}
+      <nav className="border-b border-slate-200 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 transition-colors">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-8 h-8 relative rounded-xl overflow-hidden shadow-sm">
+              <Image 
+                src="/assets/logo_cationgate/CationGate_Logo.png" 
+                alt="CationGate Logo" 
+                fill 
+                className="object-contain"
+              />
             </div>
-            <span className="text-xl font-bold text-foreground group-hover:text-orange-600 transition-colors">CationGate</span>
+            <span className="text-lg font-black tracking-tight text-slate-800 dark:text-white">
+              Cation<span className="text-blue-600">Gate</span>
+            </span>
           </Link>
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 hover:text-orange-600 transition-colors group">
-              <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="group-hover:font-medium">Beranda</span>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            >
+              <Home size={14} />
+              <span>Beranda</span>
             </Link>
-            <Link href="/daftar" className="flex items-center gap-2 hover:text-orange-600 transition-colors group">
-              <GraduationCap className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="group-hover:font-medium">Pendaftaran</span>
+            <Link
+              href="/fitur"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            >
+              <GraduationCap size={14} />
+              <span>Fitur</span>
             </Link>
-            {adminUser ? (
-              <div className="flex items-center gap-2">
-                <Link href="/dashboard" className="flex items-center gap-2 hover:text-orange-600 transition-colors group">
-                  <LayoutDashboard className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span className="group-hover:font-medium">Dashboard</span>
-                </Link>
-                <form action="/logout" method="POST">
-                  <button type="submit" className="flex items-center gap-2 hover:text-orange-600 transition-colors group">
-                    <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span className="group-hover:font-medium">Keluar</span>
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <Link href="/login" className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 transition-colors">Login</Link>
-            )}
+            <button
+              onClick={() => router.back()}
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              title="Kembali"
+            >
+              <ArrowLeft size={16} />
+            </button>
           </div>
-          <button
-            className="md:hidden p-2 hover:bg-muted rounded-lg"
-            onClick={() => {
-              if (pathname?.startsWith('/dashboard') && adminUser) {
-                router.back();
-              } else {
-                router.push('/');
-              }
-            }}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="grow flex items-center justify-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-          {mainElement}
-        </div>
+      {/* UFO 404 Main Area */}
+      <main className="grow flex items-center justify-center p-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-lg space-y-6"
+        >
+          {/* UFO Animation */}
+          <div className="w-72 h-72 sm:w-80 sm:h-80 mx-auto flex items-center justify-center pointer-events-none">
+            <Lottie animationData={animationData} loop={true} />
+          </div>
+
+          <div className="space-y-3">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60">
+              Error 404 · Page Lost In Space
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-800 dark:text-white tracking-tight">
+              Halaman Tidak Ditemukan
+            </h1>
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+              Halaman atau tautan yang Anda tuju tidak ditemukan, sudah dipindahkan, atau alamat URL salah ketik.
+            </p>
+          </div>
+
+          {pathname && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-mono text-slate-600 dark:text-slate-400 max-w-full truncate">
+              <Search size={12} className="text-slate-400 shrink-0" />
+              <span className="truncate">URL: {pathname}</span>
+            </div>
+          )}
+
+          {/* Action CTAs */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/"
+              className="w-full sm:w-auto px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Home size={14} />
+              <span>Kembali ke Beranda</span>
+            </Link>
+            <button
+              onClick={() => router.back()}
+              className="w-full sm:w-auto px-6 py-3.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black uppercase tracking-wider shadow-xs transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <ArrowLeft size={14} />
+              <span>Halaman Sebelumnya</span>
+            </button>
+          </div>
+        </motion.div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-muted/50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-muted-foreground">
-          <div className="flex justify-center items-center gap-6 mb-6">
-            <Link href="/" className="hover:text-foreground transition-colors">Beranda</Link>
-            <Link href="/daftar" className="hover:text-foreground transition-colors">Pendaftaran</Link>
-            {adminUser && (
-              <>
-                <Link href="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
-                <form action="/logout" method="POST">
-                  <button type="submit" className="hover:text-foreground transition-colors">Keluar</button>
-                </form>
-              </>
-            )}
-          </div>
-          <p>© {new Date().getFullYear()} CationGate. All rights reserved.</p>
-        </div>
+      <footer className="border-t border-slate-200 dark:border-slate-800/60 py-6 text-center text-xs font-bold text-slate-400">
+        <p>© {new Date().getFullYear()} CationGate. All rights reserved.</p>
       </footer>
     </div>
   );

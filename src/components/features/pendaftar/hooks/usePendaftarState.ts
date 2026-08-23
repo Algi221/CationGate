@@ -51,6 +51,8 @@ export function usePendaftarState() {
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
   const [gelombangFilter, setGelombangFilter] = useState<string>("ALL");
   const [genderFilter, setGenderFilter] = useState<string>("ALL");
+  const [paymentFilter, setPaymentFilter] = useState<string>("ALL");
+  const [receiptModalApplicant, setReceiptModalApplicant] = useState<Applicant | null>(null);
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [rejectingApplicantId, setRejectingApplicantId] = useState<number | null>(null);
@@ -285,9 +287,26 @@ export function usePendaftarState() {
         (genderFilter === "L" && (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")) ||
         (genderFilter === "P" && (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p"));
 
-      return matchesSearch && matchesStatus && matchesMajor && matchesGelombang && matchesGender;
+      const isCashTU = 
+        a.metode_pembayaran === "Bayar Tunai di TU (Cash)" ||
+        a.metode_pembayaran === "Tunai di TU" ||
+        a.metode_pembayaran === "tu";
+      const isBankTransfer = 
+        a.metode_pembayaran === "Transfer Manual" ||
+        a.metode_pembayaran === "transfer" ||
+        (!isCashTU && !!a.bukti_bayar);
+      const isLunas = a.status_pembayaran === "LUNAS" || a.status_pembayaran === "PAID" || a.status === "Approved";
+
+      const matchesPayment =
+        paymentFilter === "ALL" ||
+        (paymentFilter === "TU" && isCashTU) ||
+        (paymentFilter === "TRANSFER" && isBankTransfer) ||
+        (paymentFilter === "LUNAS" && isLunas) ||
+        (paymentFilter === "UNPAID" && !isLunas);
+
+      return matchesSearch && matchesStatus && matchesMajor && matchesGelombang && matchesGender && matchesPayment;
     });
-  }, [applicants, activePageTab, bstMatchedIds, statusFilter, majorFilter, gelombangFilter, genderFilter]);
+  }, [applicants, activePageTab, bstMatchedIds, statusFilter, majorFilter, gelombangFilter, genderFilter, paymentFilter]);
 
   const [page, setPage] = useState<number>(1);
   const itemsPerPage = 10;
@@ -304,6 +323,27 @@ export function usePendaftarState() {
     exportApplicantsToExcel(applicants, isDemoMode);
   };
 
+  const handleConfirmPayment = async (applicantId: number) => {
+    const applicant = applicants.find((a: Applicant) => a.id === applicantId);
+    try {
+      const res = await updateApplicant(applicantId, {
+        status_pembayaran: "LUNAS",
+        status: "Approved",
+        verified_by: "Petugas Kasir TU",
+        bukti_bayar_verified: true
+      });
+      if (res?.success) {
+        addToast(
+          "Pembayaran Dikonfirmasi",
+          `Pembayaran formulir ${applicant?.nama || '#' + applicantId} telah diverifikasi Lunas.`,
+          "success"
+        );
+      }
+    } catch (err) {
+      console.error("Confirm payment error:", err);
+    }
+  };
+
   const handleTogglePhysicalDoc = async (a: Applicant) => {
     const token = localStorage.getItem("ppdb_token");
     const targetState = !a.physical_doc_verified;
@@ -318,45 +358,74 @@ export function usePendaftarState() {
       });
       const data = await res.json();
       if (data.success) {
-        setApplicants((prev: Applicant[]) => prev.map(item => item.id === a.id ? { ...item, physical_doc_verified: targetState, physical_doc_verified_by: data.data.physical_doc_verified_by } : item));
-        if (typeof addToast === "function") {
-          addToast("Verifikasi Berkas Fisik", data.message, "success");
-        }
+        setApplicants((prev) =>
+          prev.map((app) =>
+            app.id === a.id
+              ? {
+                  ...app,
+                  physical_doc_verified: targetState,
+                  physical_doc_verified_by: "Admin TU",
+                  physical_doc_verified_at: new Date().toISOString()
+                }
+              : app
+          )
+        );
+        addToast(
+          targetState ? "Berkas Diterima" : "Berkas Dibatalkan",
+          `Status berkas fisik ${a.nama} berhasil diperbarui.`,
+          "success"
+        );
       }
     } catch (err: unknown) {
-      console.error("Gagal update berkas fisik:", err);
+      console.error("Physical doc update error:", err);
+      // Fallback local update
+      setApplicants((prev) =>
+        prev.map((app) =>
+          app.id === a.id
+            ? { ...app, physical_doc_verified: targetState, physical_doc_verified_by: "Admin TU" }
+            : app
+        )
+      );
+      addToast(
+        targetState ? "Berkas Diterima (Lokal)" : "Berkas Dibatalkan (Lokal)",
+        `Status berkas fisik ${a.nama} diperbarui di sesi lokal.`,
+        "info"
+      );
     }
   };
 
   const handleChecklistChange = async (applicantId: number, newChecklist: Record<string, boolean>) => {
     try {
       const token = localStorage.getItem("ppdb_token") || localStorage.getItem("ppdb_admin_token");
-      setSelectedApplicant(prev => prev ? { ...prev, physical_docs_checklist: newChecklist } : null);
+      setSelectedApplicant(prev => prev && prev.id === applicantId ? { ...prev, physical_docs_checklist: newChecklist } : prev);
+      const allChecked = ["ijazah", "kk", "ktp_ortu", "akta", "foto"].every(
+        (k) => newChecklist[k] === true
+      );
       const res = await fetch(`/api/applicants/${applicantId}/physical-doc`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ checklist: newChecklist, verified: false })
+        body: JSON.stringify({ checklist: newChecklist, verified: allChecked })
       });
       const data = await res.json();
       if (data.success) {
-        setSelectedApplicant(prev => prev ? {
+        setSelectedApplicant(prev => prev && prev.id === applicantId ? {
           ...prev,
-          physical_doc_verified: data.data.physical_doc_verified,
-          physical_doc_verified_by: data.data.physical_doc_verified_by,
-          physical_docs_checklist: data.data.physical_docs_checklist
-        } : null);
+          physical_doc_verified: data.data?.physical_doc_verified ?? allChecked,
+          physical_doc_verified_by: data.data?.physical_doc_verified_by ?? "Admin TU",
+          physical_docs_checklist: newChecklist
+        } : prev);
         setApplicants((prev: Applicant[]) => prev.map(item => item.id === applicantId ? {
           ...item,
-          physical_doc_verified: data.data.physical_doc_verified,
-          physical_doc_verified_by: data.data.physical_doc_verified_by,
-          physical_docs_checklist: data.data.physical_docs_checklist
+          physical_doc_verified: data.data?.physical_doc_verified ?? allChecked,
+          physical_doc_verified_by: data.data?.physical_doc_verified_by ?? "Admin TU",
+          physical_docs_checklist: newChecklist
         } : item));
       }
-    } catch(err) { 
-      console.error("Error updating checklist:", err); 
+    } catch (err: unknown) {
+      console.error("Gagal update checklist berkas fisik:", err);
     }
   };
 
@@ -374,6 +443,11 @@ export function usePendaftarState() {
     setGelombangFilter,
     genderFilter,
     setGenderFilter,
+    paymentFilter,
+    setPaymentFilter,
+    receiptModalApplicant,
+    setReceiptModalApplicant,
+    handleConfirmPayment,
     majorsList,
     page,
     setPage,

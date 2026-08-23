@@ -133,6 +133,23 @@ function ClassDivisionManagementContent() {
         </div>
       </div>
 
+      {/* Auto-Sync Live Status Banner */}
+      <div className="p-4 bg-linear-to-r from-blue-500/10 via-emerald-500/10 to-transparent border border-blue-200/80 dark:border-blue-900/50 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm shadow-blue-500/30">
+            ⚡
+          </div>
+          <div>
+            <span className="font-extrabold text-slate-800 dark:text-white block">
+              Auto-Sync Siswa Aktif Terhubung Otomatis
+            </span>
+            <span className="text-slate-500 dark:text-slate-400 text-[11px]">
+              Setiap calon siswa yang dipindahkan ke rombel kelas otomatis disinkronisasi ke data Siswa Aktif tahun ajaran baru tanpa perlu impor Excel.
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Row 2: 6 Major Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {activeMajors.map((major) => {

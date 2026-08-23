@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDaftarSaaSState } from "@/components/features/auth-daftar/hooks/useDaftarSaaSState";
 import { EditorialLottiePanel } from "@/components/features/auth-daftar/components/EditorialLottiePanel";
@@ -41,7 +41,7 @@ export default function DaftarSaaS() {
   } = useDaftarSaaSState();
 
   return (
-    <main className="relative min-h-screen bg-[#FAFAFA] flex flex-col justify-between overflow-x-hidden font-sans">
+    <main className="min-h-screen lg:h-screen w-screen bg-white text-slate-950 overflow-x-hidden relative flex flex-col justify-between p-4 sm:p-6 lg:p-8 pb-4 font-sans">
       <Script
         id="clarity-script"
         strategy="afterInteractive"
@@ -50,27 +50,80 @@ export default function DaftarSaaS() {
         }}
       />
 
-      {/* NAVBAR MINIMALIS */}
-      <header className="w-full max-w-7xl mx-auto flex items-center justify-between px-6 py-5 z-20">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/icon.png" alt="CationGate Logo" width={32} height={32} className="h-8 w-auto" />
-          <span className="text-base font-black tracking-tight text-slate-900">
-            Cation<span className="text-[#FFC000]">Gate</span>
-          </span>
+      {/* BACKGROUND BUBBLE (FULL-BLEED 50% VIEWPORT ON DESKTOP) */}
+      <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0">
+        <svg
+          viewBox={isMobile ? "0 0 414 200" : "0 0 600 700"}
+          className="w-full h-full"
+          preserveAspectRatio="none"
+        >
+          <motion.path
+            key={currentVisual.step}
+            initial={{ fill: currentVisual.solidColor }}
+            animate={{
+              d: isMobile ? currentVisual.svgPathMobile : currentVisual.svgPathDesktop,
+              fill: currentVisual.solidColor
+            }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+          />
+        </svg>
+      </div>
+
+      {/* HEADER / NAVBAR */}
+      <div className="relative lg:absolute top-2 lg:top-6 left-2 lg:left-8 right-2 lg:right-8 flex items-center justify-between z-20 mb-3 lg:mb-0">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("cationgate_skip_splash", "true");
+              }
+            }}
+            className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-all group drop-shadow-sm"
+            title="Kembali ke Beranda"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Beranda</span>
+          </Link>
+        </div>
+
+        {/* Center Brand Logo */}
+        <Link 
+          href="/"
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("cationgate_skip_splash", "true");
+            }
+          }}
+          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102"
+        >
+          <Image
+            src="/assets/logo_cationgate/CationGate_Logo.png"
+            alt="CationGate Logo"
+            width={28}
+            height={28}
+            className="w-6 h-6 sm:w-7 sm:h-7 object-contain transition-transform group-hover:rotate-6 drop-shadow-sm"
+          />
+          <div className="text-xl sm:text-2xl font-black tracking-tight font-sans select-none flex items-center">
+            <span className="text-slate-950">Cation</span>
+            <span style={{ color: currentVisual.solidColor }} className="drop-shadow-none transition-colors duration-500">Gate</span>
+          </div>
         </Link>
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-          <span>Sudah memiliki akun?</span>
+
+        {/* Right: Sudah Memiliki Akun? Masuk */}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="hidden text-slate-500 font-medium sm:block">Sudah memiliki akun?</span>
           <Link
             href="/login"
-            className="font-bold text-slate-900 hover:text-blue-600 transition underline underline-offset-4"
+            className="rounded-full border border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-1.5 font-bold text-slate-700 transition-all hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-sm active:scale-95 shadow-xs"
           >
             Masuk
           </Link>
         </div>
-      </header>
+      </div>
 
-      {/* MAIN CONTAINER */}
-      <div className="flex-1 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center px-4 sm:px-6 lg:px-8 py-4 z-10">
+      {/* MAIN CONTAINER 50:50 SPLIT */}
+      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center my-auto z-10 relative pt-2 lg:pt-6">
         {/* SISI KIRI: EDITORIAL LOTTIE PANEL */}
         <EditorialLottiePanel
           currentVisual={currentVisual}
@@ -79,13 +132,13 @@ export default function DaftarSaaS() {
         />
 
         {/* SISI KANAN: FORM INPUT */}
-        <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-12 z-10">
-          <div className="w-full max-w-115 mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
-            <div className="mb-6 text-left">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-950">
+        <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-8 z-10">
+          <div className="w-full max-w-lg mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
+            <div className="mb-5 text-left">
+              <h1 className="text-2xl sm:text-3xl lg:text-[2.15rem] font-extrabold tracking-tight text-slate-950 leading-tight">
                 Buat akun sekolah
               </h1>
-              <p className="mt-1.5 text-xs text-slate-400">
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-500 font-medium">
                 Daftarkan instansi kamu dan mulai kelola sistem PPDB dengan CationGate.
               </p>
             </div>
@@ -94,7 +147,7 @@ export default function DaftarSaaS() {
               <motion.div
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 text-left"
+                className="mb-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-xs font-semibold text-red-600 text-left"
               >
                 <Info className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{errorMsg}</span>
@@ -128,7 +181,7 @@ export default function DaftarSaaS() {
                     <div className="mt-5 sm:mt-6 flex justify-end border-t border-slate-100 pt-4">
                       <Button
                         type="submit"
-                        className="h-10 sm:h-11 rounded-xl bg-[#EAB844] px-6 text-xs font-bold text-white shadow-none hover:bg-[#d9a92f] cursor-pointer"
+                        className="h-10 sm:h-11 rounded-xl bg-[#EAB844] hover:bg-[#d9a92f] px-6 text-xs font-bold text-white shadow-md shadow-[#EAB844]/20 cursor-pointer transition-all"
                       >
                         Lanjutkan <ArrowRight className="ml-2 h-3.5 w-3.5" />
                       </Button>
@@ -151,14 +204,14 @@ export default function DaftarSaaS() {
                         variant="ghost"
                         onClick={() => setStep(1)}
                         disabled={loading}
-                        className="h-10 sm:h-11 px-4 text-xs font-bold text-slate-500 cursor-pointer"
+                        className="h-10 sm:h-11 px-4 text-xs font-bold text-slate-500 cursor-pointer hover:bg-slate-100 rounded-xl"
                       >
                         Kembali
                       </Button>
                       <Button
                         type="submit"
                         disabled={loading}
-                        className="h-10 sm:h-11 rounded-xl bg-[#EAB844] px-6 text-xs font-bold text-white shadow-none hover:bg-[#d9a92f] cursor-pointer"
+                        className="h-10 sm:h-11 rounded-xl bg-[#0284C7] hover:bg-[#0369a1] px-6 text-xs font-bold text-white shadow-md shadow-blue-500/20 cursor-pointer transition-all"
                       >
                         Lanjutkan <ArrowRight className="ml-2 h-3.5 w-3.5" />
                       </Button>
@@ -190,7 +243,7 @@ export default function DaftarSaaS() {
       </div>
 
       {/* STEP BAR DESKTOP (BOTTOM) */}
-      <div className="hidden lg:flex justify-center z-20 relative pb-2 w-full max-w-7xl mx-auto">
+      <div className="hidden lg:flex justify-center z-20 relative pb-1 w-full max-w-7xl mx-auto">
         <div className="inline-flex items-center gap-2 bg-[#F1F3F6] p-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-200/80">
           {[1, 2, 3].map((s) => {
             const isActive = Math.min(step, 3) === s;
@@ -229,7 +282,7 @@ export default function DaftarSaaS() {
       </div>
 
       {/* FOOTER INFO */}
-      <div className="w-full text-center text-xs text-slate-400 py-3 relative z-10">
+      <div className="w-full text-center text-xs text-slate-400 py-1 relative z-10">
         <p>&copy; {new Date().getFullYear()} CationGate. Hak Cipta Dilindungi.</p>
       </div>
     </main>

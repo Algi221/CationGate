@@ -9,6 +9,7 @@ import { DetailModal } from "@/components/features/pendaftar/components/DetailMo
 import { EditModal } from "@/components/features/pendaftar/components/EditModal";
 import { RejectModal } from "@/components/features/pendaftar/components/RejectModal";
 import { TrashTab } from "@/components/features/pendaftar/components/TrashTab";
+import { PaymentReceiptModal } from "@/components/features/pendaftar/components/PaymentReceiptModal";
 
 function ApplicantsDirectoryContent() {
   const {
@@ -24,6 +25,11 @@ function ApplicantsDirectoryContent() {
     setGelombangFilter,
     genderFilter,
     setGenderFilter,
+    paymentFilter,
+    setPaymentFilter,
+    receiptModalApplicant,
+    setReceiptModalApplicant,
+    handleConfirmPayment,
     majorsList,
     page,
     setPage,
@@ -147,6 +153,8 @@ function ApplicantsDirectoryContent() {
           setGelombangFilter={setGelombangFilter}
           genderFilter={genderFilter}
           setGenderFilter={setGenderFilter}
+          paymentFilter={paymentFilter}
+          setPaymentFilter={setPaymentFilter}
           majorsList={majorsList}
           isSpreadsheetMode={isSpreadsheetMode}
           setIsSpreadsheetMode={setIsSpreadsheetMode}
@@ -167,10 +175,20 @@ function ApplicantsDirectoryContent() {
           }}
           onDelete={deleteApplicant}
           onTogglePhysicalDoc={handleTogglePhysicalDoc}
+          onOpenReceipt={(applicant) => setReceiptModalApplicant(applicant)}
+          onConfirmPayment={handleConfirmPayment}
           activeCell={activeCell}
           setActiveCell={setActiveCell}
         />
       )}
+
+      {/* Payment Receipt / Cashier Modal */}
+      <PaymentReceiptModal
+        isOpen={!!receiptModalApplicant}
+        onClose={() => setReceiptModalApplicant(null)}
+        applicant={receiptModalApplicant}
+        onConfirmLunas={handleConfirmPayment}
+      />
 
       {/* Detail Modal */}
       <DetailModal

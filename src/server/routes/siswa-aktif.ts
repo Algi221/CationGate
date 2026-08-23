@@ -468,21 +468,36 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
     if (rawStudents.length === 0) {
       return c.json({ success: false, message: 'Array data siswa kosong.' }, 400);
     }
+    if (rawStudents.length > 3000) {
+      return c.json({ success: false, message: 'Batas maksimal per impor adalah 3.000 data siswa.' }, 400);
+    }
+
+    const sanitizeField = (val: unknown, maxLen = 255): string | null => {
+      if (val === null || val === undefined) return null;
+      let str = String(val).trim();
+      if (!str) return null;
+      // Prevent formula injection (=, +, -, @, \t, \r)
+      if (/^[=+\-@\t\r]/.test(str)) {
+        str = str.replace(/^[=+\-@\t\r]+/, '');
+      }
+      // Strip potential script or HTML tags
+      str = str.replace(/<[^>]*>?/gm, '');
+      return str.slice(0, maxLen).trim() || null;
+    };
 
     // Normalize and sanitize fields for each student
     const sanitizedStudents = rawStudents.map((s) => {
       const rawJk = String(s.jenis_kelamin || s.jk || s.gender || '').trim().toLowerCase();
-      let normalizedJk = '';
-      if (rawJk.startsWith('l')) normalizedJk = 'Laki-laki';
-      else if (rawJk.startsWith('p')) normalizedJk = 'Perempuan';
+      let normalizedJk = 'Laki-laki';
+      if (rawJk.startsWith('p')) normalizedJk = 'Perempuan';
 
-      const nama = String(s.nama || s.nama_lengkap || s.namaLengkap || '').trim();
-      const nisn = String(s.nisn || '').trim();
-      const nik = s.nik ? String(s.nik).trim() : null;
-      const nipd = s.nipd ? String(s.nipd).trim() : null;
-      const jurusan = String(s.jurusan || s.jurusan_1 || s.jurusan1 || s.prodi || '').trim();
-      const kelas = String(s.diterima_kelas || s.diterimaKelas || s.kelas || s.rombel || '').trim() || null;
-      const periode = String(s.periode || s.tahun_ajaran || s.angkatan || '2026-2027').trim();
+      const nama = sanitizeField(s.nama || s.nama_lengkap || s.namaLengkap, 150) || '';
+      const nisn = sanitizeField(s.nisn, 20) || '';
+      const nik = sanitizeField(s.nik, 25);
+      const nipd = sanitizeField(s.nipd, 35);
+      const jurusan = sanitizeField(s.jurusan || s.jurusan_1 || s.jurusan1 || s.prodi, 100) || 'Umum';
+      const kelas = sanitizeField(s.diterima_kelas || s.diterimaKelas || s.kelas || s.rombel, 50);
+      const periode = sanitizeField(s.periode || s.tahun_ajaran || s.angkatan, 20) || '2026-2027';
 
       return {
         school_id: schoolId,
@@ -494,25 +509,25 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
         diterima_kelas: kelas,
         periode,
         jenis_kelamin: normalizedJk,
-        tempat_lahir: s.tempat_lahir ? String(s.tempat_lahir).trim() : null,
-        tgl_lahir: s.tgl_lahir ? String(s.tgl_lahir).trim() : null,
-        agama: s.agama ? String(s.agama).trim() : null,
-        alamat: s.alamat ? String(s.alamat).trim() : null,
-        rt_rw: s.rt_rw ? String(s.rt_rw).trim() : null,
-        kelurahan: s.kelurahan ? String(s.kelurahan).trim() : null,
-        kecamatan: s.kecamatan ? String(s.kecamatan).trim() : null,
-        kode_pos: s.kode_pos ? String(s.kode_pos).trim() : null,
-        whatsapp: s.whatsapp ? String(s.whatsapp).trim() : null,
-        email: s.email ? String(s.email).trim() : null,
-        sekolah_asal: s.sekolah_asal ? String(s.sekolah_asal).trim() : null,
-        nama_ayah: s.nama_ayah ? String(s.nama_ayah).trim() : null,
-        pekerjaan_ayah: s.pekerjaan_ayah ? String(s.pekerjaan_ayah).trim() : null,
-        penghasilan_ayah: s.penghasilan_ayah ? String(s.penghasilan_ayah).trim() : null,
-        nama_ibu: s.nama_ibu ? String(s.nama_ibu).trim() : null,
-        pekerjaan_ibu: s.pekerjaan_ibu ? String(s.pekerjaan_ibu).trim() : null,
-        penghasilan_ibu: s.penghasilan_ibu ? String(s.penghasilan_ibu).trim() : null,
-        telepon_ortu: s.telepon_ortu ? String(s.telepon_ortu).trim() : null,
-        diterima_tanggal: s.diterima_tanggal ? String(s.diterima_tanggal).trim() : new Date().toISOString().split('T')[0],
+        tempat_lahir: sanitizeField(s.tempat_lahir, 100),
+        tgl_lahir: sanitizeField(s.tgl_lahir, 30),
+        agama: sanitizeField(s.agama, 50),
+        alamat: sanitizeField(s.alamat, 500),
+        rt_rw: sanitizeField(s.rt_rw, 20),
+        kelurahan: sanitizeField(s.kelurahan, 100),
+        kecamatan: sanitizeField(s.kecamatan, 100),
+        kode_pos: sanitizeField(s.kode_pos, 10),
+        whatsapp: sanitizeField(s.whatsapp, 25),
+        email: sanitizeField(s.email, 100),
+        sekolah_asal: sanitizeField(s.sekolah_asal, 150),
+        nama_ayah: sanitizeField(s.nama_ayah, 150),
+        pekerjaan_ayah: sanitizeField(s.pekerjaan_ayah, 100),
+        penghasilan_ayah: sanitizeField(s.penghasilan_ayah, 50),
+        nama_ibu: sanitizeField(s.nama_ibu, 150),
+        pekerjaan_ibu: sanitizeField(s.pekerjaan_ibu, 100),
+        penghasilan_ibu: sanitizeField(s.penghasilan_ibu, 50),
+        telepon_ortu: sanitizeField(s.telepon_ortu, 25),
+        diterima_tanggal: sanitizeField(s.diterima_tanggal, 30) || new Date().toISOString().split('T')[0],
       };
     }).filter(s => s.nama.length > 0);
 

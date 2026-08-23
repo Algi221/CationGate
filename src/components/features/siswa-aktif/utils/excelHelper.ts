@@ -136,13 +136,18 @@ export async function downloadActiveStudentsTemplate() {
 }
 
 /**
- * Parses an uploaded Excel/CSV file and extracts active student rows.
+ * Parses an uploaded Excel/CSV file and extracts active student rows with security sanitization.
  */
 export async function parseActiveStudentsFile(file: File): Promise<{
   rows: ImportPreviewRow[];
   rawStudents: Record<string, unknown>[];
   errors: string[];
 }> {
+  // Enforce 10MB max file limit to prevent zip bombs
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error("Ukuran file Excel melebihi batas maksimal 10MB.");
+  }
+
   const workbook = new ExcelJS.Workbook();
   const buffer = await file.arrayBuffer();
   await workbook.xlsx.load(buffer);
@@ -184,6 +189,18 @@ export async function parseActiveStudentsFile(file: File): Promise<{
   const rawStudents: Record<string, unknown>[] = [];
   const errors: string[] = [];
 
+  // Helper to sanitize potential CSV formula injection (=, +, -, @)
+  const sanitizeCell = (raw: string): string => {
+    let str = raw.trim();
+    // Neutralize formula triggers
+    if (/^[=+\-@\t\r]/.test(str)) {
+      str = str.replace(/^[=+\-@\t\r]+/, "");
+    }
+    // Remove script tags
+    str = str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+    return str;
+  };
+
   worksheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return; // Skip header row
 
@@ -192,8 +209,10 @@ export async function parseActiveStudentsFile(file: File): Promise<{
       if (!colIdx) return "";
       const val = row.getCell(colIdx).value;
       if (val === null || val === undefined) return "";
-      if (typeof val === "object" && "text" in val) return String(val.text || "").trim();
-      return String(val).trim();
+      let rawStr = "";
+      if (typeof val === "object" && "text" in val) rawStr = String(val.text || "");
+      else rawStr = String(val);
+      return sanitizeCell(rawStr);
     };
 
     const nama = getVal("nama");

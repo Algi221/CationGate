@@ -88,7 +88,6 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
 
     try {
       const token = localStorage.getItem("ppdb_admin_token");
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "/api";
 
       // Upload in chunks of 500
       const chunkSize = 500;
@@ -97,7 +96,7 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
 
       for (let i = 0; i < totalChunks; i++) {
         const chunk = rawStudents.slice(i * chunkSize, (i + 1) * chunkSize);
-        const res = await fetch(`${backendUrl}/api/siswa-aktif/import`, {
+        const res = await fetch(`/api/siswa-aktif/import`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

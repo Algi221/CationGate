@@ -81,8 +81,7 @@ export function usePendaftarState() {
       setTrashLoading(true);
       setTrashError("");
       const token = localStorage.getItem("ppdb_admin_token");
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "/api";
-      const res = await fetch(`${backendUrl}/api/applicants/trashed`, {
+      const res = await fetch(`/api/applicants/trashed`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const data = await res.json();
@@ -104,8 +103,7 @@ export function usePendaftarState() {
       setTrashError("");
       setTrashSuccess("");
       const token = localStorage.getItem("ppdb_admin_token");
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "/api";
-      const res = await fetch(`${backendUrl}/api/applicants/${id}/restore`, {
+      const res = await fetch(`/api/applicants/${id}/restore`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -139,8 +137,7 @@ export function usePendaftarState() {
       setTrashError("");
       setTrashSuccess("");
       const token = localStorage.getItem("ppdb_admin_token");
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "/api";
-      const res = await fetch(`${backendUrl}/api/applicants/${id}?permanent=true`, {
+      const res = await fetch(`/api/applicants/${id}?permanent=true`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

@@ -113,6 +113,12 @@ export function Navbar() {
       color: "#FF9D67",
       dropdown: [
         {
+          title: "Kisah CationGate",
+          desc: "Perjalanan inovasi platform dari sekolah pertama hingga nasional.",
+          href: "/tentang#kisah",
+          icon: BookOpen,
+        },
+        {
           title: "Visi & Misi",
           desc: "Komitmen kami dalam modernisasi pendidikan digital Indonesia.",
           href: "/tentang#visi-misi",
@@ -124,12 +130,7 @@ export function Navbar() {
           href: "/tentang#tim",
           icon: Users,
         },
-        {
-          title: "Kisah CationGate",
-          desc: "Perjalanan inovasi platform dari sekolah pertama hingga nasional.",
-          href: "/tentang#kisah",
-          icon: BookOpen,
-        },
+        
       ],
     },
     {

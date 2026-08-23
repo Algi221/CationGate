@@ -1,162 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { usePPDB } from "@/context/PPDBContext";
-import { RegistrationFormData, DEFAULT_FIELDS_CONFIG } from "./types";
+import { useRegistrationDraft, createInitialFormData } from "./hooks/useRegistrationDraft";
+import { useRegistrationValidation } from "./hooks/useRegistrationValidation";
+import { useRegistrationSubmit } from "./hooks/useRegistrationSubmit";
 
-export const createInitialFormData = (): RegistrationFormData => ({
-  nama: "",
-  nisn: "",
-  nik: "",
-  tempatLahir: "",
-  tglLahir: "",
-  jenisKelamin: "",
-  agama: "",
-  kewarganegaraan: "",
-  alamat: "",
-  rtRw: "",
-  kelurahan: "",
-  kecamatan: "",
-  kodePos: "",
-  whatsapp: "",
-  email: "",
-  tinggalDengan: "",
-  transportasi: "",
-  tinggiBadan: "",
-  beratBadan: "",
-  jarakSekolah: "",
-  jarakKm: "",
-  waktuJam: "",
-  waktuMenit: "",
-  jumlahSaudara: "",
-  golonganDarah: "",
-  penyakitDiderita: "",
-  kebutuhanKhusus: [],
-  jenisPrestasi: [],
-  tingkatPrestasi: [],
-  uraianPrestasi: "",
-  tahunPrestasi: "",
-  penyelenggara: "",
-  jenisBeasiswa: [],
-  uraianBeasiswa: "",
-  tahunMulaiBeasiswa: "",
-  tahunSelesaiBeasiswa: "",
-  namaAyah: "",
-  tempatLahirAyah: "",
-  tglLahirAyah: "",
-  agamaAyah: "",
-  kewarganegaraanAyah: "WNI",
-  pendidikanAyah: "",
-  pekerjaanAyah: "",
-  penghasilanAyah: "",
-  alamatAyah: "",
-  rtrwAyah: "",
-  kelurahanAyah: "",
-  kecamatanAyah: "",
-  kodePosAyah: "",
-  statusAyah: "Masih Hidup",
-  namaIbu: "",
-  tempatLahirIbu: "",
-  tglLahirIbu: "",
-  agamaIbu: "",
-  kewarganegaraanIbu: "WNI",
-  pendidikanIbu: "",
-  pekerjaanIbu: "",
-  penghasilanIbu: "",
-  alamatIbu: "",
-  rtrwIbu: "",
-  kelurahanIbu: "",
-  kecamatanIbu: "",
-  kodePosIbu: "",
-  statusIbu: "Masih Hidup",
-  namaWali: "",
-  tempatLahirWali: "",
-  tglLahirWali: "",
-  agamaWali: "",
-  kewarganegaraanWali: "WNI",
-  pendidikanWali: "",
-  pekerjaanWali: "",
-  penghasilanWali: "",
-  alamatWali: "",
-  rtrwWali: "",
-  kelurahanWali: "",
-  kecamatanWali: "",
-  kodePosWali: "",
-  statusWali: "Masih Hidup",
-  teleponOrtu: "",
-  sekolahAsal: "",
-  tglLulus: "",
-  noIjazah: "",
-  noSKHUN: "",
-  noPesertaUN: "",
-  lamaBelajar: "",
-  pindahanDari: "",
-  alasanPindah: "",
-  diterimaKelas: "",
-  diterimaTanggal: "",
-  jurusan1: "",
-  hobi: [],
-  citaCita: "",
-  nilaiUSTeori: "",
-  nilaiUSPraktik: "",
-  nilaiMuatanLokal: "",
-  alasanMemilih: "",
-  citaCitaSetelahLulus: "",
-  pelajaranDisenangi: "",
-  punyaKPS: "Tidak",
-  noKPS: "",
-  punyaKIP: "Tidak",
-  noKIP: "",
-  alasanDisenangi: "",
-  kesulitanBelajar: "",
-  perkelahian: "",
-  ketPerkelahian: "",
-  narkoba: "",
-  ketNarkoba: "",
-  pelanggaranLain: "",
-  ketPelanggaranLain: "",
-  janjiTaat: "",
-  janjiSanksi: "",
-  janjiAkrab: "",
-  janjiBelajar: "",
-  janjiNamaBaik: "",
-  deklarasi: false,
-  periode: "2026-2027",
-  berkasFotoOk: false,
-  berkasFotoFile: null,
-  berkasFotoName: "",
-  berkasFotoBase64: "",
-  berkasPrestasiBase64: "",
-});
+export { createInitialFormData };
 
 export const useRegistrationForm = () => {
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "smk";
   const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, ppdbLogo, ppdbTitle } = usePPDB();
 
-  const [wizardStep, setWizardStep] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      const savedStep = localStorage.getItem("ppdb_registration_wizard_step");
-      if (savedStep) {
-        const parsed = parseInt(savedStep);
-        if (!isNaN(parsed) && parsed >= 1 && parsed <= 14) return parsed;
-      }
-    }
-    return 1;
-  });
-
-  const [furthestStep, setFurthestStep] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      const savedStep = localStorage.getItem("ppdb_registration_wizard_step");
-      if (savedStep) {
-        const parsed = parseInt(savedStep);
-        if (!isNaN(parsed) && parsed >= 1 && parsed <= 14) return parsed;
-      }
-    }
-    return 1;
-  });
+  const { formData, setFormData, wizardStep, setWizardStep, furthestStep, setFurthestStep } =
+    useRegistrationDraft();
 
   const [isSuccess, setIsSuccess] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
@@ -165,13 +25,14 @@ export const useRegistrationForm = () => {
         try {
           const parsed = JSON.parse(savedSuccess);
           if (parsed && parsed.success && parsed.nisn) return true;
-        } catch (_e) {}
+        } catch (_e) {
+          // ignore
+        }
       }
     }
     return false;
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [kuotaData, setKuotaData] = useState<any[] | null>(null);
 
@@ -182,14 +43,18 @@ export const useRegistrationForm = () => {
     return "open";
   });
 
-  const [fieldsConfig, setFieldsConfig] = useState<Record<string, { label: string; required: boolean; active: boolean }>>(() => {
+  const [fieldsConfig, setFieldsConfig] = useState<
+    Record<string, { label: string; required: boolean; active: boolean }>
+  >(() => {
     if (typeof window !== "undefined") {
       const savedFieldsConfig = localStorage.getItem("ppdb_fields_config");
       if (savedFieldsConfig) {
         try {
           const parsed = JSON.parse(savedFieldsConfig);
           if (parsed && typeof parsed === "object") return parsed;
-        } catch (_e) {}
+        } catch (_e) {
+          // ignore
+        }
       }
     }
     return {};
@@ -202,38 +67,6 @@ export const useRegistrationForm = () => {
     return "";
   });
 
-  const [formData, setFormData] = useState<RegistrationFormData>(() => {
-    const initial = createInitialFormData();
-
-    if (typeof window !== "undefined") {
-      const savedPeriod = localStorage.getItem("ppdb_school_period");
-      if (savedPeriod) initial.periode = savedPeriod;
-
-      const savedSuccess = localStorage.getItem("ppdb_registration_success");
-      if (savedSuccess) {
-        try {
-          const parsed = JSON.parse(savedSuccess);
-          if (parsed && parsed.success && parsed.nisn) {
-            initial.nisn = parsed.nisn;
-            return initial;
-          }
-        } catch (_e) {}
-      }
-
-      const savedCheckout = localStorage.getItem("ppdb_active_checkout");
-      if (!savedCheckout) {
-        const savedFormData = localStorage.getItem("ppdb_registration_form_data");
-        if (savedFormData) {
-          try {
-            const parsed = JSON.parse(savedFormData);
-            return { ...initial, ...parsed };
-          } catch (_e) {}
-        }
-      }
-    }
-    return initial;
-  });
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [submittedCandidate, setSubmittedCandidate] = useState<any>(() => {
     if (typeof window !== "undefined") {
@@ -242,7 +75,9 @@ export const useRegistrationForm = () => {
         try {
           const parsed = JSON.parse(savedCheckout);
           if (parsed && parsed.nisn) return parsed;
-        } catch (_e) {}
+        } catch (_e) {
+          // ignore
+        }
       }
     }
     return null;
@@ -256,7 +91,9 @@ export const useRegistrationForm = () => {
         try {
           const parsed = JSON.parse(savedSuccess);
           if (parsed && parsed.successData) return parsed.successData;
-        } catch (_e) {}
+        } catch (_e) {
+          // ignore
+        }
       }
     }
     return null;
@@ -264,7 +101,10 @@ export const useRegistrationForm = () => {
 
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("ppdb-theme") === "dark" || document.documentElement.classList.contains("dark");
+      return (
+        localStorage.getItem("ppdb-theme") === "dark" ||
+        document.documentElement.classList.contains("dark")
+      );
     }
     return false;
   });
@@ -289,14 +129,19 @@ export const useRegistrationForm = () => {
 
   const [waGroupUrl, setWaGroupUrl] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("ppdb_wa_group_url") || "https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS";
+      return (
+        localStorage.getItem("ppdb_wa_group_url") ||
+        "https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS"
+      );
     }
     return "https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS";
   });
 
   const [waAdmin, setWaAdmin] = useState("6281292244456");
 
-  const [bankConfigList, setBankConfigList] = useState<Array<{ bankName: string; accountNumber: string; accountHolder: string }>>(() => {
+  const [bankConfigList, setBankConfigList] = useState<
+    Array<{ bankName: string; accountNumber: string; accountHolder: string }>
+  >(() => {
     if (typeof window !== "undefined") {
       const savedBank = localStorage.getItem("ppdb_bank_config");
       if (savedBank) {
@@ -304,7 +149,9 @@ export const useRegistrationForm = () => {
           const parsed = JSON.parse(savedBank);
           if (Array.isArray(parsed)) return parsed;
           if (parsed && typeof parsed === "object") return [parsed];
-        } catch (_e) {}
+        } catch (_e) {
+          // ignore
+        }
       }
     }
     return [{ bankName: "Bank Mandiri", accountNumber: "157-00-0174092-2", accountHolder: "Yayasan Taruna Bhakti" }];
@@ -319,7 +166,9 @@ export const useRegistrationForm = () => {
         try {
           const parsed = JSON.parse(savedMajors);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        } catch (_e) {}
+        } catch (_e) {
+          // ignore
+        }
       }
     }
     return [
@@ -332,34 +181,25 @@ export const useRegistrationForm = () => {
     ];
   });
 
-  const getFieldLabel = useCallback(
-    (key: string, defaultLabel: string) => {
-      return fieldsConfig[key]?.label || defaultLabel;
-    },
-    [fieldsConfig]
-  );
+  // SUB-HOOK VALIDATION
+  const { getFieldLabel, isFieldRequired, isFieldActive, getStepLabel, validateStep } =
+    useRegistrationValidation(fieldsConfig, formData);
 
-  const isFieldRequired = useCallback(
-    (key: string) => {
-      const configVal = fieldsConfig[key];
-      if (configVal === undefined) {
-        return DEFAULT_FIELDS_CONFIG[key]?.required !== false;
-      }
-      return configVal.required;
-    },
-    [fieldsConfig]
-  );
-
-  const isFieldActive = useCallback(
-    (key: string) => {
-      const configVal = fieldsConfig[key];
-      if (configVal === undefined) {
-        return DEFAULT_FIELDS_CONFIG[key]?.active !== false;
-      }
-      return configVal.active;
-    },
-    [fieldsConfig]
-  );
+  // SUB-HOOK SUBMISSION
+  const { isSubmitting, handleSubmitRegistration, handlePaymentSuccess } = useRegistrationSubmit({
+    formData,
+    fieldsConfig,
+    schoolSlug,
+    schoolPeriod,
+    majors,
+    registerApplicant,
+    fetchPublicApplicants,
+    setSubmittedCandidate,
+    setShowPaymentGate,
+    setIsSuccess,
+    setSuccessData,
+    submittedCandidate
+  });
 
   useEffect(() => {
     const saved = localStorage.getItem("ppdb-theme");
@@ -369,8 +209,7 @@ export const useRegistrationForm = () => {
 
     const loadLiveConfig = async () => {
       try {
-        const BACKEND_URL = typeof window !== "undefined" ? `/api` : "/api";
-        const res = await fetch(`${BACKEND_URL}/config?school_slug=${schoolSlug}&t=${Date.now()}`);
+        const res = await fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`);
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
@@ -407,7 +246,11 @@ export const useRegistrationForm = () => {
               setFieldsConfig(config.ppdb_fields_config);
               localStorage.setItem("ppdb_fields_config", JSON.stringify(config.ppdb_fields_config));
             }
-            if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config) && config.ppdb_majors_config.length > 0) {
+            if (
+              config.ppdb_majors_config &&
+              Array.isArray(config.ppdb_majors_config) &&
+              config.ppdb_majors_config.length > 0
+            ) {
               setMajors(config.ppdb_majors_config);
               localStorage.setItem("ppdb_majors_config", JSON.stringify(config.ppdb_majors_config));
             }
@@ -425,7 +268,10 @@ export const useRegistrationForm = () => {
               }
             }
           } catch (storageErr) {
-            console.warn("Storage quota exceeded or unavailable. LocalStorage config cache sync bypassed.", storageErr);
+            console.warn(
+              "Storage quota exceeded or unavailable. LocalStorage config cache sync bypassed.",
+              storageErr
+            );
           }
         }
       } catch (err) {
@@ -436,8 +282,7 @@ export const useRegistrationForm = () => {
 
     const loadKuota = async () => {
       try {
-        const BACKEND_URL = typeof window !== "undefined" ? `/api` : "/api";
-        const res = await fetch(`${BACKEND_URL}/kuota`);
+        const res = await fetch(`/api/kuota?school_slug=${schoolSlug}`);
         const json = await res.json();
         if (json.success && json.data) {
           setKuotaData(json.data.pendaftar);
@@ -447,7 +292,7 @@ export const useRegistrationForm = () => {
       }
     };
     loadKuota();
-  }, [schoolSlug]);
+  }, [schoolSlug, setFormData]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -457,8 +302,7 @@ export const useRegistrationForm = () => {
       if (payment === "success" && nisn) {
         const forceVerifyAndShowSuccess = async () => {
           try {
-            const backendUrl = "/api";
-            const res = await fetch(`${backendUrl}/api/payment/confirm-payment-option`, {
+            const res = await fetch(`/api/payment/confirm-payment-option`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -499,7 +343,7 @@ export const useRegistrationForm = () => {
         forceVerifyAndShowSuccess();
       }
     }
-  }, [checkPaymentStatus, fetchPublicApplicants, schoolSlug]);
+  }, [checkPaymentStatus, fetchPublicApplicants, schoolSlug, setFormData]);
 
   useEffect(() => {
     if (isSuccess) {
@@ -508,8 +352,7 @@ export const useRegistrationForm = () => {
       if (targetNisn) {
         const fetchSuccessData = async () => {
           try {
-            const backendUrl = "/api";
-            const res = await fetch(`${backendUrl}/api/applicants/public-invoice/${targetNisn}`);
+            const res = await fetch(`/api/applicants/public-invoice/${targetNisn}`);
             const json = await res.json();
             if (json.success && json.data) {
               setSuccessData(json.data);
@@ -556,7 +399,9 @@ export const useRegistrationForm = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
 
     if (name === "nisn") {
@@ -609,72 +454,11 @@ export const useRegistrationForm = () => {
   const handleCheckboxChange = (value: string) => {
     setFormData((prev) => {
       const current = prev.kebutuhanKhusus || [];
-      const updated = current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
+      const updated = current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value];
       return { ...prev, kebutuhanKhusus: updated };
     });
-  };
-
-  const getStepLabel = (step: number): string => {
-    switch (step) {
-      case 1: return "Data Pribadi Siswa";
-      case 2: return "Data Tempat Tinggal";
-      case 3: return "Data Rincian (Data Periodik)";
-      case 4: return "Data Kesehatan & Berkebutuhan Khusus";
-      case 5: return "Data Prestasi (Opsional)";
-      case 6: return "Data Beasiswa (Opsional)";
-      case 7: return "Data Rincian (Data Pendidikan)";
-      case 8: return "Data Ayah Kandung";
-      case 9: return "Data Ibu Kandung";
-      case 10: return "Data Wali (Opsional)";
-      case 11: return "Data Kegemaran & Minat";
-      case 12: return "Data Budi Pekerti & Ekonomi";
-      case 13: return "Tinjau & Verifikasi Data Anda";
-      case 14: return "Berkas & Konfirmasi Pendaftaran";
-      default: return "";
-    }
-  };
-
-  const getStepFields = (step: number): string[] => {
-    switch (step) {
-      case 1: return ["nama", "jenisKelamin", "nisn", "nik", "tempatLahir", "tglLahir", "agama", "kewarganegaraan"];
-      case 2: return ["alamat", "rtRw", "kelurahan", "kecamatan", "kodePos", "whatsapp", "teleponOrtu", "email", "tinggalDengan", "transportasi"];
-      case 3: return ["tinggiBadan", "beratBadan", "jarakSekolah", "jarakKm", "waktuJam", "waktuMenit", "jumlahSaudara"];
-      case 4: return ["golonganDarah", "penyakitDiderita", "kebutuhanKhusus"];
-      case 5: return ["jenisPrestasi", "tingkatPrestasi", "uraianPrestasi", "tahunPrestasi", "penyelenggara"];
-      case 6: return ["jenisBeasiswa", "uraianBeasiswa", "tahunMulaiBeasiswa", "tahunSelesaiBeasiswa"];
-      case 7: return ["sekolahAsal", "tglLulus", "noIjazah", "noSKHUN", "noPesertaUN", "lamaBelajar", "pindahanDari", "alasanPindah", "diterimaKelas", "diterimaTanggal"];
-      case 8: return ["namaAyah", "tempatLahirAyah", "tglLahirAyah", "agamaAyah", "kewarganegaraanAyah", "pendidikanAyah", "pekerjaanAyah", "penghasilanAyah", "alamatAyah", "rtrwAyah", "kelurahanAyah", "kecamatanAyah", "kodePosAyah", "statusAyah"];
-      case 9: return ["namaIbu", "tempatLahirIbu", "tglLahirIbu", "agamaIbu", "kewarganegaraanIbu", "pendidikanIbu", "pekerjaanIbu", "penghasilanIbu", "alamatIbu", "rtrwIbu", "kelurahanIbu", "kecamatanIbu", "kodePosIbu", "statusIbu"];
-      case 10: return ["namaWali", "tempatLahirWali", "tglLahirWali", "agamaWali", "kewarganegaraanWali", "pendidikanWali", "pekerjaanWali", "penghasilanWali", "alamatWali", "rtrwWali", "kelurahanWali", "kecamatanWali", "kodePosWali", "statusWali"];
-      case 11: return ["hobi", "citaCita", "citaCitaSetelahLulus", "pelajaranDisenangi", "alasanDisenangi", "kesulitanBelajar"];
-      case 12: return ["perkelahian", "narkoba", "pelanggaranLain", "janjiTaat", "janjiSanksi", "janjiAkrab", "janjiBelajar", "janjiNamaBaik"];
-      case 13: return [];
-      case 14: return ["berkasFotoBase64", "buktiBayar", "metodePembayaran", "deklarasi"];
-      default: return [];
-    }
-  };
-
-  const validateStep = (step: number): string[] => {
-    const fields = getStepFields(step);
-    const errors: string[] = [];
-
-    if (step === 14) {
-      if (!formData.deklarasi) errors.push("Pernyataan Deklarasi");
-    }
-
-    fields.forEach((key) => {
-      const conf = fieldsConfig[key] || DEFAULT_FIELDS_CONFIG[key];
-      if (conf && conf.active !== false && conf.required === true) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const val = (formData as any)[key];
-        const isEmpty = val === undefined || val === null || (typeof val === "string" && val.trim() === "") || (Array.isArray(val) && val.length === 0);
-        if (isEmpty) {
-          errors.push(conf.label || key);
-        }
-      }
-    });
-
-    return errors;
   };
 
   const nextStep = async () => {
@@ -690,7 +474,7 @@ export const useRegistrationForm = () => {
         confirmButtonColor: "#3b82f6",
         confirmButtonText: "OKE, SAYA LENGKAPI",
         customClass: {
-          popup: "rounded-[2rem] border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6",
+          popup: "rounded-4xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6",
           confirmButton: "rounded-xl px-5 py-2.5 text-xs font-extrabold tracking-wider",
           title: "text-base font-black text-slate-800 dark:text-white uppercase"
         }
@@ -707,123 +491,7 @@ export const useRegistrationForm = () => {
         return next;
       });
     } else {
-      setIsSubmitting(true);
-
-      const finalData = { ...formData };
-
-      const requiredErrors: string[] = [];
-      Object.keys(DEFAULT_FIELDS_CONFIG).forEach((key) => {
-        const conf = fieldsConfig[key] || DEFAULT_FIELDS_CONFIG[key];
-        if (conf && conf.active !== false && conf.required === true) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const val = (finalData as any)[key];
-          const isEmpty = val === undefined || val === null || (typeof val === "string" && val.trim() === "") || (Array.isArray(val) && val.length === 0);
-          if (isEmpty) {
-            requiredErrors.push(conf.label || key);
-          }
-        }
-      });
-
-      if (requiredErrors.length > 0) {
-        alert(
-          `Harap lengkapi kolom wajib berikut:\n- ${requiredErrors.slice(0, 10).join("\n- ")}${
-            requiredErrors.length > 10 ? `\n...dan ${requiredErrors.length - 10} kolom lainnya` : ""
-          }`
-        );
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!finalData.nama || finalData.nama.trim() === "") finalData.nama = "Calon Siswa";
-      if (!finalData.nisn || finalData.nisn.trim() === "") finalData.nisn = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-      if (!finalData.nik || finalData.nik.trim() === "") finalData.nik = Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
-      if (!finalData.tempatLahir || finalData.tempatLahir.trim() === "") finalData.tempatLahir = "-";
-      if (!finalData.tglLahir || finalData.tglLahir.trim() === "") finalData.tglLahir = "2010-01-01";
-      if (!finalData.jenisKelamin) finalData.jenisKelamin = "L";
-      if (!finalData.agama) finalData.agama = "Islam";
-      if (!finalData.kewarganegaraan) finalData.kewarganegaraan = "WNI";
-      if (!finalData.alamat || finalData.alamat.trim() === "") finalData.alamat = "-";
-      if (!finalData.rtRw || finalData.rtRw.trim() === "") finalData.rtRw = "01/01";
-      if (!finalData.kelurahan || finalData.kelurahan.trim() === "") finalData.kelurahan = "-";
-      if (!finalData.kecamatan || finalData.kecamatan.trim() === "") finalData.kecamatan = "-";
-      if (!finalData.kodePos || finalData.kodePos.trim() === "") finalData.kodePos = "00000";
-      if (!finalData.whatsapp || finalData.whatsapp.trim() === "") finalData.whatsapp = "-";
-      if (!finalData.tinggalDengan) finalData.tinggalDengan = "Orang Tua";
-      if (!finalData.transportasi) finalData.transportasi = "Lainnya";
-      if (!finalData.tinggiBadan) finalData.tinggiBadan = "0";
-      if (!finalData.beratBadan) finalData.beratBadan = "0";
-      if (!finalData.jarakSekolah) finalData.jarakSekolah = "Kurang dari 1 km";
-      if (!finalData.jarakKm) finalData.jarakKm = "0";
-      if (!finalData.waktuJam) finalData.waktuJam = "0";
-      if (!finalData.waktuMenit) finalData.waktuMenit = "0";
-      if (!finalData.jumlahSaudara) finalData.jumlahSaudara = "0";
-      if (!finalData.golonganDarah) finalData.golonganDarah = "O";
-      if (!finalData.teleponOrtu || finalData.teleponOrtu.trim() === "") finalData.teleponOrtu = "-";
-      if (!finalData.sekolahAsal || finalData.sekolahAsal.trim() === "") finalData.sekolahAsal = "-";
-      if (!finalData.tglLulus) finalData.tglLulus = "2026-06-10";
-      if (!finalData.lamaBelajar) finalData.lamaBelajar = "3";
-      if (!finalData.diterimaKelas) finalData.diterimaKelas = "X (Sepuluh)";
-      if (!finalData.jurusan1) {
-        const firstMajor = majors[0];
-        finalData.jurusan1 = firstMajor ? `${firstMajor.title} (${firstMajor.code})` : "Rekayasa Perangkat Lunak (RPL)";
-      }
-
-      let calculatedPeriod = finalData.periode || schoolPeriod || "2026-2027";
-      if (finalData.diterimaKelas === "XI (Sebelas)") {
-        const parts = calculatedPeriod.split("-").map(Number);
-        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-          calculatedPeriod = `${parts[0] - 1}-${parts[1] - 1}`;
-        }
-      } else if (finalData.diterimaKelas === "XII (Dua Belas)") {
-        const parts = calculatedPeriod.split("-").map(Number);
-        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-          calculatedPeriod = `${parts[0] - 2}-${parts[1] - 2}`;
-        }
-      }
-      finalData.periode = calculatedPeriod;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (finalData as any).school_slug = schoolSlug;
-
-      try {
-        const res = await registerApplicant(finalData);
-        if (res && res.success) {
-          setSubmittedCandidate(res.data);
-          if (typeof window !== "undefined") {
-            localStorage.setItem("ppdb_active_checkout", JSON.stringify(res.data));
-            localStorage.removeItem("ppdb_registration_form_data");
-            localStorage.removeItem("ppdb_registration_wizard_step");
-          }
-          setShowPaymentGate(true);
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Pendaftaran Gagal",
-            text: res?.message || "Gagal mengirimkan formulir pendaftaran. Silakan coba lagi.",
-            confirmButtonColor: "#3b82f6",
-            customClass: {
-              popup: "rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900",
-              confirmButton: "rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider",
-              title: "text-base font-extrabold text-slate-800 dark:text-white"
-            }
-          });
-        }
-      } catch (err) {
-        console.error("Submit error:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Kesalahan Koneksi",
-          text: "Terjadi kesalahan koneksi. Silakan coba lagi.",
-          confirmButtonColor: "#3b82f6",
-          customClass: {
-            popup: "rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900",
-            confirmButton: "rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider",
-            title: "text-base font-extrabold text-slate-800 dark:text-white"
-          }
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
+      await handleSubmitRegistration();
     }
   };
 
@@ -844,31 +512,12 @@ export const useRegistrationForm = () => {
         confirmButtonColor: "#3b82f6",
         confirmButtonText: "MENGERTI",
         customClass: {
-          popup: "rounded-[2rem] border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6",
+          popup: "rounded-4xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6",
           confirmButton: "rounded-xl px-5 py-2.5 text-xs font-extrabold tracking-wider",
           title: "text-base font-black text-slate-800 dark:text-white uppercase"
         }
       });
     }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handlePaymentSuccess = (confirmedData: any) => {
-    setSuccessData(confirmedData);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("ppdb_active_checkout");
-      localStorage.setItem(
-        "ppdb_registration_success",
-        JSON.stringify({
-          nisn: submittedCandidate?.nisn,
-          success: true,
-          successData: confirmedData
-        })
-      );
-    }
-    setShowPaymentGate(false);
-    setIsSuccess(true);
-    fetchPublicApplicants?.();
   };
 
   const handleRegisterNew = async () => {

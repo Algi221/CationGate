@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, Check, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 
 export function ComparisonSection() {
@@ -10,186 +10,171 @@ export function ComparisonSection() {
       aspect: "Pengisian Formulir",
       conventional: {
         title: "Beli Map & Tulis Tangan Fisik",
-        desc: "Calon siswa dan orang tua wajib datang fisik ke sekolah, membeli formulir kertas, dan mengisi biodata panjang di loket.",
+        desc: "Wajib datang ke sekolah, membeli formulir kertas, dan mengisi data manual di loket.",
       },
       cationgate: {
         title: "Isi Mandiri dari Smartphone / Laptop",
-        desc: "Pendaftaran dapat diakses dari HP atau device apa pun. Formulir digital responsif dengan validasi NISN & NIK.",
-      }
+        desc: "Formulir digital responsif yang dapat diakses dari mana saja, lengkap dengan validasi NISN & NIK.",
+      },
     },
     {
-      aspect: "Pembayaran Biaya Formulir",
+      aspect: "Pembayaran Formulir",
       conventional: {
-        title: "Antre di loket(TU) / Kirim Foto Struk Manual",
-        desc: "Pembayaran tunai di loket(TU) harus datang fisik ke sekolah dan harus mengantre untuk membayar biaya pendaftaran.",
+        title: "Antre di Loket TU / Foto Struk Manual",
+        desc: "Pembayaran tunai di tempat yang membutuhkan antrean panjang dan verifikasi manual satu per satu.",
       },
       cationgate: {
-        title: "Multi-Metode: VA & Opsi Tunai",
-        desc: "Mendukung transfer Virtual Account (VA) maupun pembayaran tunai langsung di sekolah dengan pencatatan di dashboard.",
-      }
+        title: "Multi-Metode: VA, QRIS & Tunai",
+        desc: "Mendukung pembayaran online real-time maupun tunai sekolah dengan pencatatan otomatis di dashboard.",
+      },
     },
     {
-      aspect: "Pencatatan & Manajemen Data",
+      aspect: "Manajemen Data & Database",
       conventional: {
-        title: "Ketik Manual Satu per Satu di Excel",
-        desc: "Panitia harus lembur memindahkan data dari kertas ke spreadsheet. Rentan salah input nilai, data ganda, dan file rusak.",
+        title: "Ketik Manual Satu per Satu ke Excel",
+        desc: "Panitia harus lembur memindahkan data, sangat rentan kesalahan input, data ganda, dan file rusak.",
       },
       cationgate: {
         title: "Dashboard Admin Terpusat",
-        desc: "Semua pendaftar masuk otomatis ke database sekolah. Dilengkapi filter status, pencarian instan, dan ekspor 1-klik siap impor ke Dapodik.",
-      }
+        desc: "Data pendaftar masuk otomatis, dilengkapi filter instan, status real-time, dan ekspor siap Dapodik.",
+      },
     },
     {
-      aspect: "Verifikasi Dokumen & Berkas",
+      aspect: "Verifikasi Berkas Calon Siswa",
       conventional: {
-        title: "Susah mengoreksi seorang calon siswa sudah melengkapi berkas atau belum",
-        desc: "Panitia harus memeriksa satu per satu berkas fisik yang diberikan oleh calon siswa.",
+        title: "Periksa Tumpukan Kertas Fisik",
+        desc: "Sulit melacak dokumen siswa mana saja yang sudah lengkap atau belum terkumpul sepenuhnya.",
       },
       cationgate: {
-        title: "Validasi Berkas Digital dengan fitur to-do list",
-        desc: "Panitia bisa mencentang todo yang isinya adalah berkas-berkas yang harus dilengkapi."
-      }
-    }
+        title: "Validasi Digital dengan Todo-List",
+        desc: "Panitia dapat langsung mencentang kelengkapan berkas syarat secara digital dalam satu panel.",
+      },
+    },
   ];
 
   return (
-    <section className="py-20 lg:py-28 bg-white border-t border-slate-200 relative">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {}
-        <div className="text-center max-w-3xl mx-auto mb-14 lg:mb-20 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-800 uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-[#FFC000]" />
+    <section className="py-24 lg:py-32 bg-white dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800 relative overflow-hidden transition-colors">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300 tracking-wide uppercase">
             <span>Transformasi SPMB Sekolah</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight leading-[1.15]">
-            Tinggalkan Cara Lama, Beralih ke Ekosistem Cerdas.
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-950 dark:text-white tracking-tight leading-tight">
+            Tinggalkan Cara Lama, Beralih ke{" "}
+            <span className="text-[#FFC000]">Ekosistem Cerdas</span>.
           </h2>
 
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal max-w-2xl mx-auto">
-            Bandingkan repotnya pengelolaan formulir fisik dan pencatatan manual di Excel dengan kemudahan sistem SPMB cloud modern dari CationGate.
+          <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed font-normal">
+            Bandingkan kompleksitas pengelolaan manual dengan efisiensi tinggi
+            menggunakan portal cloud modern CationGate.
           </p>
         </div>
 
-        {}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-
-          {}
-          <div className="flex flex-col rounded-3xl bg-slate-50 border border-slate-200 p-6 sm:p-8 lg:p-10">
-            <div className="flex items-center justify-between pb-6 border-b border-slate-200 mb-6">
+        {/* Comparison Grid Container */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Card Konvensional (Metode Lama) */}
+          <div className="lg:col-span-5 flex flex-col rounded-2xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 p-8 transition-all">
+            <div className="flex items-center justify-between pb-6 border-b border-neutral-200 dark:border-neutral-800 mb-6">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200/70 px-3 py-1 rounded-full">
-                  Metode Lama
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 bg-neutral-200/60 dark:bg-neutral-800 px-3 py-1 rounded-md">
+                  Metode Tradisional
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2.5">
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mt-2">
                   Cara Konvensional
                 </h3>
               </div>
-              <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 shrink-0 font-bold">
-                <X className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-xl bg-neutral-200/60 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0">
+                <XCircle className="w-5 h-5 text-rose-500" />
               </div>
             </div>
 
-            <p className="text-sm text-slate-500 mb-8 leading-relaxed">
-              Membebani panitia dengan input data berulang, tumpukan berkas fisik yang rawan hilang, dan antrean panjang di loket sekolah.
-            </p>
-
-            {}
-            <div className="divide-y divide-slate-200 flex-1">
+            <div className="space-y-6 flex-1">
               {comparisonItems.map((item, idx) => (
-                <div key={idx} className="py-5 first:pt-0 last:pb-0 space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-black shrink-0">
-                      ✕
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      {item.aspect}
-                    </span>
-                  </div>
-                  <h4 className="text-base font-bold text-slate-900 pl-7">
+                <div key={idx} className="space-y-1">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    {item.aspect}
+                  </span>
+                  <h4 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                     {item.conventional.title}
                   </h4>
-                  <p className="text-sm text-slate-600 pl-7 leading-relaxed font-normal">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     {item.conventional.desc}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-slate-200 text-center">
-              <p className="text-xs text-rose-600 font-semibold">
-                Membutuhkan banyak waktu kerja, biaya cetak formulir, dan risiko human error tinggi.
+            <div className="mt-8 pt-5 border-t border-neutral-200 dark:border-neutral-800">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium text-center">
+                Waktu terbuang, biaya cetak tinggi, dan rawan kesalahan manusia.
               </p>
             </div>
           </div>
 
-          {}
-          <div className="flex flex-col rounded-3xl bg-slate-950 text-white border-2 border-[#FFC000] p-6 sm:p-8 lg:p-10 shadow-2xl relative">
-            <div className="flex items-center justify-between pb-6 border-b border-slate-800 mb-6">
+          {/* Card CationGate (Solusi Unggulan - Pure Black & #FFC000) */}
+          <div className="lg:col-span-7 flex flex-col rounded-2xl bg-[#080808] text-white border border-[#FFC000]/40 p-8 sm:p-10 shadow-xl relative overflow-hidden">
+            <div className="flex items-center justify-between pb-6 border-b border-neutral-800 mb-6">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#FFC000] px-3 py-1 rounded-full">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-950 bg-[#FFC000] px-3 py-1 rounded-md">
                   Solusi CationGate
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-black text-white mt-2.5">
-                  Portal Cloud Mandiri
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  Portal Cloud Terintegrasi
                 </h3>
               </div>
-              <div className="w-10 h-10 rounded-full bg-[#FFC000] flex items-center justify-center text-slate-950 shrink-0 font-bold">
-                <Check className="w-5 h-5 stroke-3" />
+              <div className="w-10 h-10 rounded-xl bg-[#FFC000] text-neutral-950 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
               </div>
             </div>
 
-            <p className="text-sm text-slate-300 mb-8 leading-relaxed">
-              Pengisian formulir mandiri dari smartphone, verifikasi multi-metode pembayaran, dan manajemen berkas satu pintu melalui Dashboard Admin.
-            </p>
-
-            {}
-            <div className="divide-y divide-slate-800 flex-1">
+            <div className="space-y-6 flex-1">
               {comparisonItems.map((item, idx) => (
-                <div key={idx} className="py-5 first:pt-0 last:pb-0 space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#FFC000] text-slate-950 flex items-center justify-center text-xs font-black shrink-0">
-                      ✓
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#FFC000]">
+                <div key={idx} className="space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-[#FFC000]">
                       {item.aspect}
                     </span>
                   </div>
-                  <h4 className="text-base font-bold text-white pl-7">
+                  <h4 className="text-sm font-semibold text-white">
                     {item.cationgate.title}
                   </h4>
-                  <p className="text-sm text-slate-300 pl-7 leading-relaxed font-normal">
+                  <p className="text-xs text-neutral-300 leading-relaxed">
                     {item.cationgate.desc}
                   </p>
                 </div>
               ))}
             </div>
 
-            {}
-            <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-xs text-slate-400 font-medium">
+            <div className="mt-8 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-xs text-neutral-400 font-medium">
                 100% Paperless • Siap Impor Dapodik
               </span>
               <Link href="/daftar" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#FFC000] hover:bg-white text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
+                <button className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#FFC000] hover:bg-[#e5ac00] text-neutral-950 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer group">
                   <span>Daftar Sekolah Sekarang</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </Link>
             </div>
           </div>
-
         </div>
 
-        {}
-        <div className="mt-10 p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center max-w-3xl mx-auto">
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-            <strong className="font-bold text-slate-950">Catatan Layanan Pembayaran:</strong> CationGate secara spesifik memfasilitasi pencatatan dan verifikasi <strong className="font-bold text-slate-950">biaya formulir / administrasi pendaftaran siswa baru</strong>, baik melalui transfer online (Virtual Account & QRIS) maupun pembayaran tunai langsung di sekolah.
+        {/* Note Box Bawah */}
+        <div className="mt-8 p-4 sm:p-5 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center max-w-3xl mx-auto">
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            <strong className="font-semibold text-neutral-900 dark:text-white">
+              Catatan Transparansi:
+            </strong>{" "}
+            CationGate memfasilitasi pencatatan dan verifikasi biaya formulir
+            atau administrasi pendaftaran secara transparan, mendukung
+            pembayaran transfer online maupun tunai langsung di loket sekolah.
           </p>
         </div>
-
       </div>
     </section>
   );
 }
+
+export default ComparisonSection;

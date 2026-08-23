@@ -165,25 +165,25 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Story Section */}
+        {/* Story Section - id diubah menjadi #kisah */}
         <section
           ref={section1Ref}
-          id="story"
-          className="py-24 px-6 max-w-7xl mx-auto overflow-hidden"
+          id="kisah"
+          className="py-24 px-6 max-w-7xl mx-auto overflow-hidden scroll-mt-24"
         >
           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
             <div className="flex-1 relative animate-up w-full">
               {/* Logo Card */}
-              <div className="relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-700 hover:scale-[1.02] flex items-center justify-center bg-white border border-zinc-200 p-12">
-                <div className="text-center space-y-4 flex flex-col items-center">
-                  {/* Logo Placeholder */}
-                  <div className="w-36 h-36 relative mb-2 flex items-center justify-center">
+              <div className="relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-700 hover:scale-[1.02] flex items-center justify-center bg-white border border-zinc-200 p-8">
+                <div className="text-center space-y-6 flex flex-col items-center w-full h-full justify-center">
+                  <div className="w-52 h-52 sm:w-64 sm:h-64 relative mb-2 flex items-center justify-center">
                     <Image
                       src="/assets/logo_cationgate/CationGate_Logo.png"
                       alt="CationGate Logo"
                       fill
-                      sizes="144px"
+                      sizes="(max-width: 768px) 208px, 256px"
                       className="object-contain"
+                      priority
                     />
                   </div>
                   <h3 className="text-2xl font-black text-zinc-900">
@@ -230,11 +230,11 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {}
+        {/* Mission Section - id diubah menjadi #visi-misi */}
         <section
           ref={section2Ref}
-          id="mission"
-          className="py-32 bg-zinc-900 text-white px-6 relative overflow-hidden"
+          id="visi-misi"
+          className="py-32 bg-zinc-900 text-white px-6 relative overflow-hidden scroll-mt-20"
         >
           <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center">
             <div className="text-center mb-20 max-w-3xl">
@@ -280,10 +280,10 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {}
+        {/* Team Section - id diubah menjadi #tim */}
         <section
-          className="pt-28 pb-16 px-6 max-w-7xl mx-auto overflow-hidden"
-          id="team"
+          className="pt-28 pb-16 px-6 max-w-7xl mx-auto overflow-hidden scroll-mt-24"
+          id="tim"
         >
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 w-full">
             <div>
@@ -318,7 +318,9 @@ export default function AboutPage() {
                         `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(member.name)}`
                       }
                       alt={member.name}
-                      fill sizes="(max-width: 768px) 100vw, 360px"className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 360px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         const target = e.target as HTMLElement;
                         target.style.display = "none";

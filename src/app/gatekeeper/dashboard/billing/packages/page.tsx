@@ -205,7 +205,7 @@ export default function GatekeeperPackagesPage() {
           <p className="text-slate-400 dark:text-slate-500 animate-pulse">Memuat data paket...</p>
         </div>
       ) : plans.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 text-center min-h-75 flex flex-col items-center justify-center gap-3">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 text-center min-h-[300px] flex flex-col items-center justify-center gap-3">
           <Package className="w-12 h-12 text-slate-300 dark:text-slate-600" />
           <p className="text-slate-400 dark:text-slate-500 font-bold">Belum ada paket langganan</p>
           <button
@@ -297,7 +297,7 @@ export default function GatekeeperPackagesPage() {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-800">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur z-10">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -375,7 +375,7 @@ export default function GatekeeperPackagesPage() {
 
       {/* Delete Confirmation */}
       {deleteConfirm !== null && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-2xl p-6 border border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-full">

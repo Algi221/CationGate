@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Eye, X, CheckCircle, Clock, XCircle, User, Users, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight, Calendar, Sparkles } from "lucide-react";
+import { Search, User, Users, MapPin, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 import _Image from "next/image";
 
@@ -35,48 +35,42 @@ export default function DataPendaftarTable() {
   const prevApplicantsRef = useRef<Student[]>([]);
 
   useEffect(() => {
-    
-    if (activeRows.length === 0 && publicApplicants.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setActiveRows(publicApplicants.map((a: any) => ({ ...a, isNew: false, isFadingOut: false })));
+    setActiveRows((currentRows) => {
+      if (currentRows.length === 0 && publicApplicants.length > 0) {
+        prevApplicantsRef.current = publicApplicants;
+        return publicApplicants.map((a: Student) => ({ ...a, isNew: false, isFadingOut: false }));
+      }
+
+      const currentIds = publicApplicants.map((a: Student) => a.id);
+      const removedApplicants = prevApplicantsRef.current.filter((a: Student) => !currentIds.includes(a.id));
+
+      const updatedRows = [...currentRows];
+
+      removedApplicants.forEach(removed => {
+        const idx = updatedRows.findIndex(r => r.id === removed.id);
+        if (idx > -1) {
+          updatedRows[idx] = { ...updatedRows[idx], isFadingOut: true };
+        } else {
+          updatedRows.push({ ...removed, isFadingOut: true });
+        }
+      });
+
+      publicApplicants.forEach((newItem: Student) => {
+        const idx = updatedRows.findIndex(r => r.id === newItem.id);
+        if (idx > -1) {
+          updatedRows[idx] = { 
+            ...updatedRows[idx], 
+            ...newItem, 
+            isFadingOut: false 
+          };
+        } else {
+          updatedRows.unshift({ ...newItem, isNew: true, isFadingOut: false });
+        }
+      });
+
       prevApplicantsRef.current = publicApplicants;
-      return;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const currentIds = publicApplicants.map((a: any) => a.id);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const removedApplicants = prevApplicantsRef.current.filter((a: any) => !currentIds.includes(a.id));
-
-    const updatedRows = [...activeRows];
-
-    removedApplicants.forEach(removed => {
-      const idx = updatedRows.findIndex(r => r.id === removed.id);
-      if (idx > -1) {
-        updatedRows[idx] = { ...updatedRows[idx], isFadingOut: true };
-      } else {
-        updatedRows.push({ ...removed, isFadingOut: true });
-      }
+      return updatedRows;
     });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    publicApplicants.forEach((newItem: any) => {
-      const idx = updatedRows.findIndex(r => r.id === newItem.id);
-      if (idx > -1) {
-        updatedRows[idx] = { 
-          ...updatedRows[idx], 
-          ...newItem, 
-          isFadingOut: false 
-        };
-      } else {
-        
-        updatedRows.unshift({ ...newItem, isNew: true, isFadingOut: false });
-      }
-    });
-
-    setActiveRows(updatedRows);
-    prevApplicantsRef.current = publicApplicants;
 
     const timer = setTimeout(() => {
       setActiveRows(prev => 
@@ -87,9 +81,8 @@ export default function DataPendaftarTable() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [publicApplicants, activeRows.length]);
+  }, [publicApplicants]);
 
-  // Inject dummy data if empty so the UI doesn't look barren
   const displayApplicants = publicApplicants.length > 0 ? activeRows : [
     { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0012345678", sekolahAsal: "SMPN 1 Depok", status: "Approved", isNew: false, isFadingOut: false },
     { id: 2, nama: "Putri Ayu Lestari", nisn: "0012345679", sekolahAsal: "SMPN 2 Depok", status: "Pending", isNew: false, isFadingOut: false }
@@ -116,12 +109,12 @@ export default function DataPendaftarTable() {
     };
 
     return (
-    <div className="flex flex-col h-full animate-in slide-in-from-right duration-500 ease-out text-left relative z-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-sm p-8 sm:p-12 overflow-hidden">
-      
-      {/* Subtle Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.05)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]" />
-      
-      {/* Back navigation header */}
+    <div className="flex flex-col h-full animate-in slide-in-from-right duration-500 ease-out text-left relative z-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm p-8 sm:p-12 overflow-hidden">
+
+      {}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.05)_1px,transparent_1px)] bg-size-[40px_40px] pointer-events-none dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]" />
+
+      {}
       <div className="flex items-center justify-start pb-8 relative z-10">
         <button
           type="button"
@@ -134,13 +127,13 @@ export default function DataPendaftarTable() {
       </div>
 
       <div className="flex-1 w-full flex flex-col justify-center relative z-10">
-        
-        {/* Card Grid Body */}
+
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          
-          {/* Left Side: Student Info */}
+
+          {}
           <div className="flex flex-col justify-center">
-            {/* Calon Peserta Didik Badge */}
+            {}
             <div className="inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full py-1.5 px-1.5 pr-5 w-fit mb-6 shadow-sm">
               <div className="w-7 h-7 rounded-full bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600 flex items-center justify-center shrink-0">
                 <User size={14} className="text-blue-500" strokeWidth={2.5} />
@@ -149,12 +142,12 @@ export default function DataPendaftarTable() {
                 Calon Peserta Didik
               </span>
             </div>
-            
-            <h2 className="text-4xl md:text-6xl font-black text-slate-800 dark:text-white uppercase tracking-tight leading-[1.1] mb-12 max-w-sm break-words">
+
+            <h2 className="text-4xl md:text-6xl font-black text-slate-800 dark:text-white uppercase tracking-tight leading-[1.1] mb-12 max-w-sm wrap-break-word">
               {selectedStudent.nama}
             </h2>
-            
-            {/* Sekolah Asal Details */}
+
+            {}
             <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 w-fit shadow-sm">
                 <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-600/30">
                   <MapPin size={20} />
@@ -168,7 +161,7 @@ export default function DataPendaftarTable() {
             </div>
           </div>
 
-          {/* Right Side: QR Code Verification Badge */}
+          {}
           <div className="flex flex-col items-center justify-center text-center space-y-6">
             <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border border-slate-200 dark:border-slate-700">
               {(() => {
@@ -176,6 +169,7 @@ export default function DataPendaftarTable() {
                   ? `${window.location.origin}/verify/${selectedStudent.id}` 
                   : `http://localhost:3000/verify/${selectedStudent.id}`;
                 return (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img 
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(verifyUrl)}&color=0f172a`} 
                     alt="Verification QR" 
@@ -185,7 +179,7 @@ export default function DataPendaftarTable() {
                 );
               })()}
             </div>
-            
+
             <div className="flex flex-col items-center bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full px-8 py-3 shadow-sm">
               <span className="text-[10px] font-black text-blue-500 dark:text-blue-400 tracking-[0.3em] uppercase block mb-1">
                 VERIFIKASI DIGITAL
@@ -225,11 +219,11 @@ export default function DataPendaftarTable() {
     const matchName = 
       (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
       (item.nisn || "").includes(searchTerm);
-    
+
     const matchJurusan = 
       filterJurusan === "Semua" || 
       (item.jurusan_1 || item.jurusan1 || "").includes(filterJurusan);
-      
+
     return matchName && matchJurusan;
   });
 
@@ -241,7 +235,7 @@ export default function DataPendaftarTable() {
 
   return (
     <div className="flex flex-col h-full w-full relative z-10 bg-transparent">
-      
+
       {/* Header Inside Mockup Box */}
       <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -274,10 +268,10 @@ export default function DataPendaftarTable() {
             value={filterJurusan}
             onChange={(e) => setFilterJurusan(e.target.value)}
             aria-label="Filter berdasarkan jurusan"
-            className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all cursor-pointer min-w-[180px]"
+            className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white transition-all cursor-pointer min-w-45"
           >
             <option value="Semua">Semua Jurusan</option>
-            {uniqueMajors.map((major: any) => (
+            {uniqueMajors.map((major: string) => (
               <option key={major} value={major}>{major}</option>
             ))}
           </select>

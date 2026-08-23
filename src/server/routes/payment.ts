@@ -7,7 +7,6 @@ import { fontInMemSchools } from './saas';
 
 const paymentRouter = new Hono();
 
-// PUBLIC: POST Confirm Payment Option (Transfer Manual or Bayar Tunai)
 paymentRouter.post('/confirm-payment-option', rateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }), async (c: Context) => {
   try {
     const body = await c.req.json();
@@ -16,13 +15,12 @@ paymentRouter.post('/confirm-payment-option', rateLimiter({ windowMs: 15 * 60 * 
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     const { nisn, bukti_bayar, metode_pembayaran } = result.data;
     const schoolSlug = String(body.school_slug || '');
 
-    // Tenant scope: resolve school from slug; reject if missing (prevents cross-tenant NISN guessing)
     if (!schoolSlug) {
       return c.json({ success: false, message: 'school_slug wajib diisi.' }, 400);
     }
@@ -33,12 +31,11 @@ paymentRouter.post('/confirm-payment-option', rateLimiter({ windowMs: 15 * 60 * 
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       bukti_bayar: bukti_bayar || null,
       metode_pembayaran: metode_pembayaran
     };
-    
+
     const { data: updatedRecord, error } = await supabase
       .from('student_applicants')
       .update(updateData)
@@ -54,7 +51,7 @@ paymentRouter.post('/confirm-payment-option', rateLimiter({ windowMs: 15 * 60 * 
 
     return c.json({ success: true, message: 'Payment option confirmed successfully', data: updatedRecord });
   } catch (err: unknown) {
-    console.error('Failed to confirm payment option:', (err as any).message);
+    console.error('Failed to confirm payment option:', err instanceof Error ? err.message : String(err));
     return c.json({ success: false, message: 'Failed to confirm payment option' }, 500);
   }
 });

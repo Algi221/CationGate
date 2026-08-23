@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 export interface Toast {
   id: string;
   title: string;
@@ -18,7 +17,6 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | null>(null);
 
-// ─── Notification Sound ───────────────────────────────────────────────────────
 function playNotificationSound() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,11 +40,10 @@ function playNotificationSound() {
     osc1.stop(audioCtx.currentTime + 0.5);
     osc2.stop(audioCtx.currentTime + 0.5);
   } catch (e: unknown) {
-    console.log('AudioContext blocked or unsupported:', (e as any).message);
+    console.log('AudioContext blocked or unsupported:', e instanceof Error ? e.message : String(e));
   }
 }
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -90,8 +87,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
       {children}
 
-      {/* Toast Alert Portal */}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none max-w-sm w-full">
+      {/* Floating Modern Container */}
+      <div className="fixed bottom-6 right-6 z-100 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
         {toasts.map((toast) => (
           <div
             key={toast.id}

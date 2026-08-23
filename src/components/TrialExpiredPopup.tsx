@@ -12,7 +12,7 @@ export default function TrialExpiredPopup() {
   const schoolSlug = (params?.school_slug as string) || "";
 
   const [isExpired, setIsExpired] = useState(false);
-  const [daysLeft, setDaysLeft] = useState<number | null>(null);
+  const [_daysLeft, setDaysLeft] = useState<number | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function TrialExpiredPopup() {
   if (!isExpired || dismissed) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-9999 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative animate-in fade-in zoom-in-95 duration-300">
         {/* Dismiss button — optional, can remove to force upgrade */}
         <button

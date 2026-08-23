@@ -2,20 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import { useParams } from 'next/navigation';
 import { 
   Search, 
   Megaphone,
-  Sun,
-  Moon,
   Calendar,
-  ChevronRight,
   ArrowRight,
   User,
   BookOpen,
-  Menu,
   X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -143,7 +140,7 @@ export default function ForumPage() {
         if (json.success && json.data) {
           setInformasi(json.data);
         }
-        
+
         try {
           const schoolSlug = params?.school_slug as string || '';
           const configRes = await fetch(`${BACKEND_URL}/config?school_slug=${schoolSlug}&_t=${Date.now()}`, { cache: 'no-store' });
@@ -163,7 +160,7 @@ export default function ForumPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [params?.school_slug]);
 
   const filtered = informasi.filter(item => {
     const searchLower = searchQuery.toLowerCase();
@@ -187,7 +184,7 @@ export default function ForumPage() {
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-[#F8FAFC] dark:bg-slate-950 transition-colors duration-300">
-      
+
       {/* ── FLOATING NAVBAR ── */}
       <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isNavbarScrolled ? 'bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm' : 'bg-transparent'}`}>
         <SchoolNavbar schoolSlug={schoolSlug} />
@@ -195,13 +192,13 @@ export default function ForumPage() {
 
       {/* Fullscreen Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 md:hidden animate-out fade-out">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 md:hidden">
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href={`/${params.school_slug}`} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <img src={ppdbLogo || undefined} alt="Logo Sekolah" className="w-12 h-12 object-contain" />
+              <Image src={ppdbLogo || "/icon.png"} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" unoptimized />
               <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
             </Link>
 
@@ -261,11 +258,11 @@ export default function ForumPage() {
       )}
 
       {/* ── MAIN CONTENT ── */}
-      <main className="max-w-7xl mx-auto px-6 pt-28 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-10 w-full flex-grow">
-        
+      <main className="max-w-7xl mx-auto px-6 pt-28 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-10 w-full grow">
+
         {/* ── LEFT COLUMN ── */}
         <div className="lg:col-span-8 space-y-8">
-          
+
           {/* Header */}
           <div>
             <BlurText 
@@ -289,7 +286,7 @@ export default function ForumPage() {
           ) : filtered.length === 0 ? (
             <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
               <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 border border-slate-100 dark:border-slate-700">
-                <Megaphone className="text-slate-400 dark:text-slate-500 dark:text-slate-400" size={28} />
+                <Megaphone className="text-slate-400 dark:text-slate-400" size={28} />
               </div>
               <h3 className="text-slate-800 dark:text-white font-black uppercase tracking-wider mb-3">Belum Ada Informasi</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
@@ -312,7 +309,7 @@ export default function ForumPage() {
                         handleViewDetail(item.id);
                       }
                     }}
-                    className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800 rounded-2xl p-6 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 cursor-pointer group ${loadingDetailId === item.id ? 'opacity-80 pointer-events-none' : ''}`}
+                    className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 cursor-pointer group ${loadingDetailId === item.id ? 'opacity-80 pointer-events-none' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex flex-wrap gap-2 items-center">
@@ -339,7 +336,7 @@ export default function ForumPage() {
                     <div className="flex flex-col sm:flex-row gap-5 mb-4">
                       {media.foto && (
                         <div className="w-full sm:w-48 h-48 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 shadow-sm">
-                           <img src={sanitizeSrc(media.foto)} alt={item.judul || "Pengumuman"} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-350" />
+                           <Image src={sanitizeSrc(media.foto) || "/icon.png"} alt={item.judul || "Pengumuman"} width={200} height={150} unoptimized className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-350" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -382,7 +379,7 @@ export default function ForumPage() {
 
         {/* ── RIGHT SIDEBAR ── */}
         <div className="lg:col-span-4 space-y-6">
-          
+
           {/* Search */}
           <div className="relative">
             <Search size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
@@ -399,7 +396,7 @@ export default function ForumPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-[#F0F4F8] dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800/50 dark:border-slate-800 shadow-sm"
+            className="bg-[#F0F4F8] dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm"
           >
             <h3 className="font-bold text-slate-800 dark:text-white text-sm mb-5">Pengumuman Terbaru</h3>
             {recentPosts.length === 0 ? (
@@ -423,7 +420,7 @@ export default function ForumPage() {
                       }}
                       className={`flex gap-4 items-start cursor-pointer group ${loadingDetailId === item.id ? 'opacity-80 pointer-events-none' : ''}`}
                     >
-                      <div className="flex flex-col items-center justify-center w-10 h-11 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-800/60 dark:border-slate-700 shadow-sm shrink-0">
+                      <div className="flex flex-col items-center justify-center w-10 h-11 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
                         <span className="text-[9px] font-bold text-blue-600 uppercase">{month}</span>
                         <span className="text-sm font-black text-slate-800 dark:text-white leading-none mt-0.5">{day}</span>
                       </div>
@@ -444,7 +441,7 @@ export default function ForumPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-blue-500/20"
+            className="bg-linear-to-br from-blue-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-blue-500/20"
           >
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-white dark:bg-[#0f172a]/10 rounded-full blur-2xl"></div>
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl"></div>
@@ -465,34 +462,34 @@ export default function ForumPage() {
         const media = parseMedia(selectedPost.foto_url);
         return (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto"
+            className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto"
             onClick={() => setSelectedPost(null)}
           >
             <div
-              className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-y-auto md:overflow-hidden my-8 max-h-[90vh] md:max-h-[85vh]"
+              className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-y-auto md:overflow-hidden my-8 max-h-[90vh] md:max-h-[85vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {media.foto && (
                 <div 
                   onClick={() => setLightboxImage(media.foto)}
-                  className="w-full md:w-auto md:max-w-[45%] bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 cursor-zoom-in relative group max-h-[350px] md:max-h-none shrink-0"
+                  className="w-full md:w-auto md:max-w-[45%] bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 cursor-zoom-in relative group max-h-87.5 md:max-h-none shrink-0"
                 >
-                  <img src={sanitizeSrc(media.foto)} alt={selectedPost.judul} className="max-w-full max-h-full md:max-h-[75vh] w-auto h-auto object-contain rounded-xl" />
+                  <Image src={sanitizeSrc(media.foto) || "/icon.png"} alt={selectedPost.judul} width={600} height={600} unoptimized className="max-w-full max-h-full md:max-h-[75vh] w-auto h-auto object-contain rounded-xl" />
                   <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                     <span className="bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full backdrop-blur-sm">🔍 Klik untuk Zoom</span>
                   </div>
                 </div>
               )}
-              
+
               <div className="flex-1 flex flex-col min-w-0 h-auto md:h-full overflow-visible md:overflow-y-auto">
-                <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15 sticky top-0 z-20 backdrop-blur-md">
+                <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-900/60 sticky top-0 z-20 backdrop-blur-md">
                   <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-900">
                     <Calendar size={11} />
                     {formatDate(selectedPost.tanggal)}
                   </div>
                   <button
                     onClick={() => setSelectedPost(null)}
-                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white flex items-center justify-center transition-all font-bold cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold cursor-pointer"
                   >
                     ✕
                   </button>
@@ -508,12 +505,12 @@ export default function ForumPage() {
                       <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest text-left">
                         Lampiran Pengumuman
                       </h4>
-                      
+
                       <div className="space-y-6">
                         {/* Video Player (Inline playback only, no download) */}
                         {media.video && (
                           <div className="space-y-3 text-left">
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider block">🎥 Video Lampiran:</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">🎥 Video Lampiran:</span>
                             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-900 shadow-md">
                               <video src={sanitizeSrc(media.video)} controls className="w-full max-h-72 object-contain">
                                 <track kind="captions" label="No captions" default />
@@ -525,18 +522,18 @@ export default function ForumPage() {
                         {/* Document Preview & Download Button */}
                         {media.dokumen && (
                           <div className="space-y-3 text-left w-full">
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi / Surat Keputusan:</span>
-                            
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi / Surat Keputusan:</span>
+
                             {media.dokumen.startsWith("data:application/pdf") ? (
                               <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-white dark:bg-[#0f172a]">
-                                <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-[350px] border-0" />
+                                <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-87.5 border-0" />
                               </div>
                             ) : media.dokumen.startsWith("data:image/") ? (
                               <div 
                                 onClick={() => setLightboxImage(media.dokumen)}
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4 cursor-zoom-in group relative"
                               >
-                                <img src={sanitizeSrc(media.dokumen)} alt="Dokumen Preview" className="max-w-full max-h-80 object-contain rounded-xl" />
+                                <Image src={sanitizeSrc(media.dokumen) || "/icon.png"} alt="Dokumen Preview" width={400} height={320} unoptimized className="max-w-full max-h-80 object-contain rounded-xl" />
                                 <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                                   <span className="bg-black/60 text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">🔍 Zoom Dokumen</span>
                                 </div>
@@ -548,11 +545,11 @@ export default function ForumPage() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <h6 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{media.dokumenName || "dokumen.pdf"}</h6>
-                                  <span className="text-[9px] text-slate-400 dark:text-slate-550 block mt-0.5">Pratinjau langsung tidak tersedia untuk format berkas ini. Silakan unduh dokumen untuk melihat isi berkas.</span>
+                                  <span className="text-[9px] text-slate-400 block mt-0.5">Pratinjau langsung tidak tersedia untuk format berkas ini. Silakan unduh dokumen untuk melihat isi berkas.</span>
                                 </div>
                               </div>
                             )}
-                            
+
                             <div className="pt-2">
                               <a
                                 href={sanitizeUrl(media.dokumen)}
@@ -569,7 +566,7 @@ export default function ForumPage() {
                   )}
                 </div>
 
-                <div className="p-5 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15 border-t border-slate-100 dark:border-white/5 flex justify-end sticky bottom-0 z-20 backdrop-blur-md">
+                <div className="p-5 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-100 dark:border-white/5 flex justify-end sticky bottom-0 z-20 backdrop-blur-md">
                   <button
                     onClick={() => setSelectedPost(null)}
                     className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all cursor-pointer"
@@ -586,27 +583,30 @@ export default function ForumPage() {
       {/* ── LIGHTBOX MODAL ── */}
       {lightboxImage && (
         <div 
-          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
+          className="fixed inset-0 z-200 bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
           onClick={() => setLightboxImage(null)}
         >
           <button 
             onClick={() => setLightboxImage(null)}
-            className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 text-white flex items-center justify-center transition-all cursor-pointer z-50 border border-white/10 hover:scale-105 active:scale-95"
+            className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer z-50 border border-white/10 hover:scale-105 active:scale-95"
             aria-label="Tutup"
           >
             <X size={20} />
           </button>
-          
+
           <div className="relative max-w-full max-h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            <img 
-              src={sanitizeSrc(lightboxImage)} 
+            <Image 
+              src={sanitizeSrc(lightboxImage) || "/icon.png"} 
               alt="Detail Zoomed" 
+              width={1200}
+              height={800}
+              unoptimized
               className="max-w-full max-h-[90vh] md:max-h-screen object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200" 
             />
           </div>
         </div>
       )}
-    
+
       {/* FOOTER */}
       <SchoolFooter schoolSlug={schoolSlug} />
     </div>

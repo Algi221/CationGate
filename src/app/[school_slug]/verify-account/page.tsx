@@ -31,7 +31,6 @@ export default function VerifyAccountPage() {
 
   const [otpCode, setOtpCode] = useState('');
 
-  // Fetch school status on mount
   useEffect(() => {
     async function fetchSchool() {
       try {
@@ -40,7 +39,7 @@ export default function VerifyAccountPage() {
         if (data.success && data.data) {
           setSchoolId(data.data.id);
           setSchoolStatus(data.data.status);
-          
+
           if (data.data.status === 'verified') {
             setStep('done');
           } else if (data.data.status === 'pending_review') {

@@ -17,9 +17,10 @@ const sanitizeUrl = (url: string | undefined | null): string => {
 };
 
 const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
+import Image from "next/image";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { Check, X, Eye, FileText, Download, Upload, Filter, Search, TableProperties, FileSpreadsheet, Trash2, Layers, Pencil, PieChart, CloudLightning } from "lucide-react";
+import { Check, X, Eye, Download, Filter, Search, TableProperties, FileSpreadsheet, Trash2, Layers, Pencil, PieChart, CloudLightning } from "lucide-react";
 import KuotaTab from "@/components/KuotaTab";
 import Swal from 'sweetalert2';
 import {
@@ -30,7 +31,6 @@ import {
   FileCheck,
   User,
   Users,
-  FileImage,
   School
 } from "lucide-react";
 
@@ -81,6 +81,7 @@ interface Applicant {
   sekolahAsal?: string;
   tgl_lulus?: string;
   tglLulus?: string;
+  jurusan?: string;
   jurusan_1?: string;
   jurusan1?: string;
   nama_ayah?: string;
@@ -142,11 +143,22 @@ interface Applicant {
   pelanggaran_lain?: string;
   periode?: string;
   berkas_foto?: string;
+  bukti_bayar?: string;
+  gelombang?: string;
+  registration_no?: string;
+  verified_by?: string;
+  rejected_by?: string;
+  alasan_ditolak?: string;
+  physical_doc_verified?: boolean;
+  physical_doc_verified_by?: string;
+  physical_docs_checklist?: Record<string, boolean>;
+  deleted_at?: string;
+  deleted_by?: string;
   diterima_kelas?: string | null;
   diterimaKelas?: string | null;
   diterima_tanggal?: string | null;
   diterimaTanggal?: string | null; 
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface EditFormState {
@@ -226,7 +238,7 @@ function ApplicantsDirectoryContent() {
   const [rejectingApplicantId, setRejectingApplicantId] = useState<number | null>(null);
   const [rejectionPreset, setRejectionPreset] = useState<string>("");
   const [rejectionNotes, setRejectionNotes] = useState<string>("");
-  
+
   // Trash bin implementation
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -247,7 +259,7 @@ function ApplicantsDirectoryContent() {
     router.push(`/${schoolSlug}/dashboard/pendaftar?tab=${tab}`);
   };
 
-  const fetchTrashedApplicants = async () => {
+  const fetchTrashedApplicants = React.useCallback(async () => {
     try {
       setTrashLoading(true);
       setTrashError("");
@@ -263,11 +275,11 @@ function ApplicantsDirectoryContent() {
         setTrashError(data.message || "Gagal mengambil data pendaftar terhapus");
       }
     } catch (err: unknown) {
-      setTrashError((err as any).message || "Terjadi kesalahan koneksi");
+      setTrashError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
     } finally {
       setTrashLoading(false);
     }
-  };
+  }, []);
 
   const handleRestoreApplicant = async (id: number) => {
     try {
@@ -289,7 +301,7 @@ function ApplicantsDirectoryContent() {
         setTrashError(data.message || "Gagal memulihkan data");
       }
     } catch (err: unknown) {
-      setTrashError((err as any).message || "Terjadi kesalahan koneksi");
+      setTrashError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
     } finally {
       setTrashLoading(false);
     }
@@ -323,7 +335,7 @@ function ApplicantsDirectoryContent() {
         setTrashError(data.message || "Gagal menghapus data");
       }
     } catch (err: unknown) {
-      setTrashError((err as any).message || "Terjadi kesalahan koneksi");
+      setTrashError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
     } finally {
       setTrashLoading(false);
     }
@@ -333,8 +345,8 @@ function ApplicantsDirectoryContent() {
     if (activePageTab === "trash") {
       fetchTrashedApplicants();
     }
-  }, [activePageTab]);
-  
+  }, [activePageTab, fetchTrashedApplicants]);
+
   const handleViewDetail = async (applicant: Applicant) => {
     setSelectedApplicant(applicant);
     try {
@@ -443,7 +455,7 @@ function ApplicantsDirectoryContent() {
     const isTransfer = a.diterima_kelas && (a.diterima_kelas.includes("XI") || a.diterima_kelas.includes("XII"));
     if (activePageTab === "active" && isTransfer) return false;
     if (activePageTab === "transfer" && !isTransfer) return false;
-    
+
     const matchesSearch = bstMatchedIds === null || bstMatchedIds.has(a.id);
 
     const matchesStatus =
@@ -468,14 +480,10 @@ function ApplicantsDirectoryContent() {
     return matchesSearch && matchesStatus && matchesMajor && matchesGelombang && matchesGender;
   });
 
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(1);
   const itemsPerPage = 10;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, majorFilter, gelombangFilter, genderFilter]);
-
   const totalPages = Math.max(1, Math.ceil(filteredApplicants.length / itemsPerPage));
+  const currentPage = Math.min(page, totalPages);
   const paginatedApplicants = filteredApplicants.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -561,7 +569,7 @@ function ApplicantsDirectoryContent() {
         Swal.fire({
           icon: "error",
           title: "Ekspor Gagal",
-          text: (clientErr as any).message
+          text: clientErr instanceof Error ? clientErr.message : String(clientErr)
         });
       }
     }
@@ -576,7 +584,7 @@ function ApplicantsDirectoryContent() {
           className={`pb-3 text-sm font-bold border-b-2 transition-all ${
             activePageTab === "active"
               ? "border-blue-500 text-blue-600 dark:text-blue-400"
-              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
           Calon Siswa Baru (Kelas X)
@@ -586,7 +594,7 @@ function ApplicantsDirectoryContent() {
           className={`pb-3 text-sm font-bold border-b-2 transition-all ${
             activePageTab === "transfer"
               ? "border-blue-500 text-blue-600 dark:text-blue-400"
-              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
           Calon Siswa Pindahan (Kelas XI & XII)
@@ -596,7 +604,7 @@ function ApplicantsDirectoryContent() {
           className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
             activePageTab === "kuota"
               ? "border-blue-500 text-blue-600 dark:text-blue-400"
-              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
           <PieChart size={15} />
@@ -608,7 +616,7 @@ function ApplicantsDirectoryContent() {
           className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
             activePageTab === "trash"
               ? "border-blue-500 text-blue-600 dark:text-blue-400"
-              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
           <Trash2 size={15} />
@@ -633,7 +641,7 @@ function ApplicantsDirectoryContent() {
       ) : activePageTab === "active" || activePageTab === "transfer" ? (
         <>
           {/* Search, Filter & Spreadsheet Toggle Toolbar */}
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
 
         {/* Search Field */}
         <div className="relative w-full xl:max-w-md">
@@ -672,7 +680,7 @@ function ApplicantsDirectoryContent() {
             <select
               value={majorFilter}
               onChange={(e) => setMajorFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-400 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-[160px]"
+              className="bg-transparent text-slate-600 dark:text-slate-400 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-40"
             >
               <option value="ALL">Semua Jurusan</option>
               {majorsList.map((m, idx) => (
@@ -711,7 +719,7 @@ function ApplicantsDirectoryContent() {
             <select
               value={genderFilter}
               onChange={(e) => setGenderFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-400 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-[140px]"
+              className="bg-transparent text-slate-600 dark:text-slate-400 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-35"
             >
               <option value="ALL">Semua Gender</option>
               <option value="L">Laki-Laki</option>
@@ -720,12 +728,12 @@ function ApplicantsDirectoryContent() {
           </div>
 
           {/* Toggle View: Standard Table vs Excel Spreadsheet Grid */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/50 dark:border-white/5 shrink-0 shadow-inner">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/50 shrink-0 shadow-inner">
             <button
               onClick={() => setIsSpreadsheetMode(false)}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${!isSpreadsheetMode
-                  ? "bg-white dark:bg-[#0f172a] text-blue-600 dark:text-white shadow-sm border border-slate-200 dark:border-slate-800/40 dark:border-white/5"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white"
+                  ? "bg-white dark:bg-[#0f172a] text-blue-600 dark:text-white shadow-sm border border-slate-200 dark:border-slate-800/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
                 }`}
               title="Tampilan Tabel Standard"
             >
@@ -735,8 +743,8 @@ function ApplicantsDirectoryContent() {
             <button
               onClick={() => setIsSpreadsheetMode(true)}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${isSpreadsheetMode
-                  ? "bg-white dark:bg-[#0f172a] text-blue-600 dark:text-white shadow-sm border border-slate-200 dark:border-slate-800/40 dark:border-white/5"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white"
+                  ? "bg-white dark:bg-[#0f172a] text-blue-600 dark:text-white shadow-sm border border-slate-200 dark:border-slate-800/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
                 }`}
               title="Tampilan Excel Sheet Mode"
             >
@@ -758,14 +766,14 @@ function ApplicantsDirectoryContent() {
       </div>
 
       {/* Primary Data Grid (Standard vs Spreadsheet Mode views) */}
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
 
         {!isSpreadsheetMode ? (
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-355">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15">
+                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-900/50">
                   <th className="py-4 px-6 pl-8">No. Pendaftaran</th>
                   <th className="py-4 px-6">Nama Calon Siswa</th>
                   <th className="py-4 px-6 text-center w-20">L/P</th>
@@ -791,7 +799,7 @@ function ApplicantsDirectoryContent() {
                     <td className="py-4 px-6">
                       <div className="font-extrabold text-slate-800 dark:text-white text-sm">{a.nama}</div>
                       <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
-                        Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")} · {a.gelombang || "Gelombang 1"} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
+                        Daftar: {(a.tgl_daftar || a.createdAt) ? new Date(a.tgl_daftar || a.createdAt).toLocaleDateString("id-ID") : "-"} · {a.gelombang || "Gelombang 1"} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
                         {a.status === "Approved" && a.verified_by && ` · Diverifikasi: ${a.verified_by}`}
                         {a.status === "Rejected" && a.rejected_by && ` · Digugurkan: ${a.rejected_by}`}
                       </span>
@@ -867,7 +875,7 @@ function ApplicantsDirectoryContent() {
                       <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => handleViewDetail(a)}
-                          className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-600 dark:text-slate-355 hover:text-slate-800 dark:hover:text-white rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5"
+                          className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-355 hover:text-slate-800 dark:hover:text-white rounded-xl transition-all border border-slate-200 dark:border-slate-800/50"
                           title="Lihat Detail Form"
                         >
                           <Eye size={13} />
@@ -919,7 +927,7 @@ function ApplicantsDirectoryContent() {
                               deleteApplicant(a.id);
                             }
                           }}
-                          className="p-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-rose-500/10 dark:bg-slate-900/20 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5 hover:border-rose-500/25"
+                          className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-rose-500/10 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200 dark:border-slate-800/50 hover:border-rose-500/25"
                           title="Hapus Permanen"
                         >
                           <Trash2 size={13} />
@@ -940,7 +948,7 @@ function ApplicantsDirectoryContent() {
             </table>
           </div>
         ) : (
-          
+
           <div className="overflow-x-auto">
             <div className="bg-[#f8fafc] dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 p-2.5 text-[10px] font-bold font-mono tracking-widest flex items-center justify-between shrink-0">
               <span className="flex items-center gap-2">
@@ -953,16 +961,16 @@ function ApplicantsDirectoryContent() {
             <table className="w-full text-left text-xs font-semibold text-slate-650 dark:text-slate-355 border-collapse table-fixed">
               <thead>
                 {/* Column Headers (Alphabetical A-G) */}
-                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-950/60 font-mono text-[10px] tracking-wide text-slate-500 dark:text-slate-400">
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 font-mono text-[10px] tracking-wide text-slate-500 dark:text-slate-400">
                   <th className="py-2 px-2 text-center w-12 border-r border-slate-200 dark:border-slate-800">#</th>
                   <th className="py-2 px-3 border-r border-slate-200 dark:border-slate-800 w-8 flex-none text-center">A</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[220px]">B (NAMA_LENGKAP)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[200px]">C (ASAL_SEKOLAH)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[180px]">D (JURUSAN_UTAMA)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[130px] text-center font-mono">E (NO_WA)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[120px] text-center font-mono">F (STATUS)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[160px] text-center font-mono">G (TANGGAL_LAHIR)</th>
-                  <th className="py-2 px-4 w-[60px] text-center font-mono">H (L/P)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-55">B (NAMA_LENGKAP)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-50">C (ASAL_SEKOLAH)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-45">D (JURUSAN_UTAMA)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-32.5 text-center font-mono">E (NO_WA)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-30 text-center font-mono">F (STATUS)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-40 text-center font-mono">G (TANGGAL_LAHIR)</th>
+                  <th className="py-2 px-4 w-15 text-center font-mono">H (L/P)</th>
                 </tr>
               </thead>
               <tbody>
@@ -973,7 +981,7 @@ function ApplicantsDirectoryContent() {
                     onDoubleClick={() => handleViewDetail(a)}
                   >
                     {/* Row Index Number */}
-                    <td className="py-2.5 text-center font-mono text-[10px] border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 text-slate-400 font-bold">
+                    <td className="py-2.5 text-center font-mono text-[10px] border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-400 font-bold">
                       {(currentPage - 1) * itemsPerPage + rowIdx + 1}
                     </td>
 
@@ -989,7 +997,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column B: Nama */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 1 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white font-extrabold text-sm ${activeCell?.row === rowIdx && activeCell?.col === 1 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white font-extrabold text-sm ${activeCell?.row === rowIdx && activeCell?.col === 1 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.nama}
@@ -998,7 +1006,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column C: Sekolah */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 3 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold ${activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold ${activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.sekolah_asal || a.sekolahAsal}
@@ -1007,7 +1015,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column D: Jurusan */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 4 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider text-[10px] ${activeCell?.row === rowIdx && activeCell?.col === 4 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider text-[10px] ${activeCell?.row === rowIdx && activeCell?.col === 4 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.jurusan_1 || a.jurusan1}
@@ -1016,7 +1024,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column E: WA */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 5 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-600 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-600 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.whatsapp || "-"}
@@ -1030,7 +1038,7 @@ function ApplicantsDirectoryContent() {
                           : a.status === "Rejected"
                             ? "text-rose-600 dark:text-rose-400 bg-rose-500/5"
                             : "text-amber-600 dark:text-amber-400 bg-amber-500/5"
-                        } ${activeCell?.row === rowIdx && activeCell?.col === 6 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        } ${activeCell?.row === rowIdx && activeCell?.col === 6 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.status || "Pending"}
@@ -1039,7 +1047,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column G: Tanggal Lahir */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 7 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.tgl_lahir || a.tglLahir || "-"}
@@ -1048,7 +1056,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column H: Gender */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 8 })}
-                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 8 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 8 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {(a.jenis_kelamin || a.jenisKelamin) ? (
@@ -1066,7 +1074,7 @@ function ApplicantsDirectoryContent() {
 
                 {filteredApplicants.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 font-mono text-slate-400 italic uppercase bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20">
+                    <td colSpan={8} className="text-center py-12 font-mono text-slate-400 italic uppercase bg-slate-50 dark:bg-slate-900/20">
                       Zero lines of data found. Filter criteria matches nothing.
                     </td>
                   </tr>
@@ -1078,15 +1086,15 @@ function ApplicantsDirectoryContent() {
 
         {/* Pagination Controls */}
         {filteredApplicants.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/25 dark:bg-slate-950/20">
-            <div className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900/20">
+            <div className="text-xs text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider">
               Menampilkan <span className="text-slate-700 dark:text-slate-300">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="text-slate-700 dark:text-slate-300">{Math.min(currentPage * itemsPerPage, filteredApplicants.length)}</span> dari <span className="text-slate-700 dark:text-slate-300">{filteredApplicants.length}</span> Siswa
             </div>
             <div className="flex items-center gap-2">
               <button
                 disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                className="px-4 py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
               >
                 Sebelumnya
               </button>
@@ -1095,8 +1103,8 @@ function ApplicantsDirectoryContent() {
               </span>
               <button
                 disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                className="px-4 py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
               >
                 Selanjutnya
               </button>
@@ -1107,14 +1115,14 @@ function ApplicantsDirectoryContent() {
         </>
       ) : (
         /* Trash Table View */
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
           {trashLoading ? (
             <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium animate-pulse">Memuat data sampah...</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-355">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15">
+                  <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-900/50">
                     <th className="py-4 px-6 pl-8">Nama Calon Siswa</th>
                     <th className="py-4 px-6 text-center w-20">L/P</th>
                     <th className="py-4 px-6">Asal Sekolah</th>
@@ -1125,7 +1133,7 @@ function ApplicantsDirectoryContent() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {trashedApplicants.map((a: Applicant, idx: number) => (
-                    <tr key={a.id || idx} className="hover:bg-slate-50 dark:bg-slate-800/50/60 dark:hover:bg-white dark:bg-[#0f172a]/5 transition-all">
+                    <tr key={a.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all">
                       <td className="py-4 px-6 pl-8">
                         <div className="font-extrabold text-slate-800 dark:text-white text-sm">{a.nama}</div>
                         <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
@@ -1173,7 +1181,7 @@ function ApplicantsDirectoryContent() {
                           >
                             Pulihkan
                           </button>
-                          
+
                           <button
                             onClick={() => handlePermanentDeleteApplicant(a.id)}
                             className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-1 cursor-pointer"
@@ -1217,13 +1225,13 @@ function ApplicantsDirectoryContent() {
       {/* Beautiful Rich Detail Modal (13 Wizard Steps tabs overlay) */}
       {selectedApplicant && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
 
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between shrink-0 bg-white dark:bg-[#0f172a] relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
-                           <div className="flex items-center gap-5 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 text-2xl font-black shrink-0">
+              <div className="absolute inset-0 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              <div className="flex items-center gap-5 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 text-2xl font-black shrink-0">
                   {selectedApplicant.nama.substring(0, 1).toUpperCase()}
                 </div>
                 <div>
@@ -1242,9 +1250,9 @@ function ApplicantsDirectoryContent() {
                   </h3>
                   <p className="text-xs text-slate-400 dark:text-slate-555 font-bold uppercase tracking-wider mt-1.5 flex items-center flex-wrap gap-2">
                     <span className="text-blue-500">No. Pendaftaran:</span> <span className="font-mono text-blue-600 dark:text-blue-400">{formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
-                    <span className="text-slate-300 dark:text-slate-700 dark:text-slate-200">•</span> 
+                    <span className="text-slate-300 dark:text-slate-400">•</span> 
                     <span className="text-blue-500">NISN:</span> {selectedApplicant.nisn} 
-                    <span className="text-slate-300 dark:text-slate-700 dark:text-slate-200">•</span> 
+                    <span className="text-slate-300 dark:text-slate-400">•</span> 
                     <span className="text-blue-500">Asal:</span> {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}
                   </p>
                   {selectedApplicant.status === "Approved" && selectedApplicant.verified_by && (
@@ -1275,15 +1283,15 @@ function ApplicantsDirectoryContent() {
                   setSelectedApplicant(null);
                   setIsFullscreenImageOpen(false);
                 }}
-                className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 flex items-center justify-center transition-all font-bold relative z-10 shrink-0"
+                className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 flex items-center justify-center transition-all font-bold relative z-10 shrink-0"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Tabs Navigation */}
-            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 border-b border-slate-100 dark:border-white/5 shrink-0 w-full overflow-hidden">
-              <div className="flex overflow-x-auto hide-scrollbar bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-1 w-full max-w-full border border-slate-200 dark:border-slate-800/50 dark:border-white/5">
+            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-white/5 shrink-0 w-full overflow-hidden">
+              <div className="flex overflow-x-auto hide-scrollbar bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-1 w-full max-w-full border border-slate-200 dark:border-slate-800/50">
                 {[
                   { id: "biodata", label: "Biodata" },
                   { id: "periodik", label: "Periodik" },
@@ -1296,9 +1304,9 @@ function ApplicantsDirectoryContent() {
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider shrink-0 text-center min-w-[90px] whitespace-nowrap ${activeTab === t.id
-                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200 dark:border-slate-800/50 dark:border-white/10"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 border border-transparent"
+                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider shrink-0 text-center min-w-22.5 whitespace-nowrap ${activeTab === t.id
+                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200 dark:border-slate-800/50"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 border border-transparent"
                       }`}
                   >
                     {t.label}
@@ -1453,96 +1461,78 @@ function ApplicantsDirectoryContent() {
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
                         <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jenis Prestasi</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{Array.isArray(selectedApplicant.jenis_prestasi) ? selectedApplicant.jenis_prestasi.join(", ") : selectedApplicant.jenisPrestasi || "Tidak Ada"}</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{String(Array.isArray(selectedApplicant.jenis_prestasi) ? selectedApplicant.jenis_prestasi.join(", ") : (selectedApplicant.jenis_prestasi || selectedApplicant.jenisPrestasi || "Tidak Ada"))}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
                         <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tingkat Prestasi</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{Array.isArray(selectedApplicant.tingkat_prestasi) ? selectedApplicant.tingkat_prestasi.join(", ") : selectedApplicant.tingkatPrestasi || "Tidak Ada"}</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{String(Array.isArray(selectedApplicant.tingkat_prestasi) ? selectedApplicant.tingkat_prestasi.join(", ") : (selectedApplicant.tingkat_prestasi || selectedApplicant.tingkatPrestasi || "Tidak Ada"))}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
                         <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Prestasi</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.uraian_prestasi || selectedApplicant.uraianPrestasi || "Tidak Ada"}</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{String(selectedApplicant.uraian_prestasi || selectedApplicant.uraianPrestasi || "Tidak Ada")}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
                         <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tahun Prestasi</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tahun_prestasi || selectedApplicant.tahunPrestasi || "Tidak Ada"}</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{String(selectedApplicant.tahun_prestasi || selectedApplicant.tahunPrestasi || "Tidak Ada")}</span>
                       </div>
                       {selectedApplicant.berkas_prestasi && (
                         <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
                           <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Berkas Prestasi</span>
-                          <a href={sanitizeSrc(selectedApplicant.berkas_prestasi)} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-500 hover:text-blue-600 underline text-left block w-full truncate">Lihat Sertifikat</a>
+                          <a href={sanitizeUrl(typeof selectedApplicant.berkas_prestasi === "string" ? selectedApplicant.berkas_prestasi : undefined)} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline font-bold text-xs">Lihat Berkas</a>
                         </div>
                       )}
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Beasiswa</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.uraian_beasiswa || selectedApplicant.uraianBeasiswa || "Tidak Ada"}</span>
-                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {activeTab === "orangtua" && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                      <div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
                         <User size={12} />
                       </div>
-                      Ayah Kandung
+                      Data Ayah Kandung
                     </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span>
+                    <div className="space-y-3">
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Nama Ayah</span>
+                        <span className="text-slate-800 dark:text-white font-black">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span>
                       </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Ayah</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Pekerjaan</span>
+                        <span className="text-slate-800 dark:text-white font-bold">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span>
                       </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Penghasilan</span>
+                        <span className="text-slate-800 dark:text-white font-bold">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span>
                       </div>
                     </div>
                   </div>
                   <div>
                     <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md bg-pink-50 dark:bg-pink-500/10 flex items-center justify-center text-pink-500">
+                      <div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
                         <User size={12} />
                       </div>
-                      Ibu Kandung
+                      Data Ibu Kandung
                     </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span>
+                    <div className="space-y-3">
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Nama Ibu</span>
+                        <span className="text-slate-800 dark:text-white font-black">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span>
                       </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.pendidikan_ibu || selectedApplicant.pendidikanIbu || "-"} / {selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Pekerjaan</span>
+                        <span className="text-slate-800 dark:text-white font-bold">{selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span>
                       </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Penghasilan</span>
+                        <span className="text-slate-800 dark:text-white font-bold">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span>
                       </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center text-teal-500">
-                        <Users size={12} />
-                      </div>
-                      Wali & Kontak Darurat
-                    </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-teal-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span>
-                      </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-teal-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span>
-                        <span className="text-teal-600 dark:text-teal-400 font-mono text-sm font-black">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Telepon Ortu</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-mono font-black">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span>
                       </div>
                     </div>
                   </div>
@@ -1554,39 +1544,47 @@ function ApplicantsDirectoryContent() {
                   <div>
                     <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
                       <div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
-                        <Info size={12} />
+                        <School size={12} />
                       </div>
-                      Pendidikan Asal
+                      Pendidikan Sebelumnya
                     </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span>
-                        <span className="text-slate-800 dark:text-white text-sm font-black">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span>
+                    <div className="space-y-3">
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Asal Sekolah</span>
+                        <span className="text-slate-800 dark:text-white font-black uppercase">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal || "-"}</span>
                       </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span>
-                        <span className="text-slate-800 dark:text-white font-mono font-bold text-xs">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"} / {selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Tahun Lulus</span>
+                        <span className="text-slate-800 dark:text-white font-mono">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"}</span>
                       </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span>
-                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"} ({selectedApplicant.lama_belajar || selectedApplicant.lamaBelajar || 3} Tahun)</span>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKL</span>
+                        <span className="text-slate-800 dark:text-white font-mono">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">No. SKHUN</span>
+                        <span className="text-slate-800 dark:text-white font-mono">{selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span>
                       </div>
                     </div>
                   </div>
                   <div>
                     <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-500">
+                      <div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
                         <Layers size={12} />
                       </div>
-                      Pilihan Minat Studi
+                      Pilihan Minat & Bakat
                     </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-3 border border-blue-100 dark:border-blue-500/10 shadow-sm">
-                        <span className="text-blue-500 dark:text-blue-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Utama</span>
-                        <span className="text-blue-700 dark:text-blue-300 text-sm font-black uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span>
+                    <div className="space-y-3">
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Jurusan Pilihan</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-black uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1 || "PPLG"}</span>
                       </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-orange-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Cita - Cita</span>
+                        <span className="text-slate-800 dark:text-white font-bold">{selectedApplicant.cita_cita || selectedApplicant.citaCita || "-"}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-slate-100 dark:border-white/5 pb-2">
+                        <span className="text-slate-400 dark:text-slate-555 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span>
                       </div>
                     </div>
@@ -1599,8 +1597,7 @@ function ApplicantsDirectoryContent() {
                   <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
                     <FileCheck size={12} className="text-blue-500" /> Status Verifikasi Berkas Fisik
                   </h4>
-                  
-                  <div className="p-6 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="p-6 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/5">
                       <div className="space-y-1">
@@ -1627,7 +1624,6 @@ function ApplicantsDirectoryContent() {
                         </div>
                       </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {[
                         { id: 'kk', label: 'Fotokopi Kartu Keluarga (KK)' },
@@ -1646,13 +1642,7 @@ function ApplicantsDirectoryContent() {
                                 const token = localStorage.getItem("ppdb_token") || localStorage.getItem("ppdb_admin_token");
                                 const currentChecklist = selectedApplicant.physical_docs_checklist || {};
                                 const newChecklist = { ...currentChecklist, [doc.id]: !isChecked };
-                                
-                                // Optimistic update
-                                setSelectedApplicant(prev => prev ? {
-                                  ...prev,
-                                  physical_docs_checklist: newChecklist
-                                } : null);
-
+                                setSelectedApplicant(prev => prev ? { ...prev, physical_docs_checklist: newChecklist } : null);
                                 const res = await fetch(`/api/applicants/${selectedApplicant.id}/physical-doc`, {
                                   method: "PATCH",
                                   headers: {
@@ -1676,32 +1666,22 @@ function ApplicantsDirectoryContent() {
                                     physical_docs_checklist: data.data.physical_docs_checklist
                                   } : item));
                                 } else {
-                                  // Revert on error
                                   setSelectedApplicant(prev => prev ? { ...prev, physical_docs_checklist: currentChecklist } : null);
-                                  if (typeof addToast === "function") {
-                                    addToast("Gagal Update", data.message, "error");
-                                  }
                                 }
-                              } catch(err) {
-                                console.error("Error updating checklist:", err);
-                              }
+                              } catch(err) { console.error("Error:", err); }
                             }}
                             className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer ${
                               isChecked 
                                 ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50" 
-                                : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 dark:bg-slate-900/50 dark:border-slate-800 hover:border-blue-400/50"
+                                : "bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:border-blue-400/50"
                             }`}
                           >
                             <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${
-                              isChecked
-                                ? "bg-emerald-500 border-emerald-600 text-white"
-                                : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                              isChecked ? "bg-emerald-500 border-emerald-600 text-white" : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
                             }`}>
                               {isChecked && <Check size={12} strokeWidth={3} />}
                             </div>
-                            <span className={`text-xs font-bold leading-tight ${
-                              isChecked ? "text-emerald-900 dark:text-emerald-100" : "text-slate-600 dark:text-slate-400"
-                            }`}>
+                            <span className={`text-xs font-bold leading-tight ${isChecked ? "text-emerald-900 dark:text-emerald-100" : "text-slate-600 dark:text-slate-400"}`}>
                               {doc.label}
                             </span>
                           </button>
@@ -1719,20 +1699,19 @@ function ApplicantsDirectoryContent() {
                     <FileCheck size={12} className="text-blue-500" /> Komitmen & Janji Kedisiplinan
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-2xl">
+                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-2xl">
                       <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tawuran / Perkelahian</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.perkelahian === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.perkelahian || "Tidak"}</span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-2xl">
+                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-2xl">
                       <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penyalahgunaan Narkoba</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.narkoba === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.narkoba || "Tidak"}</span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-800/50 dark:border-white/5 rounded-2xl">
+                    <div className="p-4 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-2xl">
                       <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pelanggaran Hukum Lain</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.pelanggaran_lain === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.pelanggaran_lain || "Tidak"}</span>
                     </div>
                   </div>
-
                   <div className="p-5 bg-blue-50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-500/10 rounded-2xl space-y-3">
                     <span className="text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider text-[9px] block">Pernyataan Kesanggupan Calon Taruna Baru:</span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-600 dark:text-slate-400">
@@ -1748,11 +1727,11 @@ function ApplicantsDirectoryContent() {
             </div>
 
             {/* Modal Action Controls Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/15 flex items-center justify-end shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900/30 flex items-center justify-end shrink-0">
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setSelectedApplicant(null)}
-                  className="px-5 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 text-slate-600 dark:text-slate-355 hover:text-slate-800 dark:hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-slate-800/50 dark:border-white/5"
+                  className="px-5 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
                 >
                   Tutup
                 </button>
@@ -1789,12 +1768,12 @@ function ApplicantsDirectoryContent() {
 
       {/* ===== EDIT MODAL ===== */}
       {editApplicant && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
             {/* Header */}
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-[#0f172a] shrink-0 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
-              
+              <div className="absolute inset-0 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+
               <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
                   <Pencil size={24} />
@@ -1808,13 +1787,13 @@ function ApplicantsDirectoryContent() {
                   </p>
                 </div>
               </div>
-              <button onClick={() => setEditApplicant(null)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-white dark:bg-[#0f172a]/5 dark:hover:bg-white dark:bg-[#0f172a]/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-rose-500 flex items-center justify-center transition-all relative z-10 shrink-0">
+              <button onClick={() => setEditApplicant(null)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-rose-500 flex items-center justify-center transition-all relative z-10 shrink-0">
                 <X size={16} />
               </button>
             </div>
 
             {/* Body — scrollable form */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/20 hide-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50 dark:bg-slate-950/20 hide-scrollbar">
               {[
                 {
                   section: "Identitas Diri", icon: <User size={14} />, fields: [
@@ -1876,7 +1855,7 @@ function ApplicantsDirectoryContent() {
                   ]
                 }
               ].map((section) => (
-                <div key={section.section} className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
+                <div key={section.section} className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
                   <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">
                     <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
                       {section.icon}
@@ -1889,20 +1868,18 @@ function ApplicantsDirectoryContent() {
                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-400 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
                           <select
-
-                            value={(editForm as any)[f.key] || ""}
+                            value={(editForm as Record<string, string | number>)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
+                            className="w-full bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
                           >
                             {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
                         ) : (
                           <input
                             type={f.type || "text"}
-                            
-                            value={(editForm as any)[f.key] || ""}
+                            value={(editForm as Record<string, string | number>)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-[#1e293b]/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-800/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"
+                            className="w-full bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"
                           />
                         )}
                       </div>
@@ -1913,10 +1890,10 @@ function ApplicantsDirectoryContent() {
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50/80 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
               <button
                 onClick={() => setEditApplicant(null)}
-                className="px-6 py-3 bg-white dark:bg-[#0f172a] hover:bg-slate-100 dark:bg-[#1e293b] dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
+                className="px-6 py-3 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
               >
                 Batal
               </button>
@@ -1935,19 +1912,22 @@ function ApplicantsDirectoryContent() {
       {/* Fullscreen Image Modal */}
       {isFullscreenImageOpen && (
         <div 
-          className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
+          className="fixed inset-0 z-110 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
           onClick={() => setIsFullscreenImageOpen(false)}
         >
           <button
             onClick={() => setIsFullscreenImageOpen(false)}
-            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 border border-white/10 text-white flex items-center justify-center text-xl transition-all shadow font-bold cursor-pointer hover:scale-110"
+            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center text-xl transition-all shadow font-bold cursor-pointer hover:scale-110"
           >
             ✕
           </button>
-          <img
-            src={sanitizeSrc(selectedApplicant?.bukti_bayar || "")}
+          <Image
+            src={sanitizeSrc(selectedApplicant?.bukti_bayar || "/placeholder.png")}
             alt="Bukti Transfer Manual Fullscreen"
+            width={800}
+            height={600}
             className="max-w-full max-h-[90vh] object-contain rounded-xl select-none cursor-default"
+            unoptimized
             onClick={(e) => e.stopPropagation()}
           />
         </div>
@@ -1955,8 +1935,8 @@ function ApplicantsDirectoryContent() {
 
       {/* Custom Rejection Reason Modal */}
       {rejectingApplicantId !== null && (
-        <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl flex flex-col gap-6 text-left max-w-md w-full backdrop-blur-xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-120 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-4xl p-8 shadow-2xl flex flex-col gap-6 text-left max-w-md w-full backdrop-blur-xl animate-in zoom-in-95 duration-200">
             <div className="w-14 h-14 bg-rose-50 dark:bg-rose-950/40 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-500 border border-rose-100 dark:border-rose-900/40 shadow-inner">
               <svg className="w-7 h-7 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -2032,7 +2012,7 @@ function ApplicantsDirectoryContent() {
                     setRejectionNotes("");
                   }
                 }}
-                className="flex-1 py-3.5 bg-gradient-to-tr from-rose-600 to-red-500 hover:brightness-110 disabled:opacity-50 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 transition-all cursor-pointer text-center"
+                className="flex-1 py-3.5 bg-linear-to-tr from-rose-600 to-red-500 hover:brightness-110 disabled:opacity-50 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 transition-all cursor-pointer text-center"
               >
                 Tolak Siswa
               </button>

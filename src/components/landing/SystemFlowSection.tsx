@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, type MotionValue } from "framer-motion";
 
 const steps = [
   {
@@ -54,7 +54,7 @@ const steps = [
     text: "text-[#2e3749]",
     direction: "bottom",
     layout: "image-left",
-    image: "/assets/flow/flow1.png", // <- Ganti jika Anda punya gambar ke-5
+    image: "/assets/flow/flow1.png", 
     waveColor: "text-[#2e3749]/15",
   },
 ];
@@ -87,15 +87,14 @@ const WaveDecoration = ({
   </div>
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const StepCard = ({
   step,
   index,
   smoothProgress,
 }: {
-  step: any;
+  step: (typeof steps)[number];
   index: number;
-  smoothProgress: any;
+  smoothProgress: MotionValue<number>;
 }) => {
   const totalSections = steps.length + 1;
   const startVisible = index / totalSections + (1 / totalSections) * 0.3;
@@ -122,13 +121,11 @@ const StepCard = ({
     if (step.layout === "image-left") {
       return (
         <div className="w-full h-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center md:justify-between gap-6 md:gap-16 px-6 md:px-16 pt-24 md:pt-0 relative z-10">
-          {/* UPDATED: Sleek, thin-framed image container */}
           <div className="w-full md:w-[58%] lg:w-[62%] flex items-center justify-center relative p-1 sm:p-2 shrink-0 group perspective-1000">
-            {/* Subtle background offset card layer */}
             <div className="absolute inset-1 sm:inset-2 bg-black/5 rounded-2xl md:rounded-3xl transform -rotate-1.5 transition-transform duration-500 group-hover:-rotate-3 hidden md:block border border-black/5 -z-10 w-[98%] h-[98%]"></div>
 
-            {/* Main floating image container with thin elegant bezel */}
-            <div className="w-full max-w-[660px] bg-white/95 backdrop-blur-md p-1 sm:p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-[0_15px_35px_rgba(0,0,0,0.08)] md:shadow-[0_25px_55px_rgba(0,0,0,0.12)] border border-slate-200/80 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-[0_30px_65px_rgba(0,0,0,0.16)] relative z-10 overflow-hidden">
+            <div className="w-full max-w-165 bg-white/95 backdrop-blur-md p-1 sm:p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-[0_15px_35px_rgba(0,0,0,0.08)] md:shadow-[0_25px_55px_rgba(0,0,0,0.12)] border border-slate-200/80 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-[0_30px_65px_rgba(0,0,0,0.16)] relative z-10 overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={step.image}
                 alt={step.title}
@@ -136,8 +133,7 @@ const StepCard = ({
                 decoding="async"
                 className="w-full h-auto max-h-[46vh] sm:max-h-[54vh] md:max-h-[72vh] object-contain rounded-xl md:rounded-2xl bg-white block"
               />
-              {/* Subtle light glare/reflection effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-2xl md:rounded-3xl"></div>
+              <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-2xl md:rounded-3xl"></div>
             </div>
           </div>
 
@@ -150,33 +146,22 @@ const StepCard = ({
                 {step.id}
               </span>
             </div>
-            <div className="pl-4 md:pl-6 border-l-2 md:border-l-4 border-current mt-2 md:mt-4">
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-6">
-                {step.title}
-              </h2>
-              <p className="text-sm md:text-lg lg:text-2xl opacity-80 leading-relaxed max-w-md font-serif">
-                {step.desc}
-              </p>
-            </div>
+            <h2 className="text-3xl md:text-5xl lg:text-7xl font-bold tracking-tight">
+              {step.title}
+            </h2>
+            <p className="text-sm md:text-lg lg:text-2xl opacity-80 leading-relaxed max-w-md font-serif">
+              {step.desc}
+            </p>
+            <div className="w-12 md:w-16 h-0.5 md:h-0.75 bg-current mt-2 md:mt-4 opacity-50"></div>
           </div>
         </div>
       );
-    }
-
-    if (step.layout === "image-right") {
+    } else {
       return (
-        <div className="w-full h-full max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center md:justify-between gap-6 md:gap-16 px-6 md:px-16 pt-24 md:pt-0 relative z-10">
-          <div className="w-full md:w-[42%] lg:w-[38%] flex items-center gap-6 md:gap-12 relative">
-            <div
-              className="hidden md:block transform -rotate-180"
-              style={{ writingMode: "vertical-rl" }}
-            >
-              <span className="text-2xl font-black tracking-[0.5em] uppercase opacity-40">
-                ORIGINALITY
-              </span>
-            </div>
-            <div className="flex flex-col space-y-3 md:space-y-6">
-              <div className="flex items-baseline gap-3 md:gap-4 opacity-50">
+        <div className="w-full h-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center md:justify-between gap-6 md:gap-16 px-6 md:px-16 pt-24 md:pt-0 relative z-10">
+          <div className="w-full md:w-[42%] lg:w-[38%] flex flex-col justify-center relative order-2 md:order-1">
+            <div className="space-y-2 md:space-y-4">
+              <div className="flex items-baseline gap-3 md:gap-4 opacity-70">
                 <span className="text-lg md:text-xl font-bold tracking-widest uppercase">
                   Part.
                 </span>
@@ -190,17 +175,15 @@ const StepCard = ({
               <p className="text-sm md:text-lg lg:text-2xl opacity-80 leading-relaxed max-w-md font-serif mt-2 md:mt-4">
                 {step.desc}
               </p>
-              <div className="w-12 md:w-16 h-[2px] md:h-[3px] bg-current mt-4 md:mt-8 opacity-50"></div>
+              <div className="w-12 md:w-16 h-0.5 md:h-0.75 bg-current mt-4 md:mt-8 opacity-50"></div>
             </div>
           </div>
 
-          {/* UPDATED: Sleek, thin-framed image container */}
-          <div className="w-full md:w-[58%] lg:w-[62%] flex items-center justify-center relative p-1 sm:p-2 shrink-0 group perspective-1000">
-            {/* Subtle background offset card layer */}
+          <div className="w-full md:w-[58%] lg:w-[62%] flex items-center justify-center relative p-1 sm:p-2 shrink-0 group perspective-1000 order-1 md:order-2">
             <div className="absolute inset-1 sm:inset-2 bg-black/5 rounded-2xl md:rounded-3xl transform rotate-1.5 transition-transform duration-500 group-hover:rotate-3 hidden md:block border border-black/5 -z-10 w-[98%] h-[98%]"></div>
 
-            {/* Main floating image container with thin elegant bezel */}
-            <div className="w-full max-w-[660px] bg-white/95 backdrop-blur-md p-1 sm:p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-[0_15px_35px_rgba(0,0,0,0.08)] md:shadow-[0_25px_55px_rgba(0,0,0,0.12)] border border-slate-200/80 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-[0_30px_65px_rgba(0,0,0,0.16)] relative z-10 overflow-hidden">
+            <div className="w-full max-w-165 bg-white/95 backdrop-blur-md p-1 sm:p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-[0_15px_35px_rgba(0,0,0,0.08)] md:shadow-[0_25px_55px_rgba(0,0,0,0.12)] border border-slate-200/80 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-[0_30px_65px_rgba(0,0,0,0.16)] relative z-10 overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={step.image}
                 alt={step.title}
@@ -208,8 +191,7 @@ const StepCard = ({
                 decoding="async"
                 className="w-full h-auto max-h-[46vh] sm:max-h-[54vh] md:max-h-[72vh] object-contain rounded-xl md:rounded-2xl bg-white block"
               />
-              {/* Subtle light glare/reflection effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-2xl md:rounded-3xl"></div>
+              <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-2xl md:rounded-3xl"></div>
             </div>
           </div>
         </div>

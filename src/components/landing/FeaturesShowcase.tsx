@@ -82,7 +82,7 @@ export function FeaturesShowcase() {
   return (
     <section className="py-24 bg-white relative" ref={containerRef}>
       <div className="max-w-5xl mx-auto px-6">
-        
+
         <div className="text-center mb-16 max-w-2xl mx-auto">
           <h2 className="text-3xl font-semibold text-slate-900 tracking-tight mb-4">
             Keunggulan Platform CationGate
@@ -92,7 +92,7 @@ export function FeaturesShowcase() {
           </p>
         </div>
 
-        {/* Bento Grid */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {features.map((feat, i) => (
             <div

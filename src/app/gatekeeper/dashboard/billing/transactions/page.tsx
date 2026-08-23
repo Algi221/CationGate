@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Receipt, Search } from "lucide-react";
+import { Receipt } from "lucide-react";
 
 export default function GatekeeperTransactionsPage() {
   return (
@@ -17,7 +17,7 @@ export default function GatekeeperTransactionsPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 flex items-center justify-center min-h-[300px]">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 flex items-center justify-center min-h-75">
         <p className="text-slate-400 dark:text-slate-500 font-bold tracking-widest uppercase">Modul Dalam Pengembangan</p>
       </div>
     </div>

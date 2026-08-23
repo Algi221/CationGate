@@ -26,11 +26,8 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('FATAL UNHANDLED REJECTION at:', promise, 'reason:', reason);
 });
 
-
-// Initialize Hono App
 const app = new Hono().basePath('/api');
 
-// Safe JSON body parser middleware
 app.use('*', async (c, next) => {
   const originalJson = c.req.json.bind(c.req);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,7 +41,6 @@ app.use('*', async (c, next) => {
   await next();
 });
 
-// Logger & CORS Middlewares
 app.use('*', logger());
 app.use('*', cors({
   origin: (origin) => {
@@ -61,7 +57,6 @@ app.use('*', cors({
   credentials: true,
 }));
 
-// Security headers middleware
 app.use('*', secureHeaders({
   xContentTypeOptions: true,
   xFrameOptions: 'SAMEORIGIN',
@@ -81,7 +76,6 @@ app.use('*', secureHeaders({
 
 import gatekeeperRouter from './routes/gatekeeper';
 
-// Route mappings
 app.route('/auth', authRouter);
 app.route('/gatekeeper', gatekeeperRouter);
 app.route('/applicants', appRouter);
@@ -100,10 +94,8 @@ app.route('/password', passwordRouter);
 app.route('/chatbot', chatbotRouter);
 app.route('/contact', contactRoute)
 
-// Standard API health check
 app.get('/health', (c) => c.json({ status: 'OK', service: 'PPDB SMK Taruna Bhakti API Server v1.0.0 (Monolith)' }));
 
-// Handle SPA fallback for client-side routes
 app.get('*', (c) => {
   if (c.req.path.startsWith('/api/')) return c.notFound();
   return c.html(`<!DOCTYPE html><html><body><script>window.location.href = '/'</script></body></html>`);

@@ -1,13 +1,11 @@
 import { getSupabaseClient } from "../db/supabase";
 
 export class ApplicantService {
-  /**
-   * Sync a candidate to the active students list if they are approved
-   */
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async syncToActive(candidate: any): Promise<void> {
     try {
-      const supabase = getSupabaseClient(); // Background service role
+      const supabase = getSupabaseClient(); 
       const schoolId = candidate.school_id;
 
       if (!schoolId) {
@@ -22,7 +20,7 @@ export class ApplicantService {
           nama: candidate.nama,
           nisn: candidate.nisn,
           jenis_kelamin: candidate.jenis_kelamin,
-          // (Other fields mapped from candidate...)
+
         };
 
         const { data: existingSiswa } = await supabase

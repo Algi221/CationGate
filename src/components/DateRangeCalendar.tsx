@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 interface DateRangeCalendarProps {
@@ -22,20 +22,21 @@ export default function DateRangeCalendar({
   error,
   setError
 }: DateRangeCalendarProps) {
-  
+
   const [currentDate, setCurrentDate] = useState<Date>(() => {
     if (startValue) return new Date(startValue);
     return new Date();
   });
 
-  const [tempStart, setTempStart] = useState<Date | null>(null);
-
-  useEffect(() => {
+  const [prevStart, setPrevStart] = useState(startValue);
+  if (startValue !== prevStart) {
+    setPrevStart(startValue);
     if (startValue) {
-
       setCurrentDate(new Date(startValue));
     }
-  }, [startValue]);
+  }
+
+  const [tempStart, setTempStart] = useState<Date | null>(null);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -74,15 +75,15 @@ export default function DateRangeCalendar({
     if (setError) setError(null);
 
     if (!tempStart) {
-      
+
       setTempStart(day);
     } else {
-      
+
       let start = tempStart;
       let end = day;
 
       if (day < tempStart) {
-        
+
         start = day;
         end = tempStart;
       }

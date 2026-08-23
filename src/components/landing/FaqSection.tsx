@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { HelpCircle, MessageSquare, ArrowUpRight } from "lucide-react";
+import { HelpCircle, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -10,15 +10,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
-// Import Lottie secara dinamis untuk mencegah error Hydration di Next.js
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export function FaqSection() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [lottieData, setLottieData] = useState<any>(null);
 
-  // Mengambil file JSON animasi dari folder public
   useEffect(() => {
     fetch("/assets/lottie_animation/question.json")
       .then((response) => response.json())
@@ -61,10 +60,10 @@ export function FaqSection() {
       id="faq"
       className="py-24 bg-[#FAFAFA] text-zinc-900 border-t border-[#FAFAFA]"
     >
-      <div className="max-w-[1280px] mx-auto px-6 sm:px-8">
-        {/* Ubah grid ke 2 kolom sejajar (50:50) */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-8">
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-          {/* KOLOM KIRI: Judul & Accordion FAQ */}
+          {}
           <div className="space-y-10">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-200/50 text-zinc-700 text-xs font-bold uppercase tracking-widest mb-6">
@@ -80,7 +79,7 @@ export function FaqSection() {
               </p>
             </div>
 
-            {/* Accordion Shadcn */}
+            {}
             <Accordion type="single" collapsible className="w-full">
               {faqs.map((faq) => (
                 <AccordionItem
@@ -88,7 +87,7 @@ export function FaqSection() {
                   value={faq.id}
                   className="border-b border-zinc-200/80 py-2"
                 >
-                  <AccordionTrigger className="text-left text-lg font-bold text-zinc-800 hover:text-zinc-600 hover:no-underline transition-colors [&[data-state=open]]:text-zinc-900">
+                  <AccordionTrigger className="text-left text-lg font-bold text-zinc-800 hover:text-zinc-600 hover:no-underline transition-colors data-[state=open]:text-zinc-900">
                     {faq.q}
                   </AccordionTrigger>
                   <AccordionContent className="text-base text-zinc-600 leading-relaxed pt-2 pb-6">
@@ -99,23 +98,23 @@ export function FaqSection() {
             </Accordion>
           </div>
 
-          {/* KOLOM KANAN: Visual & CTA (Sticky) */}
+          {}
           <div className="relative w-full">
-            <div className="sticky top-32 flex flex-col gap-6 w-full max-w-[500px] mx-auto lg:mx-0 lg:ml-auto">
-              {/* Box Lottie Animation */}
+            <div className="sticky top-32 flex flex-col gap-6 w-full max-w-125 mx-auto lg:mx-0 lg:ml-auto">
+              {}
               <div className="w-full flex items-center justify-center relative group">
                 {lottieData ? (
                   <Lottie
                     animationData={lottieData}
                     loop={true}
-                    className="w-full max-w-[400px] h-auto object-contain relative z-10 transition-transform duration-700 group-hover:scale-105"
+                    className="w-full max-w-100 h-auto object-contain relative z-10 transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
                   <div className="w-10 h-10 border-4 border-zinc-300 border-t-zinc-600 rounded-full animate-spin relative z-10 my-20"></div>
                 )}
               </div>
 
-              {/* Box CTA */}
+              {}
               <div className="p-8 rounded-3xl bg-zinc-900 text-white shadow-xl flex flex-col gap-5">
                 <div>
                   <h3 className="font-bold text-xl mb-2 text-white">
@@ -126,11 +125,11 @@ export function FaqSection() {
                   </p>
                 </div>
 
-                <a href="/demo" className="mt-1 w-full">
+                <Link href="/demo" className="mt-1 w-full">
                   <Button className="w-full bg-white text-zinc-900 hover:bg-zinc-200 font-bold h-12 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
                     Buka Demo Interaktif <ArrowUpRight className="w-4 h-4" />
                   </Button>
-                </a>
+                </Link>
               </div>
             </div>
           </div>

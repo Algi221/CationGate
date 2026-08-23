@@ -50,7 +50,7 @@ export default function DaftarSaaS() {
     school_name: '', slug: '', email: '', phone: '', address: '',
     admin_name: '', admin_password: ''
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); 
   const [maxReachedStep, setMaxReachedStep] = useState(1);
@@ -59,13 +59,14 @@ export default function DaftarSaaS() {
   const [emailChecking, setEmailChecking] = useState(false);
   const [emailErrorState, setEmailErrorState] = useState('');
   const [emailSuccessState, setEmailSuccessState] = useState(false);
-  
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
+
+  const [_otpSent, setOtpSent] = useState(false);
+  const [_otpVerified, setOtpVerified] = useState(false);
+  const [_otpLoading, setOtpLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [animationsData, setAnimationsData] = useState<{ [key: number]: any }>({});
   const [isMobile, setIsMobile] = useState(false);
 
@@ -88,6 +89,7 @@ export default function DaftarSaaS() {
         }
       })
     ).then((results) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const map: { [key: number]: any } = {};
       results.forEach((r) => { map[r.step] = r.data; });
       setAnimationsData(map);
@@ -101,20 +103,23 @@ export default function DaftarSaaS() {
     }
   }, [cooldown]);
 
-  // Debounced email availability check
   useEffect(() => {
     const email = formData.email.trim();
     if (!email) {
-      setEmailErrorState('');
-      setEmailSuccessState(false);
-      setEmailChecking(false);
-      return;
+      const id = setTimeout(() => {
+        setEmailErrorState('');
+        setEmailSuccessState(false);
+        setEmailChecking(false);
+      }, 0);
+      return () => clearTimeout(id);
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setEmailSuccessState(false);
-      return;
+      const id = setTimeout(() => {
+        setEmailSuccessState(false);
+      }, 0);
+      return () => clearTimeout(id);
     }
 
     const timer = setTimeout(async () => {
@@ -129,15 +134,15 @@ export default function DaftarSaaS() {
           body: JSON.stringify({ email })
         });
         const data = await res.json();
-        if (!data.available) {
-          setEmailErrorState('Email sudah terdaftar di sistem.');
+        if (data.exists) {
+          setEmailErrorState('Email sudah terdaftar. Gunakan email lain.');
           setEmailSuccessState(false);
         } else {
           setEmailErrorState('');
           setEmailSuccessState(true);
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
+        setEmailErrorState('');
       } finally {
         setEmailChecking(false);
       }
@@ -210,13 +215,16 @@ export default function DaftarSaaS() {
   };
 
   useEffect(() => {
-    if ((step === 2) && formData.school_name) {
+    if (step === 2 && formData.school_name) {
       const generated = formData.school_name.toLowerCase().replace(/[^a-z0-9]/g, '');
       if (formData.slug !== generated) {
-        setFormData(prev => ({...prev, slug: generated}));
+        const id = setTimeout(() => {
+          setFormData(prev => ({...prev, slug: generated}));
+        }, 0);
+        return () => clearTimeout(id);
       }
     }
-  }, [formData.school_name, step]);
+  }, [formData.school_name, formData.slug, step]);
 
   const handleEmailCheck = async (e: React.FocusEvent<HTMLInputElement>) => {
     const email = e.target.value.trim();
@@ -232,13 +240,13 @@ export default function DaftarSaaS() {
       setEmailSuccessState(false);
       return;
     }
-    
+
     if (emailSuccessState || emailChecking) return;
 
     setEmailChecking(true);
     setEmailErrorState('');
     setEmailSuccessState(false);
-    
+
     try {
       const res = await fetch('/api/saas/check-email', {
         method: 'POST',
@@ -355,8 +363,8 @@ export default function DaftarSaaS() {
         strategy="afterInteractive"
       />
 
-      {/* BACKGROUND BUBBLE */}
-      <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-[180px] lg:h-[92vh] pointer-events-none z-0">
+      {}
+      <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0">
         <svg viewBox={isMobile ? "0 0 414 200" : "0 0 600 700"} className="w-full h-full" preserveAspectRatio="none">
           <motion.path
             initial={{ 
@@ -372,7 +380,7 @@ export default function DaftarSaaS() {
         </svg>
       </div>
 
-      {/* TOP NAVBAR */}
+      {}
       <div className="relative lg:absolute top-2 lg:top-10 left-2 lg:left-10 right-2 lg:right-10 flex items-center justify-between z-10 mb-4 lg:mb-0">
         <div className="flex items-center gap-3">
           <Link
@@ -405,7 +413,7 @@ export default function DaftarSaaS() {
               className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform group-hover:scale-105"
             />
             <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-950 font-sans">
-              CationGate
+              Cation<span style={{ color: currentVisual.solidColor }}>Gate</span>
             </span>
           </Link>
         </div>
@@ -420,7 +428,7 @@ export default function DaftarSaaS() {
         </div>
       </div>
 
-      {/* STEP BAR DI MOBILE (LANGSUNG DI ATAS FORM INPUT) */}
+      {}
       <div className="lg:hidden flex justify-center z-30 relative my-3">
         <div className="inline-flex items-center gap-1.5 bg-[#F1F3F6] p-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-200/80">
           {[1, 2, 3].map((s) => {
@@ -456,11 +464,11 @@ export default function DaftarSaaS() {
       </div>
 
       {/* KONTEN UTAMA GRID 50:50 */}
-      <div className="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto z-10 relative lg:pt-8">
+      <div className="w-full max-w-350 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto z-10 relative lg:pt-8">
 
         {/* SISI KIRI: HANYA MUNCUL DI DESKTOP */}
         <div className="hidden lg:flex lg:col-span-6 items-center justify-between relative pl-8 lg:pl-16 pr-4">
-          
+
           {/* TEKS UTAMA */}
           <div className="z-10 w-1/2 pr-2">
             <AnimatePresence mode="wait">
@@ -474,7 +482,7 @@ export default function DaftarSaaS() {
                 <h2 className="text-5xl lg:text-7xl font-black text-white tracking-tight leading-[0.98] whitespace-pre-line drop-shadow-md">
                   {currentVisual.title}
                 </h2>
-                <p className="text-xs lg:text-sm text-white/90 mt-5 font-medium leading-relaxed max-w-[220px]">
+                <p className="text-xs lg:text-sm text-white/90 mt-5 font-medium leading-relaxed max-w-55">
                   {currentVisual.desc}
                 </p>
               </motion.div>
@@ -489,7 +497,7 @@ export default function DaftarSaaS() {
               className="absolute -right-2 top-0 w-16 h-8 rounded-full bg-white/30 backdrop-blur-md shadow-lg z-30"
             />
 
-            <div className="w-full max-w-[320px] h-[320px] z-20">
+            <div className="w-full max-w-80 h-80 z-20">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentVisual.step}
@@ -516,7 +524,7 @@ export default function DaftarSaaS() {
 
         {/* SISI KANAN: FORM INPUT */}
         <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-12 z-10">
-          <div className="w-full max-w-[460px] mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
+          <div className="w-full max-w-115 mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-950">
                 Buat akun sekolah
@@ -788,13 +796,13 @@ export default function DaftarSaaS() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative w-full max-w-md z-[10000]"
+        className="relative w-full max-w-md z-10000"
       >
         <button
           type="button"
@@ -803,7 +811,7 @@ export default function DaftarSaaS() {
         >
           <span className="text-lg">×</span>
         </button>
-        <div className="rounded-2xl bg-white shadow-2xl p-2 relative z-[10001]">
+        <div className="rounded-2xl bg-white shadow-2xl p-2 relative z-10001">
           <OTPVerification
             email={formData.email}
             length={6}

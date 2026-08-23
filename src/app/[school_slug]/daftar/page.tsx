@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X, FileText, AlertCircle, Phone, Copy, ChevronRight, Building, CheckCircle2, DollarSign, Printer, User, Users, Pencil, School, HelpCircle, Clock } from "lucide-react";
+import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, Sparkles, X, FileText, AlertCircle, Phone, Copy, Building, CheckCircle2, Printer, User, Users, Pencil, School, HelpCircle, Clock } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 import dompurify from "dompurify";
 import Swal from 'sweetalert2';
 import { uploadFileDirect } from "@/utils/storage";
 import { useParams } from "next/navigation";
-
 
 const sanitizeUrl = (url: string | undefined | null): string => {
   if (!url) return "";
@@ -187,14 +186,65 @@ const DEFAULT_FIELDS_CONFIG: Record<string, { label: string; required: boolean; 
 export default function DaftarPage() {
   const params = useParams();
   const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, addToast, ppdbLogo, ppdbTitle } = usePPDB();
-  const [wizardStep, setWizardStep] = useState(1);
-  const [furthestStep, setFurthestStep] = useState(1);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [wizardStep, setWizardStep] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedStep = localStorage.getItem('ppdb_registration_wizard_step');
+      if (savedStep) {
+        const parsed = parseInt(savedStep);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= 14) return parsed;
+      }
+    }
+    return 1;
+  });
+  const [furthestStep, setFurthestStep] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedStep = localStorage.getItem('ppdb_registration_wizard_step');
+      if (savedStep) {
+        const parsed = parseInt(savedStep);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= 14) return parsed;
+      }
+    }
+    return 1;
+  });
+  const [isSuccess, setIsSuccess] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedSuccess = localStorage.getItem('ppdb_registration_success');
+      if (savedSuccess) {
+        try {
+          const parsed = JSON.parse(savedSuccess);
+          if (parsed && parsed.success && parsed.nisn) return true;
+        } catch (_e) {}
+      }
+    }
+    return false;
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [kuotaData, setKuotaData] = useState<any[] | null>(null);
-  const [portalStatus, setPortalStatus] = useState("open");
-  const [fieldsConfig, setFieldsConfig] = useState<Record<string, { label: string; required: boolean; active: boolean }>>({});
+  const [portalStatus, setPortalStatus] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('ppdb_portal_status') || "open";
+    }
+    return "open";
+  });
+  const [fieldsConfig, setFieldsConfig] = useState<Record<string, { label: string; required: boolean; active: boolean }>>(() => {
+    if (typeof window !== "undefined") {
+      const savedFieldsConfig = localStorage.getItem('ppdb_fields_config');
+      if (savedFieldsConfig) {
+        try {
+          const parsed = JSON.parse(savedFieldsConfig);
+          if (parsed && typeof parsed === 'object') return parsed;
+        } catch (_e) {}
+      }
+    }
+    return {};
+  });
+  const [_formGuideline, setFormGuideline] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('ppdb_form_guideline') || "";
+    }
+    return "";
+  });
 
   const _getFieldLabel = (key: string, defaultLabel: string) => {
     return fieldsConfig[key]?.label || defaultLabel;
@@ -214,229 +264,268 @@ export default function DaftarPage() {
     return configVal.active;
   };
 
-  const [formData, setFormData] = useState({
-    nama: "",
-    nisn: "",
-    nik: "",
-    tempatLahir: "",
-    tglLahir: "",
-    jenisKelamin: "",
-    agama: "",
-    kewarganegaraan: "",
-    alamat: "",
-    rtRw: "",
-    kelurahan: "",
-    kecamatan: "",
-    kodePos: "",
-    whatsapp: "",
-    email: "",
-    tinggalDengan: "",
-    transportasi: "",
-    tinggiBadan: "",
-    beratBadan: "",
-    jarakSekolah: "",
-    jarakKm: "",
-    waktuJam: "",
-    waktuMenit: "",
-    jumlahSaudara: "",
-    golonganDarah: "",
-    penyakitDiderita: "",
-    kebutuhanKhusus: [],
-    jenisPrestasi: [],
-    tingkatPrestasi: [],
-    uraianPrestasi: "",
-    tahunPrestasi: "",
-    penyelenggara: "",
-    jenisBeasiswa: [],
-    uraianBeasiswa: "",
-    tahunMulaiBeasiswa: "",
-    tahunSelesaiBeasiswa: "",
-    namaAyah: "",
-    tempatLahirAyah: "",
-    tglLahirAyah: "",
-    agamaAyah: "",
-    kewarganegaraanAyah: "WNI",
-    pendidikanAyah: "",
-    pekerjaanAyah: "",
-    penghasilanAyah: "",
-    alamatAyah: "",
-    rtrwAyah: "",
-    kelurahanAyah: "",
-    kecamatanAyah: "",
-    kodePosAyah: "",
-    statusAyah: "Masih Hidup",
-    namaIbu: "",
-    tempatLahirIbu: "",
-    tglLahirIbu: "",
-    agamaIbu: "",
-    kewarganegaraanIbu: "WNI",
-    pendidikanIbu: "",
-    pekerjaanIbu: "",
-    penghasilanIbu: "",
-    alamatIbu: "",
-    rtrwIbu: "",
-    kelurahanIbu: "",
-    kecamatanIbu: "",
-    kodePosIbu: "",
-    statusIbu: "Masih Hidup",
-    namaWali: "",
-    tempatLahirWali: "",
-    tglLahirWali: "",
-    agamaWali: "",
-    kewarganegaraanWali: "WNI",
-    pendidikanWali: "",
-    pekerjaanWali: "",
-    penghasilanWali: "",
-    alamatWali: "",
-    rtrwWali: "",
-    kelurahanWali: "",
-    kecamatanWali: "",
-    kodePosWali: "",
-    statusWali: "Masih Hidup",
-    teleponOrtu: "",
-    sekolahAsal: "",
-    tglLulus: "",
-    noIjazah: "",
-    noSKHUN: "",
-    noPesertaUN: "",
-    lamaBelajar: "",
-    pindahanDari: "",
-    alasanPindah: "",
-    diterimaKelas: "",
-    diterimaTanggal: "",
-    jurusan1: "",
-    hobi: [],
-    citaCita: "",
-    nilaiUSTeori: "",
-    nilaiUSPraktik: "",
-    nilaiMuatanLokal: "",
-    alasanMemilih: "",
-    citaCitaSetelahLulus: "",
-    pelajaranDisenangi: "",
-    punyaKPS: "Tidak",
-    noKPS: "",
-    punyaKIP: "Tidak",
-    noKIP: "",
-    alasanDisenangi: "",
-    kesulitanBelajar: "",
-    perkelahian: "",
-    ketPerkelahian: "",
-    narkoba: "",
-    ketNarkoba: "",
-    pelanggaranLain: "",
-    ketPelanggaranLain: "",
-    janjiTaat: "",
-    janjiSanksi: "",
-    janjiAkrab: "",
-    janjiBelajar: "",
-    janjiNamaBaik: "",
-    deklarasi: false,
-    periode: "2026-2027",
-    berkasFotoOk: false,
-    berkasFotoFile: null as File | null,
-    berkasFotoName: "",
-    berkasFotoBase64: "",
-    berkasPrestasiBase64: "",
+  const [formData, setFormData] = useState(() => {
+    const initial = {
+      nama: "",
+      nisn: "",
+      nik: "",
+      tempatLahir: "",
+      tglLahir: "",
+      jenisKelamin: "",
+      agama: "",
+      kewarganegaraan: "",
+      alamat: "",
+      rtRw: "",
+      kelurahan: "",
+      kecamatan: "",
+      kodePos: "",
+      whatsapp: "",
+      email: "",
+      tinggalDengan: "",
+      transportasi: "",
+      tinggiBadan: "",
+      beratBadan: "",
+      jarakSekolah: "",
+      jarakKm: "",
+      waktuJam: "",
+      waktuMenit: "",
+      jumlahSaudara: "",
+      golonganDarah: "",
+      penyakitDiderita: "",
+      kebutuhanKhusus: [] as string[],
+      jenisPrestasi: [] as string[],
+      tingkatPrestasi: [] as string[],
+      uraianPrestasi: "",
+      tahunPrestasi: "",
+      penyelenggara: "",
+      jenisBeasiswa: [] as string[],
+      uraianBeasiswa: "",
+      tahunMulaiBeasiswa: "",
+      tahunSelesaiBeasiswa: "",
+      namaAyah: "",
+      tempatLahirAyah: "",
+      tglLahirAyah: "",
+      agamaAyah: "",
+      kewarganegaraanAyah: "WNI",
+      pendidikanAyah: "",
+      pekerjaanAyah: "",
+      penghasilanAyah: "",
+      alamatAyah: "",
+      rtrwAyah: "",
+      kelurahanAyah: "",
+      kecamatanAyah: "",
+      kodePosAyah: "",
+      statusAyah: "Masih Hidup",
+      namaIbu: "",
+      tempatLahirIbu: "",
+      tglLahirIbu: "",
+      agamaIbu: "",
+      kewarganegaraanIbu: "WNI",
+      pendidikanIbu: "",
+      pekerjaanIbu: "",
+      penghasilanIbu: "",
+      alamatIbu: "",
+      rtrwIbu: "",
+      kelurahanIbu: "",
+      kecamatanIbu: "",
+      kodePosIbu: "",
+      statusIbu: "Masih Hidup",
+      namaWali: "",
+      tempatLahirWali: "",
+      tglLahirWali: "",
+      agamaWali: "",
+      kewarganegaraanWali: "WNI",
+      pendidikanWali: "",
+      pekerjaanWali: "",
+      penghasilanWali: "",
+      alamatWali: "",
+      rtrwWali: "",
+      kelurahanWali: "",
+      kecamatanWali: "",
+      kodePosWali: "",
+      statusWali: "Masih Hidup",
+      teleponOrtu: "",
+      sekolahAsal: "",
+      tglLulus: "",
+      noIjazah: "",
+      noSKHUN: "",
+      noPesertaUN: "",
+      lamaBelajar: "",
+      pindahanDari: "",
+      alasanPindah: "",
+      diterimaKelas: "",
+      diterimaTanggal: "",
+      jurusan1: "",
+      hobi: [] as string[],
+      citaCita: "",
+      nilaiUSTeori: "",
+      nilaiUSPraktik: "",
+      nilaiMuatanLokal: "",
+      alasanMemilih: "",
+      citaCitaSetelahLulus: "",
+      pelajaranDisenangi: "",
+      punyaKPS: "Tidak",
+      noKPS: "",
+      punyaKIP: "Tidak",
+      noKIP: "",
+      alasanDisenangi: "",
+      kesulitanBelajar: "",
+      perkelahian: "",
+      ketPerkelahian: "",
+      narkoba: "",
+      ketNarkoba: "",
+      pelanggaranLain: "",
+      ketPelanggaranLain: "",
+      janjiTaat: "",
+      janjiSanksi: "",
+      janjiAkrab: "",
+      janjiBelajar: "",
+      janjiNamaBaik: "",
+      deklarasi: false,
+      periode: "2026-2027",
+      berkasFotoOk: false,
+      berkasFotoFile: null as File | null,
+      berkasFotoName: "",
+      berkasFotoBase64: "",
+      berkasPrestasiBase64: "",
+    };
+
+    if (typeof window !== "undefined") {
+      const savedPeriod = localStorage.getItem('ppdb_school_period');
+      if (savedPeriod) initial.periode = savedPeriod;
+
+      const savedSuccess = localStorage.getItem('ppdb_registration_success');
+      if (savedSuccess) {
+        try {
+          const parsed = JSON.parse(savedSuccess);
+          if (parsed && parsed.success && parsed.nisn) {
+            initial.nisn = parsed.nisn;
+            return initial;
+          }
+        } catch (_e) {}
+      }
+
+      const savedCheckout = localStorage.getItem('ppdb_active_checkout');
+      if (!savedCheckout) {
+        const savedFormData = localStorage.getItem('ppdb_registration_form_data');
+        if (savedFormData) {
+          try {
+            const parsed = JSON.parse(savedFormData);
+            return { ...initial, ...parsed };
+          } catch (_e) {}
+        }
+      }
+    }
+    return initial;
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [submittedCandidate, setSubmittedCandidate] = useState<any>(null);
+  const [submittedCandidate, setSubmittedCandidate] = useState<any>(() => {
+    if (typeof window !== "undefined") {
+      const savedCheckout = localStorage.getItem('ppdb_active_checkout');
+      if (savedCheckout) {
+        try {
+          const parsed = JSON.parse(savedCheckout);
+          if (parsed && parsed.nisn) return parsed;
+        } catch (_e) {}
+      }
+    }
+    return null;
+  });
   const [copied, setCopied] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [successData, setSuccessData] = useState<any>(null);
+  const [successData, setSuccessData] = useState<any>(() => {
+    if (typeof window !== "undefined") {
+      const savedSuccess = localStorage.getItem('ppdb_registration_success');
+      if (savedSuccess) {
+        try {
+          const parsed = JSON.parse(savedSuccess);
+          if (parsed && parsed.successData) return parsed.successData;
+        } catch (_e) {}
+      }
+    }
+    return null;
+  });
 
-  const [isDark, setIsDark] = useState(false);
-  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
-  const [regCost, setRegCost] = useState(250000);
-  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('ppdb-theme') === 'dark' || document.documentElement.classList.contains('dark');
+    }
+    return false;
+  });
+  const [schoolPeriod, setSchoolPeriod] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('ppdb_school_period') || "2026-2027";
+    }
+    return "2026-2027";
+  });
+  const [regCost, setRegCost] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem('ppdb_reg_cost');
+      if (saved) {
+        const parsed = parseInt(saved);
+        if (!isNaN(parsed)) return parsed;
+      }
+    }
+    return 250000;
+  });
+  const [waGroupUrl, setWaGroupUrl] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('ppdb_wa_group_url') || "https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS";
+    }
+    return "https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS";
+  });
   const [waAdmin, setWaAdmin] = useState("6281292244456");
-  const [bankConfigList, setBankConfigList] = useState<Array<{ bankName: string; accountNumber: string; accountHolder: string }>>([
-    { bankName: "Bank Mandiri", accountNumber: "157-00-0174092-2", accountHolder: "Yayasan Taruna Bhakti" }
-  ]);
+  const [bankConfigList, setBankConfigList] = useState<Array<{ bankName: string; accountNumber: string; accountHolder: string }>>(() => {
+    if (typeof window !== "undefined") {
+      const savedBank = localStorage.getItem('ppdb_bank_config');
+      if (savedBank) {
+        try {
+          const parsed = JSON.parse(savedBank);
+          if (Array.isArray(parsed)) return parsed;
+          if (parsed && typeof parsed === 'object') return [parsed];
+        } catch (_e) {}
+      }
+    }
+    return [{ bankName: "Bank Mandiri", accountNumber: "157-00-0174092-2", accountHolder: "Yayasan Taruna Bhakti" }];
+  });
   const [showPaymentGate, setShowPaymentGate] = useState(false);
   const [activePaymentMethod, setActivePaymentMethod] = useState<"gateway" | "manual" | "transfer" | "tu">("transfer");
   const [manualReceiptBase64, setManualReceiptBase64] = useState("");
   const [manualReceiptName, setManualReceiptName] = useState("");
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
 
-  const [majors, setMajors] = useState([
-    { code: "RPL", title: "Rekayasa Perangkat Lunak" },
-    { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
-    { code: "DKV", title: "Desain Komunikasi Visual" },
-    { code: "ANM", title: "Animasi" },
-    { code: "BC", title: "Broadcasting & Perfilman" },
-    { code: "TE", title: "Teknik Elektronika" }
-  ]);
+  const [majors, setMajors] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedMajors = localStorage.getItem('ppdb_majors_config');
+      if (savedMajors) {
+        try {
+          const parsed = JSON.parse(savedMajors);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (_e) {}
+      }
+    }
+    return [
+      { code: "RPL", title: "Rekayasa Perangkat Lunak" },
+      { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
+      { code: "DKV", title: "Desain Komunikasi Visual" },
+      { code: "ANM", title: "Animasi" },
+      { code: "BC", title: "Broadcasting & Perfilman" },
+      { code: "TE", title: "Teknik Elektronika" }
+    ];
+  });
 
   useEffect(() => {
     const saved = localStorage.getItem('ppdb-theme');
     if (saved === 'dark') {
       document.documentElement.classList.add('dark');
-      setIsDark(true);
-    }
-
-    const savedCost = localStorage.getItem('ppdb_reg_cost');
-    if (savedCost) {
-      const parsed = parseInt(savedCost);
-      if (!isNaN(parsed)) setRegCost(parsed);
-    }
-
-    const savedPeriod = localStorage.getItem('ppdb_school_period');
-    if (savedPeriod) {
-      setSchoolPeriod(savedPeriod);
-      setFormData(prev => ({ ...prev, periode: savedPeriod }));
-    }
-
-    const savedWaGroup = localStorage.getItem('ppdb_wa_group_url');
-    if (savedWaGroup) {
-      setWaGroupUrl(savedWaGroup);
-    }
-
-    const savedPortalStatus = localStorage.getItem('ppdb_portal_status');
-    if (savedPortalStatus) {
-      setPortalStatus(savedPortalStatus);
-    }
-
-    const savedFieldsConfig = localStorage.getItem('ppdb_fields_config');
-    if (savedFieldsConfig) {
-      try {
-        const parsed = JSON.parse(savedFieldsConfig);
-        if (parsed && typeof parsed === 'object') {
-          setFieldsConfig(parsed);
-        }
-      } catch (_e) {}
-    }
-
-    const savedMajors = localStorage.getItem('ppdb_majors_config');
-    if (savedMajors) {
-      try {
-        const parsed = JSON.parse(savedMajors);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMajors(parsed);
-        }
-      } catch (e) {
-        console.log("Failed to parse custom majors config:", e);
-      }
-    }
-
-    const savedBank = localStorage.getItem('ppdb_bank_config');
-    if (savedBank) {
-      try {
-        const parsed = JSON.parse(savedBank);
-        if (Array.isArray(parsed)) {
-          setBankConfigList(parsed);
-        } else if (parsed && typeof parsed === 'object') {
-          setBankConfigList([parsed]);
-        }
-      } catch (e) {
-        console.log("Failed to parse custom bank config:", e);
-      }
     }
 
     const loadLiveConfig = async () => {
       try {
         const BACKEND_URL = typeof window !== 'undefined' ? `/api` : "/api";
-        const res = await fetch(`${BACKEND_URL}/config`);
+        const slug = (params?.school_slug as string) || "smk";
+        const res = await fetch(`${BACKEND_URL}/config?school_slug=${slug}&t=${Date.now()}`);
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
@@ -464,6 +553,10 @@ export default function DaftarPage() {
             if (config.ppdb_portal_status) {
               setPortalStatus(config.ppdb_portal_status);
               localStorage.setItem('ppdb_portal_status', config.ppdb_portal_status);
+            }
+            if (config.ppdb_form_guideline) {
+              setFormGuideline(config.ppdb_form_guideline);
+              localStorage.setItem('ppdb_form_guideline', config.ppdb_form_guideline);
             }
             if (config.ppdb_fields_config) {
               setFieldsConfig(config.ppdb_fields_config);
@@ -509,57 +602,7 @@ export default function DaftarPage() {
       }
     };
     loadKuota();
-
-    if (typeof window !== "undefined") {
-      const savedSuccess = localStorage.getItem('ppdb_registration_success');
-      if (savedSuccess) {
-        try {
-          const parsed = JSON.parse(savedSuccess);
-          if (parsed && parsed.success && parsed.nisn) {
-            setFormData(prev => ({ ...prev, nisn: parsed.nisn }));
-            if (parsed.successData) {
-              setSuccessData(parsed.successData);
-            }
-            setIsSuccess(true);
-            return;
-          }
-        } catch (e) {
-          console.log("Gagal memuat sesi sukses pendaftaran:", e);
-        }
-      }
-
-      const savedCheckout = localStorage.getItem('ppdb_active_checkout');
-      if (savedCheckout) {
-        try {
-          const parsed = JSON.parse(savedCheckout);
-          if (parsed && parsed.nisn) {
-            setSubmittedCandidate(parsed);
-            setShowPaymentGate(true);
-          }
-        } catch (e) {
-          console.log("Gagal memuat sesi checkout aktif dari localStorage:", e);
-        }
-      } else {
-        const savedFormData = localStorage.getItem('ppdb_registration_form_data');
-        if (savedFormData) {
-          try {
-            const parsed = JSON.parse(savedFormData);
-            setFormData(prev => ({ ...prev, ...parsed }));
-          } catch (e) {
-            console.log("Gagal memuat draf data pendaftaran dari localStorage:", e);
-          }
-        }
-        const savedStep = localStorage.getItem('ppdb_registration_wizard_step');
-        if (savedStep) {
-          const parsed = parseInt(savedStep);
-          if (!isNaN(parsed) && parsed >= 1 && parsed <= 14) {
-            setWizardStep(parsed);
-            setFurthestStep(parsed);
-          }
-        }
-      }
-    }
-  }, []);
+  }, [params?.school_slug]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -685,8 +728,8 @@ export default function DaftarPage() {
     }
   };
 
-  const handleInputChange = (e: unknown) => {
-    const { name, value } = (e as any).target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
 
     if (name === "nisn") {
       const cleanValue = value.replace(/\D/g, "").slice(0, 10);
@@ -788,11 +831,7 @@ export default function DaftarPage() {
   const validateStep = (step: number): string[] => {
     const fields = getStepFields(step);
     const errors: string[] = [];
-    
-    if (step === 1) {
-      if (!formData.nama || formData.nama.trim() === '') errors.push("Nama Lengkap");
-      if (!formData.nisn || formData.nisn.trim() === '') errors.push("NISN");
-    }
+
     if (step === 14) {
       if (!formData.deklarasi) errors.push("Pernyataan Deklarasi");
     }
@@ -845,10 +884,9 @@ export default function DaftarPage() {
       });
     } else {
       setIsSubmitting(true);
-      
+
       const finalData = { ...formData };
 
-      // Validate all required and active fields configured by admin
       const requiredErrors: string[] = [];
       Object.keys(DEFAULT_FIELDS_CONFIG).forEach((key) => {
         const conf = fieldsConfig[key] || DEFAULT_FIELDS_CONFIG[key];
@@ -868,7 +906,6 @@ export default function DaftarPage() {
         return;
       }
 
-      // Safe fallbacks to keep PostgreSQL NOT NULL database columns happy
       if (!finalData.nama || finalData.nama.trim() === "") finalData.nama = "Calon Siswa";
       if (!finalData.nisn || finalData.nisn.trim() === "") finalData.nisn = Math.floor(1000000000 + Math.random() * 9000000000).toString();
       if (!finalData.nik || finalData.nik.trim() === "") finalData.nik = Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
@@ -917,7 +954,7 @@ export default function DaftarPage() {
         }
       }
       finalData.periode = calculatedPeriod;
-       
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (finalData as any).school_slug = (params as any)?.school_slug as string || 'smk';
 
@@ -991,7 +1028,7 @@ export default function DaftarPage() {
   if (portalStatus === "closed") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950 p-6 text-center">
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/80 dark:border-slate-800/60 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
           <div className="w-16 h-16 bg-red-50 dark:bg-red-950/40 rounded-2xl flex items-center justify-center text-red-500 border border-red-100 dark:border-red-900/40 mx-auto">
             <Clock size={32} />
           </div>
@@ -1033,17 +1070,16 @@ export default function DaftarPage() {
     });
 
     return (
-      <div className="ppdb-print-container relative min-h-screen flex flex-col items-center justify-center p-4 lg:p-10 bg-background dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 print:bg-white dark:bg-[#0f172a] print:p-0">
-        
+      <div className="ppdb-print-container relative min-h-screen flex flex-col items-center justify-center p-4 lg:p-10 bg-background dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 transition-colors duration-300 print:bg-white print:p-0">
+
         {/* CSS print override style block to hide headers/footers (localhost URL) and fix blank page */}
         <style dangerouslySetInnerHTML={{__html: `
           @media print {
-            /* Hide all non-printable elements */
+
             .bg-glow-container, .print-hide-sidebar, .signature-block, .floating-action-nav, button, a, nav, header, footer {
               display: none !important;
             }
-            
-            /* Reset parent wrappers to normal block display with visible overflow */
+
             html,
             body,
             body > div,
@@ -1065,8 +1101,7 @@ export default function DaftarPage() {
               min-height: auto !important;
               position: static !important;
             }
-            
-            /* Apply custom padding and formatting on the invoice sheet itself */
+
             .printable-invoice-sheet {
               display: block !important;
               width: 100% !important;
@@ -1081,8 +1116,7 @@ export default function DaftarPage() {
               overflow: visible !important;
               position: static !important;
             }
-            
-            /* Force all text in print to be dark and visible */
+
             .printable-invoice-sheet *,
             .printable-invoice-sheet span,
             .printable-invoice-sheet p,
@@ -1095,21 +1129,20 @@ export default function DaftarPage() {
               background: transparent !important;
               background-color: transparent !important;
             }
-            
-            /* Keep specific colored text for status and rombel */
+
             .printable-invoice-sheet .text-blue-650,
             .printable-invoice-sheet .text-primary {
               color: #2563eb !important;
             }
-            
+
             .printable-invoice-sheet .text-emerald-600 {
               color: #059669 !important;
             }
-            
+
             .printable-invoice-sheet .text-amber-500 {
               color: #d97706 !important;
             }
-            
+
             .printable-invoice-sheet border,
             .printable-invoice-sheet td,
             .printable-invoice-sheet th,
@@ -1117,14 +1150,13 @@ export default function DaftarPage() {
             .printable-invoice-sheet table {
               border-color: #000000 !important;
             }
-            
+
             @page {
               size: auto;
-              margin: 0mm; /* hides default browser header (title) and footer (localhost URL) */
+              margin: 0mm; 
             }
           }
 
-          /* Force light theme colors on the printable invoice container even in dark mode on screen */
           html.dark .printable-invoice-sheet,
           html.dark .printable-invoice-sheet.bg-white dark:bg-[#0f172a],
           .printable-invoice-sheet {
@@ -1182,7 +1214,7 @@ export default function DaftarPage() {
           .printable-invoice-sheet .border-slate-900 {
             border-color: #1e293b !important;
           }
-          
+
           html.dark .printable-invoice-sheet .divide-slate-200,
           .printable-invoice-sheet .divide-slate-200 {
             border-color: #e2e8f0 !important;
@@ -1202,7 +1234,7 @@ export default function DaftarPage() {
         </div>
 
         {/* MOBILE VIEW (Congrats card matching mockup, only on screen < 1024px) */}
-        <div className="block lg:hidden bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 shadow-2xl rounded-3xl p-8 max-w-md w-full text-center relative z-10 print-hide-sidebar">
+        <div className="block lg:hidden bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 shadow-2xl rounded-3xl p-8 max-w-md w-full text-center relative z-10 print-hide-sidebar">
           <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_10px_25px_rgba(16,185,129,0.2)]">
             <Check size={40} />
           </div>
@@ -1212,16 +1244,16 @@ export default function DaftarPage() {
             Data pendaftaran Anda telah berhasil direkam di sistem PPDB SMK Taruna Bhakti.
           </p>
           <div className="bg-background/70 dark:bg-slate-950/30 backdrop-blur-sm border border-slate-100 dark:border-slate-800 rounded-xl p-4 mb-6 text-left text-xs space-y-2">
-            <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700/50 dark:border-slate-800">
-              <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">NISN:</span>
+            <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800">
+              <span className="text-slate-400 dark:text-slate-400">NISN:</span>
               <span className="font-bold text-slate-700 dark:text-slate-200">{successData.nisn}</span>
             </div>
-            <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700/50 dark:border-slate-800">
-              <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">Sekolah Asal:</span>
+            <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800">
+              <span className="text-slate-400 dark:text-slate-400">Sekolah Asal:</span>
               <span className="font-bold text-slate-700 dark:text-slate-200">{successData.sekolah_asal || successData.sekolahAsal || "-"}</span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">Jurusan Utama:</span>
+              <span className="text-slate-400 dark:text-slate-400">Jurusan Utama:</span>
               <span className="font-bold text-primary dark:text-sky-400">{successData.jurusan_1 || successData.jurusan1 || "-"}</span>
             </div>
           </div>
@@ -1255,7 +1287,7 @@ export default function DaftarPage() {
                 href={sanitizeUrl(waGroupUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-6 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/20 transition duration-300"
+                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-6 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/20 transition duration-300"
               >
                 <Phone size={14} />
                 <span>Gabung Grup WA Pendaftar</span>
@@ -1267,8 +1299,7 @@ export default function DaftarPage() {
             <Link href={`/invoice?nisn=${successData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]">
               Lihat &amp; Cetak Invoice
             </Link>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            <Link href={`/${(params as any)?.school_slug || ''}`} className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
+            <Link href={`/${(params?.school_slug as string) || ''}`} className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
               Kembali ke Beranda
             </Link>
             <button
@@ -1423,18 +1454,18 @@ export default function DaftarPage() {
 
         {/* DESKTOP VIEW (Congrats + Merged Invoice Side-by-Side, screen >= 1024px) */}
         <div className="ppdb-print-content hidden lg:grid grid-cols-12 gap-8 max-w-6xl w-full relative z-10 items-start">
-          
+
           {/* Left Column: Sidebar Stats, Documents checklist and WhatsApp CTA (print:hidden) */}
           <div className="lg:col-span-5 space-y-6 print-hide-sidebar">
-            
+
             {/* Congrats Info Box */}
-            <div className="bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800/80 shadow-2xl rounded-3xl p-6 relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800/80 shadow-2xl rounded-3xl p-6 relative overflow-hidden">
               <div className="absolute right-4 top-4 w-24 h-24 bg-emerald-500/5 dark:bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
-              
+
               <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 rounded-full flex items-center justify-center mb-4.5 shadow-sm">
                 <CheckCircle2 size={28} className="animate-pulse" />
               </div>
-              
+
               <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 leading-tight">Pendaftaran Sukses!</h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal font-bold">
                 Terima kasih, <strong className="text-slate-750 dark:text-white">{successData.nama}</strong>. Data registrasi administrasi Anda telah tersimpan secara resmi di sistem PPDB SMK Taruna Bhakti Depok.
@@ -1475,7 +1506,7 @@ export default function DaftarPage() {
                   href={sanitizeUrl(waGroupUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex justify-center items-center gap-2 py-3 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/10 transition"
+                  className="w-full inline-flex justify-center items-center gap-2 py-3 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/10 transition"
                 >
                   <Phone size={12} />
                   Gabung Grup WA Pendaftar
@@ -1484,17 +1515,16 @@ export default function DaftarPage() {
             )}
 
             {/* Print and Main Action controls */}
-            <div className="bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800/80 shadow-2xl rounded-3xl p-6 space-y-4">
+            <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800/80 shadow-2xl rounded-3xl p-6 space-y-4">
               <button 
                 onClick={() => window.print()}
-                className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-755 text-white font-black text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/15 transition transform hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full flex justify-center items-center gap-2 bg-linear-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-755 text-white font-black text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/15 transition transform hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Printer size={14} />
                 Cetak Invoice Resmi (PDF)
               </button>
 
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              <Link href={`/${(params as any)?.school_slug || ''}`} className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
+              <Link href={`/${(params?.school_slug as string) || ''}`} className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
                 <Home size={13} />
                 Kembali ke Beranda
               </Link>
@@ -1652,21 +1682,31 @@ export default function DaftarPage() {
 
           {/* Right Column: Detailed High-Fidelity Printable Invoice Container */}
           <div className="lg:col-span-7 w-full bg-white dark:bg-[#0f172a] text-slate-900 rounded-3xl shadow-2xl p-8 border border-slate-200 dark:border-slate-700/50 print-full-width relative overflow-hidden invoice-sheet-container printable-invoice-sheet">
-            
+
             {/* Elegant official diagonal stamp seal inside sheet */}
             {successData.payment_status === "Paid" ? (
-              <div className="absolute top-28 right-8 border-4 border-emerald-500/60 text-emerald-500/60 font-black text-sm uppercase tracking-widest px-4 py-2 rounded-xl rotate-[-12deg] pointer-events-none select-none z-10 bg-white dark:bg-[#0f172a]/70 backdrop-blur-xs font-mono">
+              <div className="absolute top-28 right-8 border-4 border-emerald-500/60 text-emerald-500/60 font-black text-sm uppercase tracking-widest px-4 py-2 rounded-xl -rotate-12 pointer-events-none select-none z-10 bg-white dark:bg-[#0f172a]/70 backdrop-blur-xs font-mono">
                 LUNAS / VERIFIED
               </div>
             ) : (
-              <div className="absolute top-28 right-8 border-4 border-amber-500/60 text-amber-500/60 font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-xl rotate-[-12deg] pointer-events-none select-none z-10 bg-white dark:bg-[#0f172a]/70 backdrop-blur-xs font-mono">
+              <div className="absolute top-28 right-8 border-4 border-amber-500/60 text-amber-500/60 font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-xl -rotate-12 pointer-events-none select-none z-10 bg-white dark:bg-[#0f172a]/70 backdrop-blur-xs font-mono">
                 PROSES VERIFIKASI
               </div>
             )}
 
             {/* School Letterhead */}
             <div className="flex items-center gap-4 border-b-4 border-double border-slate-800 pb-4 mb-6">
-              {ppdbLogo && <img src={ppdbLogo || undefined} alt="Logo Sekolah" className="w-14 h-14 object-contain" onError={(e:unknown) => (e as any).target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"} />}
+              {ppdbLogo && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={ppdbLogo || undefined}
+                  alt="Logo Sekolah"
+                  className="w-14 h-14 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png";
+                  }}
+                />
+              )}
               <div className="text-left">
                 <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5">Panitia Penerimaan Peserta Didik Baru</h4>
                 <h2 className="text-lg font-black text-slate-900 leading-tight">
@@ -1821,7 +1861,7 @@ export default function DaftarPage() {
     const handleReceiptFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      
+
       if (file.size > 3 * 1024 * 1024) {
         Swal.fire({
           icon: 'warning',
@@ -1836,7 +1876,7 @@ export default function DaftarPage() {
         });
         return;
       }
-      
+
       const allowed = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
       if (!allowed.includes(file.type)) {
         Swal.fire({
@@ -1852,7 +1892,7 @@ export default function DaftarPage() {
         });
         return;
       }
-      
+
       setManualReceiptName(file.name);
       Swal.fire({
         title: 'Mengunggah Bukti Bayar...',
@@ -1919,7 +1959,7 @@ export default function DaftarPage() {
         Swal.fire({
           icon: 'error',
           title: 'Terjadi Kesalahan',
-          text: (err as any).message,
+          text: err instanceof Error ? err.message : String(err),
           confirmButtonColor: '#3b82f6',
           customClass: {
             popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
@@ -1947,16 +1987,16 @@ export default function DaftarPage() {
           {/* Grid Layout: Left Side (Billing Summary), Right Side (Payment Options) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
                         {/* Left Side: Summary Panel (Col Span 4) */}
-            <div className="lg:col-span-4 flex flex-col justify-between bg-background/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-700/50 dark:border-slate-800 rounded-[2rem] p-6 relative overflow-hidden">
+            <div className="lg:col-span-4 flex flex-col justify-between bg-background/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-4xl p-6 relative overflow-hidden">
               <div className="space-y-6">
-                
+
                 {/* Profil Calon Siswa */}
-                <div className="flex flex-col items-center text-center pb-6 border-b border-slate-200 dark:border-slate-700/50 dark:border-slate-800">
+                <div className="flex flex-col items-center text-center pb-6 border-b border-slate-200 dark:border-slate-800">
                   <div className="w-16 h-16 bg-primary dark:bg-blue-500 rounded-full flex items-center justify-center text-white mb-3 shadow-lg ring-4 ring-primary/10">
                     <User className="w-8 h-8" />
                   </div>
                   <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider leading-tight">{submittedCandidate?.nama}</h4>
-                  <p className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 mt-1">NISN: {submittedCandidate?.nisn}</p>
+                  <p className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-400 mt-1">NISN: {submittedCandidate?.nisn}</p>
                 </div>
 
                 {/* Stepper Vertikal */}
@@ -1964,7 +2004,7 @@ export default function DaftarPage() {
                   {/* Langkah 1 */}
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 flex items-center justify-center border border-emerald-200 dark:border-emerald-900 shadow-sm shrink-0">
-                      <Check size={14} className="stroke-[3]" />
+                      <Check size={14} className="stroke-3" />
                     </div>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Informasi Siswa</span>
                   </div>
@@ -1982,26 +2022,26 @@ export default function DaftarPage() {
                     <>
                       {/* Langkah 3 */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-400 flex items-center justify-center shrink-0">
                           <School size={14} />
                         </div>
-                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400">Datang ke Sekolah</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-400">Datang ke Sekolah</span>
                       </div>
 
                       {/* Langkah 4 */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-400 flex items-center justify-center shrink-0">
                           <Clock size={14} />
                         </div>
-                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400">Menunggu Verifikasi</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-400">Menunggu Verifikasi</span>
                       </div>
 
                       {/* Langkah 5 */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-400 flex items-center justify-center shrink-0">
                           <CheckCircle2 size={14} />
                         </div>
-                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400">Selesai</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-400">Selesai</span>
                       </div>
                     </>
                   ) : (
@@ -2011,14 +2051,14 @@ export default function DaftarPage() {
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center border shrink-0 ${
                           manualReceiptBase64 
                             ? "bg-emerald-100 dark:bg-emerald-950/60 border-emerald-200 text-emerald-500"
-                            : "bg-background dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 dark:text-slate-400"
+                            : "bg-background dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-400"
                         }`}>
-                          {manualReceiptBase64 ? <Check size={14} className="stroke-[3]" /> : <Upload size={14} />}
+                          {manualReceiptBase64 ? <Check size={14} className="stroke-3" /> : <Upload size={14} />}
                         </div>
                         <span className={`text-xs font-bold ${
                           manualReceiptBase64 
                             ? "text-emerald-500 dark:text-emerald-400" 
-                            : "text-slate-400 dark:text-slate-500 dark:text-slate-400"
+                            : "text-slate-400 dark:text-slate-400"
                         }`}>
                           Upload Bukti
                         </span>
@@ -2026,10 +2066,10 @@ export default function DaftarPage() {
 
                       {/* Langkah 4 */}
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-background dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-400 flex items-center justify-center shrink-0">
                           <Clock size={14} />
                         </div>
-                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400">Selesai</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-400">Selesai</span>
                       </div>
                     </>
                   )}
@@ -2043,12 +2083,13 @@ export default function DaftarPage() {
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0 ${getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).bg}`}>
                       {getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img 
                           src={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath} 
                           alt={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoText} 
                           className="w-7 h-7 object-contain"
-                          onError={(e: unknown) => {
-                            (e as any).target.style.display = 'none';
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
                           }}
                         />
                       ) : (
@@ -2066,12 +2107,12 @@ export default function DaftarPage() {
               </div>
 
               {/* Tombol Bantuan Pembayaran */}
-              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/50 dark:border-slate-800/80">
+              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800/80">
                 <a
                   href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Panitia%20PPDB,%20saya%20butuh%20bantuan%20terkait%20pembayaran...`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-background dark:hover:bg-slate-800 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-background dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
                 >
                   <HelpCircle size={14} />
                   <span>Bantuan Pembayaran</span>
@@ -2079,12 +2120,12 @@ export default function DaftarPage() {
               </div>
             </div>
 
-            {/* Right Side: Payment Form Selection (Col Span 8) */}
+            {}
             <div className="lg:col-span-8 flex flex-col justify-between">
               <div className="text-left space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                
-                {/* Pengantar Formal */}
-                <div className="space-y-1 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-950/10 p-4 rounded-2xl border-l-4 border-primary">
+
+                {}
+                <div className="space-y-1 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-950/10 p-4 rounded-2xl border-l-4 border-primary">
                   <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">
                     Penyelesaian Pembayaran Formulir
                   </h4>
@@ -2093,15 +2134,15 @@ export default function DaftarPage() {
                   </p>
                 </div>
 
-                {/* Billing Summary Box */}
-                <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 relative overflow-hidden shadow-sm">
+                {}
+                <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 relative overflow-hidden shadow-sm">
                   <div className="absolute right-6 top-6 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
                     <Sparkles size={120} className="text-primary" />
                   </div>
-                  
+
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-4">
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 dark:text-slate-400">Jumlah Tagihan</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-400">Jumlah Tagihan</span>
                       <h3 className="text-2xl font-black text-primary dark:text-sky-400 mt-0.5">
                         Rp {regCost.toLocaleString("id-ID")}
                       </h3>
@@ -2109,12 +2150,13 @@ export default function DaftarPage() {
                     <div className="flex items-center gap-3 bg-primary/5/50 dark:bg-blue-950/20 border border-blue-100/35 dark:border-blue-900/30 px-4 py-2 rounded-2xl shrink-0">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).bg}`}>
                         {getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img 
                             src={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath} 
                             alt={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoText} 
                             className="w-5 h-5 object-contain"
-                            onError={(e: unknown) => {
-                              (e as any).target.style.display = 'none';
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
                             }}
                           />
                         ) : (
@@ -2132,25 +2174,25 @@ export default function DaftarPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-400">
                     <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                      <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">Nama Lengkap:</span>
-                      <span className="text-slate-800 dark:text-white uppercase truncate max-w-[150px]">{submittedCandidate?.nama}</span>
+                      <span className="text-slate-400 dark:text-slate-400">Nama Lengkap:</span>
+                      <span className="text-slate-800 dark:text-white uppercase truncate max-w-37.5">{submittedCandidate?.nama}</span>
                     </div>
                     <div className="flex justify-between items-center bg-background/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                      <span className="text-slate-400 dark:text-slate-500 dark:text-slate-400">NISN Pendaftar:</span>
+                      <span className="text-slate-400 dark:text-slate-400">NISN Pendaftar:</span>
                       <span className="text-slate-800 dark:text-white font-mono tracking-wider">{submittedCandidate?.nisn}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Tab Switcher */}
-                <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-700/50 dark:border-slate-800 rounded-2xl max-w-md">
+                <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md">
                   <button
                     type="button"
                     onClick={() => setActivePaymentMethod("transfer")}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                       activePaymentMethod === "transfer"
-                        ? "bg-white dark:bg-[#0f172a] text-blue-650 dark:text-sky-400 shadow-sm border border-slate-200 dark:border-slate-700/40 dark:border-slate-800"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-slate-200"
+                        ? "bg-white dark:bg-[#0f172a] text-blue-650 dark:text-sky-400 shadow-sm border border-slate-200 dark:border-slate-800"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
                     }`}
                   >
                     <CreditCard size={14} />
@@ -2161,8 +2203,8 @@ export default function DaftarPage() {
                     onClick={() => setActivePaymentMethod("tu")}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                       activePaymentMethod === "tu"
-                        ? "bg-white dark:bg-[#0f172a] text-blue-650 dark:text-sky-400 shadow-sm border border-slate-200 dark:border-slate-700/40 dark:border-slate-800"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-white dark:hover:text-slate-200"
+                        ? "bg-white dark:bg-[#0f172a] text-blue-650 dark:text-sky-400 shadow-sm border border-slate-200 dark:border-slate-800"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
                     }`}
                   >
                     <Building size={14} />
@@ -2173,7 +2215,7 @@ export default function DaftarPage() {
                 {activePaymentMethod === "transfer" ? (
                   <div className="space-y-6 animate-in fade-in duration-200">
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 dark:text-slate-400 mb-2">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-2">
                         Langkah Pembayaran Transfer Bank
                       </h4>
                       <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
@@ -2196,11 +2238,11 @@ export default function DaftarPage() {
                         return (
                           <div 
                             key={index} 
-                            className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-white/10 w-full transition-all duration-300 hover:scale-[1.02]"
+                            className="relative overflow-hidden rounded-4xl bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-white/10 w-full transition-all duration-300 hover:scale-[1.02]"
                           >
                             {/* Elemen Dekoratif */}
-                            <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 blur-2xl pointer-events-none"></div>
-                            
+                            <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-linear-to-tr from-blue-500/10 to-indigo-500/10 blur-2xl pointer-events-none"></div>
+
                             {/* Header Kartu */}
                             <div className="flex justify-between items-start mb-6">
                               <div className="space-y-1">
@@ -2231,7 +2273,7 @@ export default function DaftarPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleCopy(bank.accountNumber || "157-00-0174092-2")}
-                                  className="p-1.5 bg-white dark:bg-[#0f172a]/10 hover:bg-white dark:bg-[#0f172a]/20 border border-white/15 text-slate-400 hover:text-white rounded-lg transition duration-150 active:scale-95 cursor-pointer"
+                                  className="p-1.5 bg-white/10 dark:bg-[#0f172a]/20 border border-white/15 text-slate-400 hover:text-white rounded-lg transition duration-150 active:scale-95 cursor-pointer"
                                   title="Salin Nomor Rekening"
                                 >
                                   {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
@@ -2258,10 +2300,10 @@ export default function DaftarPage() {
                       <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest">
                         Unggah Bukti Transfer Pembayaran
                       </label>
-                      
+
                       {/* File Upload Zone / Area */}
                       {!manualReceiptBase64 ? (
-                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-[1.5rem] py-10 px-6 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
+                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-3xl py-10 px-6 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
                           <input
                             type="file"
                             accept="image/*,application/pdf"
@@ -2281,18 +2323,19 @@ export default function DaftarPage() {
                           </div>
                         </div>
                       ) : (
-                        
-                        <div className="bg-background/80 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-[1.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
+
+                        <div className="bg-background/80 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
                           <div className="flex items-center gap-4 w-full md:w-auto">
                             <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-205 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">
                               {manualReceiptBase64.startsWith("data:application/pdf") ? (
                                 <FileText size={32} className="text-red-500" />
                               ) : (
+                                /* eslint-disable-next-line @next/next/no-img-element */
                                 <img src={manualReceiptBase64.startsWith('data:image/') ? sanitizeUrl(manualReceiptBase64) : ''} alt="Preview Bukti Bayar" className="w-full h-full object-cover" />
                               )}
                             </div>
                             <div className="space-y-0.5 overflow-hidden w-full md:w-auto">
-                              <p className="text-xs font-black text-slate-750 dark:text-slate-200 truncate max-w-[200px] md:max-w-[300px]">
+                              <p className="text-xs font-black text-slate-750 dark:text-slate-200 truncate max-w-50 md:max-w-75">
                                 {manualReceiptName}
                               </p>
                               <span className="text-[9px] font-black uppercase text-emerald-505 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/35 px-2 py-0.5 rounded-full inline-block">
@@ -2300,7 +2343,7 @@ export default function DaftarPage() {
                               </span>
                             </div>
                           </div>
-                          
+
                           <button
                             type="button"
                             onClick={() => {
@@ -2320,7 +2363,7 @@ export default function DaftarPage() {
                     <button
                       onClick={() => handleConfirmOption("Transfer Manual", manualReceiptBase64)}
                       disabled={!manualReceiptBase64 || isSubmittingReceipt}
-                      className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
+                      className="w-full flex justify-center items-center gap-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
                     >
                       {isSubmittingReceipt ? "Mengirim Bukti..." : "Kirim Bukti Pembayaran"}
                       <ArrowRight size={16} />
@@ -2329,7 +2372,7 @@ export default function DaftarPage() {
                 ) : (
                   <div className="space-y-6 animate-in fade-in duration-200">
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 dark:text-slate-400 mb-2">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-2">
                         Langkah Pembayaran Langsung ke TU Sekolah
                       </h4>
                       <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
@@ -2359,7 +2402,7 @@ export default function DaftarPage() {
                     <button
                       onClick={() => handleConfirmOption("Bayar di Sekolah", "")}
                       disabled={isSubmittingReceipt}
-                      className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
+                      className="w-full flex justify-center items-center gap-2 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
                     >
                       {isSubmittingReceipt ? "Memproses..." : "Konfirmasi Pembayaran di TU & Daftar"}
                       <ArrowRight size={16} />
@@ -2376,7 +2419,7 @@ export default function DaftarPage() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center py-16 px-4 md:px-6 bg-background dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 overflow-hidden">
-      
+
       {/* Background Glowing Blobs */}
       <div className="bg-glow-container">
         <div className="bg-glow bg-glow-1"></div>
@@ -2389,7 +2432,7 @@ export default function DaftarPage() {
         <Link 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           href={`/${(params as any)?.school_slug || ''}`}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -2399,7 +2442,7 @@ export default function DaftarPage() {
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a]/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all" 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all" 
           title={isDark ? 'Mode Terang' : 'Mode Gelap'}
         >
           {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
@@ -2412,16 +2455,16 @@ export default function DaftarPage() {
           Tahap {wizardStep} dari 14
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mb-2 drop-shadow-sm">Formulir Pendaftaran PPDB</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-[#0f172a]/60 dark:bg-slate-900/60 backdrop-blur-md inline-block px-4 py-1.5 rounded-full border border-white/60 dark:border-slate-800/60 shadow-sm mt-2">SMK Taruna Bhakti Tahun Ajaran 2026/2027</p>
+        <p className="text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-900/60 backdrop-blur-md inline-block px-4 py-1.5 rounded-full border border-white/60 dark:border-slate-800/60 shadow-sm mt-2">SMK Taruna Bhakti Tahun Ajaran 2026/2027</p>
       </div>
 
       <div className="bg-white dark:bg-[#0f172a] backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full relative z-10">
 
         {/* Desktop Stepper (hidden on mobile, shown on desktop) */}
         <div className="hidden md:flex justify-between items-center mb-12 relative px-4">
-          <div className="absolute top-1/2 left-0 w-full h-[3px] bg-slate-100 dark:bg-[#1e293b]/80 -translate-y-1/2 z-0 rounded-full"></div>
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 dark:bg-[#1e293b]/80 -translate-y-1/2 z-0 rounded-full"></div>
           <div
-            className="absolute top-1/2 left-0 h-[3px] bg-primary dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
+            className="absolute top-1/2 left-0 h-1 bg-primary dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
             style={{ width: `${((wizardStep - 1) / 13) * 100}%` }}
           ></div>
 
@@ -2472,42 +2515,53 @@ export default function DaftarPage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Masukkan informasi dasar sesuai dengan Kartu Keluarga / Akta Kelahiran.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("nama") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nama", "Nama Lengkap")} {_isFieldRequired("nama") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="nama" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai Ijazah" value={formData.nama} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("jenisKelamin") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Jenis Kelamin</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("jenisKelamin", "Jenis Kelamin")} {_isFieldRequired("jenisKelamin") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="jenisKelamin" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.jenisKelamin} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="L">Laki-Laki</option>
                   <option value="P">Perempuan</option>
                 </select>
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("nisn") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">NISN (10 Digit)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nisn", "NISN (10 Digit)")} {_isFieldRequired("nisn") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="nisn" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: 0081234567" value={formData.nisn} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("nik") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">NIK (16 Digit)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nik", "NIK (16 Digit)")} {_isFieldRequired("nik") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="nik" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KK" value={formData.nik} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
+{_isFieldActive("tempatLahir") && (
             <div className="form-group mb-4">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Tempat & Tanggal Lahir</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tempatLahir", "Tempat & Tanggal Lahir")} {_isFieldRequired("tempatLahir") && <span className="text-red-500 ml-1">*</span>}</label>
               <div className="flex gap-2">
                 <input type="text" name="tempatLahir" className="w-1/2 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Tempat" value={formData.tempatLahir} onChange={handleInputChange} />
                 <input type="date" name="tglLahir" className="w-1/2 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahir} onChange={handleInputChange} />
               </div>
             </div>
+)}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("agama") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Agama</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("agama", "Agama")} {_isFieldRequired("agama") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="agama" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agama} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Islam">Islam</option>
@@ -2517,14 +2571,17 @@ export default function DaftarPage() {
                   <option value="Buddha">Buddha</option>
                 </select>
               </div>
+)}
+{_isFieldActive("kewarganegaraan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Kewarganegaraan</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kewarganegaraan", "Kewarganegaraan")} {_isFieldRequired("kewarganegaraan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="kewarganegaraan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraan} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="WNI">Warga Negara Indonesia (WNI)</option>
                   <option value="WNA">Warga Negara Asing (WNA)</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -2535,51 +2592,68 @@ export default function DaftarPage() {
             <h3 className="text-xl font-extrabold text-slate-800 dark:text-white mb-1">Tahap 2: Data Tempat Tinggal</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Informasi alamat tempat tinggal dan kontak yang dapat dihubungi.</p>
 
+{_isFieldActive("alamat") && (
             <div className="form-group mb-4">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Alamat Rumah (Jalan, No. Rumah)</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alamat", "Alamat Rumah (Jalan, No. Rumah)")} {_isFieldRequired("alamat") && <span className="text-red-500 ml-1">*</span>}</label>
               <textarea name="alamat" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" rows={2} placeholder="Contoh: Jl. Pekapuran No. 10" value={formData.alamat} onChange={handleInputChange}></textarea>
             </div>
+)}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("rtRw") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">RT / RW</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("rtRw", "RT / RW")} {_isFieldRequired("rtRw") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="rtRw" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 002/005" value={formData.rtRw} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("kodePos") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Kode Pos</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kodePos", "Kode Pos")} {_isFieldRequired("kodePos") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="kodePos" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 16453" value={formData.kodePos} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("kelurahan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Kelurahan</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kelurahan", "Kelurahan")} {_isFieldRequired("kelurahan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="kelurahan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Curug" value={formData.kelurahan} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("kecamatan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Kecamatan</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kecamatan", "Kecamatan")} {_isFieldRequired("kecamatan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="kecamatan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Cimanggis" value={formData.kecamatan} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+{_isFieldActive("whatsapp") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Nomor Telepon / HP Siswa</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("whatsapp", "Nomor Telepon / HP Siswa")} {_isFieldRequired("whatsapp") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="tel" name="whatsapp" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 081234567890" value={formData.whatsapp} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("teleponOrtu") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Nomor Telepon Orang Tua (Ayah/Ibu/Wali)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("teleponOrtu", "Nomor Telepon Orang Tua (Ayah/Ibu/Wali)")} {_isFieldRequired("teleponOrtu") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="tel" name="teleponOrtu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Nomor yang mudah dihubungi" value={formData.teleponOrtu} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("email") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">E-mail Pribadi Siswa</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("email", "E-mail Pribadi Siswa")} {_isFieldRequired("email") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="email" name="email" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="nama@email.com" value={formData.email} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tinggalDengan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Tinggal Bersama dengan</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tinggalDengan", "Tinggal Bersama dengan")} {_isFieldRequired("tinggalDengan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="tinggalDengan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.tinggalDengan} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Orang Tua">Orang Tua</option>
@@ -2590,8 +2664,10 @@ export default function DaftarPage() {
                   <option value="Lainnya">Lainnya</option>
                 </select>
               </div>
+)}
+{_isFieldActive("transportasi") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Moda Transportasi</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("transportasi", "Moda Transportasi")} {_isFieldRequired("transportasi") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="transportasi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.transportasi} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="Jalan Kaki">Jalan Kaki</option>
@@ -2605,6 +2681,7 @@ export default function DaftarPage() {
                   <option value="Lainnya">Lainnya</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -2616,25 +2693,30 @@ export default function DaftarPage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Mohon isi data periodik fisik dan perjalanan Anda ke sekolah.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tinggiBadan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Tinggi Badan (Cm)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tinggiBadan", "Tinggi Badan (Cm)")} {_isFieldRequired("tinggiBadan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="relative">
                   <input type="text" inputMode="numeric" pattern="[0-9]*" name="tinggiBadan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 165" value={formData.tinggiBadan} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Cm</span>
                 </div>
               </div>
+)}
+{_isFieldActive("beratBadan") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Berat Badan (Kg)</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("beratBadan", "Berat Badan (Kg)")} {_isFieldRequired("beratBadan") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="relative">
                   <input type="text" inputMode="numeric" pattern="[0-9]*" name="beratBadan" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 55" value={formData.beratBadan} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Kg</span>
                 </div>
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("jarakSekolah") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Jarak Rumah ke Sekolah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("jarakSekolah", "Jarak Rumah ke Sekolah")} {_isFieldRequired("jarakSekolah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4 mt-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="jarakSekolah" value="Kurang dari 1 km" checked={formData.jarakSekolah === "Kurang dari 1 km"} onChange={handleInputChange} className="w-4 h-4 accent-blue-600" />
@@ -2646,6 +2728,8 @@ export default function DaftarPage() {
                   </label>
                 </div>
               </div>
+)}
+{_isFieldActive("jarakKm") && (
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   {formData.jarakSekolah === "Kurang dari 1 km" ? "Sebutkan Jarak Tepatnya (Meter)" : "Sebutkan Jarak Tepatnya (Km)"}
@@ -2666,11 +2750,13 @@ export default function DaftarPage() {
                   </span>
                 </div>
               </div>
+)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("waktuJam") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Waktu Tempuh ke Sekolah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("waktuJam", "Waktu Tempuh ke Sekolah")} {_isFieldRequired("waktuJam") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-2 items-center">
                   <div className="relative flex-1">
                     <input type="text" inputMode="numeric" pattern="[0-9]*" name="waktuJam" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="0" value={formData.waktuJam} onChange={handleInputChange} />
@@ -2683,13 +2769,16 @@ export default function DaftarPage() {
                   </div>
                 </div>
               </div>
+)}
+{_isFieldActive("jumlahSaudara") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Jumlah Saudara Kandung</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("jumlahSaudara", "Jumlah Saudara Kandung")} {_isFieldRequired("jumlahSaudara") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="relative">
                   <input type="text" inputMode="numeric" pattern="[0-9]*" name="jumlahSaudara" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl pl-4 pr-16 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2" value={formData.jumlahSaudara} onChange={handleInputChange} />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Orang</span>
                 </div>
               </div>
+)}
             </div>
           </div>
         )}
@@ -2701,8 +2790,9 @@ export default function DaftarPage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">Mohon isi data golongan darah, riwayat penyakit, serta kebutuhan khusus jika ada.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+{_isFieldActive("golonganDarah") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Golongan Darah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("golonganDarah", "Golongan Darah")} {_isFieldRequired("golonganDarah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="golonganDarah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.golonganDarah} onChange={handleInputChange}>
                   <option value="">-- Pilih --</option>
                   <option value="A">A</option>
@@ -2712,10 +2802,13 @@ export default function DaftarPage() {
                   <option value="Tidak Tahu">Tidak Tahu</option>
                 </select>
               </div>
+)}
+{_isFieldActive("penyakitDiderita") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Penyakit Yang Pernah Diderita</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penyakitDiderita", "Penyakit Yang Pernah Diderita")} {_isFieldRequired("penyakitDiderita") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="penyakitDiderita" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Asma, TBC, dll (kosongkan jika tidak ada)" value={formData.penyakitDiderita} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
             <div className="form-group">
@@ -2813,20 +2906,26 @@ export default function DaftarPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("uraianPrestasi") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Uraian Prestasi</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("uraianPrestasi", "3. Uraian Prestasi")} {_isFieldRequired("uraianPrestasi") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="uraianPrestasi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Juara 1 Olimpiade Matematika" value={formData.uraianPrestasi} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("tahunPrestasi") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Tahun Prestasi</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tahunPrestasi", "4. Tahun Prestasi")} {_isFieldRequired("tahunPrestasi") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunPrestasi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2024" value={formData.tahunPrestasi} onChange={handleInputChange} />
               </div>
+)}
             </div>
 
+{_isFieldActive("penyelenggara") && (
             <div className="form-group mb-4">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Penyelenggara</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penyelenggara", "5. Penyelenggara")} {_isFieldRequired("penyelenggara") && <span className="text-red-500 ml-1">*</span>}</label>
               <input type="text" name="penyelenggara" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Dinas Pendidikan Kota Depok" value={formData.penyelenggara} onChange={handleInputChange} />
             </div>
+)}
 
             <div className="form-group">
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Bukti Prestasi</label>
@@ -2874,20 +2973,26 @@ export default function DaftarPage() {
               </div>
             </div>
 
+{_isFieldActive("uraianBeasiswa") && (
             <div className="form-group mb-4">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Uraian Beasiswa</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("uraianBeasiswa", "2. Uraian Beasiswa")} {_isFieldRequired("uraianBeasiswa") && <span className="text-red-500 ml-1">*</span>}</label>
               <input type="text" name="uraianBeasiswa" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Misal: Beasiswa Prestasi dari Pemkot Depok" value={formData.uraianBeasiswa} onChange={handleInputChange} />
             </div>
+)}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+{_isFieldActive("tahunMulaiBeasiswa") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Tahun Mulai Menerima Beasiswa</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tahunMulaiBeasiswa", "3. Tahun Mulai Menerima Beasiswa")} {_isFieldRequired("tahunMulaiBeasiswa") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunMulaiBeasiswa" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2022" value={formData.tahunMulaiBeasiswa} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("tahunSelesaiBeasiswa") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Tahun Selesai Menerima Beasiswa</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tahunSelesaiBeasiswa", "4. Tahun Selesai Menerima Beasiswa")} {_isFieldRequired("tahunSelesaiBeasiswa") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" inputMode="numeric" pattern="[0-9]*" name="tahunSelesaiBeasiswa" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 2024" value={formData.tahunSelesaiBeasiswa} onChange={handleInputChange} />
               </div>
+)}
             </div>
           </div>
         )}
@@ -2904,33 +3009,45 @@ export default function DaftarPage() {
                 1. Pendidikan Sebelumnya
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+{_isFieldActive("sekolahAsal") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">a. Lulusan dari SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("sekolahAsal", "a. Lulusan dari SMP/MTs")} {_isFieldRequired("sekolahAsal") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="sekolahAsal" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Nama sekolah asal" value={formData.sekolahAsal} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("tglLulus") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">b. Tanggal Lulus dari SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tglLulus", "b. Tanggal Lulus dari SMP/MTs")} {_isFieldRequired("tglLulus") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="date" name="tglLulus" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLulus} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("noIjazah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">c. Nomor Seri Ijazah SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("noIjazah", "c. Nomor Seri Ijazah SMP/MTs")} {_isFieldRequired("noIjazah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="noIjazah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noIjazah} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("noSKHUN") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">d. Nomor Seri SKHUN SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("noSKHUN", "d. Nomor Seri SKHUN SMP/MTs")} {_isFieldRequired("noSKHUN") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="noSKHUN" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noSKHUN} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("noPesertaUN") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">e. Nomor Peserta UN SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("noPesertaUN", "e. Nomor Peserta UN SMP/MTs")} {_isFieldRequired("noPesertaUN") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="noPesertaUN" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada" value={formData.noPesertaUN} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("lamaBelajar") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">f. Lama Belajar (Tahun)</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("lamaBelajar", "f. Lama Belajar (Tahun)")} {_isFieldRequired("lamaBelajar") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex items-center gap-3">
                     <input type="number" name="lamaBelajar" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: 3" value={formData.lamaBelajar} onChange={handleInputChange} />
                     <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Tahun</span>
                   </div>
                 </div>
+)}
               </div>
             </div>
 
@@ -2940,14 +3057,18 @@ export default function DaftarPage() {
                 Pindahan (Hanya Untuk Murid Pindahan)
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+{_isFieldActive("pindahanDari") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">a. Dari SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pindahanDari", "a. Dari SMP/MTs")} {_isFieldRequired("pindahanDari") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pindahanDari" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika bukan pindahan" value={formData.pindahanDari} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("alasanPindah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">b. Alasan Pindah Sekolah</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alasanPindah", "b. Alasan Pindah Sekolah")} {_isFieldRequired("alasanPindah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="alasanPindah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Opsional" value={formData.alasanPindah} onChange={handleInputChange} />
                 </div>
+)}
               </div>
             </div>
 
@@ -2982,7 +3103,7 @@ export default function DaftarPage() {
                   {majors.map((major) => {
                     const option = `${major.title} (${major.code})`;
                     const majorDetails = getMajorDetails(major.title || major.code);
-                    
+
                     let isFull = false;
                     if (kuotaData) {
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2998,7 +3119,7 @@ export default function DaftarPage() {
                           ? 'bg-slate-100 dark:bg-[#1e293b] border-slate-200 dark:border-slate-700 opacity-60 cursor-not-allowed grayscale'
                           : formData.jurusan1 === option
                           ? `${majorDetails.bg} border-current ${majorDetails.textColor} shadow-md cursor-pointer ring-2 ring-current/20`
-                          : 'bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-background hover:border-slate-300 dark:border-slate-700 cursor-pointer'
+                          : 'bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-background hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer'
                       }`}>
                         <input
                           type="radio"
@@ -3011,8 +3132,9 @@ export default function DaftarPage() {
                           disabled={isFull}
                           className="w-4 h-4 text-primary border-slate-300 dark:border-slate-700 focus:ring-primary disabled:opacity-50 shrink-0"
                         />
-                        {/* Logo jurusan */}
+                        {}
                         {majorDetails.logoPath ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             src={sanitizeSrc((major as any).logo) || majorDetails.logoPath}
@@ -3054,25 +3176,32 @@ export default function DaftarPage() {
                 Data Ayah Kandung
               </h4>
 
+{_isFieldActive("namaAyah") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Nama Lengkap</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("namaAyah", "1. Nama Lengkap")} {_isFieldRequired("namaAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="namaAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KTP/KK" value={formData.namaAyah} onChange={handleInputChange} />
               </div>
+)}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tempatLahirAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tempat Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tempatLahirAyah", "2. Tempat Lahir")} {_isFieldRequired("tempatLahirAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="tempatLahirAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirAyah} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("tglLahirAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tanggal Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tglLahirAyah", "2. Tanggal Lahir")} {_isFieldRequired("tglLahirAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="date" name="tglLahirAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirAyah} onChange={handleInputChange} />
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("agamaAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Agama</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("agamaAyah", "3. Agama")} {_isFieldRequired("agamaAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="agamaAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaAyah} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
@@ -3083,26 +3212,34 @@ export default function DaftarPage() {
                     <option value="Konghucu">Konghucu</option>
                   </select>
                 </div>
+)}
+{_isFieldActive("kewarganegaraanAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Kewarganegaraan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kewarganegaraanAyah", "4. Kewarganegaraan")} {_isFieldRequired("kewarganegaraanAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="kewarganegaraanAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanAyah} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+{_isFieldActive("pendidikanAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Pendidikan Terakhir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pendidikanAyah", "5. Pendidikan Terakhir")} {_isFieldRequired("pendidikanAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pendidikanAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanAyah} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("pekerjaanAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Pekerjaan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pekerjaanAyah", "6. Pekerjaan")} {_isFieldRequired("pekerjaanAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pekerjaanAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanAyah} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("penghasilanAyah") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">7. Penghasilan Per Bulan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penghasilanAyah", "7. Penghasilan Per Bulan")} {_isFieldRequired("penghasilanAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="penghasilanAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanAyah} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
@@ -3111,10 +3248,12 @@ export default function DaftarPage() {
                     <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
                   </select>
                 </div>
+)}
               </div>
 
+{_isFieldActive("alamatAyah") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">8. Alamat Rumah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alamatAyah", "8. Alamat Rumah")} {_isFieldRequired("alamatAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="alamatAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatAyah} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
@@ -3135,14 +3274,17 @@ export default function DaftarPage() {
                   </div>
                 </div>
               </div>
+)}
 
+{_isFieldActive("statusAyah") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("statusAyah", "9. Status Hidup/Meninggal Dunia")} {_isFieldRequired("statusAyah") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="statusAyah" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusAyah} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -3159,25 +3301,32 @@ export default function DaftarPage() {
                 Data Ibu Kandung
               </h4>
 
+{_isFieldActive("namaIbu") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Nama Lengkap</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("namaIbu", "1. Nama Lengkap")} {_isFieldRequired("namaIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="namaIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Sesuai KTP/KK" value={formData.namaIbu} onChange={handleInputChange} />
               </div>
+)}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tempatLahirIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tempat Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tempatLahirIbu", "2. Tempat Lahir")} {_isFieldRequired("tempatLahirIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="tempatLahirIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirIbu} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("tglLahirIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tanggal Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tglLahirIbu", "2. Tanggal Lahir")} {_isFieldRequired("tglLahirIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="date" name="tglLahirIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirIbu} onChange={handleInputChange} />
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("agamaIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Agama</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("agamaIbu", "3. Agama")} {_isFieldRequired("agamaIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="agamaIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaIbu} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
@@ -3188,26 +3337,34 @@ export default function DaftarPage() {
                     <option value="Konghucu">Konghucu</option>
                   </select>
                 </div>
+)}
+{_isFieldActive("kewarganegaraanIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Kewarganegaraan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kewarganegaraanIbu", "4. Kewarganegaraan")} {_isFieldRequired("kewarganegaraanIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="kewarganegaraanIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanIbu} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+{_isFieldActive("pendidikanIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Pendidikan Terakhir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pendidikanIbu", "5. Pendidikan Terakhir")} {_isFieldRequired("pendidikanIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pendidikanIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanIbu} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("pekerjaanIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Pekerjaan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pekerjaanIbu", "6. Pekerjaan")} {_isFieldRequired("pekerjaanIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pekerjaanIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanIbu} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("penghasilanIbu") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">7. Penghasilan Per Bulan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penghasilanIbu", "7. Penghasilan Per Bulan")} {_isFieldRequired("penghasilanIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="penghasilanIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanIbu} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
@@ -3216,10 +3373,12 @@ export default function DaftarPage() {
                     <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
                   </select>
                 </div>
+)}
               </div>
 
+{_isFieldActive("alamatIbu") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">8. Alamat Rumah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alamatIbu", "8. Alamat Rumah")} {_isFieldRequired("alamatIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="alamatIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatIbu} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
@@ -3240,14 +3399,17 @@ export default function DaftarPage() {
                   </div>
                 </div>
               </div>
+)}
 
+{_isFieldActive("statusIbu") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("statusIbu", "9. Status Hidup/Meninggal Dunia")} {_isFieldRequired("statusIbu") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="statusIbu" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusIbu} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -3264,25 +3426,32 @@ export default function DaftarPage() {
                 Data Wali Peserta Didik
               </h4>
 
+{_isFieldActive("namaWali") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Nama Lengkap</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("namaWali", "1. Nama Lengkap")} {_isFieldRequired("namaWali") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="namaWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Kosongkan jika tidak ada wali" value={formData.namaWali} onChange={handleInputChange} />
               </div>
+)}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("tempatLahirWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tempat Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tempatLahirWali", "2. Tempat Lahir")} {_isFieldRequired("tempatLahirWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="tempatLahirWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tempatLahirWali} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("tglLahirWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Tanggal Lahir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("tglLahirWali", "2. Tanggal Lahir")} {_isFieldRequired("tglLahirWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="date" name="tglLahirWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.tglLahirWali} onChange={handleInputChange} />
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("agamaWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Agama</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("agamaWali", "3. Agama")} {_isFieldRequired("agamaWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="agamaWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.agamaWali} onChange={handleInputChange}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
@@ -3293,26 +3462,34 @@ export default function DaftarPage() {
                     <option value="Konghucu">Konghucu</option>
                   </select>
                 </div>
+)}
+{_isFieldActive("kewarganegaraanWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Kewarganegaraan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kewarganegaraanWali", "4. Kewarganegaraan")} {_isFieldRequired("kewarganegaraanWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="kewarganegaraanWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.kewarganegaraanWali} onChange={handleInputChange}>
                     <option value="WNI">WNI</option>
                     <option value="WNA">WNA</option>
                   </select>
                 </div>
+)}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+{_isFieldActive("pendidikanWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Pendidikan Terakhir</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pendidikanWali", "5. Pendidikan Terakhir")} {_isFieldRequired("pendidikanWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pendidikanWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="SD/SMP/SMA/S1" value={formData.pendidikanWali} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("pekerjaanWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Pekerjaan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pekerjaanWali", "6. Pekerjaan")} {_isFieldRequired("pekerjaanWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pekerjaanWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Pekerjaan" value={formData.pekerjaanWali} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("penghasilanWali") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">7. Penghasilan Per Bulan</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("penghasilanWali", "7. Penghasilan Per Bulan")} {_isFieldRequired("penghasilanWali") && <span className="text-red-500 ml-1">*</span>}</label>
                   <select name="penghasilanWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.penghasilanWali} onChange={handleInputChange}>
                     <option value="">-- Pilih --</option>
                     <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
@@ -3321,10 +3498,12 @@ export default function DaftarPage() {
                     <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
                   </select>
                 </div>
+)}
               </div>
 
+{_isFieldActive("alamatWali") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">8. Alamat Rumah</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alamatWali", "8. Alamat Rumah")} {_isFieldRequired("alamatWali") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="alamatWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all mb-3" placeholder="Nama Jalan / Perumahan / Kampung" value={formData.alamatWali} onChange={handleInputChange} />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
@@ -3345,14 +3524,17 @@ export default function DaftarPage() {
                   </div>
                 </div>
               </div>
+)}
 
+{_isFieldActive("statusWali") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("statusWali", "9. Status Hidup/Meninggal Dunia")} {_isFieldRequired("statusWali") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="statusWali" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.statusWali} onChange={handleInputChange}>
                   <option value="Masih Hidup">Masih Hidup</option>
                   <option value="Meninggal Dunia">Meninggal Dunia</option>
                 </select>
               </div>
+)}
             </div>
           </div>
         )}
@@ -3388,8 +3570,9 @@ export default function DaftarPage() {
                   })}
                 </div>
               </div>
+{_isFieldActive("citaCita") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">2. Cita-cita</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">{_getFieldLabel("citaCita", "2. Cita-cita")} {_isFieldRequired("citaCita") && <span className="text-red-500 ml-1">*</span>}</label>
                 <select name="citaCita" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none" value={formData.citaCita} onChange={handleInputChange}>
                   <option value="">-- Pilih Cita-cita --</option>
                   <option value="PNS">PNS</option>
@@ -3402,6 +3585,7 @@ export default function DaftarPage() {
                   <option value="Lainnya">Lainnya</option>
                 </select>
               </div>
+)}
             </div>
 
             <div className="mb-6 p-5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
@@ -3410,21 +3594,28 @@ export default function DaftarPage() {
                 Data Minat dan Kemampuan
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("nilaiUSTeori") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Nilai US (Teori)</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nilaiUSTeori", "1. Nilai US (Teori)")} {_isFieldRequired("nilaiUSTeori") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="number" name="nilaiUSTeori" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiUSTeori} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("nilaiUSPraktik") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Nilai US (Praktik)</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nilaiUSPraktik", "2. Nilai US (Praktik)")} {_isFieldRequired("nilaiUSPraktik") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="number" name="nilaiUSPraktik" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiUSPraktik} onChange={handleInputChange} />
                 </div>
+)}
               </div>
+{_isFieldActive("nilaiMuatanLokal") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Nilai Muatan Lokal</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("nilaiMuatanLokal", "2. Nilai Muatan Lokal")} {_isFieldRequired("nilaiMuatanLokal") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="number" name="nilaiMuatanLokal" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={formData.nilaiMuatanLokal} onChange={handleInputChange} />
               </div>
+)}
+{_isFieldActive("alasanMemilih") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Memilih SMK Taruna Bhakti Karena</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alasanMemilih", "3. Memilih SMK Taruna Bhakti Karena")} {_isFieldRequired("alasanMemilih") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4">
                   {["Diri Sendiri", "Orang Tua/Wali"].map((option) => (
                     <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.alasanMemilih === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3435,24 +3626,33 @@ export default function DaftarPage() {
                   ))}
                 </div>
               </div>
+)}
+{_isFieldActive("citaCitaSetelahLulus") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Cita-cita Setelah Lulus SMK</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("citaCitaSetelahLulus", "4. Cita-cita Setelah Lulus SMK")} {_isFieldRequired("citaCitaSetelahLulus") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="citaCitaSetelahLulus" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Kuliah / Bekerja di Industri" value={formData.citaCitaSetelahLulus} onChange={handleInputChange} />
               </div>
+)}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+{_isFieldActive("pelajaranDisenangi") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Pelajaran Yg Disenangi di SMP/MTs</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pelajaranDisenangi", "5. Pelajaran Yg Disenangi di SMP/MTs")} {_isFieldRequired("pelajaranDisenangi") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="pelajaranDisenangi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Contoh: Matematika" value={formData.pelajaranDisenangi} onChange={handleInputChange} />
                 </div>
+)}
+{_isFieldActive("alasanDisenangi") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Alasan Disenangi</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("alasanDisenangi", "Alasan Disenangi")} {_isFieldRequired("alasanDisenangi") && <span className="text-red-500 ml-1">*</span>}</label>
                   <input type="text" name="alasanDisenangi" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Alasan" value={formData.alasanDisenangi} onChange={handleInputChange} />
                 </div>
+)}
               </div>
+{_isFieldActive("kesulitanBelajar") && (
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Kesulitan Belajar di SMP/MTs</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("kesulitanBelajar", "6. Kesulitan Belajar di SMP/MTs")} {_isFieldRequired("kesulitanBelajar") && <span className="text-red-500 ml-1">*</span>}</label>
                 <input type="text" name="kesulitanBelajar" className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Ada hambatan/kesulitan apa?" value={formData.kesulitanBelajar} onChange={handleInputChange} />
               </div>
+)}
             </div>
           </div>
         )}
@@ -3469,8 +3669,9 @@ export default function DaftarPage() {
                 Data Budi Pekerti
               </h4>
 
+{_isFieldActive("perkelahian") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">1. Perkelahian antar Pelajar</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("perkelahian", "1. Perkelahian antar Pelajar")} {_isFieldRequired("perkelahian") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
                     <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.perkelahian === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3482,12 +3683,14 @@ export default function DaftarPage() {
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Kalau Pernah Dimana dan Kapan :</span>
-                  <input type="text" name="ketPerkelahian" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 dark:bg-[#1e293b]" value={formData.ketPerkelahian} onChange={handleInputChange} disabled={formData.perkelahian !== "Pernah"} />
+                  <input type="text" name="ketPerkelahian" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 disabled:dark:bg-[#1e293b]" value={formData.ketPerkelahian} onChange={handleInputChange} disabled={formData.perkelahian !== "Pernah"} />
                 </div>
               </div>
+)}
 
+{_isFieldActive("narkoba") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">2. Obat Terlarang, Minuman Keras, Narkotika</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("narkoba", "2. Obat Terlarang, Minuman Keras, Narkotika")} {_isFieldRequired("narkoba") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
                     <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.narkoba === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3499,12 +3702,14 @@ export default function DaftarPage() {
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Kalau Pernah atau Masih, Berikan Alasannya :</span>
-                  <input type="text" name="ketNarkoba" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 dark:bg-[#1e293b]" value={formData.ketNarkoba} onChange={handleInputChange} disabled={formData.narkoba !== "Pernah"} />
+                  <input type="text" name="ketNarkoba" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 disabled:dark:bg-[#1e293b]" value={formData.ketNarkoba} onChange={handleInputChange} disabled={formData.narkoba !== "Pernah"} />
                 </div>
               </div>
+)}
 
+{_isFieldActive("pelanggaranLain") && (
               <div className="form-group mb-4">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">3. Pelanggaran Tingkah Laku Sosial</label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("pelanggaranLain", "3. Pelanggaran Tingkah Laku Sosial")} {_isFieldRequired("pelanggaranLain") && <span className="text-red-500 ml-1">*</span>}</label>
                 <div className="flex gap-4 mb-2">
                   {["Pernah", "Tidak Pernah"].map((option) => (
                     <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.pelanggaranLain === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3516,13 +3721,15 @@ export default function DaftarPage() {
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Bentuk Pelanggaran :</span>
-                  <input type="text" name="ketPelanggaranLain" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 dark:bg-[#1e293b]" value={formData.ketPelanggaranLain} onChange={handleInputChange} disabled={formData.pelanggaranLain !== "Pernah"} />
+                  <input type="text" name="ketPelanggaranLain" className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-[#1e293b]" value={formData.ketPelanggaranLain} onChange={handleInputChange} disabled={formData.pelanggaranLain !== "Pernah"} />
                 </div>
               </div>
+)}
 
               <div className="space-y-4">
+{_isFieldActive("janjiTaat") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">4. Apakah anda sanggup mentaati tata tertib yang berlaku di SMK Taruna Bhakti Depok ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiTaat", "4. Apakah anda sanggup mentaati tata tertib yang berlaku di SMK Taruna Bhakti Depok ?")} {_isFieldRequired("janjiTaat") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiTaat === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3533,9 +3740,11 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
 
+{_isFieldActive("janjiSanksi") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">5. Apakah anda sanggup dikenakan sangsi apabila melanggar tata tertib peraturan sekolah ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiSanksi", "5. Apakah anda sanggup dikenakan sangsi apabila melanggar tata tertib peraturan sekolah ?")} {_isFieldRequired("janjiSanksi") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiSanksi === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3546,9 +3755,11 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
 
+{_isFieldActive("janjiAkrab") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Apakah Anda Sanggup Untuk Menjalin Keakraban dengan Sesama Rekan di Sekolah ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiAkrab", "6. Apakah Anda Sanggup Untuk Menjalin Keakraban dengan Sesama Rekan di Sekolah ?")} {_isFieldRequired("janjiAkrab") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiAkrab === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3559,9 +3770,11 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
 
+{_isFieldActive("janjiBelajar") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">7. Apakah anda sanggup belajar sungguh-sungguh ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiBelajar", "7. Apakah anda sanggup belajar sungguh-sungguh ?")} {_isFieldRequired("janjiBelajar") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiBelajar === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3572,9 +3785,11 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
 
+{_isFieldActive("janjiNamaBaik") && (
                 <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">8. Apakah anda sanggup menjaga nama baik sekolah baik didalam maupun diluar sekolah ?</label>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">{_getFieldLabel("janjiNamaBaik", "8. Apakah anda sanggup menjaga nama baik sekolah baik didalam maupun diluar sekolah ?")} {_isFieldRequired("janjiNamaBaik") && <span className="text-red-500 ml-1">*</span>}</label>
                   <div className="flex gap-4">
                     {["Sanggup", "Tidak Sanggup"].map((option) => (
                       <label key={option} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${formData.janjiNamaBaik === option ? "bg-primary/5 border-blue-400 text-primary" : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
@@ -3585,6 +3800,7 @@ export default function DaftarPage() {
                     ))}
                   </div>
                 </div>
+)}
               </div>
             </div>
 
@@ -3595,13 +3811,14 @@ export default function DaftarPage() {
               </h4>
 
               <div className="space-y-6">
+{_isFieldActive("punyaKPS") && (
                 <div className="form-group">
                   <div className="flex text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                     <span className="mr-2">1.</span>
                     <div>
                       <p>Apakah Orang Tua Mempunyai / Memiliki /</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <p className="w-[280px]">Penerima Kartu Perlindungan Sosial (KPS)</p>
+                        <p className="w-70">Penerima Kartu Perlindungan Sosial (KPS)</p>
                         <span>:</span>
                         <div className="flex gap-4 ml-2">
                           {["Ya", "Tidak"].map((option) => (
@@ -3615,7 +3832,7 @@ export default function DaftarPage() {
                     </div>
                   </div>
                   <div className="flex items-center text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2 ml-4 pl-1.5">
-                    <div className="w-[280px]">
+                    <div className="w-70">
                       <p>Jika Ya, Sebutkan Nomor KPS-nya, dan</p>
                       <p>Lampirkan Fotocopy Kartu KPS-nya</p>
                     </div>
@@ -3626,14 +3843,16 @@ export default function DaftarPage() {
                     </div>
                   </div>
                 </div>
+)}
 
+{_isFieldActive("punyaKIP") && (
                 <div className="form-group">
                   <div className="flex text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                     <span className="mr-2">2.</span>
                     <div>
                       <p>Apakah Orang Tua Mempunyai / Memiliki /</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <p className="w-[280px]">Penerima Kartu Indonesia Pintar (KIP)</p>
+                        <p className="w-70">Penerima Kartu Indonesia Pintar (KIP)</p>
                         <span>:</span>
                         <div className="flex gap-4 ml-2">
                           {["Ya", "Tidak"].map((option) => (
@@ -3647,7 +3866,7 @@ export default function DaftarPage() {
                     </div>
                   </div>
                   <div className="flex items-center text-xs font-semibold text-slate-500 dark:text-slate-400 mt-2 ml-4 pl-1.5">
-                    <div className="w-[280px]">
+                    <div className="w-70">
                       <p>Jika Ya, Sebutkan Nomor KIP-nya, dan</p>
                       <p>Lampirkan Fotocopy Kartu KIP-nya</p>
                     </div>
@@ -3658,6 +3877,7 @@ export default function DaftarPage() {
                     </div>
                   </div>
                 </div>
+)}
               </div>
             </div>
           </div>
@@ -3674,9 +3894,9 @@ export default function DaftarPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
+
               {/* Card 1: Identitas Diri */}
-              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
+              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <User size={16} className="text-blue-500" />
@@ -3698,7 +3918,7 @@ export default function DaftarPage() {
               </div>
 
               {/* Card 2: Alamat & Kontak */}
-              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
+              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <Home size={16} className="text-blue-500" />
@@ -3710,7 +3930,7 @@ export default function DaftarPage() {
                   </button>
                 </div>
                 <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-400">
-                  <div className="flex justify-between"><span className="text-slate-400">Alamat Rumah:</span><span className="text-right max-w-[180px] truncate">{formData.alamat || "-"}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">Alamat Rumah:</span><span className="text-right max-w-45 truncate">{formData.alamat || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">RT / RW:</span><span>{formData.rtRw || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Kelurahan:</span><span>{formData.kelurahan || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Kecamatan:</span><span>{formData.kecamatan || "-"}</span></div>
@@ -3720,7 +3940,7 @@ export default function DaftarPage() {
               </div>
 
               {/* Card 3: Pendidikan & Peminatan */}
-              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
+              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <School size={16} className="text-blue-500" />
@@ -3739,7 +3959,7 @@ export default function DaftarPage() {
               </div>
 
               {/* Card 4: Data Orang Tua / Wali */}
-              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
+              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <Users size={16} className="text-blue-500" />
@@ -3759,7 +3979,7 @@ export default function DaftarPage() {
               </div>
 
               {/* Card 5: Nilai US & Minat */}
-              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
+              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <FileText size={16} className="text-blue-500" />
@@ -3779,7 +3999,7 @@ export default function DaftarPage() {
               </div>
 
               {/* Card 6: Kebribadian & Kebiasaan */}
-              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
+              <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative group">
                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                   <h4 className="font-extrabold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                     <AlertCircle size={16} className="text-blue-500" />
@@ -3811,7 +4031,7 @@ export default function DaftarPage() {
             </p>
 
             {/* Premium Notice Box - Expanded and Amber Highlighted */}
-            <div className="bg-amber-500/[0.07] dark:bg-amber-500/[0.03] border-2 border-amber-500/30 rounded-[2.5rem] p-8 md:p-10 mb-8 shadow-lg shadow-amber-500/[0.02]">
+            <div className="bg-amber-500/7 dark:bg-amber-500/3 border-2 border-amber-500/30 rounded-[2.5rem] p-8 md:p-10 mb-8 shadow-lg shadow-amber-500/2">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="w-14 h-14 bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-amber-500/20 animate-bounce">
                   <AlertCircle size={28} />
@@ -3823,7 +4043,7 @@ export default function DaftarPage() {
                   <p className="text-slate-650 dark:text-slate-400 text-sm leading-relaxed mb-6 font-semibold">
                     Anda <span className="text-amber-600 dark:text-amber-400 font-black underline underline-offset-4">tidak perlu mengunggah berkas digital</span> di dalam formulir online ini. Sebagai gantinya, silakan lengkapi dan bawa berkas fisik/fotokopi berikut ini langsung ke panitia PPDB di sekolah saat melakukan proses verifikasi langsung:
                   </p>
-                  
+
                   {/* Grid of Documents */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
@@ -3833,13 +4053,13 @@ export default function DaftarPage() {
                       { title: "Pas Foto Berwarna (3x4)", desc: "2 Lembar (Latar Belakang Merah atau Biru)" },
                       { title: "SKL / Ijazah SMP Asal", desc: "1 Lembar Fotokopi (Bisa disusulkan jika belum lulus)" }
                     ].map((doc, idx) => (
-                      <div key={idx} className="flex gap-4 items-center p-4 rounded-3xl bg-white dark:bg-[#0f172a]/60 border border-slate-200 dark:border-slate-700/60 dark:border-slate-800/80 shadow-md shadow-slate-100/50 dark:shadow-none hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.01]">
+                      <div key={idx} className="flex gap-4 items-center p-4 rounded-3xl bg-white dark:bg-[#0f172a]/60 border border-slate-200 dark:border-slate-800/80 shadow-md shadow-slate-100/50 dark:shadow-none hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.01]">
                         <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-450 flex items-center justify-center font-bold text-sm shrink-0 border border-amber-500/20">
                           <FileText size={18} />
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-black text-slate-800 dark:text-slate-200 truncate">{doc.title}</p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">{doc.desc}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">{doc.desc}</p>
                         </div>
                       </div>
                     ))}
@@ -3850,7 +4070,7 @@ export default function DaftarPage() {
 
             {/* Declaration Checkbox */}
             <div className="form-group">
-              <label className="flex items-start gap-3.5 cursor-pointer p-5 rounded-2xl bg-background dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 transition-all hover:bg-slate-100 dark:bg-[#1e293b]/60 dark:hover:bg-slate-900/40">
+              <label className="flex items-start gap-3.5 cursor-pointer p-5 rounded-2xl bg-background dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 transition-all hover:bg-slate-100 dark:hover:bg-slate-900/40">
                 <input
                   type="checkbox"
                   className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-400 dark:border-slate-700 shrink-0 cursor-pointer"
@@ -3919,3 +4139,4 @@ export default function DaftarPage() {
     </div>
   );
 }
+

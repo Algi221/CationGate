@@ -10,13 +10,13 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Highly-efficient refetch rules
+
             refetchOnWindowFocus: true,
             refetchOnMount: true,
             refetchOnReconnect: true,
-            staleTime: 60 * 1000, // 1 minute
+            staleTime: 60 * 1000, 
             retry: 2,
-            // Pauses polling and refetching when window is in background
+
           },
         },
       })

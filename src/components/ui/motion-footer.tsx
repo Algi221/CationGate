@@ -19,14 +19,14 @@ const STYLES = `
 .cinematic-footer-wrapper {
   font-family: 'Plus Jakarta Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
-  
+
   --pill-bg-1: color-mix(in oklch, var(--foreground) 3%, transparent);
   --pill-bg-2: color-mix(in oklch, var(--foreground) 1%, transparent);
   --pill-shadow: color-mix(in oklch, var(--background) 50%, transparent);
   --pill-highlight: color-mix(in oklch, var(--foreground) 10%, transparent);
   --pill-inset-shadow: color-mix(in oklch, var(--background) 80%, transparent);
   --pill-border: color-mix(in oklch, var(--foreground) 8%, transparent);
-  
+
   --pill-bg-1-hover: color-mix(in oklch, var(--foreground) 8%, transparent);
   --pill-bg-2-hover: color-mix(in oklch, var(--foreground) 2%, transparent);
   --pill-border-hover: color-mix(in oklch, var(--foreground) 20%, transparent);
@@ -241,26 +241,26 @@ export function CinematicFooter() {
 
       <div ref={wrapperRef} className="relative w-full bg-white">
         <footer className="relative flex w-full flex-col justify-between overflow-hidden text-foreground cinematic-footer-wrapper border-t border-zinc-200 bg-white pt-16 pb-8 px-6 md:px-16">
-          {/* Background Layers */}
+          {}
           <div className="absolute inset-0 z-0 pointer-events-none">
             <div className="absolute inset-0 footer-bg-grid opacity-30" />
             <div className="absolute left-1/2 top-1/2 h-[70vw] w-[70vw] -translate-x-1/2 -translate-y-1/2 rounded-full footer-aurora opacity-30 blur-[120px]" />
           </div>
 
-          {/* Giant CATIONGATE Background Text */}
+          {}
           <div
             ref={giantTextRef}
-            className="absolute -bottom-[2%] left-1/2 z-0 flex w-full -translate-x-1/2 justify-center pointer-events-none"
+            className="absolute bottom-[-2%] left-1/2 z-0 flex w-full -translate-x-1/2 justify-center pointer-events-none"
           >
             <span className="footer-giant-bg-text">CATIONGATE</span>
           </div>
 
-          {/* Main Content Area */}
+          {}
           <div
             ref={contentRef}
             className="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-10"
           >
-            {/* Top Centered Banner: CTA */}
+            {}
             <div className="flex flex-col items-center justify-center text-center space-y-4 max-w-3xl mx-auto pb-10 border-b border-zinc-200 w-full">
               <h2 className="text-3xl md:text-5xl font-black tracking-tight text-zinc-900">
                 Siap Modernisasi Sekolah Anda?
@@ -280,9 +280,9 @@ export function CinematicFooter() {
               </div>
             </div>
 
-            {/* Comprehensive Multi-Column Footer Layout */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 py-4">
-              {/* Column 1: Brand Info */}
+              {}
               <div className="space-y-4">
                 <div className="flex items-center gap-2.5">
                   <Image
@@ -303,7 +303,7 @@ export function CinematicFooter() {
                 </p>
               </div>
 
-              {/* Column 2: Solusi & Fitur */}
+              {}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
                   Solusi & Fitur
@@ -352,7 +352,7 @@ export function CinematicFooter() {
                 </ul>
               </div>
 
-              {/* Column 3: Navigasi Sekolah */}
+              {}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
                   Navigasi
@@ -401,57 +401,57 @@ export function CinematicFooter() {
                 </ul>
               </div>
 
-              {/* Column 4: Kontak & Dukungan */}
+              {}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
                   Dukungan & Legal
                 </h3>
                 <ul className="space-y-2 text-xs text-zinc-600">
                   <li>
-                    <a
+                    <Link
                       href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Pusat Bantuan
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Dokumentasi API
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Kebijakan Privasi
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Syarat & Ketentuan
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Status Sistem (Online)
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
             </div>
 
-            {/* Bottom Row: Copyright & Scroll to Top */}
+            {}
             <div className="pt-6 border-t border-zinc-200 flex items-center justify-between gap-4">
               <div className="text-xs text-zinc-500 font-medium">
                 © 2026 CationGate. All rights reserved.

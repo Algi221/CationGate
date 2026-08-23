@@ -43,19 +43,19 @@ function CreativePricing({
               }
             `}} />
             <div className="text-center space-y-6 mb-20">
-                <div className="font-handwritten text-xl text-blue-500 rotate-[-1deg] mb-2">
+                <div className="font-handwritten text-xl text-blue-500 -rotate-1 mb-2">
                     {tag}
                 </div>
                 <div className="relative inline-block mt-4 mb-4">
-                    <h2 className="text-4xl md:text-5xl font-bold font-handwritten text-zinc-900 dark:text-white rotate-[-1deg] relative z-10 px-8 py-2">
+                    <h2 className="text-4xl md:text-5xl font-bold font-handwritten text-zinc-900 dark:text-white -rotate-1 relative z-10 px-8 py-2">
                         {title}
                     </h2>
                     <div
                         className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[110%] h-4 bg-blue-500/20 
-                        rotate-[-1deg] rounded-full blur-sm"
+                        -rotate-1 rounded-full blur-sm"
                     />
                 </div>
-                <p className="font-handwritten text-xl text-zinc-600 dark:text-zinc-400 rotate-[-1deg] mt-4">
+                <p className="font-handwritten text-xl text-zinc-600 dark:text-zinc-400 -rotate-1 mt-4">
                     {description}
                 </p>
             </div>
@@ -67,9 +67,9 @@ function CreativePricing({
                         className={cn(
                             "relative group",
                             "transition-all duration-300",
-                            index === 0 && "rotate-[-1deg]",
-                            index === 1 && "rotate-[1deg] z-10",
-                            index === 2 && "rotate-[-2deg]"
+                            index === 0 && "-rotate-1",
+                            index === 1 && "rotate-1 z-10",
+                            index === 2 && "-rotate-2"
                         )}
                     >
                         <div
@@ -79,8 +79,8 @@ function CreativePricing({
                                 "rounded-lg shadow-[4px_4px_0px_0px] shadow-zinc-900 dark:shadow-white",
                                 "transition-all duration-300",
                                 "group-hover:shadow-[8px_8px_0px_0px]",
-                                "group-hover:translate-x-[-4px]",
-                                "group-hover:translate-y-[-4px]"
+                                "group-hover:-translate-x-1",
+                                "group-hover:-translate-y-1"
                             )}
                         />
 
@@ -113,7 +113,7 @@ function CreativePricing({
                                 </p>
                             </div>
 
-                            {/* Price */}
+                            {}
                             <div className="mb-6 font-handwritten flex items-baseline gap-1">
                                 <span className="text-4xl font-bold text-zinc-900 dark:text-white">
                                     Rp {tier.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
@@ -149,7 +149,7 @@ function CreativePricing({
                                     "transition-all duration-300",
                                     "shadow-[4px_4px_0px_0px] shadow-zinc-900 dark:shadow-white",
                                     "hover:shadow-[6px_6px_0px_0px]",
-                                    "hover:translate-x-[-2px] hover:translate-y-[-2px]",
+                                    "hover:-translate-x-0.5 hover:-translate-y-0.5",
                                     tier.popular
                                         ? [
                                               "bg-amber-400 text-zinc-900",

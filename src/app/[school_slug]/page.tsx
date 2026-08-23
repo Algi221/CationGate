@@ -1,25 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import Image from "next/image";
 import {
-  Menu,
   ArrowRight,
   X,
-  GraduationCap,
   FileText,
   Award,
-  Milestone,
-  Check,
-  Upload,
-  User,
   MapPin,
   Calendar,
-  Bell,
-  ArrowLeft,
   HelpCircle,
   CreditCard,
   ShieldCheck,
@@ -29,19 +21,10 @@ import {
   Cpu,
   Layers,
   Video,
-  AlertCircle,
   Palette,
-  Sun,
-  Moon,
   Users,
   Phone,
-  Megaphone,
   Clock,
-  Radio,
-  Search,
-  School,
-  Target,
-  ListChecks
 } from "lucide-react";
 
 import dynamic from "next/dynamic";
@@ -63,17 +46,6 @@ const ScrollFloat = dynamic(() => import("@/components/ScrollFloat"), {
 import dompurify from "dompurify";
 import { usePPDB } from "@/context/PPDBContext";
 import { useParams } from "next/navigation";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuPopup,
-  NavigationMenuPositioner,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu-1";
 import SchoolNotFound from "@/components/SchoolNotFound";
 
 const sanitizeUrl = (url: string | undefined | null): string | null => {
@@ -97,11 +69,12 @@ const sanitizeSrc = (src: string | undefined | null): string | null => {
 const SafeImage = ({ src, alt, width, height, className, onError, fill, priority, sizes, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
   const isDataUrl = src && src.startsWith("data:");
-  
+
   const finalSizes = fill && !sizes ? "(max-width: 768px) 48px, 64px" : sizes;
 
   if (isDataUrl || useFallbackImg || !src) {
     return (
+      /* eslint-disable-next-line @next/next/no-img-element */
       <img 
         src={src || "/logo_smktb.png"} 
         alt={alt} 
@@ -113,7 +86,7 @@ const SafeImage = ({ src, alt, width, height, className, onError, fill, priority
       />
     );
   }
-  
+
   return (
     <Image 
       src={src} 
@@ -182,13 +155,11 @@ const DEFAULT_ALUR: AlurItem[] = [
 ];
 
 export default function Home() {
-  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle, isSchoolNotFound, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
+  const { publicApplicants: _publicApplicants, wsStatus: _wsStatus, ppdbLogo, ppdbTitle, isSchoolNotFound, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
   const [isConfigLoaded, setIsConfigLoaded] = useState(false);
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "sekolah";
 
-
-  
   const [_isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -223,14 +194,14 @@ export default function Home() {
 
   const getGelombangStatus = (startStr: string, endStr: string) => {
     if (!startStr || !endStr) return { label: "Belum Diatur", color: "bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700", active: false };
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const start = new Date(startStr);
     start.setHours(0, 0, 0, 0);
     const end = new Date(endStr);
     end.setHours(23, 59, 59, 999);
-    
+
     if (today < start) {
       return { label: "Akan Datang", color: "bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50", active: false };
     } else if (today >= start && today <= end) {
@@ -320,8 +291,8 @@ export default function Home() {
   };
 
   const [loadVideo, setLoadVideo] = useState(false);
-  const [heroMediaUrl, setHeroMediaUrl] = useState<string>("");
-  const [heroMediaType, setHeroMediaType] = useState<string>("none");
+  const [_heroMediaUrl, setHeroMediaUrl] = useState<string>("");
+  const [_heroMediaType, setHeroMediaType] = useState<string>("none");
   const [currentVideo, setCurrentVideo] = useState(0);
   const videos = ["/assets/videos/vid1.webm", "/assets/videos/vid2.webm"];
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -363,19 +334,23 @@ export default function Home() {
     }
   }, []);
 
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('ppdb-theme') === 'dark' || document.documentElement.classList.contains('dark');
+    }
+    return false;
+  });
   const [isLandingActive, setIsLandingActive] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem('ppdb-theme');
     if (saved === 'dark') {
       document.documentElement.classList.add('dark');
-      setIsDark(true);
     }
 
     const loadDynamicConfig = async () => {
       try {
-        
+
         const localAlur = localStorage.getItem("ppdb_alur_config");
         if (localAlur) {
           try {
@@ -402,11 +377,37 @@ export default function Home() {
           }
         }
 
+        const localMajors = localStorage.getItem("ppdb_majors_config");
+        if (localMajors) {
+          try {
+            const parsedMajors = JSON.parse(localMajors);
+            if (Array.isArray(parsedMajors)) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const iconMap: Record<string, any> = {
+                RPL: Cpu,
+                TJKT: Layers,
+                DKV: BookOpen,
+                BC: Video,
+                ANM: Palette,
+                TE: Cpu
+              };
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const mapped = parsedMajors.map((m: any) => ({
+                ...m,
+                icon: iconMap[m.code] || Cpu
+              }));
+              setMajors(mapped);
+            }
+          } catch (e) {
+            console.error("Gagal parse majors dari localStorage", e);
+          }
+        }
+
         if (schoolSlug === 'demo') {
           setIsConfigLoaded(true);
           return;
         }
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}`);
+        const res = await fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`);
         const data = await res.json();
 
         if (data.success && data.data) {
@@ -439,21 +440,25 @@ export default function Home() {
             setPartnersList([]);
           }
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const iconMap: Record<string, any> = {
-              RPL: Cpu,
-              TJKT: Layers,
-              DKV: BookOpen,
-              BC: Video,
-              ANM: Palette,
-              TE: Cpu
-            };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const mapped = config.ppdb_majors_config.map((m: any) => ({
-              ...m,
-              icon: iconMap[m.code] || Cpu
-            }));
-            setMajors(mapped);
+            // Prioritize localStorage in demo mode so that local edits are visible on the landing page
+            const hasLocalMajors = !!localStorage.getItem("ppdb_majors_config");
+            if (schoolSlug === 'demo' || !hasLocalMajors) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const iconMap: Record<string, any> = {
+                RPL: Cpu,
+                TJKT: Layers,
+                DKV: BookOpen,
+                BC: Video,
+                ANM: Palette,
+                TE: Cpu
+              };
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const mapped = config.ppdb_majors_config.map((m: any) => ({
+                ...m,
+                icon: iconMap[m.code] || Cpu
+              }));
+              setMajors(mapped);
+            }
           }
         }
         setIsConfigLoaded(true);
@@ -464,7 +469,7 @@ export default function Home() {
     };
 
     loadDynamicConfig();
-  }, []);
+  }, [schoolSlug]);
 
   // Scroll restoration mechanism to handle dynamic heights after config loads
   useEffect(() => {
@@ -487,7 +492,7 @@ export default function Home() {
     }
   }, [isConfigLoaded, schoolSlug]);
 
-  const toggleDark = () => {
+  const _toggleDark = () => {
     const next = !isDark;
     setIsDark(next);
     if (next) {
@@ -566,7 +571,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-800/50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white dark:bg-[#0f172a] dark:text-[#f6f5f4]">
+    <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-[#0f172a] text-slate-900 font-sans selection:bg-blue-600 selection:text-white dark:text-[#f6f5f4]">
 
       {/* FLOATING NAVBAR */}
       <header className="sticky top-0 z-50 w-full bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800">
@@ -575,11 +580,11 @@ export default function Home() {
 
       {/* Fullscreen Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 md:hidden">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 md:hidden">
           {/* Close Button X in top right */}
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-6 right-6 p-2.5 rounded-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
+            className="absolute top-6 right-6 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
             aria-label="Close Mobile Menu"
           >
             <X size={20} />
@@ -598,64 +603,65 @@ export default function Home() {
             <a
               href="#alur"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+              className="text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors"
             >
               Alur Pendaftaran
             </a>
             <a
               href="#majors"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+              className="text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors"
             >
-              Jurusan
+              Program Keahlian
             </a>
             <a
               href="#kemitraan"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+              className="text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors"
             >
               Mitra Industri
             </a>
             <a
               href="#faq"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+              className="text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors"
             >
               FAQ
             </a>
             <Link
-              href={`/${params.school_slug}/forum`}
+              href={`/${schoolSlug}/blog`}
               onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+              className="text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors"
             >
-              Forum Informasi
+              Berita &amp; Artikel
             </Link>
 
-            <div className="w-full flex flex-col gap-3 mt-8">
+            <div className="flex flex-col gap-3 w-full mt-4">
               <Link
                 href={`/${schoolSlug}/daftar`}
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98]"
+                className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-all"
               >
                 Daftar Sekarang
               </Link>
-              <button
-                onClick={() => { toggleDark(); setMobileMenuOpen(false); }}
-                className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl border border-slate-200 dark:border-slate-700/80 text-slate-750 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50 transition-colors"
+              <Link
+                href={`/${schoolSlug}/auth/login`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all"
               >
-                {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              </button>
+                Login Calon Siswa
+              </Link>
             </div>
           </div>
         </div>
       )}
 
       {/* HERO SECTION WRAPPER */}
-      <main className="flex-grow w-full relative z-0">
+      <main className="grow w-full relative z-0">
         <div className="relative w-full overflow-hidden">
           {/* Standard Mesh Gradient Background - Full Width */}
-          <div className="absolute inset-0 -z-10 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-            <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
+          <div className="absolute inset-0 -z-10 overflow-hidden bg-linear-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+            <div className="w-full h-full bg-linear-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
             <div className="absolute inset-0 bg-white/50 dark:bg-[#020617] backdrop-blur-none pointer-events-none"></div>
           </div>
 
@@ -721,9 +727,9 @@ export default function Home() {
           {/* Hero Copy */}
           <div className="badge-wrapper relative z-10 flex flex-col items-center gap-3">
             <span className="badge-pill">SPMB {schoolDisplayName.toUpperCase()}</span>
-            <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#0f172a] px-4 py-2 rounded-full backdrop-blur-md border border-slate-200 dark:border-slate-800/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+            <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#0f172a] px-4 py-2 rounded-full backdrop-blur-md border border-slate-200 dark:border-slate-800/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
                <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
-               <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>
+               <span className="max-w-70 md:max-w-none truncate md:whitespace-normal">{address}</span>
             </div>
           </div>
 
@@ -752,11 +758,11 @@ export default function Home() {
           {/* MAC BROWSER MOCKUP WRAPPER */}
           <div className="mockup-container relative z-10 w-full max-w-5xl mx-auto mt-8 md:mt-10 px-2 md:px-0">
             {/* Outer Dark Frame (Thick Bezel) */}
-            <div className="relative rounded-2xl md:rounded-[2rem] bg-[#0f172a] p-1.5 md:p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-1 ring-slate-900/50">
-              
+            <div className="relative rounded-2xl md:rounded-4xl bg-[#0f172a] p-1.5 md:p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-1 ring-slate-900/50">
+
               {/* Inner Mac Window */}
               <div className="w-full h-full bg-[#0f172a] overflow-hidden rounded-xl md:rounded-[1.25rem] relative flex flex-col">
-                
+
                 {/* Mockup Browser Top bar */}
                 <div className="flex items-center px-3 md:px-4 py-2 md:py-3 bg-[#0f172a] relative z-20 border-b border-slate-800/80">
                   <div className="flex gap-1.5 md:gap-2 w-12 md:w-20">
@@ -765,7 +771,7 @@ export default function Home() {
                     <span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
                   </div>
                   <div className="flex-1 flex justify-center">
-                    <div className="bg-slate-900/80 text-slate-400 text-[9px] md:text-[10px] font-medium px-4 md:px-6 py-1 md:py-1.5 rounded-md flex items-center justify-center min-w-[120px] md:min-w-[200px] shadow-inner border border-slate-800 truncate max-w-[150px] md:max-w-none">
+                    <div className="bg-slate-900/80 text-slate-400 text-[9px] md:text-[10px] font-medium px-4 md:px-6 py-1 md:py-1.5 rounded-md flex items-center justify-center min-w-30 md:min-w-50 shadow-inner border border-slate-800 truncate max-w-37.5 md:max-w-none">
                       cationgate/{schoolSlug}
                     </div>
                   </div>
@@ -773,7 +779,7 @@ export default function Home() {
                 </div>
 
                 {/* Data Pendaftar Table View */}
-                <div className="dashboard-view block w-full p-2 md:p-6 h-[400px] md:h-[600px] bg-slate-50 dark:bg-[#020617] relative z-10 transition-colors duration-300 overflow-auto">
+                <div className="dashboard-view block w-full p-2 md:p-6 h-100 md:h-150 bg-slate-50 dark:bg-[#020617] relative z-10 transition-colors duration-300 overflow-auto">
                   <DataPendaftarTable />
                 </div>
 
@@ -805,7 +811,7 @@ export default function Home() {
             return (
               <div className={`bg-white dark:bg-[#0f172a] border ${status.active ? 'border-blue-500/30 dark:border-blue-500/30 shadow-blue-500/5' : 'border-slate-200 dark:border-slate-800/80'} rounded-3xl p-8 shadow-sm transition-all duration-300 relative overflow-hidden group`}>
                 {status.active && (
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-blue-500/10 to-transparent pointer-events-none" />
                 )}
                 <div className="flex justify-between items-start mb-6">
                   <div>
@@ -817,7 +823,7 @@ export default function Home() {
                     {status.label}
                   </span>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-[#020617] p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
                     <Calendar size={18} className="text-blue-500 shrink-0" />
@@ -839,7 +845,7 @@ export default function Home() {
             return (
               <div className={`bg-white dark:bg-[#0f172a] border ${status.active ? 'border-blue-500/30 dark:border-blue-500/30 shadow-blue-500/5' : 'border-slate-200 dark:border-slate-800/80'} rounded-3xl p-8 shadow-sm transition-all duration-300 relative overflow-hidden group`}>
                 {status.active && (
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-blue-500/10 to-transparent pointer-events-none" />
                 )}
                 <div className="flex justify-between items-start mb-6">
                   <div>
@@ -851,7 +857,7 @@ export default function Home() {
                     {status.label}
                   </span>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-[#020617] p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
                     <Calendar size={18} className="text-blue-500 shrink-0" />
@@ -870,7 +876,7 @@ export default function Home() {
       </section>
 
       {/* ALUR PENDAFTARAN */}
-      <section id="alur" className="py-24 relative z-10 border-b border-slate-200 dark:border-slate-800/50 dark:border-slate-800">
+      <section id="alur" className="py-24 relative z-10 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-20">
             <ScrollFloat
@@ -908,8 +914,8 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
-            <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
+            <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-1 bg-linear-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
+            <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
 
             <div className="space-y-16 relative z-10 w-full">
               {alurList.map((item, index) => {
@@ -1009,7 +1015,7 @@ export default function Home() {
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
-                <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
 
                 <div className="relative z-10">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
@@ -1019,13 +1025,13 @@ export default function Home() {
                       width={56}
                       height={56}
                       className="w-14 h-14 object-contain drop-shadow-sm"
-                      onError={(e: unknown) => {
-                        (e as any).target.style.display = 'none';
-                        const parent = (e as any).target.parentElement;
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
                         if (parent) {
                           parent.classList.add('bg-blue-50');
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          parent.querySelectorAll('.fallback-code').forEach((el: any) => el.remove());
+                          parent.querySelectorAll('.fallback-code').forEach((el) => el.remove());
                           const fallbackDiv = document.createElement('div');
                           fallbackDiv.style.color = '#0066ff';
                           fallbackDiv.style.display = 'flex';
@@ -1095,7 +1101,7 @@ export default function Home() {
         </div>
 
         <ScrollFloat containerClassName="bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800/80 rounded-3xl p-8 mb-12 shadow-sm w-full" textClassName="w-full" textMode={false}>
-          <p className="text-center text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-8">
+          <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">
             Partner Industri Utama &amp; Sertifikasi Internasional &middot;
           </p>
             {(() => {
@@ -1127,10 +1133,11 @@ export default function Home() {
                           className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
                           title={partner.name}
                         >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={dompurify.sanitize(sanitizeSrc(partner.logo) || "") || undefined}
                             alt={partner.name}
-                            className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
+                            className={`w-auto object-contain ${partner.h} max-w-37.5 transition-all duration-300 drop-shadow-sm`}
                             loading="lazy"
                             width={width}
                             height={height}
@@ -1139,13 +1146,13 @@ export default function Home() {
                       );
                     })}
                   </div>
-                  
+
                   {/* Show All Controls */}
                   {partnersList.length > 10 && (
                     <div className="flex justify-center items-center mt-12">
                       <button 
                         onClick={() => setShowAllPartners(!showAllPartners)}
-                        className="px-6 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-700 transition-all flex items-center gap-2 shadow-sm"
+                        className="px-6 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2 shadow-sm"
                       >
                         {showAllPartners ? (
                           <>
@@ -1168,7 +1175,7 @@ export default function Home() {
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="py-24 bg-white dark:bg-slate-950 relative z-10 border-t border-slate-200 dark:border-slate-800/50 dark:border-slate-900 transition-colors duration-300">
+      <section id="faq" className="py-24 bg-white dark:bg-slate-950 relative z-10 border-t border-slate-200 dark:border-slate-800/50 transition-colors duration-300">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
             <ScrollFloat
@@ -1217,7 +1224,7 @@ export default function Home() {
                   scrollStart="top 90%"
                   scrollEnd="bottom 75%"
                 >
-                  <div className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/80 rounded-3xl overflow-hidden transition-all duration-300 shadow-sm">
+                  <div className="bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/60 rounded-3xl overflow-hidden transition-all duration-300 shadow-sm">
                     <button
                       onClick={() => toggleFaq(idx)}
                       className="w-full px-6 py-5 flex items-center justify-between text-left font-black text-sm md:text-base text-slate-800 dark:text-white focus:outline-none"
@@ -1229,7 +1236,7 @@ export default function Home() {
                     </button>
                     <div 
                       className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                        isOpen ? "max-h-60 border-t border-slate-200 dark:border-slate-800/50 dark:border-slate-800/50" : "max-h-0"
+                        isOpen ? "max-h-60 border-t border-slate-200 dark:border-slate-800/50" : "max-h-0"
                       }`}
                     >
                       <p className="px-6 py-5 text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
@@ -1242,11 +1249,10 @@ export default function Home() {
             })}
           </div>
 
-          
         </div>
       </section>
       {/* MAP SECTION */}
-        <section className="w-full bg-slate-50 dark:bg-slate-800/50 dark:bg-slate-950/50 py-24 relative z-10 transition-colors duration-300">
+        <section className="w-full bg-slate-50 dark:bg-slate-950/50 py-24 relative z-10 transition-colors duration-300">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16">
               <ScrollFloat
@@ -1283,9 +1289,9 @@ export default function Home() {
               </ScrollFloat>
             </div>
 
-            <div className="relative w-full h-[500px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/80 group">
+            <div className="relative w-full h-125 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800/60 group">
               <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
-              
+
               <iframe
                 src={sanitizeUrl(mapUrl) || undefined}
                 width="100%" 
@@ -1294,11 +1300,11 @@ export default function Home() {
                 allowFullScreen={true} 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0 w-full h-full grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
+                className="absolute inset-0 w-full h-full grayscale-15 group-hover:grayscale-0 transition-all duration-700"
               ></iframe>
 
               {/* Floating Address Card */}
-              <div className="absolute bottom-6 left-6 right-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[450px] bg-white dark:bg-[#0f172a] p-6 rounded-3xl border border-white/20 dark:border-slate-800/50 shadow-2xl z-20 transition-transform duration-300 hover:-translate-y-2">
+              <div className="absolute bottom-6 left-6 right-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-112.5 bg-white dark:bg-[#0f172a] p-6 rounded-3xl border border-white/20 dark:border-slate-800/50 shadow-2xl z-20 transition-transform duration-300 hover:-translate-y-2">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-500/20">
                     <MapPin size={24} className="text-emerald-500" />
@@ -1320,19 +1326,19 @@ export default function Home() {
             <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
               <HelpCircle size={96} className="text-blue-600 animate-pulse" />
             </div>
-            
+
             <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Masih Mengalami Kendala atau Pertanyaan Lain?</h3>
             <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-lg mx-auto leading-relaxed">
               Tim panitia PPDB SMK Taruna Bhakti siap membantu Anda secara langsung. Klik tombol di bawah untuk konsultasi via WhatsApp.
             </p>
-            
+
             <a 
               href={sanitizeUrl(`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
                 "Halo Admin PPDB SMK Taruna Bhakti, saya calon pendaftar PPDB TP 2026/2027. Saya ingin berkonsultasi mengenai proses pendaftaran karena mengalami kendala teknis."
               )}`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Phone size={14} />
               <span>Konsultasi Lewat WA Admin</span>

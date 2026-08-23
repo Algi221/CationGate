@@ -3,8 +3,16 @@ import { Plus_Jakarta_Sans, Geist } from "next/font/google";
 import "./globals.css";
 import { PPDBProvider } from "@/context/PPDBContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { cn } from "@/lib/utils";
-
+import { constructMetadata } from "@/lib/seo";
+import {
+  WebSiteJsonLd,
+  SiteNavigationJsonLd,
+  OrganizationJsonLd,
+  SoftwareApplicationJsonLd,
+  FaqJsonLd,
+} from "@/components/seo/JsonLd";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -14,12 +22,7 @@ const plusJakarta = Plus_Jakarta_Sans({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-export const metadata = {
-  title: "CationGate - Platform Manajemen PPDB",
-  description: "SaaS Manajemen Penerimaan Siswa Baru Cerdas dan Terintegrasi.",
-};
-
-import { QueryProvider } from "@/components/providers/query-provider";
+export const metadata = constructMetadata();
 
 export default function RootLayout({
   children,
@@ -40,6 +43,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        <WebSiteJsonLd />
+        <SiteNavigationJsonLd />
+        <OrganizationJsonLd />
+        <SoftwareApplicationJsonLd />
+        <FaqJsonLd />
         <QueryProvider>
           <ThemeProvider
             attribute="class"

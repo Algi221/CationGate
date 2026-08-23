@@ -107,7 +107,7 @@ const ScrollFloat = ({
       try {
         ctx.revert();
       } catch (_e) {
-        // Safe catch for React Strict Mode / HMR unmounting issues
+
       }
     };
   }, [scrollContainerRef, animationDuration, ease, scrollStart, scrollEnd, stagger, textMode]);

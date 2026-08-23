@@ -6,7 +6,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  DoorOpen,
   ChevronDown,
   Users,
   Target,
@@ -16,9 +15,7 @@ import {
   Shield,
 } from "lucide-react";
 import { CurvedNavbar } from "./CurvedMobileMenu";
-import { InteractiveHoverButton } from "../ui/interactive-hover-button";
 
-// Hamburger Button dengan Performa & Transisi Smooth
 function HamburgerButton({
   isActive,
   onClick,
@@ -29,7 +26,7 @@ function HamburgerButton({
   return (
     <button
       onClick={onClick}
-      className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors focus:outline-none z-[120]"
+      className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors focus:outline-none z-120"
       aria-label="Toggle Menu"
     >
       <div className="w-5 h-4 relative flex flex-col justify-between">
@@ -180,12 +177,12 @@ export function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-[220] flex justify-center px-4 pt-3">
+    <header className="fixed top-0 inset-x-0 z-220 flex justify-center px-4 pt-3">
       <motion.div
-        className="relative w-full z-[225] bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible"
+        className="relative w-full z-225 bg-[#FFFFFF] text-[#1A1A1A] backdrop-blur-md overflow-visible"
         initial={false}
         animate={{
-          // Diperlebar sedikit ke 1360px saat di atas agar terasa "panjang tapi ga kejauhan"
+
           maxWidth: scrolled ? "1024px" : "1360px",
           borderRadius: scrolled ? "16px" : "24px",
           borderWidth: scrolled ? "1px" : "0px",
@@ -195,7 +192,7 @@ export function Navbar() {
           boxShadow: scrolled
             ? "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08)"
             : "0 0 0 0 rgba(0,0,0,0)",
-          // Padding horizontal & vertical dilebarkan agar terasa "longgar" di awal
+
           paddingLeft: scrolled ? "20px" : "32px",
           paddingRight: scrolled ? "20px" : "32px",
           paddingTop: scrolled ? "8px" : "16px",
@@ -204,7 +201,7 @@ export function Navbar() {
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <div className="flex items-center justify-between h-14 w-full">
-          {/* Logo Section */}
+          {/* Logo Brand */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="relative w-8 h-8 flex items-center justify-center group-hover:scale-105 transition-transform">
               <Image
@@ -223,7 +220,7 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Center Navigation Links (Desktop) */}
           <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => {
               const hasDropdown = Boolean(item.dropdown);
@@ -259,11 +256,11 @@ export function Navbar() {
                     {activeDropdown === item.label && (
                       <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                         {item.dropdownType === "bento" && item.bentoConfig ? (
-                          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-2.5 w-[480px] flex gap-2">
+                          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-2.5 w-120 flex gap-2">
                             {/* Left Highlight Card */}
                             <Link
                               href={item.bentoConfig.leftCard.href}
-                              className="w-[180px] bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl p-4 flex flex-col justify-between group/left"
+                              className="w-45 bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl p-4 flex flex-col justify-between group/left"
                             >
                               <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 group-hover/left:text-blue-600 transition-colors">
                                 <item.bentoConfig.leftCard.icon className="w-5 h-5" />
@@ -370,7 +367,7 @@ export function Navbar() {
                     justify-center
                   "
                 >
-                  <span className="text-slate-950 group-hover/masuk:!text-[#FFD33B] hover:!text-[#FFD33B] transition-colors font-black">
+                  <span className="text-slate-950 group-hover/masuk:text-[#FFD33B]! hover:text-[#FFD33B]! transition-colors font-black">
                     Masuk
                   </span>
                 </button>
@@ -378,7 +375,7 @@ export function Navbar() {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <div className="flex lg:hidden items-center relative z-[250] shrink-0">
+            <div className="flex lg:hidden items-center relative z-250 shrink-0">
               <HamburgerButton
                 isActive={mobileMenuOpen}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -402,7 +399,7 @@ export function Navbar() {
                   href: sub.href,
                 })) ||
                 (item.dropdownType === "bento" && item.bentoConfig
-                  ? item.bentoConfig.gridItems.map((sub: any) => ({
+                  ? item.bentoConfig.gridItems.map((sub: { title: string; href: string }) => ({
                       title: sub.title,
                       href: sub.href,
                     }))
@@ -412,7 +409,7 @@ export function Navbar() {
               <div className="flex flex-col w-full px-10 md:px-24 py-8 pb-12 gap-4">
                 <Link href="/masuk" onClick={() => setMobileMenuOpen(false)} className="group/m-masuk block w-full">
                   <button className="w-full justify-center bg-[#FFD33B] group-hover/m-masuk:bg-slate-950 hover:bg-slate-950 font-bold text-base rounded-2xl h-14 transition-all duration-300 flex items-center shadow-sm cursor-pointer">
-                    <span className="text-slate-950 group-hover/m-masuk:!text-[#FFD33B] hover:!text-[#FFD33B] font-black transition-colors">
+                    <span className="text-slate-950 group-hover/m-masuk:text-[#FFD33B]! hover:text-[#FFD33B]! font-black transition-colors">
                       Masuk
                     </span>
                   </button>

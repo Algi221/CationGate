@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { Download, RefreshCw, AlertCircle, Pencil, Save, X, Calendar } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const _ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
-
 
 interface KuotaItem {
   no: number;
@@ -41,7 +40,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  
+
   const [editMode, setEditMode] = useState(false);
   const [editingTargets, setEditingTargets] = useState<Record<string, number>>({});
   const [isSavingTargets, setIsSavingTargets] = useState(false);
@@ -49,7 +48,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
   const [selectedPeriode, setSelectedPeriode] = useState<string>("");
   const [availablePeriodes, setAvailablePeriodes] = useState<string[]>([]);
 
-  const fetchKuota = async (periode?: string) => {
+  const fetchKuota = useCallback(async (periode?: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -73,18 +72,15 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
 
         const totalPendaftarVal = typeof raw.totalPendaftar === 'number'
           ? raw.totalPendaftar
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          : (pendaftarObj?.total?.jumlah ?? (pendaftarItems.reduce((acc: number, curr: any) => acc + (curr.jumlah || 0), 0)));
+          : (pendaftarObj?.total?.jumlah ?? (pendaftarItems.reduce((acc: number, curr: KuotaItem) => acc + (curr.jumlah || 0), 0)));
 
         const totalSiswaAktifVal = typeof raw.totalSiswaAktif === 'number'
           ? raw.totalSiswaAktif
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          : (siswaAktifObj?.total?.jumlah ?? (siswaAktifItems.reduce((acc: number, curr: any) => acc + (curr.jumlah || 0), 0)));
+          : (siswaAktifObj?.total?.jumlah ?? (siswaAktifItems.reduce((acc: number, curr: KuotaItem) => acc + (curr.jumlah || 0), 0)));
 
         const totalTargetVal = typeof raw.totalTarget === 'number'
           ? raw.totalTarget
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          : (pendaftarObj?.total?.target ?? (pendaftarItems.reduce((acc: number, curr: any) => acc + (curr.target || 0), 0)));
+          : (pendaftarObj?.total?.target ?? (pendaftarItems.reduce((acc: number, curr: KuotaItem) => acc + (curr.target || 0), 0)));
 
         setData({
           pendaftar: pendaftarItems,
@@ -104,17 +100,24 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
         throw new Error(json.error || 'Gagal memuat data kuota');
       }
     } catch (err: unknown) {
-      setError((err as any).message);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, [schoolId, availablePeriodes.length]);
 
   useEffect(() => {
-    if (schoolId !== undefined) {
-      fetchKuota();
-    }
-  }, [schoolId]);
+    let ignore = false;
+    const load = async () => {
+      if (!ignore && schoolId !== undefined) {
+        await fetchKuota();
+      }
+    };
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [schoolId, fetchKuota]);
 
   const handlePeriodeChange = (newPeriode: string) => {
     setSelectedPeriode(newPeriode);
@@ -197,7 +200,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         right: { style: 'thin' as any }
       };
-       
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const alignCenter = { vertical: 'middle' as any, horizontal: 'center' as any };
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search, Filter, Eye, X, CheckCircle, Clock, XCircle, Moon, Sun, User, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ArrowLeft, Search, Filter, X, CheckCircle, Clock, XCircle, Moon, Sun, User, MapPin, Phone, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
 const StatusBadge = ({ status }: { status: string }) => {
@@ -14,7 +14,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 export default function DataPendaftarPage() {
   const { publicApplicants } = usePPDB();
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('ppdb-theme') === 'dark' || document.documentElement.classList.contains('dark') : false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
   const [_filterStatus, _setFilterStatus] = useState("Semua");
@@ -24,12 +24,12 @@ export default function DataPendaftarPage() {
   const itemsPerPage = 8;
 
   useEffect(() => {
-    const saved = localStorage.getItem('ppdb-theme');
-    if (saved === 'dark') {
+    if (isDark) {
       document.documentElement.classList.add('dark');
-      setIsDark(true);
+    } else {
+      document.documentElement.classList.remove('dark');
     }
-  }, []);
+  }, [isDark]);
 
   const toggleDark = () => {
     const next = !isDark;
@@ -46,7 +46,7 @@ export default function DataPendaftarPage() {
   const filteredData = publicApplicants.filter(item => {
     const matchName = (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || (item.nisn || "").includes(searchTerm);
     const matchJurusan = filterJurusan === "Semua" || (item.jurusan_1 || item.jurusan1 || "").includes(filterJurusan);
-    
+
     return matchName && matchJurusan;
   });
 
@@ -56,14 +56,14 @@ export default function DataPendaftarPage() {
 
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-[#020617] transition-colors duration-300">
-      
-      {/* Background Glowing Blobs */}
+
+      {}
       <div className="bg-glow-container opacity-60">
         <div className="bg-glow bg-glow-1"></div>
         <div className="bg-glow bg-glow-2"></div>
       </div>
 
-      {/* NAVBAR */}
+      {}
       <nav className="sticky top-0 z-40 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center shadow-sm">
         <Link href={`/${window.location.pathname.split('/')[1]}`} className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
@@ -87,7 +87,7 @@ export default function DataPendaftarPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12 relative z-10">
-        
+
         {/* Header Section */}
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
@@ -139,12 +139,12 @@ export default function DataPendaftarPage() {
 
         {/* Data Table */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+          <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-4">
             <h3 className="text-white font-bold text-lg flex items-center gap-2">
               <User size={18} /> Daftar Calon Taruna Baru
             </h3>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -189,7 +189,7 @@ export default function DataPendaftarPage() {
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                       <div className="flex flex-col items-center justify-center">
-                        <Search size={40} className="text-slate-300 dark:text-slate-600 dark:text-slate-300 mb-3" />
+                        <Search size={40} className="text-slate-300 dark:text-slate-600 mb-3" />
                         <p className="text-sm font-medium">Tidak ada data pendaftar yang cocok dengan filter Anda.</p>
                       </div>
                     </td>
@@ -198,7 +198,7 @@ export default function DataPendaftarPage() {
               </tbody>
             </table>
           </div>
-          
+
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-[#020617]/30">
@@ -235,21 +235,21 @@ export default function DataPendaftarPage() {
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedStudent(null)}></div>
           <div className="relative bg-white dark:bg-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 flex items-center justify-between">
+            <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-5 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center gap-3">
                 <FileText size={22} /> Biodata Calon Taruna
               </h2>
               <button 
                 onClick={() => setSelectedStudent(null)}
-                className="w-8 h-8 rounded-full bg-white dark:bg-[#0f172a]/20 flex items-center justify-center text-white hover:bg-white dark:bg-[#0f172a]/30 transition-colors"
+                className="w-8 h-8 rounded-full bg-white/10 dark:bg-[#0f172a]/20 flex items-center justify-center text-white hover:bg-white/20 dark:hover:bg-[#0f172a]/30 transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
-            
+
             {/* Modal Body */}
             <div className="p-6 md:p-8 max-h-[75vh] overflow-y-auto">
-              
+
               <div className="flex flex-col md:flex-row gap-6 mb-8">
                 <div className="w-24 h-24 rounded-2xl bg-blue-50 dark:bg-slate-700 border border-blue-100 dark:border-slate-600 flex flex-col items-center justify-center shrink-0">
                   <User size={40} className="text-blue-500 dark:text-slate-400 mb-1" />
@@ -282,7 +282,7 @@ export default function DataPendaftarPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+
                 {/* Data Pribadi */}
                 <div className="space-y-4">
                   <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700 pb-2 uppercase tracking-wider flex items-center gap-2">
@@ -312,7 +312,7 @@ export default function DataPendaftarPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Program Studi Pilihan</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300 text-blue-600 dark:text-blue-400">{selectedStudent.jurusan_1 || selectedStudent.jurusan1}</div>
+                      <div className="text-sm font-bold text-blue-600 dark:text-blue-400">{selectedStudent.jurusan_1 || selectedStudent.jurusan1}</div>
                     </div>
                   </div>
                 </div>
@@ -353,7 +353,7 @@ export default function DataPendaftarPage() {
 
               </div>
             </div>
-            
+
             {/* Modal Footer */}
             <div className="bg-slate-50 dark:bg-[#020617]/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
               <button 

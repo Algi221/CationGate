@@ -4,10 +4,7 @@ import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from '../routes/saas';
 
 export class ApplicantController {
-  /**
-   * Fetch all applicants with optional pagination and filtering
-   * Used by the TanStack Query polling hook on the frontend
-   */
+
   static async getAll(c: Context) {
     try {
       const supabase = getSupabaseClient(c.req.header("Authorization"));
@@ -17,9 +14,8 @@ export class ApplicantController {
         return c.json({ success: true, data: [] });
       }
 
-      // Resolve to actual UUID
       const resolvedId = await resolveSchoolUUID(String(schoolIdOrSlug), fontInMemSchools);
-      
+
       if (!resolvedId) {
         return c.json({ success: true, data: [] });
       }
@@ -33,11 +29,10 @@ export class ApplicantController {
         .order("tgl_daftar", { ascending: false });
 
       if (error) {
-        console.warn('Fetch public applicants Supabase query warning:', (error as any).message);
+        console.warn('Fetch public applicants Supabase query warning:', error.message);
         return c.json({ success: true, data: [] });
       }
 
-      // Mask NISN: only show last 4 digits for privacy
       const sanitizedRows = (data || []).map((row) => ({
         ...row,
         nisn: row.nisn ? '******' + row.nisn.slice(-4) : null
@@ -53,9 +48,7 @@ export class ApplicantController {
     }
   }
 
-  // Example for optimistic updates endpoint
   static async updateStatus(_c: Context) {
-    // Controller logic to approve/reject an applicant
-    // Will be called by useMutation in frontend
+
   }
 }

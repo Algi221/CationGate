@@ -15,7 +15,11 @@ interface _InformasiItem {
   created_at: Date | string | null;
 }
 
-// GET / - Public route to fetch all information (sanitized/lightweight list)
+function getAdminSchoolId(c: Context): string | undefined {
+  const admin = c.get('admin') as { school_id?: string } | undefined;
+  return admin?.school_id;
+}
+
 router.get('/', async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
@@ -36,9 +40,9 @@ router.get('/', async (c: Context) => {
             ...row,
             foto_url: JSON.stringify({
               foto: parsed.foto || "",
-              video: "", // strip large video data from list response
+              video: "", 
               video_name: parsed.video_name || "",
-              dokumen: "", // strip large document data from list response
+              dokumen: "", 
               dokumen_name: parsed.dokumen_name || ""
             })
           };
@@ -58,12 +62,11 @@ router.get('/', async (c: Context) => {
     return c.json({
       success: false,
       message: 'Gagal mengambil data informasi.',
-      error: (error as any).message
+      error: error instanceof Error ? error.message : String(error)
     }, 500);
   }
 });
 
-// GET /:id - Public route to fetch single information by ID (returns full media payload)
 router.get('/:id', async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
@@ -97,7 +100,7 @@ router.get('/:id', async (c: Context) => {
     return c.json({
       success: false,
       message: 'Gagal mengambil detail informasi.',
-      error: (error as any).message
+      error: error instanceof Error ? error.message : String(error)
     }, 500);
   }
 });
@@ -110,21 +113,18 @@ router.post('/', adminAuth, async (c: Context) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     const { judul, konten, tanggal, foto_url } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getAdminSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const insertData: any = {
+    const insertData: Record<string, unknown> = {
       judul,
       konten,
       tanggal: new Date(tanggal).toISOString(),
@@ -147,7 +147,7 @@ router.post('/', adminAuth, async (c: Context) => {
     return c.json({
       success: false,
       message: 'Gagal menambahkan informasi.',
-      error: (error as any).message
+      error: error instanceof Error ? error.message : String(error)
     }, 500);
   }
 });
@@ -161,22 +161,20 @@ router.put('/:id', adminAuth, async (c: Context) => {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
     const { judul, konten, tanggal, foto_url } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getAdminSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let checkQuery = supabase.from('school_announcements').select('id').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-    
+
     const { data: checkExists } = await checkQuery.single();
 
     if (!checkExists) {
@@ -186,8 +184,7 @@ router.put('/:id', adminAuth, async (c: Context) => {
       }, 404);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dataToUpdate: any = {};
+    const dataToUpdate: Record<string, unknown> = {};
     if (judul !== undefined) dataToUpdate.judul = judul;
     if (konten !== undefined) dataToUpdate.konten = konten;
     if (tanggal !== undefined) dataToUpdate.tanggal = new Date(tanggal).toISOString();
@@ -195,7 +192,7 @@ router.put('/:id', adminAuth, async (c: Context) => {
 
     let updateQuery = supabase.from('school_announcements').update(dataToUpdate).eq('id', id);
     if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
-    
+
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
 
@@ -211,27 +208,24 @@ router.put('/:id', adminAuth, async (c: Context) => {
     return c.json({
       success: false,
       message: 'Gagal memperbarui informasi.',
-      error: (error as any).message
+      error: error instanceof Error ? error.message : String(error)
     }, 500);
   }
 });
 
-// DELETE /:id - Admin route to delete information
 router.delete('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-    
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getAdminSchoolId(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let query = supabase.from('school_announcements').delete().eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
-    
+
     const { data, error } = await query.select();
 
     if (error || !data || data.length === 0) {
@@ -252,7 +246,7 @@ router.delete('/:id', adminAuth, async (c: Context) => {
     return c.json({
       success: false,
       message: 'Gagal menghapus informasi.',
-      error: (error as any).message
+      error: error instanceof Error ? error.message : String(error)
     }, 500);
   }
 });

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
-const LOADING_KEY = "cationgate_loading_session";
+const _LOADING_KEY = "cationgate_loading_session";
 
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "show" | "exit">("start");
@@ -20,21 +20,18 @@ export default function LoadingScreen() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Clear flag on actual page reload (F5 / browser refresh / tab close)
+
       const handleBeforeUnload = () => {
         sessionStorage.removeItem("cationgate_internal_navigation");
       };
       window.addEventListener("beforeunload", handleBeforeUnload);
 
-      // If user came from client-side in-app navigation, skip animation immediately
       const isInternalNav = sessionStorage.getItem("cationgate_internal_navigation") === "true";
       if (isInternalNav) {
-        setIsMounted(false);
         window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
       }
 
-      // Initial visit or page refresh (F5): play splash animation
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
 
@@ -56,7 +53,7 @@ export default function LoadingScreen() {
       setIsMounted(false);
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
-      // Mark that the splash has completed for this tab session so internal SPA routing skips it
+
       sessionStorage.setItem("cationgate_internal_navigation", "true");
       window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
     }
@@ -65,7 +62,7 @@ export default function LoadingScreen() {
   return (
     <AnimatePresence>
       {isMounted && (
-        <div className="fixed inset-0 z-[9999] w-screen h-screen overflow-hidden pointer-events-none">
+        <div className="fixed inset-0 z-9999 w-screen h-screen overflow-hidden pointer-events-none">
           <motion.div
             initial={{ x: "0%" }}
             animate={{ x: phase === "exit" ? "-100%" : "0%" }}
@@ -78,35 +75,32 @@ export default function LoadingScreen() {
             initial={{ x: "0%" }}
             animate={{ x: phase === "exit" ? "100%" : "0%" }}
             transition={{ duration: 1.2, ease: premiumEasing, delay: 0.3 }}
-            style={{ willChange: "transform" }}
             onAnimationComplete={handleGateAnimationComplete}
+            style={{ willChange: "transform" }}
             className="absolute top-0 right-0 w-[52vw] h-full bg-[#F8F6F0] z-40 pointer-events-auto shadow-xl"
           />
 
           <motion.div
-            className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{
               opacity: phase === "exit" ? 0 : 1,
-              y: phase === "exit" ? -40 : 0,
+              scale: phase === "exit" ? 1.05 : 1,
             }}
-            transition={{ duration: 0.4, ease: "easeIn" }}
+            transition={{ duration: 0.8, ease: premiumEasing }}
+            style={{ willChange: "transform, opacity" }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"
           >
-            {/* Animated Logo (Rolling from right to center) */}
             <motion.div
-              initial={{ x: "100vw", rotate: 720, opacity: 0 }}
-              animate={{ x: 0, rotate: 0, opacity: 1 }}
-              transition={{
-                duration: 1.6,
-                ease: premiumEasing,
-                delay: 0.1
-              }}
-              className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mb-6 flex items-center justify-center drop-shadow-xl"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, ease: premiumEasing }}
+              className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 mb-6 md:mb-8"
             >
               <Image
                 src="/assets/logo_cationgate/CationGate_Logo.png"
-                alt="CationGate Logo"
+                alt="CationGate"
                 fill
-                sizes="(max-width: 768px) 160px, 192px"
+                sizes="(max-width: 768px) 112px, 144px"
                 priority
                 className="object-contain"
               />
@@ -123,7 +117,7 @@ export default function LoadingScreen() {
               </motion.h1>
             </div>
 
-            <div className="w-[60vw] max-w-3xl h-[3px] bg-[#1A202C]/10 mt-6 md:mt-10 overflow-hidden rounded-full">
+            <div className="w-[60vw] max-w-3xl h-0.75 bg-[#1A202C]/10 mt-6 md:mt-10 overflow-hidden rounded-full">
               <motion.div
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}

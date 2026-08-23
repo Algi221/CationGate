@@ -1,11 +1,7 @@
-/**
- * Utility for handling direct-to-S3 file uploads using Pre-signed URLs.
- * This bypasses the Node.js server RAM entirely for the file blob.
- */
 
 export async function uploadFileDirect(file: File, prefix: string = 'media'): Promise<string> {
   try {
-    // 1. Request a pre-signed URL from our secure backend
+
     const response = await fetch('/api/storage/presigned-url', {
       method: 'POST',
       headers: {

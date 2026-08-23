@@ -29,11 +29,12 @@ const SafeImage = ({ src, alt, width, height, className, onError, fill, priority
   const [errorCount, setErrorCount] = useState(0);
   const cleanSrc = sanitizeSrc(src);
   const isDataUrl = cleanSrc && cleanSrc.startsWith("data:");
-  
+
   const finalSizes = fill && !sizes ? "(max-width: 768px) 48px, 64px" : sizes;
 
   if (isDataUrl || useFallbackImg || !cleanSrc) {
     return (
+      /* eslint-disable-next-line @next/next/no-img-element */
       <img 
         src={errorCount > 0 ? "/assets/logo_sekolah/logo_smktb.png" : (cleanSrc || "/assets/logo_sekolah/logo_smktb.png")} 
         alt={alt} 
@@ -48,7 +49,7 @@ const SafeImage = ({ src, alt, width, height, className, onError, fill, priority
       />
     );
   }
-  
+
   return (
     <Image 
       src={cleanSrc} 

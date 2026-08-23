@@ -186,10 +186,10 @@ export function PasswordStrength({
         {Array.from({ length: max }, (_, i) => (
           <div
             key={i}
-            className="relative h-1.5 overflow-hidden rounded-[2px] bg-slate-200 dark:bg-white/12"
+            className="relative h-1.5 overflow-hidden rounded-xs bg-slate-200 dark:bg-white/12"
           >
             <motion.span
-              className={`absolute inset-0 origin-left rounded-[2px] transition-colors duration-200 ${tone.bar}`}
+              className={`absolute inset-0 origin-left rounded-xs transition-colors duration-200 ${tone.bar}`}
               initial={false}
               animate={{ scaleX: i < score ? 1 : 0 }}
               transition={
@@ -233,7 +233,7 @@ export function PasswordStrength({
         <ul className="mt-3 grid gap-1.5">
           {evaluated.map((rule) => (
             <li key={rule.id} className="flex items-center gap-2">
-              <span className="relative grid size-[14px] shrink-0 place-items-center rounded-[4px] border border-slate-200 text-white dark:border-white/[0.16] dark:text-slate-900">
+              <span className="relative grid size-3.5 shrink-0 place-items-center rounded-sm border border-slate-200 text-white dark:border-white/16 dark:text-slate-900">
                 <motion.span
                   className="absolute inset-0 rounded-[3px] bg-emerald-500"
                   initial={false}
@@ -244,7 +244,7 @@ export function PasswordStrength({
                   viewBox="0 0 12 12"
                   fill="none"
                   aria-hidden
-                  className="relative size-[9px]"
+                  className="relative size-2.25"
                   initial={false}
                   animate={{
                     opacity: rule.met ? 1 : 0,

@@ -2,7 +2,6 @@ import _https from 'https';
 
 let cachedChatId: string | null = process.env.TELEGRAM_CHAT_ID || null;
 
-
 async function discoverChatId(token: string): Promise<string | null> {
   try {
     const url = `https://api.telegram.org/bot${token}/getUpdates`;
@@ -31,11 +30,10 @@ async function discoverChatId(token: string): Promise<string | null> {
     console.warn('[Telegram Bot] Auto-discovery: No message history found. Please send a message (e.g. "/start") to the bot first.');
     return null;
   } catch (error: unknown) {
-    console.error(`[Telegram Bot] Error during auto-discovery: ${(error as any).message}`);
+    console.error(`[Telegram Bot] Error during auto-discovery: ${error instanceof Error ? error.message : String(error)}`);
     return null;
   }
 }
-
 
 export async function sendTelegramNotification(message: string): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -80,7 +78,7 @@ export async function sendTelegramNotification(message: string): Promise<boolean
       return false;
     }
   } catch (error: unknown) {
-    console.error(`[Telegram Bot] Network error sending notification: ${(error as any).message}`);
+    console.error(`[Telegram Bot] Network error sending notification: ${error instanceof Error ? error.message : String(error)}`);
     return false;
   }
 }

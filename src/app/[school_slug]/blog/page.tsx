@@ -4,7 +4,7 @@ import React, { use } from "react";
 import Link from "next/link";
 import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
-import { ArrowLeft, Calendar, User, ChevronRight } from "lucide-react";
+import { Calendar, User, ChevronRight } from "lucide-react";
 import SafeImage from "@/components/SafeImage";
 
 export default function BlogPage({ params }: { params: Promise<{ school_slug: string }> }) {
@@ -56,7 +56,7 @@ export default function BlogPage({ params }: { params: Promise<{ school_slug: st
 
       <main className="flex-1 pt-28 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           <div className="mb-12">
             <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-4">
               Blog & Artikel
@@ -80,7 +80,7 @@ export default function BlogPage({ params }: { params: Promise<{ school_slug: st
                     {post.category}
                   </div>
                 </div>
-                
+
                 <div className="p-6 flex flex-col flex-1">
                   <div className="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400 mb-4">
                     <div className="flex items-center gap-1.5">
@@ -92,15 +92,15 @@ export default function BlogPage({ params }: { params: Promise<{ school_slug: st
                       <span>{post.author}</span>
                     </div>
                   </div>
-                  
+
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-3 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {post.title}
                   </h2>
-                  
+
                   <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6 flex-1">
                     {post.excerpt}
                   </p>
-                  
+
                   <Link 
                     href={`/${schoolSlug}/blog/${post.id}`} 
                     className="inline-flex items-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mt-auto"

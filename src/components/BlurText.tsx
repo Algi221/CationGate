@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
- 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const buildKeyframes = (from: any, steps: any[]) => {
   const keys = new Set([...Object.keys(from), ...steps.flatMap(s => Object.keys(s))]);

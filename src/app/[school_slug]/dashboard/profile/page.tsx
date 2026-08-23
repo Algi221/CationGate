@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import NextImage from "next/image";
 import { usePPDB } from "@/context/PPDBContext";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
@@ -9,7 +10,6 @@ import {
   AlertCircle, Shield, Calendar, Trash2, ZoomIn, ZoomOut, RotateCw, Crop
 } from "lucide-react";
 
-// ── Crop helper ──────────────────────────────────────────────────────────────
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -44,18 +44,14 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<string>
   return canvas.toDataURL("image/jpeg", 0.9);
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
-
 export default function ProfilePage() {
   const { adminUser, adminToken, setAdminUser } = usePPDB();
 
-  // ── Profile form state ───────────────────────────────────────────────────
-  const [namaLengkap, setNamaLengkap] = useState("");
-  const [username, setUsername] = useState("");
-  const [fotoProfil, setFotoProfil] = useState<string | null>(null);
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const [namaLengkap, setNamaLengkap] = useState(() => adminUser?.nama || "");
+  const [username, setUsername] = useState(() => adminUser?.username || "");
+  const [fotoProfil, setFotoProfil] = useState<string | null>(() => adminUser?.foto_profil || null);
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(() => adminUser?.foto_profil || null);
 
-  // ── Crop modal state ──────────────────────────────────────────────────────
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -63,23 +59,23 @@ export default function ProfilePage() {
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
-  // ── Status ───────────────────────────────────────────────────────────────
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Init from context ─────────────────────────────────────────────────────
   useEffect(() => {
     if (adminUser) {
-      setNamaLengkap(adminUser.nama || "");
-      setUsername(adminUser.username || "");
-      setFotoProfil(adminUser.foto_profil || null);
-      setPreviewPhoto(adminUser.foto_profil || null);
+      const timer = setTimeout(() => {
+        setNamaLengkap(adminUser.nama || "");
+        setUsername(adminUser.username || "");
+        setFotoProfil(adminUser.foto_profil || null);
+        setPreviewPhoto(adminUser.foto_profil || null);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [adminUser]);
 
-  // ── Photo upload → open crop modal ────────────────────────────────────────
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -124,7 +120,6 @@ export default function ProfilePage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ── Save profile ─────────────────────────────────────────────────────────
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaLengkap.trim()) {
@@ -179,8 +174,6 @@ export default function ProfilePage() {
     }
   };
 
-
-
   const _userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
   return (
@@ -189,70 +182,70 @@ export default function ProfilePage() {
       {/* ── Page Header ─────────────────────────────────────────────────────── */}
       <div>
         <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Profil Saya</h1>
-        <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-1">Kelola informasi akun dan keamanan Anda</p>
+        <p className="text-xs text-slate-400 dark:text-slate-400 font-semibold mt-1">Kelola informasi akun dan keamanan Anda</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* ── LEFT: Photo + Info Card ─────────────────────────────────────────── */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-sm flex flex-col items-center gap-4 text-center">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 shadow-sm flex flex-col items-center gap-4 text-center">
 
             {/* Avatar */}
             <div className="relative group">
               <div className="w-28 h-28 rounded-3xl overflow-hidden bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm">
                 {previewPhoto ? (
-                  <img src={previewPhoto} alt="Foto Profil" className="w-full h-full object-cover" />
+                  <NextImage src={previewPhoto} alt="Foto Profil" width={112} height={112} unoptimized className="w-full h-full object-cover" />
                 ) : (
-                  <User size={48} className="text-slate-400 dark:text-slate-500 dark:text-slate-400" />
+                  <User size={48} className="text-slate-400" />
                 )}
               </div>
 
-              {/* Camera overlay */}
+            {/* Camera overlay */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute inset-0 rounded-3xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200 cursor-pointer"
+            >
+              <Camera size={24} className="text-white" />
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
+          </div>
+
+          {/* Photo actions */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5"
+            >
+              <Camera size={12} />
+              Ganti Foto
+            </button>
+            {previewPhoto && (
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute inset-0 rounded-3xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200 cursor-pointer"
+                onClick={handleRemovePhoto}
+                className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40 rounded-xl text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-all flex items-center gap-1.5"
               >
-                <Camera size={24} className="text-white" />
+                <Trash2 size={12} />
+                Hapus
               </button>
+            )}
+          </div>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handlePhotoChange}
-              />
-            </div>
+          <p className="text-[10px] text-slate-400 dark:text-slate-300 font-medium">
+            JPG, PNG atau WebP. Maks. 2MB.
+          </p>
 
-            {/* Photo actions */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-1.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5"
-              >
-                <Camera size={12} />
-                Ganti Foto
-              </button>
-              {previewPhoto && (
-                <button
-                  type="button"
-                  onClick={handleRemovePhoto}
-                  className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40 rounded-xl text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-all flex items-center gap-1.5"
-                >
-                  <Trash2 size={12} />
-                  Hapus
-                </button>
-              )}
-            </div>
-
-            <p className="text-[10px] text-slate-400 dark:text-slate-600 dark:text-slate-300 font-medium">
-              JPG, PNG atau WebP. Maks. 2MB.
-            </p>
-
-            <div className="w-full h-px bg-slate-100 dark:bg-[#1e293b]" />
+          <div className="w-full h-px bg-slate-100 dark:bg-[#1e293b]" />
 
             {/* Info */}
             <div className="w-full space-y-3 text-left">
@@ -293,7 +286,7 @@ export default function ProfilePage() {
         <div className="lg:col-span-2 space-y-6">
 
           {/* Edit Profile Form */}
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-sm">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-9 h-9 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
                 <User size={16} className="text-blue-500" />
@@ -314,7 +307,7 @@ export default function ProfilePage() {
                   value={namaLengkap}
                   onChange={(e) => setNamaLengkap(e.target.value)}
                   placeholder="Masukkan nama lengkap"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/80 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/60 transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/60 transition-all"
                 />
               </div>
 
@@ -327,7 +320,7 @@ export default function ProfilePage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Masukkan username"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-800/80 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/60 transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/60 transition-all"
                 />
                 <p className="text-[10px] text-slate-400 mt-1 font-medium">Hanya huruf, angka, dan underscore.</p>
               </div>
@@ -350,7 +343,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={profileSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:bg-[#0f172a] dark:hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-slate-900 rounded-2xl text-xs font-black uppercase tracking-wider shadow-sm transition-all"
+                  className="flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-slate-900 rounded-2xl text-xs font-black uppercase tracking-wider shadow-sm transition-all"
                 >
                   {profileSaving ? (
                     <>
@@ -371,15 +364,13 @@ export default function ProfilePage() {
             </form>
           </div>
 
-
-
         </div>
       </div>
 
       {/* ── Crop Modal ─────────────────────────────────────────────────────── */}
       {cropModalOpen && cropImageSrc && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 dark:border-slate-800/40 rounded-3xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -393,7 +384,7 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={() => { setCropModalOpen(false); setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white transition-colors"
+                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
               >
                 ✕
               </button>
@@ -453,13 +444,13 @@ export default function ProfilePage() {
             <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-3">
               <button
                 onClick={() => { setCropModalOpen(false); setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                className="px-5 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                className="px-5 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
               >
                 Batal
               </button>
               <button
                 onClick={handleCropSave}
-                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:bg-[#0f172a] dark:hover:bg-slate-200 text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
               >
                 <Crop size={14} />
                 Terapkan

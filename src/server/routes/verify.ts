@@ -8,12 +8,10 @@ import { rateLimiter } from '../middleware/rate-limiter';
 
 const verifyRouter = new Hono();
 
-// Generate a 6-digit OTP
 function generateOTP(): string {
   return crypto.randomInt(100000, 999999).toString();
 }
 
-// Submit verification data (NPSN, Dapodik, Social Media) and send OTP
 verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3 }), async (c) => {
   try {
     const body = await c.req.json();
@@ -39,7 +37,6 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
     const targetSchoolId = school_id || 'demo';
     const supabase = getSupabaseClient();
 
-    // Resolve school_id to actual UUID or fallback ID
     const resolvedId = await resolveSchoolUUID(String(targetSchoolId), fontInMemSchools);
 
     const socialMedia = {
@@ -48,7 +45,6 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
       website: website_url || null,
     };
 
-    // Update in-memory map for fast frontend synchronization
     fontInMemSchools.forEach((s, slugKey) => {
       if (
         String(s.id) === String(targetSchoolId) ||
@@ -68,7 +64,6 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
       }
     });
 
-    // Update Supabase prospective_schools / schools table
     try {
       let psUpdate = supabase
         .from('prospective_schools')
@@ -91,7 +86,7 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
       } else {
         psUpdate = psUpdate.eq('slug', targetSchoolId);
       }
-      
+
       await psUpdate;
     } catch (err) {
       console.warn('Supabase prospective_schools update warning:', err);
@@ -113,7 +108,7 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
           })
           .eq('id', resolvedId);
       } catch (dbErr: unknown) {
-        console.warn('Supabase school update warning:', (dbErr as any).message);
+        console.warn('Supabase school update warning:', dbErr instanceof Error ? dbErr.message : String(dbErr));
       }
     }
 
@@ -139,7 +134,7 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
             is_used: false
           });
       } catch (otpErr: unknown) {
-        console.warn('OTP DB insert warning:', (otpErr as any).message);
+        console.warn('OTP DB insert warning:', otpErr instanceof Error ? otpErr.message : String(otpErr));
       }
     }
 

@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Building2, Wallet, Activity, Settings, 
-  ShieldCheck, ChevronLeft, ChevronRight, ChevronDown
+  ChevronLeft, ChevronRight, ChevronDown
 } from "lucide-react";
 
 interface GatekeeperSidebarProps {
@@ -165,7 +165,7 @@ export function GatekeeperSidebar({
             <span className="shrink-0">{item.icon}</span>
             <span
               className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+                isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-50 opacity-100 ml-3"
               }`}
             >
               {item.label}
@@ -247,7 +247,7 @@ export function GatekeeperSidebar({
       {/* ─── SIDEBAR (DESKTOP) ──────────────────────────────────────────────── */}
       <aside
         className={`hidden md:flex flex-col bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-800/50 backdrop-blur-xl transition-all duration-300 relative z-30 ${
-          isCollapsed ? "w-[88px]" : "w-72"
+          isCollapsed ? "w-22" : "w-72"
         }`}
       >
         <button
@@ -314,7 +314,7 @@ export function GatekeeperSidebar({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden shadow-2xl"
+              className="fixed inset-y-0 left-0 w-70 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden shadow-2xl"
             >
               <div className="h-16 px-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <div className="flex items-center gap-3">

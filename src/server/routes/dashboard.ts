@@ -9,15 +9,13 @@ appRouter.get('/stats', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const resolvedId = await requireTenantId(c);
 
-    // Try RPC first, fall back to direct count queries
     const { data, error } = await supabase.rpc('get_dashboard_stats', {
       p_school_id: resolvedId
     });
 
     if (error) {
-      console.warn('Dashboard stats RPC warning, trying direct count:', (error as any).message);
-      
-      // Fallback: direct count queries instead of broken RPC
+      console.warn('Dashboard stats RPC warning, trying direct count:', error.message);
+
       const { count: totalCount } = await supabase.from('student_applicants').select('*', { count: 'exact', head: true }).eq('school_id', resolvedId);
       const { count: pendingCount } = await supabase.from('student_applicants').select('*', { count: 'exact', head: true }).eq('school_id', resolvedId).eq('status', 'Pending');
       const { count: approvedCount } = await supabase.from('student_applicants').select('*', { count: 'exact', head: true }).eq('school_id', resolvedId).eq('status', 'Approved');
@@ -45,7 +43,7 @@ appRouter.get('/stats', adminAuth, async (c: Context) => {
     if (err instanceof TenantError) {
       return c.json({ success: false, message: 'Akses ditolak: Tenant tidak ditemukan.' }, 404);
     }
-    console.warn('Fetch dashboard stats exception, returning fallback zeroes:', (err as any)?.message);
+    console.warn('Fetch dashboard stats exception, returning fallback zeroes:', err instanceof Error ? err.message : String(err));
     return c.json({
       success: true,
       data: {

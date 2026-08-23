@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 
 export type TagColor = "green" | "purple" | "blue";
 
@@ -35,10 +36,7 @@ const Typewriter = ({
   const [displayed, setDisplayed] = useState("");
 
   useEffect(() => {
-    if (phase !== "active") {
-      setDisplayed("");
-      return;
-    }
+    if (phase !== "active") return;
 
     let i = 0;
     const timeout = setTimeout(() => {
@@ -52,6 +50,10 @@ const Typewriter = ({
 
     return () => clearTimeout(timeout);
   }, [phase, text, delayStart]);
+
+  if (phase !== "active") {
+    return <span></span>;
+  }
 
   return <span>{displayed}</span>;
 };
@@ -81,6 +83,8 @@ export default function FloatingComment({
     }
   };
 
+  const animDuration = 4 + ((name.length % 5) * 0.6);
+
   return (
     <motion.div
       className={`absolute pointer-events-none ${isBlurred ? "blur-[3px] z-10" : "z-20"}`}
@@ -107,16 +111,18 @@ export default function FloatingComment({
       <motion.div
         animate={{ y: ["0%", "-8%", "0%"] }}
         transition={{
-          duration: 4 + Math.random() * 3,
+          duration: animDuration,
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="relative flex items-start gap-3 bg-[#FFFDF8] rounded-2xl shadow-xl border border-[#D9C9BD] p-3.5 w-[260px] md:w-[280px]"
+        className="relative flex items-start gap-3 bg-[#FFFDF8] rounded-2xl shadow-xl border border-[#D9C9BD] p-3.5 w-65 md:w-70"
       >
-        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-[#F7EFD8] mt-1 border border-[#D9C9BD]">
-          <img
+        <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 bg-[#F7EFD8] mt-1 border border-[#D9C9BD]">
+          <Image
             src={avatarUrl}
             alt="Avatar"
+            width={36}
+            height={36}
             className="w-full h-full object-cover"
           />
         </div>
@@ -125,7 +131,7 @@ export default function FloatingComment({
           <span className="text-[10.5px] font-bold text-[#2A1B1D] mb-1 tracking-wide">
             {name}
           </span>
-          <p className="text-[12px] text-[#43413A] leading-relaxed font-medium min-h-[50px]">
+          <p className="text-[12px] text-[#43413A] leading-relaxed font-medium min-h-12.5">
             <Typewriter text={text} phase={phase} delayStart={delay + 0.3} />
           </p>
 
@@ -133,7 +139,7 @@ export default function FloatingComment({
             {tags.map((tag, idx) => (
               <span
                 key={idx}
-                className={`px-2 py-[3px] text-[8.5px] font-bold rounded-md uppercase tracking-wider ${getTagColor(tag.color)}`}
+                className={`px-2 py-0.75 text-[8.5px] font-bold rounded-md uppercase tracking-wider ${getTagColor(tag.color)}`}
               >
                 {tag.label}
               </span>

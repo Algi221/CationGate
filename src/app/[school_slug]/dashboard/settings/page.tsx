@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { 
   Settings, 
@@ -16,9 +16,12 @@ import Swal from 'sweetalert2';
 
 export default function SettingsPage() {
   const { adminToken } = usePPDB();
-  const [mounted, setMounted] = useState<boolean>(false);
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
-  // Password States
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,10 +29,6 @@ export default function SettingsPage() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +83,7 @@ export default function SettingsPage() {
 
   if (!mounted) {
     return (
-      <div className="flex items-center justify-center min-h-[300px]">
+      <div className="flex items-center justify-center min-h-75">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="animate-spin text-blue-500 dark:text-blue-400" size={32} />
           <span className="text-sm font-semibold text-slate-500">Memuat pengaturan...</span>

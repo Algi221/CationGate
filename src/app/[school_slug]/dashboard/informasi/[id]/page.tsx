@@ -1,10 +1,12 @@
-// src/app/dashboard/informasi/[id]/page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import Link from "next/link";
-import { Loader2, Check, X, ArrowRight, FileText, Calendar } from "lucide-react";
+import Image from "next/image";
+import { useParams } from "next/navigation";
+import { Loader2, Check, ArrowRight } from "lucide-react";
 
 interface Informasi {
   id: number;
@@ -15,10 +17,6 @@ interface Informasi {
   created_at?: string;
 }
 
-/**
- * Sanitize image URL to prevent DOM-based XSS.
- * Only allows safe schemes: https, http, or data:image (base64 from FileReader).
- */
 function sanitizeImageUrl(url: string): string {
   if (!url) return "";
   const trimmed = url.trim();
@@ -29,10 +27,13 @@ function sanitizeImageUrl(url: string): string {
   ) {
     return trimmed;
   }
-  return ""; // Reject javascript: and other dangerous schemes
+  return ""; 
 }
 
-export default function EditInformasi({ params }: { params: { id: string } }) {
+export default function EditInformasi() {
+  const routeParams = useParams();
+  const id = (routeParams?.id as string) || "";
+  const schoolSlug = (routeParams?.school_slug as string) || "";
   const { adminToken, addToast } = usePPDB();
   const [informasi, setInformasi] = useState<Informasi | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -45,9 +46,10 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
 
   const BACKEND_URL = "/api";
 
-  const fetchDetail = async () => {
+  const fetchDetail = React.useCallback(async () => {
+    if (!id) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/informasi/${params.id}`);
+      const res = await fetch(`${BACKEND_URL}/informasi/${id}`);
       const data = await res.json();
       if (data.success && data.data) {
         setInformasi(data.data);
@@ -64,24 +66,24 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
           }
         }
       } else {
-        addToast && addToast("Error", "Tidak dapat memuat data.", "danger");
+        addToast?.("Error", "Tidak dapat memuat data.", "danger");
       }
     } catch (e) {
       console.error(e);
-      addToast && addToast("Error", "Gagal terhubung ke server.", "danger");
+      addToast?.("Error", "Gagal terhubung ke server.", "danger");
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, addToast]);
 
   useEffect(() => {
     fetchDetail();
-  }, []);
+  }, [fetchDetail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!judul.trim() || !konten.trim() || !tanggal) {
-      addToast && addToast("Warning", "Harap lengkapi semua kolom.", "warning");
+      addToast?.("Warning", "Harap lengkapi semua kolom.", "warning");
       return;
     }
     setSubmitting(true);
@@ -93,7 +95,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
       foto_url: fotoUrl ? JSON.stringify(mediaObj) : null,
     };
     try {
-      const res = await fetch(`${BACKEND_URL}/informasi/${params.id}`, {
+      const res = await fetch(`${BACKEND_URL}/informasi/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -103,13 +105,13 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
       });
       const json = await res.json();
       if (json.success) {
-        addToast && addToast("Berhasil Diperbarui", "Informasi berhasil diperbarui.", "success");
+        addToast?.("Berhasil Diperbarui", "Informasi berhasil diperbarui.", "success");
       } else {
-        addToast && addToast("Error", json.message || "Gagal memperbarui.", "danger");
+        addToast?.("Error", json.message || "Gagal memperbarui.", "danger");
       }
     } catch (err) {
       console.error(err);
-      addToast && addToast("Error", "Kesalahan jaringan.", "danger");
+      addToast?.("Error", "Kesalahan jaringan.", "danger");
     } finally {
       setSubmitting(false);
     }
@@ -175,7 +177,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
           </label>
           {sanitizeImageUrl(fotoUrl) ? (
             <div className="flex items-center space-x-4 mb-2">
-              <img src={sanitizeImageUrl(fotoUrl)} alt="Preview" className="h-24 w-24 object-cover rounded" />
+              <Image src={sanitizeImageUrl(fotoUrl)} alt="Preview" width={96} height={96} unoptimized className="h-24 w-24 object-cover rounded" />
               <button
                 type="button"
                 onClick={() => setFotoUrl("")}
@@ -220,8 +222,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
               </>
             )}
           </button>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          <Link href={`/${(params as any)?.school_slug || ''}/dashboard/informasi`} className="px-6 py-2 bg-slate-200 text-slate-800 dark:text-white rounded hover:bg-slate-300 flex items-center">
+          <Link href={`/${schoolSlug || ''}/dashboard/informasi`} className="px-6 py-2 bg-slate-200 text-slate-800 dark:text-white rounded hover:bg-slate-300 flex items-center gap-2">
             <ArrowRight size={16} />
             <span>Kembali ke Daftar</span>
           </Link>

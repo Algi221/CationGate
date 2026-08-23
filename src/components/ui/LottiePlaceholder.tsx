@@ -10,7 +10,7 @@ export const LottiePlaceholder: React.FC<LottiePlaceholderProps> = ({
   className = "" 
 }) => {
   return (
-    <div className={`flex flex-col items-center justify-center p-8 border-2 border-dashed border-primary/30 rounded-2xl bg-primary/5 min-h-[300px] text-center ${className}`}>
+    <div className={`flex flex-col items-center justify-center p-8 border-2 border-dashed border-primary/30 rounded-2xl bg-primary/5 min-h-75 text-center ${className}`}>
       <div className="w-16 h-16 mb-4 rounded-full bg-primary/20 flex items-center justify-center">
         <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />

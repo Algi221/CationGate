@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import {
-  MessageSquare, Send, CheckCircle2, AlertCircle, Clock, Search,
-  Filter, MessageCircle, User, Building2, Tag, ShieldCheck
+  MessageSquare, Send, Search, Building2, Tag, ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,7 +92,7 @@ export default function GatekeeperFeedbackPage() {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div>
@@ -177,7 +176,7 @@ export default function GatekeeperFeedbackPage() {
               </div>
 
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
-                "{fb.message}"
+                &quot;{fb.message}&quot;
               </p>
 
               {fb.reply && (
@@ -215,7 +214,7 @@ export default function GatekeeperFeedbackPage() {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <h3 className="font-bold text-slate-900 dark:text-white text-base">Balas Tiket {selectedTicket.school_name}</h3>
-            <p className="text-xs text-slate-500">Pesan dari admin: "{selectedTicket.message}"</p>
+            <p className="text-xs text-slate-500">Pesan dari admin: &quot;{selectedTicket.message}&quot;</p>
 
             <textarea
               rows={4}

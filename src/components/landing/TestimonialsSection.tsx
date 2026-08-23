@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
-// Testimonial disebar dengan jumlah yang pas dan proporsional
 const testimonials = [
   {
     id: 1,
@@ -49,7 +48,6 @@ const testimonials = [
   },
 ];
 
-// Ditebalkan sedikit opasitasnya dan warnanya diseragamkan hitam semua
 const bgWords = [
   { text: "APA KATA", color: "text-zinc-900/[0.08]" },
   { text: "MEREKA TENTANG", color: "text-zinc-900/[0.08]" },
@@ -64,7 +62,6 @@ export default function TestimonialsSection() {
     offset: ["start start", "end end"],
   });
 
-  // Spring physics untuk pergerakan yang sangat empuk, natural, dan anti patah-patah
   const smoothProgress = useSpring(scrollYProgress, {
     stiffness: 60,
     damping: 25,
@@ -84,16 +81,16 @@ export default function TestimonialsSection() {
 
   return (
     <div className="w-full bg-white border-t border-zinc-200">
-      {/* SEKAT PEMBUKA (Intro Section) */}
+      {}
       <div className="w-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-32 pb-20 px-6 text-center">
         <div className="inline-flex items-center justify-center gap-2 px-4 py-2  bg-zinc-50 text-zinc-900 text-xs font-black uppercase tracking-[0.2em] mb-8 ">
-          
+
           Ulasan & Feedback
         </div>
 
         <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-zinc-950 tracking-tighter mb-6 leading-[1.1]">
           INI KATA{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#007AC3] to-[#40A8E6]">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-[#007AC3] to-[#40A8E6]">
             MEREKA.
           </span>
         </h2>
@@ -105,11 +102,11 @@ export default function TestimonialsSection() {
         </p>
       </div>
 
-      {/* HORIZONTAL SCROLL SECTION (Sticky) */}
+      {}
       <section ref={targetRef} className="relative h-[450vh] bg-white">
-        {/* Sticky Container dengan background putih */}
+        {}
         <div className="sticky top-0 h-screen w-full overflow-clip flex items-center bg-white">
-          {/* LAYER 0: Background Text */}
+          {}
           <motion.div
             style={{ x: xBg }}
             className="absolute z-0 flex h-full w-max pointer-events-none items-center px-[10vw] gap-20 md:gap-32 will-change-transform"
@@ -134,7 +131,7 @@ export default function TestimonialsSection() {
                 key={testimonial.id}
                 className={`shrink-0 flex items-start ${testimonial.cardStyle}`}
               >
-                <div className="w-full bg-white p-7 md:p-9 border border-zinc-200/80 rounded-[2rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:border-zinc-300 transition-all duration-500 hover:-translate-y-2 cursor-pointer group flex flex-col justify-between min-h-[310px]">
+                <div className="w-full bg-white p-7 md:p-9 border border-zinc-200/80 rounded-4xl shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:border-zinc-300 transition-all duration-500 hover:-translate-y-2 cursor-pointer group flex flex-col justify-between min-h-77.5">
                   <div>
                     <div className="w-10 h-10 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:bg-[#FFD33B] group-hover:text-zinc-950 group-hover:border-[#FFD33B] transition-colors duration-300 mb-5">
                       <svg
@@ -147,13 +144,14 @@ export default function TestimonialsSection() {
                     </div>
 
                     <p className="text-zinc-600 text-sm md:text-base leading-relaxed mb-6 font-medium">
-                      "{testimonial.text}"
+                      &ldquo;{testimonial.text}&rdquo;
                     </p>
                   </div>
 
                   {/* Profil Karakter DiceBear */}
                   <div className="flex items-center gap-3.5 mt-auto pt-4 border-t border-zinc-100">
                     <div className="w-11 h-11 rounded-full bg-zinc-100 border border-zinc-200 overflow-hidden shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={`https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(testimonial.name)}&scale=120&backgroundColor=transparent`}
                         alt={testimonial.name}

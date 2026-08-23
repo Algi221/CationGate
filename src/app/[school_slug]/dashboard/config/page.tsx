@@ -32,7 +32,7 @@ export default function ConfigPage() {
   }, [schoolId]);
 
   useEffect(() => {
-    fetchConfig();
+    setTimeout(() => fetchConfig(), 0);
   }, [fetchConfig]);
 
   const handleSave = async () => {

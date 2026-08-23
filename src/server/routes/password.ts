@@ -20,7 +20,6 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
 
     const supabase = getSupabaseClient();
 
-    // Verify OTP first
     const { data: records, error: otpError } = await supabase
       .from('verification_otps')
       .select('*')
@@ -37,20 +36,18 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
       return c.json({ success: false, message: 'Kode OTP tidak valid atau sudah kadaluarsa.' }, 400);
     }
 
-    // Verify user exists
     const { data: user, error: userError } = await supabase
       .from('admin_users')
       .select('id')
       .eq('email', email)
       .maybeSingle();
-      
+
     if (userError) throw userError;
 
     if (!user) {
       return c.json({ success: false, message: 'Akun tidak ditemukan.' }, 404);
     }
 
-    // Update password
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
     const { error: updateError } = await supabase
       .from('admin_users')
@@ -59,7 +56,6 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
 
     if (updateError) throw updateError;
 
-    // Mark OTP as used
     await supabase.from('verification_otps').update({ is_used: true }).eq('id', records[0].id);
 
     return c.json({ success: true, message: 'Password berhasil diubah. Silakan login dengan password baru.' });

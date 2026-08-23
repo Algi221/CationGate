@@ -1,12 +1,22 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Shield, Plus, Trash2, Edit3, User, KeyRound, Eye, EyeOff, Save, RotateCcw, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
 import Link from "next/link";
+
+interface AdminItem {
+  id: number;
+  username: string;
+  nama_lengkap: string;
+  role: string;
+  school_id?: string | number;
+  created_at?: string;
+  deleted_at?: string | null;
+}
 
 function AdminManagementPageContent() {
   const { adminUser, adminToken } = usePPDB();
@@ -17,29 +27,26 @@ function AdminManagementPageContent() {
   const activeTabParam = searchParams.get("tab") || "admin";
   const activeTab = activeTabParam as "admin" | "trash";
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [admins, setAdmins] = useState<any[]>([]);
+  const [admins, setAdmins] = useState<AdminItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [editAdminId, setEditAdminId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ username: "", password: "", nama_lengkap: "", role: "admin" });
   const [formLoading, setFormLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [trashedAdmins, setTrashedAdmins] = useState<any[]>([]);
+  const [trashedAdmins, setTrashedAdmins] = useState<AdminItem[]>([]);
   const [trashLoading, setTrashLoading] = useState(false);
 
-  const [currentPlan, setCurrentPlan] = useState("FREE_PLAN");
-  useEffect(() => {
-    const stored = localStorage.getItem("ppdb_school_plan");
-    if (stored) {
-      setCurrentPlan(stored);
+  const [currentPlan] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("ppdb_school_plan") || "FREE_PLAN";
     }
-  }, []);
+    return "FREE_PLAN";
+  });
 
   const isPro = currentPlan !== "FREE_PLAN";
 
@@ -55,25 +62,10 @@ function AdminManagementPageContent() {
     return '/api';
   };
 
-  useEffect(() => {
-    if (!adminUser) return;
-    if (adminUser.role !== 'superadmin') {
-      router.push(`/${schoolSlug}/dashboard`);
-      return;
-    }
-    fetchAdmins();
-  }, [adminUser, adminToken, router, schoolSlug]);
-
-  useEffect(() => {
-    if (activeTab === "trash") {
-      fetchTrashedAdmins();
-    }
-  }, [activeTab, adminToken]);
-
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async (showSpinner = false) => {
     if (!adminToken) return;
     try {
-      setLoading(true);
+      if (showSpinner) setLoading(true);
       setError("");
       const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/admin/users`, {
@@ -88,13 +80,13 @@ function AdminManagementPageContent() {
         setError(data.message || 'Gagal mengambil data admin');
       }
     } catch (err: unknown) {
-      setError((err as any).message);
+      setError(err instanceof Error ? err.message : "Gagal mengambil data admin");
     } finally {
       setLoading(false);
     }
-  };
+  }, [adminToken]);
 
-  const fetchTrashedAdmins = async () => {
+  const fetchTrashedAdmins = useCallback(async () => {
     if (!adminToken) return;
     try {
       setTrashLoading(true);
@@ -112,11 +104,26 @@ function AdminManagementPageContent() {
         setError(data.message || 'Gagal mengambil data sampah admin');
       }
     } catch (err: unknown) {
-      setError((err as any).message);
+      setError(err instanceof Error ? err.message : "Gagal mengambil data sampah admin");
     } finally {
       setTrashLoading(false);
     }
-  };
+  }, [adminToken]);
+
+  useEffect(() => {
+    if (!adminUser) return;
+    if (adminUser.role !== 'superadmin') {
+      router.push(`/${schoolSlug}/dashboard`);
+      return;
+    }
+    fetchAdmins();
+  }, [adminUser, router, schoolSlug, fetchAdmins]);
+
+  useEffect(() => {
+    if (activeTab === "trash") {
+      fetchTrashedAdmins();
+    }
+  }, [activeTab, fetchTrashedAdmins]);
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,14 +158,13 @@ function AdminManagementPageContent() {
         setError(data.message || 'Gagal membuat akun admin');
       }
     } catch (err: unknown) {
-      setError((err as any).message);
+      setError(err instanceof Error ? err.message : "Gagal membuat akun admin");
     } finally {
       setFormLoading(false);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEditClick = (admin: any) => {
+  const handleEditClick = (admin: AdminItem) => {
     setEditAdminId(admin.id);
     setFormData({
       username: admin.username,
@@ -178,8 +184,7 @@ function AdminManagementPageContent() {
       setError("");
       setSuccessMsg("");
       const backendUrl = getBackendUrl();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const payload: any = {
+      const payload: Record<string, string> = {
         username: formData.username,
         nama_lengkap: formData.nama_lengkap,
         role: formData.role
@@ -213,7 +218,7 @@ function AdminManagementPageContent() {
         setError(data.message || 'Gagal memperbarui data admin');
       }
     } catch (err: unknown) {
-      setError((err as any).message);
+      setError(err instanceof Error ? err.message : "Gagal memperbarui data admin");
     } finally {
       setFormLoading(false);
     }
@@ -250,7 +255,7 @@ function AdminManagementPageContent() {
             setError(data.message || 'Gagal menghapus admin');
           }
         } catch (err: unknown) {
-          setError((err as any).message);
+          setError(err instanceof Error ? err.message : "Gagal menghapus admin");
         }
       }
     });
@@ -282,13 +287,13 @@ function AdminManagementPageContent() {
         setError(data.message || 'Gagal memulihkan admin');
       }
     } catch (err: unknown) {
-      setError((err as any).message);
+      setError(err instanceof Error ? err.message : "Gagal memulihkan admin");
     }
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      
+
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
         <div className="flex items-center gap-4">
@@ -320,7 +325,7 @@ function AdminManagementPageContent() {
             }}
             className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold uppercase tracking-wider flex items-center gap-2 transition-all ${
               showAddForm 
-                ? 'bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 dark:bg-slate-800 dark:text-slate-300' 
+                ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' 
                 : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20'
             }`}
           >
@@ -351,7 +356,7 @@ function AdminManagementPageContent() {
           className={`pb-3 text-xs font-extrabold uppercase tracking-wider border-b-2 transition-all ${
             activeTab === "admin"
               ? "border-blue-600 text-blue-600 dark:text-blue-400"
-              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
           Manajemen Akun Admin ({admins.length})
@@ -361,7 +366,7 @@ function AdminManagementPageContent() {
           className={`pb-3 text-xs font-extrabold uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 ${
             activeTab === "trash"
               ? "border-blue-600 text-blue-600 dark:text-blue-400"
-              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
           <Trash2 size={15} />
@@ -411,7 +416,7 @@ function AdminManagementPageContent() {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Username Login</label>
                     <div className="relative">
@@ -582,7 +587,7 @@ function AdminManagementPageContent() {
                         <div className="text-slate-500 dark:text-slate-400 text-[11px] font-mono">@{adm.username}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
                           {adm.role}
                         </span>
                       </td>

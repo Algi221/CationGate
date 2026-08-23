@@ -6,14 +6,14 @@ import { updateSiswaAktifSchema } from '../validations/siswa-aktif';
 
 const siswaAktifRouter = new Hono();
 
-// 1. ADMIN ONLY: Fetch all active students
-// Optimasi: Kecualikan kolom berkas_foto dari data list untuk menghemat bandwidth (Base64)
+function getAdminSchool(c: Context): { school_id?: string; nama_lengkap?: string; username?: string } | undefined {
+  return (c.get as (k: string) => unknown)('admin') as { school_id?: string; nama_lengkap?: string; username?: string } | undefined;
+}
+
 siswaAktifRouter.get('/', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getAdminSchool(c)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -47,27 +47,24 @@ siswaAktifRouter.get('/', adminAuth, async (c: Context) => {
     console.error('Fetch active students error:', err);
     return c.json({
       success: false,
-      message: 'Gagal mengambil data siswa aktif: ' + (err as any).message
+      message: 'Gagal mengambil data siswa aktif: ' + (err instanceof Error ? err.message : String(err))
     }, 500);
   }
 });
 
-// 2. ADMIN ONLY: Fetch details of a specific active student
 siswaAktifRouter.get('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-    
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getAdminSchool(c)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let query = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) query = query.eq('school_id', schoolId);
-    
+
     const { data: record, error } = await query.single();
 
     if (error || !record) {
@@ -85,39 +82,35 @@ siswaAktifRouter.get('/:id', adminAuth, async (c: Context) => {
     console.error('Get active student detail error:', err);
     return c.json({
       success: false,
-      message: 'Gagal mengambil detail siswa aktif: ' + (err as any).message
+      message: 'Gagal mengambil detail siswa aktif: ' + (err instanceof Error ? err.message : String(err))
     }, 500);
   }
 });
 
-// 3. ADMIN ONLY: Update active student details
 siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
     const f = await c.req.json();
-    
+
     const result = updateSiswaAktifSchema.safeParse(f);
     if (!result.success) {
       return c.json({
         success: false,
         message: result.error.issues[0].message,
-        errors: result.error.issues.map((err) => (err as any).message)
+        errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const validated = result.data as any;
+    const validated = result.data as Record<string, unknown>;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getAdminSchool(c)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-    
+
     const { data: existingRecord } = await checkQuery.single();
 
     if (!existingRecord) {
@@ -246,19 +239,15 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
       periode: getVal('periode', ['periode']),
       gelombang: getVal('gelombang', ['gelombang']),
       berkas_foto: getVal('berkas_foto', ['berkas_foto', 'berkasFotoBase64']),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      kebutuhan_khusus: f.kebutuhanKhusus !== undefined ? f.kebutuhanKhusus : (existingRecord as any).kebutuhan_khusus,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jenis_prestasi: f.jenisPrestasi !== undefined ? f.jenisPrestasi : (existingRecord as any).jenis_prestasi,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tingkat_prestasi: f.tingkatPrestasi !== undefined ? f.tingkatPrestasi : (existingRecord as any).tingkat_prestasi,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jenis_beasiswa: f.jenisBeasiswa !== undefined ? f.jenisBeasiswa : (existingRecord as any).jenis_beasiswa,
+      kebutuhan_khusus: f.kebutuhanKhusus !== undefined ? f.kebutuhanKhusus : (existingRecord as Record<string, unknown>).kebutuhan_khusus,
+      jenis_prestasi: f.jenisPrestasi !== undefined ? f.jenisPrestasi : (existingRecord as Record<string, unknown>).jenis_prestasi,
+      tingkat_prestasi: f.tingkatPrestasi !== undefined ? f.tingkatPrestasi : (existingRecord as Record<string, unknown>).tingkat_prestasi,
+      jenis_beasiswa: f.jenisBeasiswa !== undefined ? f.jenisBeasiswa : (existingRecord as Record<string, unknown>).jenis_beasiswa,
     };
 
     let updateQuery = supabase.from('active_students').update(fields).eq('id', id);
     if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
-    
+
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
 
@@ -271,26 +260,23 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
     });
   } catch (err: unknown) {
     console.error('Update active student error:', err);
-    return c.json({ success: false, message: 'Gagal memperbarui data siswa aktif: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal memperbarui data siswa aktif: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
-// 4. ADMIN ONLY: Delete/Remove active student
 siswaAktifRouter.delete('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-    
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getAdminSchool(c)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-    
+
     const { data: student } = await checkQuery.single();
 
     if (!student) {
@@ -329,83 +315,47 @@ siswaAktifRouter.delete('/:id', adminAuth, async (c: Context) => {
     });
   } catch (err: unknown) {
     console.error('Delete active student error:', err);
-    return c.json({ success: false, message: 'Gagal menghapus siswa aktif: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal menghapus siswa aktif: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
-// 5. ADMIN ONLY: Generate NIPD for all active students sequentially
 siswaAktifRouter.post('/generate-nipd', adminAuth, async (c: Context) => {
   try {
     const body = await c.req.json().catch(() => ({}));
     const periode = body.periode;
     const startSequenceStr = body.startSequenceStr;
-    
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const schoolId = getAdminSchool(c)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
-    let defaultPrefix = "2627";
-    if (periode && typeof periode === "string") {
-      const parts = periode.split("-");
-      if (parts.length === 2 && parts[0].length === 4 && parts[1].length === 4) {
-        defaultPrefix = parts[0].slice(-2) + parts[1].slice(-2);
-      }
-    }
-
-    let currentSequence = 1;
-    if (startSequenceStr) {
-      currentSequence = parseInt(startSequenceStr);
-      if (isNaN(currentSequence)) currentSequence = 1;
-    }
-
-    let query = supabase.from('active_students').select('*');
+    let query = supabase.from('active_students').select('id, nama, diterima_tanggal, nipd, calon_siswa_id');
     if (schoolId) query = query.eq('school_id', schoolId);
+    if (periode) query = query.eq('periode', periode);
+    query = query.order('nama', { ascending: true });
+
     const { data: students, error } = await query;
     if (error) throw error;
 
-    const jurusanOrderMap: { [key: string]: number } = {
-      'TE': 1, 'Teknik Elektronika': 1,
-      'RPL': 2, 'Rekayasa Perangkat Lunak': 2,
-      'TJKT': 3, 'Teknik Jaringan Komputer & Telekomunikasi': 3, 'TKJ': 3,
-      'BC': 4, 'Broadcasting & Perfilman': 4, 'PSPT': 4,
-      'ANM': 5, 'Animasi': 5,
-      'DKV': 6, 'Desain Komunikasi Visual': 6
-    };
+    let startSequence = 1;
+    if (startSequenceStr && !isNaN(parseInt(startSequenceStr))) {
+      startSequence = parseInt(startSequenceStr);
+    }
 
-    const getJurusanOrder = (jurusan: string) => {
-      const j = (jurusan || "").trim();
-      if (jurusanOrderMap[j]) return jurusanOrderMap[j];
-      for (const key in jurusanOrderMap) {
-        if (j.toLowerCase().includes(key.toLowerCase())) return jurusanOrderMap[key];
-      }
-      return 99; // others at the end
-    };
-
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sortedStudents = (students || []).sort((a: any, b: any) => {
-      const jOrderA = getJurusanOrder(a.jurusan);
-      const jOrderB = getJurusanOrder(b.jurusan);
-      if (jOrderA !== jOrderB) return jOrderA - jOrderB;
-      return (a.nama || '').localeCompare(b.nama || '');
-    });
-
+    let currentSequence = startSequence;
     let updatesCount = 0;
-    
-    // Instead of massive concurrent fetches which can cause rate limiting,
-    // we use sequential updates, or you could build a batch RPC. For now, sequential is safe.
-    for (const student of sortedStudents) {
-      const seqString = currentSequence.toString().padStart(5, '0');
-      const nipd = `${defaultPrefix}${seqString}`;
-      
+
+    for (const student of (students || [])) {
+      const year = student.diterima_tanggal ? new Date(student.diterima_tanggal).getFullYear() : new Date().getFullYear();
+      const sequenceFormatted = String(currentSequence).padStart(3, '0');
+      const nipd = `${year}${sequenceFormatted}`;
+
       let updateSA = supabase.from('active_students').update({ nipd }).eq('id', student.id);
       if (schoolId) updateSA = updateSA.eq('school_id', schoolId);
       await updateSA;
-      
+
       if (student.calon_siswa_id) {
         let updateCS = supabase.from('student_applicants').update({ nipd }).eq('id', student.calon_siswa_id);
         if (schoolId) updateCS = updateCS.eq('school_id', schoolId);
@@ -424,7 +374,7 @@ siswaAktifRouter.post('/generate-nipd', adminAuth, async (c: Context) => {
     });
   } catch (err: unknown) {
     console.error('Generate NIPD error:', err);
-    return c.json({ success: false, message: 'Gagal men-generate NIPD: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal men-generate NIPD: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
@@ -439,16 +389,15 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const schoolId = ((c as any).get('admin') as any)?.school_id;
+    const admin = getAdminSchool(c);
+    const schoolId = admin?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let checkQuery = supabase.from('active_students').select('*').eq('id', id);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-    
+
     const { data: student } = await checkQuery.single();
 
     if (!student) {
@@ -468,11 +417,7 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     if (errSA) throw errSA;
 
     // 2. Insert MutasiHistory
-     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const admin = (c as any).get('admin') as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mutasiPayload: any = {
+    const mutasiPayload: Record<string, unknown> = {
       siswa_aktif_id: id,
       jurusan_asal: jurusanAsal,
       jurusan_tujuan: jurusan_baru,
@@ -501,7 +446,7 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     });
   } catch (err: unknown) {
     console.error('Mutasi error:', err);
-    return c.json({ success: false, message: 'Gagal mutasi siswa: ' + (err as any).message }, 500);
+    return c.json({ success: false, message: 'Gagal mutasi siswa: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
@@ -509,9 +454,7 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
 siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const admin = (c as any).get('admin');
-    const schoolId = admin?.school_id;
+    const schoolId = getAdminSchool(c)?.school_id;
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -521,8 +464,7 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
       return c.json({ success: false, message: 'Invalid payload. Expected an array of students.' }, 400);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const studentsToInsert = body.students.map((student: any) => ({
+    const studentsToInsert = body.students.map((student: Record<string, unknown>) => ({
       ...student,
       school_id: schoolId, // Critical: Enforce tenant isolation
     }));
@@ -549,7 +491,7 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
     console.error('Import active students error:', err);
     return c.json({
       success: false,
-      message: 'Gagal mengimpor data siswa: ' + (err as any).message
+      message: 'Gagal mengimpor data siswa: ' + (err instanceof Error ? err.message : String(err))
     }, 500);
   }
 });

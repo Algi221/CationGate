@@ -464,7 +464,7 @@ export default function GatekeeperOverviewPage() {
       {/* Peta Terang */}
       <SchoolMap schools={mapSchools} />
 
-<div className="space-y-2.5 max-h-64 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] dark:[scrollbar-color:#475569_transparent]">
+<div className="space-y-2.5 max-h-64 overflow-y-auto pr-1.5 scrollbar-thin [scrollbar-color:#cbd5e1_transparent] dark:[scrollbar-color:#475569_transparent]">
   {[
     { region: "Jawa Barat", count: 45, percentage: "37%" },
     { region: "DKI Jakarta", count: 32, percentage: "26%" },

@@ -8,7 +8,7 @@ const _LOADING_KEY = "cationgate_loading_session";
 
 export default function LoadingScreen() {
   const [phase, setPhase] = useState<"start" | "show" | "exit">("start");
-  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   const premiumEasing = [0.85, 0, 0.15, 1] as const;
 
@@ -20,16 +20,16 @@ export default function LoadingScreen() {
 
     const isInternalNav = sessionStorage.getItem("cationgate_internal_navigation") === "true";
     if (isInternalNav) {
+      setIsMounted(false);
       window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));
       return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }
 
-    setIsMounted(true);
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
-    const t1 = setTimeout(() => setPhase("show"), 100);
-    const t2 = setTimeout(() => setPhase("exit"), 4200);
+    const t1 = setTimeout(() => setPhase("show"), 50);
+    const t2 = setTimeout(() => setPhase("exit"), 4000);
 
     return () => {
       clearTimeout(t1);
@@ -83,10 +83,10 @@ export default function LoadingScreen() {
             className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"
           >
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, ease: premiumEasing }}
-              className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 mb-6 md:mb-8"
+              initial={{ x: "80vw", rotate: 720, opacity: 0, scale: 0.85 }}
+              animate={{ x: 0, rotate: 0, opacity: 1, scale: 1 }}
+              transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 mb-6 md:mb-8 -translate-x-2 sm:-translate-x-3 md:-translate-x-4"
             >
               <Image
                 src="/assets/logo_cationgate/CationGate_Logo.png"

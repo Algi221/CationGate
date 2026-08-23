@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   KeyRound,
   ShieldCheck,
-  RotateCcw
+  RotateCcw,
+  ChevronRight
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,8 +29,11 @@ const emailSchema = z.object({
   email: z.string().email("Format alamat email tidak valid.").trim().toLowerCase()
 });
 
-const resetSchema = z.object({
-  otp: z.string().length(6, "Kode OTP harus berjumlah tepat 6 digit.").regex(/^\d{6}$/, "Kode OTP hanya berupa angka."),
+const otpSchema = z.object({
+  otp: z.string().length(6, "Kode OTP harus berjumlah tepat 6 digit.").regex(/^\d{6}$/, "Kode OTP hanya berupa angka.")
+});
+
+const passwordSchema = z.object({
   newPassword: z.string().min(6, "Kata sandi baru minimal harus 6 karakter."),
   confirmPassword: z.string().min(1, "Konfirmasi kata sandi wajib diisi.")
 }).refine((data) => data.newPassword === data.confirmPassword, {
@@ -39,7 +43,12 @@ const resetSchema = z.object({
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  // Step 1: Input Email
+  // Step 2: Input & Verifikasi Kode OTP
+  // Step 3: Pilihan Aksi (Perbarui Kata Sandi / Lewati)
+  // Step 4: Form Input Kata Sandi Baru
+  // Step 5: Sukses Diperbarui
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -131,13 +140,51 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  // Step 2: Verify OTP & Reset Password
+  // Step 2: Verify OTP
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    const validation = otpSchema.safeParse({ otp });
+    if (!validation.success) {
+      setErrorMsg(validation.error.issues[0].message);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/mailer/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          otp: otp.trim()
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setSuccessMsg("Kode OTP berhasil diverifikasi.");
+        setStep(3); // Pindah ke layar opsi (Perbarui Kata Sandi / Lewati)
+      } else {
+        setErrorMsg(data.message || "Kode OTP tidak valid atau sudah kedaluwarsa.");
+      }
+    } catch (_err) {
+      setErrorMsg("Terjadi kendala jaringan saat memverifikasi OTP.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 4: Submit New Password
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
 
-    const validation = resetSchema.safeParse({ otp, newPassword, confirmPassword });
+    const validation = passwordSchema.safeParse({ newPassword, confirmPassword });
     if (!validation.success) {
       setErrorMsg(validation.error.issues[0].message);
       return;
@@ -158,9 +205,9 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setStep(3);
+        setStep(5); // Sukses diperbarui
       } else {
-        setErrorMsg(data.message || "Kode OTP tidak valid atau sudah kedaluwarsa.");
+        setErrorMsg(data.message || "Gagal memperbarui kata sandi.");
       }
     } catch (_err) {
       setErrorMsg("Terjadi kesalahan sistem saat memperbarui kata sandi.");
@@ -253,7 +300,7 @@ export default function ForgotPasswordPage() {
             </h2>
 
             <p className="text-xs lg:text-sm text-white/90 mt-4 font-medium leading-relaxed max-w-md">
-              Lupa kata sandi akun Admin Sekolah Anda? Masukkan alamat email resmi yang terdaftar untuk menerima kode verifikasi OTP 6 digit.
+              Lupa kata sandi akun Admin Sekolah Anda? Ikuti panduan verifikasi OTP langkah demi langkah untuk memulihkan akses secara aman.
             </p>
 
             <div className="pt-4 flex items-center gap-4 text-white/80 text-xs font-semibold">
@@ -290,7 +337,7 @@ export default function ForgotPasswordPage() {
                       Lupa Kata Sandi
                     </h1>
                     <p className="mt-1 text-xs text-slate-500 font-medium">
-                      Masukkan alamat email admin sekolah yang terdaftar di CationGate.
+                      Masukkan alamat email admin sekolah yang terdaftar di CationGate untuk menerima kode OTP.
                     </p>
                   </div>
 
@@ -333,7 +380,7 @@ export default function ForgotPasswordPage() {
                         {loading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                            <span>Memeriksa Email & Mengirim OTP...</span>
+                            <span>Mengirim Kode OTP...</span>
                           </>
                         ) : (
                           <>
@@ -357,7 +404,7 @@ export default function ForgotPasswordPage() {
                 </motion.div>
               )}
 
-              {/* STEP 2: INPUT OTP & NEW PASSWORD */}
+              {/* STEP 2: VERIFIKASI KODE OTP */}
               {step === 2 && (
                 <motion.div
                   key="step2"
@@ -371,7 +418,7 @@ export default function ForgotPasswordPage() {
                       <KeyRound className="w-5 h-5" />
                     </div>
                     <h1 className="text-2xl font-black tracking-tight text-slate-950">
-                      Verifikasi & Buat Sandi Baru
+                      Verifikasi Kode OTP
                     </h1>
                     <div className="flex items-center justify-between mt-1 text-xs text-slate-500">
                       <span>Dikirim ke <strong className="text-slate-800">{email}</strong></span>
@@ -411,12 +458,11 @@ export default function ForgotPasswordPage() {
                     </motion.div>
                   )}
 
-                  <form onSubmit={handleResetPassword} className="space-y-3.5">
-                    {/* OTP Input */}
-                    <div className="space-y-1">
+                  <form onSubmit={handleVerifyOTP} className="space-y-4">
+                    <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="otp" className="text-xs font-bold text-slate-700">
-                          Kode OTP (6 Digit)
+                          Masukkan 6 Digit Kode OTP
                         </Label>
                         <button
                           type="button"
@@ -435,13 +481,143 @@ export default function ForgotPasswordPage() {
                         required
                         value={otp}
                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                        placeholder="123456"
-                        className="h-11 rounded-xl border-slate-200 bg-slate-50/50 text-center font-mono text-lg font-bold tracking-[6px] focus:bg-white focus:border-blue-600 transition-all"
+                        placeholder="• • • • • •"
+                        className="h-13 rounded-2xl border-slate-200 bg-slate-50/70 text-center font-mono text-2xl font-black tracking-[10px] text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all"
                       />
                     </div>
 
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={loading || otp.length < 6}
+                        className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            <span>Memverifikasi Kode OTP...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck className="w-4 h-4 text-white" />
+                            <span>Verifikasi Kode OTP</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="pt-1 text-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStep(1);
+                          setErrorMsg("");
+                        }}
+                        className="text-xs text-slate-500 hover:text-slate-700 font-semibold"
+                      >
+                        &larr; Kembali ke input email
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+
+              {/* STEP 3: PILIHAN AKSI SETELAH OTP VALID */}
+              {step === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-6"
+                >
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border-2 border-emerald-200 flex items-center justify-center mx-auto mb-4 shadow-md shadow-emerald-500/10">
+                      <CheckCircle2 className="w-8 h-8" />
+                    </div>
+                    <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-full mb-2">
+                      Verifikasi Identitas Sukses
+                    </span>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                      Kode OTP Berhasil Diverifikasi!
+                    </h2>
+                    <p className="mt-2 text-xs text-slate-500 font-medium leading-relaxed max-w-xs mx-auto">
+                      Identitas akun <strong className="text-slate-800">{email}</strong> telah terbukti sah. Silakan pilih tindakan selanjutnya:
+                    </p>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    {/* Opsi 1: Perbarui Kata Sandi */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setErrorMsg("");
+                        setSuccessMsg("");
+                        setStep(4);
+                      }}
+                      className="w-full p-4 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 flex items-center justify-between transition-all group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 text-left">
+                        <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                          <KeyRound className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-extrabold text-sm">Perbarui Kata Sandi</div>
+                          <div className="text-[11px] font-normal text-white/80">Buat kata sandi baru untuk akun Anda</div>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform" />
+                    </button>
+
+                    {/* Opsi 2: Lewati & Masuk ke Login */}
+                    <button
+                      type="button"
+                      onClick={() => router.push("/login")}
+                      className="w-full p-3.5 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <span>Lewati & Kembali ke Login</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* STEP 4: FORM INPUT KATA SANDI BARU */}
+              {step === 4 && (
+                <motion.div
+                  key="step4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="mb-5">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <h1 className="text-2xl font-black tracking-tight text-slate-950">
+                      Buat Kata Sandi Baru
+                    </h1>
+                    <p className="mt-1 text-xs text-slate-500 font-medium">
+                      Masukkan kata sandi baru yang kuat untuk akun <strong className="text-slate-800">{email}</strong>.
+                    </p>
+                  </div>
+
+                  {errorMsg && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-600"
+                    >
+                      <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{errorMsg}</span>
+                    </motion.div>
+                  )}
+
+                  <form onSubmit={handleResetPassword} className="space-y-4">
                     {/* New Password */}
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <Label htmlFor="newPassword" className="text-xs font-bold text-slate-700">
                         Kata Sandi Baru
                       </Label>
@@ -453,7 +629,7 @@ export default function ForgotPasswordPage() {
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="Minimal 6 karakter"
-                          className="h-10 pl-9 pr-10 rounded-xl border-slate-200 bg-slate-50/50 text-xs font-medium focus:bg-white focus:border-blue-600 transition-all"
+                          className="h-11 pl-9 pr-10 rounded-xl border-slate-200 bg-slate-50/50 text-xs font-medium focus:bg-white focus:border-blue-600 transition-all"
                         />
                         <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <button
@@ -470,7 +646,7 @@ export default function ForgotPasswordPage() {
                     </div>
 
                     {/* Confirm Password */}
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <Label htmlFor="confirmPassword" className="text-xs font-bold text-slate-700">
                         Konfirmasi Kata Sandi Baru
                       </Label>
@@ -482,7 +658,7 @@ export default function ForgotPasswordPage() {
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="Ulangi kata sandi baru"
-                          className="h-10 pl-9 pr-10 rounded-xl border-slate-200 bg-slate-50/50 text-xs font-medium focus:bg-white focus:border-blue-600 transition-all"
+                          className="h-11 pl-9 pr-10 rounded-xl border-slate-200 bg-slate-50/50 text-xs font-medium focus:bg-white focus:border-blue-600 transition-all"
                         />
                         <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <button
@@ -495,7 +671,7 @@ export default function ForgotPasswordPage() {
                       </div>
                     </div>
 
-                    <div className="pt-2">
+                    <div className="pt-2 space-y-2">
                       <button
                         type="submit"
                         disabled={loading}
@@ -513,15 +689,23 @@ export default function ForgotPasswordPage() {
                           </>
                         )}
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => router.push("/login")}
+                        className="w-full py-2 text-center text-xs font-semibold text-slate-400 hover:text-slate-600 transition"
+                      >
+                        Lewati & Masuk ke Login
+                      </button>
                     </div>
                   </form>
                 </motion.div>
               )}
 
-              {/* STEP 3: SUCCESS CELEBRATION */}
-              {step === 3 && (
+              {/* STEP 5: SUCCESS CELEBRATION */}
+              {step === 5 && (
                 <motion.div
-                  key="step3"
+                  key="step5"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-4 space-y-4"

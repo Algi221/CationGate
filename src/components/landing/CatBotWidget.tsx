@@ -236,13 +236,13 @@ export function CatBotWidget() {
   return (
     <div
       ref={constraintsRef}
-      className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"
+      className="fixed inset-0 pointer-events-none z-9999 overflow-hidden"
     >
       {/* WIDGET SEBELUM DI-KLIK (PRE-CLICK) */}
       <AnimatePresence>
         {isPageLoaded && !isOpen && (
           <div
-            className="absolute right-4 sm:right-6 pointer-events-auto z-[950]"
+            className="absolute right-4 sm:right-6 pointer-events-auto z-950"
             style={{ bottom: isMobile ? 24 : isVideoVisible ? 150 : 24 }}
           >
             <motion.div
@@ -253,7 +253,7 @@ export function CatBotWidget() {
               className="flex items-center gap-4"
             >
               {/* Tooltip Animasi Dinamis */}
-              <div className="hidden sm:flex items-center relative bg-[#0a0a0a] text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg select-none overflow-hidden h-9 min-w-[170px] justify-center">
+              <div className="hidden sm:flex items-center relative bg-[#0a0a0a] text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg select-none overflow-hidden h-9 min-w-42.5 justify-center">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={tooltipIndex}
@@ -315,8 +315,8 @@ export function CatBotWidget() {
               shadow-2xl sm:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] 
               border-0 sm:border sm:border-slate-800
               inset-0 w-full rounded-none
-              sm:inset-auto sm:right-6 sm:w-[400px] sm:h-[680px]
-              sm:rounded-[1.5rem] overflow-hidden bg-[#0a0a0a]
+              sm:inset-auto sm:right-6 sm:w-100 sm:h-170
+              sm:rounded-3xl overflow-hidden bg-[#0a0a0a]
             `}
           >
             {/* Header (Black) */}
@@ -381,11 +381,11 @@ export function CatBotWidget() {
                   alt="Watermark"
                   width={300}
                   height={300}
-                  className="w-[200px] sm:w-[280px] h-auto object-contain"
+                  className="w-50 sm:w-70 h-auto object-contain"
                 />
               </div>
 
-              <div className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
                 {messages.map((msg, index) => {
                   const isBot = msg.sender === "bot";
                   return (
@@ -419,7 +419,7 @@ export function CatBotWidget() {
                               : "bg-[#0a0a0a] text-white font-medium rounded-2xl rounded-tr-sm"
                           }`}
                         >
-                          <div className="whitespace-pre-line break-words font-sans">
+                          <div className="whitespace-pre-line wrap-break-word font-sans">
                             {msg.text}
                           </div>
                         </div>
@@ -470,7 +470,7 @@ export function CatBotWidget() {
                       Pertanyaan Populer:
                     </p>
                     {/* Menggunakan scroll menyamping (overflow-x-auto) di mobile supaya tidak memakan tinggi layar */}
-                    <div className="flex sm:flex-wrap overflow-x-auto sm:overflow-visible gap-2 pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <div className="flex sm:flex-wrap overflow-x-auto sm:overflow-visible gap-2 pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
                       {DEFAULT_SUGGESTIONS.map((sug, i) => (
                         <button
                           key={i}

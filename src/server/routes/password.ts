@@ -32,7 +32,6 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
       .select('*')
       .eq('email', email)
       .eq('otp_code', otp)
-      .eq('is_used', false)
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(1);

@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Building2, Wallet, Activity, Settings, 
-  ChevronDown, PanelLeftClose, PanelLeftOpen
+  ChevronDown, PanelLeftClose
 } from "lucide-react";
 
 interface GatekeeperSidebarProps {
@@ -272,7 +272,7 @@ export function GatekeeperSidebar({
           </div>
 
           {/* Nav Items */}
-          <div className="w-full flex-1 py-2 px-2.5 overflow-y-auto space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="w-full flex-1 py-2 px-2.5 overflow-y-auto space-y-4 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {menuStructure.map((sec, idx) => (
               <div key={sec.category} className="w-full space-y-1 flex flex-col items-center">
                 {!isCollapsed && (

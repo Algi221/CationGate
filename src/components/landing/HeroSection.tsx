@@ -18,9 +18,7 @@ export default function HeroSPMB() {
 
   return (
     <section className="relative min-h-screen w-full bg-white overflow-hidden flex flex-col justify-between px-6 sm:px-12 pt-28 pb-8 font-sans selection:bg-amber-200">
-      {}
       <div className="w-full max-w-[1550px] mx-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-8 my-auto z-20">
-        {}
         <div className="lg:col-span-4 text-center lg:text-left space-y-6">
           <h1 className="text-4xl sm:text-5xl lg:text-[3.8rem] font-black text-gray-900 leading-[1.02] tracking-tight">
             BIKIN WEBSITE <br />
@@ -45,7 +43,6 @@ export default function HeroSPMB() {
           </div>
         </div>
 
-        {}
         <div className="lg:col-span-4 flex flex-col items-center justify-center relative">
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
@@ -65,7 +62,6 @@ export default function HeroSPMB() {
           </motion.div>
         </div>
 
-        {}
         <div className="lg:col-span-4 text-center lg:text-left space-y-6">
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight tracking-tight">
             TAMPILAN MODERN, <br />
@@ -73,18 +69,16 @@ export default function HeroSPMB() {
           </h2>
 
           <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-sm mx-auto lg:mx-0">
-            Dilengkapi manajemen siswa pendaftar dan siswa aktif, export data, hingga integrasi pembayaran digital.
+            Dilengkapi manajemen siswa pendaftar dan siswa aktif, export data,
+            hingga integrasi pembayaran digital.
           </p>
 
-          {}
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-medium text-gray-500">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
-              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider"></span>
               <span>Eksplorasi langsung tanpa perlu login:</span>
             </div>
 
-            {}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
               <Link
                 href="/demo/dashboard"
@@ -103,9 +97,7 @@ export default function HeroSPMB() {
         </div>
       </div>
 
-      {}
       <div className="relative w-full max-w-[1550px] mx-auto pt-6 flex flex-col md:flex-row justify-between items-center border-t border-gray-200/60 gap-4 px-2 z-30 bg-white">
-        {}
         <div className="flex items-center gap-3 text-xs text-gray-500 font-bold">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>
@@ -113,8 +105,8 @@ export default function HeroSPMB() {
           </span>
         </div>
 
-        {}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-2 flex flex-col items-center gap-1 pointer-events-none">
+        {/* Indikator Scroll: Disembunyikan di Mobile (hidden), dimunculkan di Desktop (md:flex) */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-2 hidden md:flex flex-col items-center gap-1 pointer-events-none">
           <span className="text-[9px] font-black tracking-[0.25em] text-gray-400 uppercase">
             SCROLL
           </span>
@@ -125,8 +117,7 @@ export default function HeroSPMB() {
           />
         </div>
 
-        {}
-        <div className="flex items-center gap-8 sm:gap-14">
+        <div className="flex items-center justify-around w-full md:w-auto gap-8 sm:gap-14">
           <div className="text-center md:text-right">
             <div className="text-lg sm:text-xl font-black text-gray-900">
               120+

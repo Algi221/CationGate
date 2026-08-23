@@ -283,8 +283,9 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
     } catch (_e) {}
 
     // 3. Upsert into 'schools' table in Supabase
+    let savedSchoolUUID: string | null = null;
     try {
-      await supabase
+      const { data: upsertedSchool } = await supabase
         .from('schools')
         .upsert({
           name: sName,
@@ -294,9 +295,40 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
           subscription_plan: targetSchool?.plan_type || 'PRO',
           npsn: targetSchool?.npsn || null,
           dapodik_code: targetSchool?.dapodik_code || null
-        }, { onConflict: 'slug' });
+        }, { onConflict: 'slug' })
+        .select('id')
+        .maybeSingle();
+
+      if (upsertedSchool?.id) {
+        savedSchoolUUID = upsertedSchool.id;
+      }
     } catch (sbErr: unknown) {
       console.warn('Supabase schools upsert warning:', sbErr instanceof Error ? sbErr.message : String(sbErr));
+    }
+
+    if (!savedSchoolUUID) {
+      try {
+        const { data: foundSchool } = await supabase.from('schools').select('id').eq('slug', sSlug).maybeSingle();
+        if (foundSchool?.id) savedSchoolUUID = foundSchool.id;
+      } catch (_e) {}
+    }
+
+    // 3.1 Upsert active record in school_subscriptions
+    if (savedSchoolUUID) {
+      try {
+        const now = new Date();
+        const oneYearLater = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        await supabase.from('school_subscriptions').insert({
+          school_id: savedSchoolUUID,
+          plan_name: targetSchool?.plan_type ? `${targetSchool.plan_type}_YEARLY` : 'PRO_YEARLY',
+          status: 'ACTIVE',
+          started_at: now.toISOString(),
+          expires_at: oneYearLater.toISOString(),
+          amount_paid: targetSchool?.plan_type === 'PRO_MAX' ? 1200000 : 750000
+        });
+      } catch (subErr: unknown) {
+        console.warn('school_subscriptions insert warning:', subErr instanceof Error ? subErr.message : String(subErr));
+      }
     }
 
     // 4. Update fontInMemSchools map for instant slug resolution & active state

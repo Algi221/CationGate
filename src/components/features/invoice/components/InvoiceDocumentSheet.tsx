@@ -1,0 +1,512 @@
+"use client";
+
+import React from "react";
+import { InvoiceCandidateData } from "../types";
+
+interface InvoiceDocumentSheetProps {
+  data: InvoiceCandidateData & { payment_status?: string };
+  regCost: number;
+}
+
+const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
+  try {
+    const parts = (periode || "2026-2027").split("-");
+    const year1 = parts[0].slice(-2);
+    const year2 = parts[1].slice(-2);
+    const prefix = `${year1}${year2}`;
+    const sequence = 10000 + id;
+    return `${prefix}${sequence}`;
+  } catch (_e) {
+    return `2627${10000 + id}`;
+  }
+};
+
+export const InvoiceDocumentSheet: React.FC<InvoiceDocumentSheetProps> = ({ data, regCost }) => {
+  const tglDaftarFormatted = new Date(data.tgl_daftar).toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+
+  return (
+    <div
+      className="invoice-sheet bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800/50 overflow-hidden"
+      style={{ position: "relative" }}
+    >
+      {/* Stamp */}
+      {data.payment_status === "Paid" ? (
+        <div
+          style={{
+            position: "absolute",
+            top: "120px",
+            right: "32px",
+            border: "3px solid rgba(16,185,129,0.5)",
+            color: "rgba(16,185,129,0.5)",
+            fontWeight: 900,
+            fontSize: "12px",
+            textTransform: "uppercase",
+            letterSpacing: "0.15em",
+            padding: "6px 14px",
+            borderRadius: "10px",
+            transform: "rotate(-12deg)",
+            pointerEvents: "none",
+            userSelect: "none",
+            zIndex: 10,
+            background: "rgba(255,255,255,0.7)",
+            fontFamily: "monospace"
+          }}
+        >
+          LUNAS / VERIFIED
+        </div>
+      ) : (
+        <div
+          style={{
+            position: "absolute",
+            top: "120px",
+            right: "32px",
+            border: "3px solid rgba(245,158,11,0.5)",
+            color: "rgba(245,158,11,0.5)",
+            fontWeight: 900,
+            fontSize: "11px",
+            textTransform: "uppercase",
+            letterSpacing: "0.15em",
+            padding: "5px 12px",
+            borderRadius: "10px",
+            transform: "rotate(-12deg)",
+            pointerEvents: "none",
+            userSelect: "none",
+            zIndex: 10,
+            background: "rgba(255,255,255,0.7)",
+            fontFamily: "monospace"
+          }}
+        >
+          PROSES VERIFIKASI
+        </div>
+      )}
+
+      <div className="invoice-inner" style={{ padding: "32px" }}>
+        {/* ── KOPSURAT / LETTERHEAD ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            borderBottom: "3px double #1e293b",
+            paddingBottom: "14px",
+            marginBottom: "20px"
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo_smktb.png"
+            alt="Logo SMK Taruna Bhakti"
+            style={{ width: "52px", height: "52px", objectFit: "contain" }}
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png";
+            }}
+          />
+          <div>
+            <p
+              style={{
+                fontSize: "10px",
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#64748b",
+                margin: "0 0 2px 0"
+              }}
+            >
+              Panitia Penerimaan Peserta Didik Baru
+            </p>
+            <h2
+              style={{
+                fontSize: "17px",
+                fontWeight: 900,
+                color: "#0f172a",
+                margin: "0 0 2px 0",
+                lineHeight: 1.2
+              }}
+            >
+              SMK TARUNA BHAKTI DEPOK
+            </h2>
+            <p style={{ fontSize: "9px", fontWeight: 600, color: "#64748b", margin: 0 }}>
+              Terakreditasi A · Jl. Pekapuran No. 22, Cimanggis, Depok, Jawa Barat
+            </p>
+            <p style={{ fontSize: "9px", color: "#94a3b8", margin: 0 }}>
+              Telp: (021) 874 7475 · Website: www.smktarunabhakti.sch.id
+            </p>
+          </div>
+        </div>
+
+        {/* ── JUDUL DOKUMEN ── */}
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <h1
+            style={{
+              fontSize: "14px",
+              fontWeight: 900,
+              textTransform: "uppercase",
+              letterSpacing: "0.15em",
+              color: "#1e293b",
+              margin: "0 0 6px 0",
+              borderBottom: "1px solid #e2e8f0",
+              display: "inline-block",
+              paddingBottom: "6px"
+            }}
+          >
+            TANDA BUKTI REGISTRASI & INVOICE PEMBAYARAN
+          </h1>
+          <p
+            style={{
+              fontSize: "10px",
+              fontFamily: "monospace",
+              fontWeight: 700,
+              color: "#64748b",
+              margin: 0
+            }}
+          >
+            Nomor Dokumen: INV-{formatNoPendaftaran(data.periode, data.id)}
+          </p>
+        </div>
+
+        {/* ── DATA PENDAFTAR (2 columns) ── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "12px",
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            borderRadius: "12px",
+            padding: "14px 16px",
+            marginBottom: "20px",
+            fontSize: "11px",
+            lineHeight: 1.8,
+            fontWeight: 600,
+            color: "#475569"
+          }}
+        >
+          <div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span style={{ color: "#94a3b8", width: "110px", flexShrink: 0 }}>
+                No. Pendaftaran
+              </span>
+              <span
+                style={{
+                  color: "#0f172a",
+                  fontFamily: "monospace",
+                  fontWeight: 800
+                }}
+              >
+                : {formatNoPendaftaran(data.periode, data.id)}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span style={{ color: "#94a3b8", width: "110px", flexShrink: 0 }}>
+                No. Invoice
+              </span>
+              <span
+                style={{
+                  color: "#0f172a",
+                  fontFamily: "monospace",
+                  fontWeight: 800
+                }}
+              >
+                : INV-{formatNoPendaftaran(data.periode, data.id)}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span style={{ color: "#94a3b8", width: "110px", flexShrink: 0 }}>
+                Tanggal Daftar
+              </span>
+              <span style={{ color: "#0f172a" }}>: {tglDaftarFormatted}</span>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span style={{ color: "#94a3b8", width: "110px", flexShrink: 0 }}>
+                Periode Ajaran
+              </span>
+              <span style={{ color: "#0f172a", fontWeight: 800 }}>
+                : {data.periode || "2026-2027"}
+              </span>
+            </div>
+          </div>
+          <div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span style={{ color: "#94a3b8", width: "110px", flexShrink: 0 }}>
+                Nama Pendaftar
+              </span>
+              <span
+                style={{
+                  color: "#0f172a",
+                  fontWeight: 800,
+                  textTransform: "uppercase"
+                }}
+              >
+                : {data.nama}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span style={{ color: "#94a3b8", width: "110px", flexShrink: 0 }}>
+                NISN Pendaftar
+              </span>
+              <span
+                style={{
+                  color: "#0f172a",
+                  fontFamily: "monospace",
+                  fontWeight: 800
+                }}
+              >
+                : {data.nisn}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span style={{ color: "#94a3b8", width: "110px", flexShrink: 0 }}>
+                Program Rombel
+              </span>
+              <span
+                style={{
+                  color: "#2563eb",
+                  fontWeight: 800,
+                  textTransform: "uppercase"
+                }}
+              >
+                : {data.jurusan_1 || "-"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── TABEL TAGIHAN ── */}
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginBottom: "16px",
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "#334155"
+          }}
+        >
+          <thead>
+            <tr style={{ borderBottom: "2px solid #1e293b" }}>
+              <th
+                style={{
+                  padding: "8px 0",
+                  textAlign: "left",
+                  fontSize: "10px",
+                  fontWeight: 900,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "#64748b"
+                }}
+              >
+                No.
+              </th>
+              <th
+                style={{
+                  padding: "8px 0",
+                  textAlign: "left",
+                  fontSize: "10px",
+                  fontWeight: 900,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "#64748b"
+                }}
+              >
+                Deskripsi Alokasi Tagihan
+              </th>
+              <th
+                style={{
+                  padding: "8px 0",
+                  textAlign: "right",
+                  fontSize: "10px",
+                  fontWeight: 900,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "#64748b",
+                  width: "140px"
+                }}
+              >
+                Jumlah (Rp)
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+              <td style={{ padding: "10px 0", color: "#0f172a" }}>1</td>
+              <td style={{ padding: "10px 0", color: "#0f172a", fontWeight: 700 }}>
+                Biaya Registrasi Formulir PPDB SMK Taruna Bhakti
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "9px",
+                    fontWeight: 600,
+                    color: "#94a3b8",
+                    marginTop: "2px"
+                  }}
+                >
+                  Alokasi administrasi berkas dan formulir online
+                </span>
+              </td>
+              <td
+                style={{
+                  padding: "10px 0",
+                  textAlign: "right",
+                  color: "#0f172a",
+                  fontWeight: 800
+                }}
+              >
+                Rp {regCost.toLocaleString("id-ID")}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* ── TOTAL ── */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "20px" }}>
+          <div style={{ width: "260px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#64748b",
+                padding: "6px 0",
+                borderBottom: "1px solid #f1f5f9"
+              }}
+            >
+              <span>Subtotal</span>
+              <span>Rp {regCost.toLocaleString("id-ID")}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#64748b",
+                padding: "6px 0"
+              }}
+            >
+              <span>Pajak (PPN 0%)</span>
+              <span>Nihil</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "13px",
+                fontWeight: 900,
+                color: "#0f172a",
+                padding: "8px 0",
+                borderTop: "2px solid #1e293b"
+              }}
+            >
+              <span>Total Tagihan</span>
+              <span style={{ color: "#2563eb", fontWeight: 900 }}>
+                Rp {regCost.toLocaleString("id-ID")}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── INFO PEMBAYARAN (screen only) ── */}
+        <div
+          className="no-print"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontSize: "10px",
+            color: "#64748b",
+            borderTop: "1px solid #e2e8f0",
+            paddingTop: "12px",
+            marginBottom: "24px"
+          }}
+        >
+          <div style={{ display: "flex", gap: "16px" }}>
+            <div>
+              <span style={{ fontWeight: 800 }}>Metode Bayar: </span>
+              <span
+                style={{
+                  color: "#0f172a",
+                  fontWeight: 700,
+                  textTransform: "uppercase"
+                }}
+              >
+                {data.metode_pembayaran === "Transfer Manual" ? "Transfer" : data.metode_pembayaran}
+              </span>
+            </div>
+            <div>
+              <span style={{ fontWeight: 800 }}>Status Bayar: </span>
+              <span
+                style={{
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  color: data.payment_status === "Paid" ? "#059669" : "#d97706"
+                }}
+              >
+                {data.payment_status === "Paid" ? "LUNAS (VERIFIED)" : "PENDING"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── HIMBAUAN BERKAS FISIK ── */}
+        <div
+          style={{
+            background: "#fef3c7",
+            border: "1px solid #fde68a",
+            borderRadius: "12px",
+            padding: "16px",
+            marginTop: "20px",
+            fontSize: "11px",
+            color: "#92400e",
+            lineHeight: "1.6",
+            fontWeight: 600
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+              fontWeight: 900,
+              color: "#b45309",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em"
+            }}
+          >
+            <span style={{ fontSize: "14px" }}>⚠️</span>
+            Penting: Bawa Berkas Fisik!
+          </div>
+          <p style={{ margin: "0 0 8px 0" }}>
+            Harap datang langsung ke loket sekretariat PPDB sekolah untuk verifikasi fisik berkas-berkas pendaftaran berikut:
+          </p>
+          <ul style={{ margin: 0, paddingLeft: "20px", listStyleType: "disc" }}>
+            <li>Fotokopi Kartu Keluarga (KK)</li>
+            <li>Fotokopi KTP Orang Tua (Ayah &amp; Ibu)</li>
+            <li>Akta Kelahiran asli &amp; Fotokopi</li>
+            <li>Fotokopi Ijazah / Surat Keterangan Lulus (SKL) legalisir</li>
+            <li>Pas foto berwarna terbaru ukuran 3x4 (3 lembar)</li>
+          </ul>
+        </div>
+
+        {/* ── FOOTER NOTE (print only) ── */}
+        <p
+          style={{
+            marginTop: "16px",
+            fontSize: "8px",
+            color: "#94a3b8",
+            textAlign: "center",
+            fontWeight: 500
+          }}
+        >
+          Dokumen ini dicetak otomatis oleh Sistem PPDB SMK Taruna Bhakti Depok dan sah sebagai bukti registrasi.
+        </p>
+      </div>
+    </div>
+  );
+};

@@ -1,10 +1,18 @@
 import { Metadata } from "next";
 
+export const getBaseUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.FRONTEND_URL;
+  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    return envUrl.replace(/\/$/, "");
+  }
+  return "https://cationgate.site";
+};
+
 export const siteConfig = {
   name: "CationGate",
   shortName: "CationGate",
   domain: "cationgate.site",
-  url: process.env.NEXT_PUBLIC_APP_URL || process.env.FRONTEND_URL || "https://cationgate.site",
+  url: getBaseUrl(),
   title: "CationGate - Platform Manajemen PPDB & SPMB SMK Modern",
   description:
     "Solusi SaaS manajemen Penerimaan Peserta Didik Baru (PPDB) & SPMB online cerdas, verifikasi berkas otomatis, dan sistem administrasi pendaftaran sekolah terpadu yang terintegrasi Dapodik khusus SMK di seluruh Indonesia.",

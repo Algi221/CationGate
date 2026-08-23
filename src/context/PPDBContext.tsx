@@ -453,6 +453,9 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const connectWs = useCallback(() => {
     if (wsRef.current) return;
     if (typeof window === "undefined") return;
+    if (isDemoMode) return;
+    // Next.js standard dev/standalone server doesn't host WS without custom server
+    if (process.env.NEXT_PUBLIC_ENABLE_WS !== "true") return;
     if (!schoolId && !adminToken) return;
 
     try {
@@ -506,7 +509,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     } catch {
       setWsStatus("ERROR");
     }
-  }, [schoolId, adminToken, addToast]);
+  }, [schoolId, adminToken, addToast, isDemoMode]);
 
   useEffect(() => {
     connectWsRef.current = connectWs;

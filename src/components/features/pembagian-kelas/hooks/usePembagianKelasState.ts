@@ -99,11 +99,17 @@ export function usePembagianKelasState() {
 
   const activeMajors = useMemo(() => {
     const list = dynamicMajorsList && dynamicMajorsList.length > 0 ? dynamicMajorsList : DEFAULT_MAJORS;
-    return list.map((m) => ({
-      code: m.code,
-      name: m.title || m.name || m.code,
-      logo: m.logo || getMajorLogoUrl(m.code)
-    }));
+    return list.map((m) => {
+      let logo = m.logo || getMajorLogoUrl(m.code);
+      if (logo && logo.startsWith("/jurusan/")) {
+        logo = `/assets${logo}`;
+      }
+      return {
+        code: m.code,
+        name: m.title || m.name || m.code,
+        logo: logo || getMajorLogoUrl(m.code)
+      };
+    });
   }, [dynamicMajorsList]);
 
   const generateDefaultClasses = useCallback((): ClassItem[] => {
@@ -545,6 +551,65 @@ export function usePembagianKelasState() {
     }
   };
 
+  const filledClassesCount = useMemo(() => {
+    return Object.values(classEnrollments).filter((s) => s.total > 0).length;
+  }, [classEnrollments]);
+
+  const handleAssignSingleStudent = async (studentId: number, className: string) => {
+    setIsLoading(true);
+    showToast(`Memindahkan siswa ke kelas ${className || "Belum Ditentukan"}...`, "info");
+    try {
+      const payload = {
+        diterima_kelas: className || null,
+        diterima_tanggal: className ? new Date().toISOString().split("T")[0] : null
+      };
+      const result = await updateActiveStudent(studentId, payload);
+      if (result?.success) {
+        showToast(`Siswa berhasil dipindahkan ke kelas ${className || "Belum Ditentukan"}!`, "success");
+      } else {
+        showToast("Gagal memindahkan siswa.", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Terjadi kesalahan saat memindahkan siswa.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExportAllMajors = async () => {
+    const classesInGrade = classes.filter((c) => getClassGrade(c.name) === selectedGrade);
+    const exportedCount = await exportAllClassesToExcel(
+      classesInGrade,
+      applicants,
+      activeMajors,
+      `SEMUA_JURUSAN_KELAS_${selectedGrade}`,
+      schoolPeriod,
+      nipdMap
+    );
+    if (!exportedCount) {
+      showToast("Tidak ada kelas atau data siswa untuk diekspor.", "error");
+    } else {
+      showToast(`Berhasil mengekspor seluruh kelas tingkat ${selectedGrade} ke Excel!`);
+    }
+  };
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedMajor, selectedGrade, searchTerm, assignmentFilter, genderFilter]);
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredStudents.length / pageSize));
+  }, [filteredStudents.length, pageSize]);
+
+  const paginatedStudents = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredStudents.slice(start, start + pageSize);
+  }, [filteredStudents, page, pageSize]);
+
   return {
     selectedMajor,
     setSelectedMajor,
@@ -553,7 +618,14 @@ export function usePembagianKelasState() {
     activeMajors,
     classesOfSelectedMajor,
     filteredStudents,
+    paginatedStudents,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    totalPages,
     classEnrollments,
+    filledClassesCount,
     selectedStudentIds,
     searchTerm,
     setSearchTerm,
@@ -577,6 +649,7 @@ export function usePembagianKelasState() {
     handleSelectAll,
     handleSelectStudent,
     handleAssignSelectedToClass,
+    handleAssignSingleStudent,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
@@ -585,6 +658,7 @@ export function usePembagianKelasState() {
     handleDeleteClass,
     handleRemoveStudentFromClassDetail,
     handleExportClassCSV,
-    handleExportAllClasses
+    handleExportAllClasses,
+    handleExportAllMajors
   };
 }

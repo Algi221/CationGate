@@ -93,20 +93,28 @@ export default function ContactPage() {
             Konsultasikan kebutuhan platform sekolahmu. Kirimkan pesan atau hubungi kami langsung, tim kami siap membantu dan akan merespons dalam 1x24 jam kerja.
           </p>
 
-          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-10">
-            <div className="flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-full border border-slate-100">
+          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6">
+            <a
+              href="https://wa.me/6285167348039"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 px-5 py-2.5 rounded-full border border-slate-200 hover:border-[#FFD33B] transition-all hover:scale-105 shadow-xs"
+            >
               <Phone size={18} className="text-[#2e3749]" />
               <span className="text-sm font-semibold text-[#2e3749]">
-                +62 851-1051-1403
+                085167348039
               </span>
-            </div>
+            </a>
 
-            <div className="flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-full border border-slate-100">
+            <a
+              href="mailto:cationgate@gmail.com"
+              className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 px-5 py-2.5 rounded-full border border-slate-200 hover:border-[#FFD33B] transition-all hover:scale-105 shadow-xs"
+            >
               <Mail size={18} className="text-[#2e3749]" />
               <span className="text-sm font-semibold text-[#2e3749]">
-                hello@sekolahdigital.id
+                cationgate@gmail.com
               </span>
-            </div>
+            </a>
           </div>
         </section>
 
@@ -176,29 +184,6 @@ export default function ContactPage() {
                     </InteractiveHoverButton>
                   </div>
                 </form>
-              </div>
-
-              <div className="px-2">
-                <h2 className="text-2xl font-bold text-[#2e3749] mb-6">
-                  Kantor Operasional Kami
-                </h2>
-
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <span className="w-3.5 h-3.5 rounded-full bg-[#2e3749] shrink-0 mt-1" />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-[#2e3749]">Jakarta Pusat</h3>
-                        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                          MAP
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-500 mt-1 leading-relaxed">
-                        Sudirman Central Business District, Jakarta Pusat. Pusat layanan konsultasi digital.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 

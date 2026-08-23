@@ -162,6 +162,20 @@ export function AdminSidebar({
         } else {
           setOpenDropdowns((prev) => ({ ...prev, [item.href]: !isOpen }));
         }
+      } else {
+        if (isMobileMenuOpen) {
+          setIsMobileMenuOpen(false);
+        }
+      }
+    };
+
+    const handleSubClick = (e: React.MouseEvent) => {
+      if (isLocked) {
+        e.preventDefault();
+        return;
+      }
+      if (isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
       }
     };
 
@@ -248,7 +262,7 @@ export function AdminSidebar({
                       <Link
                         key={sub.href}
                         href={isLocked ? "#" : fullSubHref}
-                        onClick={handleItemClick}
+                        onClick={handleSubClick}
                         className={`block px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                           isLocked
                             ? "opacity-35 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none hover:bg-transparent"

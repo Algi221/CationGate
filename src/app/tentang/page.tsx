@@ -27,8 +27,8 @@ const defaultTeam = [
     name: "Algifahri Tri Ramadhan",
     role: "Fullstack Developer",
     clipPathId: "clip-squiggle",
-    badgeClass: "bg-blue-50 text-blue-700 border-blue-200/70",
-    photo_url: "/assets/team/algifahri.jpg",
+    badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
+    photo_url: "/assets/team/Algi.jpg",
   },
   {
     id: 2,
@@ -36,7 +36,7 @@ const defaultTeam = [
     role: "Frontend Developer",
     clipPathId: "differentone16",
     badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
-    photo_url: "/assets/team/pak-joy.jpg",
+    photo_url: "/assets/team/jepan.jpg",
   },
   {
     id: 3,
@@ -44,7 +44,7 @@ const defaultTeam = [
     role: "Frontend Developer",
     clipPathId: "differentone8",
     badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
-    photo_url: "/assets/team/bu-miranda.jpg",
+    photo_url: "/assets/team/farel.jpg",
   },
   {
     id: 4,

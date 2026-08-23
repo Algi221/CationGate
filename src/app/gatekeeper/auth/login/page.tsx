@@ -52,7 +52,7 @@ export default function GatekeeperLogin() {
   if (!mounted) return null;
 
   return (
-    <div data-dashboard="true" className="min-h-screen w-full flex flex-col lg:flex-row font-sans selection:bg-blue-600 selection:text-white">
+    <div data-dashboard="true" className="min-h-screen w-full flex flex-col lg:flex-row font-sans selection:bg-[#FFD33B] selection:text-[#2e3749]">
 
       {}
       <div className="w-full lg:w-[45%] bg-[#0b1121] relative flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">
@@ -71,7 +71,7 @@ export default function GatekeeperLogin() {
           </Link>
 
           <div className="flex items-center gap-3 pt-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#FFD33B] flex items-center justify-center">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -94,20 +94,20 @@ export default function GatekeeperLogin() {
 
           <div className="space-y-4 pt-4">
             <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
-              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              <div className="w-6 h-6 rounded-full bg-[#FFD33B]/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-[#F3C625]" />
               </div>
               <span>Verifikasi & Unlock Akun Sekolah Tenant</span>
             </div>
             <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
-              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              <div className="w-6 h-6 rounded-full bg-[#FFD33B]/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-[#F3C625]" />
               </div>
               <span>Manajemen Feedback & Laporan Bug Platform</span>
             </div>
             <div className="flex items-center gap-4 text-sm font-medium text-slate-300">
-              <div className="w-6 h-6 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-4 h-4 text-blue-500" />
+              <div className="w-6 h-6 rounded-full bg-[#FFD33B]/20 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-[#F3C625]" />
               </div>
               <span>Audit Log Multitenant & Billing SLA</span>
             </div>
@@ -154,7 +154,7 @@ export default function GatekeeperLogin() {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Contoh: admin_cationgate"
                   required
-                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-[#FFD33B] focus:outline-none focus:ring-1 focus:ring-[#FFD33B] transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -170,7 +170,7 @@ export default function GatekeeperLogin() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-all text-sm text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:border-[#FFD33B] focus:outline-none focus:ring-1 focus:ring-[#FFD33B] transition-all text-sm text-slate-900 placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -188,7 +188,7 @@ export default function GatekeeperLogin() {
               type="button"
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all mt-6"
+              className="w-full h-12 rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-white font-medium text-sm transition-all mt-6"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -205,7 +205,7 @@ export default function GatekeeperLogin() {
           </form>
 
           <div className="mt-8 text-center text-xs text-slate-500">
-            Dengan mendaftar, Anda menyetujui <span className="text-blue-600 font-medium">Syarat & Ketentuan</span> serta <span className="text-blue-600 font-medium">Kebijakan Privasi</span> CationGate.
+            Dengan mendaftar, Anda menyetujui <span className="text-[#2e3749] font-medium">Syarat & Ketentuan</span> serta <span className="text-[#2e3749] font-medium">Kebijakan Privasi</span> CationGate.
           </div>
 
         </div>

@@ -1,184 +1,208 @@
 "use client";
-import React, { useRef, useState, useEffect } from "react";
-import { Check, Sparkles, ArrowRight } from "lucide-react";
-import { TimelineAnimation } from "@/components/ui/product-packs-utils/timeline-animation";
+
+import React, { useRef } from "react";
+import { Check, Building2 } from "lucide-react";
 import Link from "next/link";
+import { TimelineAnimation } from "@/components/ui/product-packs-utils/timeline-animation";
 
 export const ProductPacks = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [plans, setPlans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const res = await fetch("/api/saas/plans");
-        const json = await res.json();
-        if (json.success && json.data) {
-          setPlans(json.data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPlans();
-  }, []);
-
-  const formatRupiah = (price: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
 
   return (
     <section
       ref={timelineRef}
-      className="py-24 px-6 bg-yellow-50/50 dark:bg-slate-950 text-neutral-900 dark:text-white min-h-screen relative overflow-hidden"
+      className="py-24 px-4 sm:px-6 bg-slate-50 dark:bg-slate-950 text-[#2e3749] dark:text-white min-h-screen flex flex-col justify-center font-sans"
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto w-full">
         {/* Header Section */}
-        <TimelineAnimation
-          animationNum={1}
-          timelineRef={timelineRef}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-14">
           <TimelineAnimation
-            animationNum={2}
+            animationNum={1}
             timelineRef={timelineRef}
-            as="h2"
-            className="text-3xl md:text-4xl font-bold tracking-tight mb-4"
+            as="h1"
+            className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-[#2e3749] dark:text-white"
           >
             Pilihan Paket Fleksibel
           </TimelineAnimation>
+
           <TimelineAnimation
-            animationNum={3}
+            animationNum={2}
             timelineRef={timelineRef}
             as="p"
-            className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto text-sm md:text-base leading-relaxed"
+            className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm sm:text-base leading-relaxed"
           >
-            Solusi manajemen PPDB terpadu untuk sekolah Anda. Mulai dari uji
-            coba gratis hingga solusi profesional tanpa biaya tersembunyi.
+            Mulai dari uji coba gratis hingga solusi pro terpadu tanpa biaya
+            tersembunyi untuk digitalisasi sekolah Anda.
           </TimelineAnimation>
-        </TimelineAnimation>
+        </div>
 
-        {loading ? (
-          <div className="text-center text-neutral-500 py-12 animate-pulse">
-            Memuat pilihan paket...
-          </div>
-        ) : (
-          <TimelineAnimation
-            animationNum={4}
-            timelineRef={timelineRef}
-            className={`grid grid-cols-1 md:grid-cols-2 ${
-              plans.length >= 3 ? "xl:grid-cols-3" : "lg:grid-cols-2"
-            } gap-8 max-w-5xl mx-auto items-stretch`}
-          >
-            {plans.map((plan, idx) => {
-              const isFirst = idx === 0;
-              const isSecond = idx === 1; // Popular Plan
+        {/* Pricing Layout (2 Rows on Left + Big Box on Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Kolom Kiri: Starter & Pro Rows */}
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            {/* Row 1: STARTER / FREE */}
+            <TimelineAnimation
+              animationNum={3}
+              timelineRef={timelineRef}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start shadow-sm"
+            >
+              {/* Info Kiri - Diperlebar menjadi 5/12 agar tidak patah */}
+              <div className="w-full md:w-5/12 flex flex-col h-full justify-between space-y-6">
+                <div>
+                  <span className="inline-block px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold tracking-wider rounded-md uppercase mb-4">
+                    FREE TRIAL
+                  </span>
+                  <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                    <span className="text-4xl font-bold text-[#2e3749] dark:text-white">
+                      Gratis
+                    </span>
+                    <span className="text-slate-400 text-sm">/ 30 Hari</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-2">
+                    Uji coba fitur dasar platform
+                  </p>
+                </div>
 
-              // Clean Card Styling based on CationGate's vibe (White, Yellow Accent, Dark Minimalist)
-              let cardStyle =
-                "rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ";
-              let buttonStyle = "";
-              let btnText = "Mulai Uji Coba";
-
-              if (isFirst) {
-                cardStyle +=
-                  "bg-white dark:bg-slate-900 border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md";
-                buttonStyle =
-                  "w-full inline-flex items-center justify-center rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 py-3 px-6 text-sm font-semibold text-neutral-900 dark:text-white transition-colors";
-                btnText = "Mulai Gratis";
-              } else if (isSecond) {
-                cardStyle +=
-                  "bg-neutral-900 text-white dark:bg-neutral-900 border-2 border-yellow-400 shadow-xl scale-105 z-10";
-                buttonStyle =
-                  "w-full inline-flex items-center justify-center rounded-xl bg-yellow-400 hover:bg-yellow-300 py-3 px-6 text-sm font-semibold text-neutral-950 transition-colors shadow-sm";
-                btnText = "Pilih Paket Pro";
-              } else {
-                cardStyle +=
-                  "bg-white dark:bg-slate-900 border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md";
-                buttonStyle =
-                  "w-full inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-700 py-3 px-6 text-sm font-semibold text-white transition-colors";
-                btnText = "Pilih Paket";
-              }
-
-              return (
-                <TimelineAnimation
-                  key={plan.id}
-                  animationNum={5 + idx}
-                  timelineRef={timelineRef}
-                  className={cardStyle}
+                <Link
+                  href="/daftar"
+                  className="inline-flex justify-center items-center w-full py-3 px-4 bg-[#2e3749] hover:bg-[#202735] text-white text-sm font-semibold rounded-xl transition-all shadow-sm"
                 >
-                  {isSecond && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-yellow-400 text-neutral-950 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm uppercase tracking-wider">
-                       Terpopuler
-                    </div>
-                  )}
+                  Mulai Gratis
+                </Link>
+              </div>
 
-                  <div>
-                    {/* Plan Header */}
-                    <div className="mb-6">
-                      <h3 className="text-xl font-bold tracking-tight mb-2">
-                        {plan.name}
-                      </h3>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        {isFirst
-                          ? "Uji coba fitur dasar platform"
-                          : isSecond
-                            ? "Solusi terbaik untuk instansi sekolah"
-                            : "Fitur kustom lengkap"}
-                      </p>
+              {/* Fitur Kanan */}
+              <div className="w-full md:w-7/12 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
+                <div className="space-y-3.5">
+                  {[
+                    "Pendaftaran Online PPDB",
+                    "Kelola Data Calon Siswa",
+                    "Export Excel",
+                    "Landing Page Sekolah",
+                    "Maks 100 Pendaftar",
+                    "Masa Aktif 30 Hari",
+                  ].map((feature, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-300"
+                    >
+                      <div className="w-5 h-5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Check size={12} strokeWidth={3} />
+                      </div>
+                      {feature}
                     </div>
+                  ))}
+                </div>
+              </div>
+            </TimelineAnimation>
 
-                    {/* Price Section */}
-                    <div className="mb-6 pb-6 border-b border-neutral-100 dark:border-neutral-800 flex items-baseline gap-1">
-                      <span className="text-3xl md:text-4xl font-bold tracking-tight">
-                        {plan.price_yearly === 0
-                          ? "Gratis"
-                          : formatRupiah(plan.price_yearly)}
-                      </span>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                        {plan.price_yearly === 0 ? "/ 30 hari" : "/ tahun"}
-                      </span>
-                    </div>
+            {/* Row 2: PRO TAHUNAN */}
+            <TimelineAnimation
+              animationNum={4}
+              timelineRef={timelineRef}
+              className="bg-white dark:bg-slate-900 border-2 border-[#FFD33B] rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start shadow-md relative overflow-hidden"
+            >
+              {/* Badge Paling Populer - Dipindah ke pojok kanan atas agar rapi */}
+              <div className="absolute top-0 right-0 bg-[#FFD33B] text-[#2e3749] text-[10px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-bl-xl shadow-sm">
+                Paling Populer
+              </div>
 
-                    {/* Features List */}
-                    <div className="space-y-3 mb-8">
-                      {(plan.features || []).map(
-                        (feature: string, i: number) => (
-                          <div key={i} className="flex items-start gap-3">
-                            <div
-                              className={`mt-0.5 rounded-full p-0.5 ${isSecond ? "bg-yellow-400/10 text-yellow-400" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"}`}
-                            >
-                              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                            </div>
-                            <span className="text-sm text-neutral-600 dark:text-neutral-300 leading-snug">
-                              {feature}
-                            </span>
-                          </div>
-                        ),
-                      )}
-                    </div>
+              {/* Info Kiri - Diperlebar menjadi 5/12 agar teks harga muat 1 baris */}
+              <div className="w-full md:w-5/12 flex flex-col h-full justify-between space-y-6 pt-2">
+                <div>
+                  <span className="inline-block px-3 py-1 bg-[#FFD33B] text-[#2e3749] text-xs font-bold tracking-wider rounded-md uppercase mb-4">
+                    PRO TAHUNAN
+                  </span>
+                  <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                    <span className="text-4xl font-bold text-[#2e3749] dark:text-white">
+                      Rp 750.000
+                    </span>
+                    <span className="text-slate-400 text-sm">/ Tahun</span>
                   </div>
+                  <p className="text-[11px] text-slate-400 mt-2">
+                    Solusi terbaik untuk instansi sekolah
+                  </p>
+                </div>
 
-                  {/* Action Button */}
-                  <div>
-                    <Link href="/daftar" className={buttonStyle}>
-                      <span>{btnText}</span>
-                      <ArrowRight className="w-4 h-4 ml-2 opacity-70" />
-                    </Link>
-                  </div>
-                </TimelineAnimation>
-              );
-            })}
+                <Link
+                  href="/daftar"
+                  className="inline-flex justify-center items-center w-full py-3 px-4 bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] text-sm font-bold rounded-xl transition-all shadow-sm"
+                >
+                  Pilih Paket Pro
+                </Link>
+              </div>
+
+              {/* Fitur Kanan */}
+              <div className="w-full md:w-7/12 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
+                <div className="space-y-3.5">
+                  {[
+                    "Semua Fitur Free Trial",
+                    "Unlimited Pendaftar",
+                    "Custom Branding & Logo",
+                    "Multi-Admin Dashboard",
+                    "WhatsApp Notifikasi",
+                    "Prioritas Support 24/7",
+                    "Pembagian Kelas Otomatis",
+                    "Laporan & Statistik Lengkap",
+                  ].map((feature, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-200"
+                    >
+                      <div className="w-5 h-5 rounded-full bg-[#FFD33B] text-[#2e3749] flex items-center justify-center shrink-0">
+                        <Check size={12} strokeWidth={3} />
+                      </div>
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TimelineAnimation>
+          </div>
+
+          {/* Kolom Kanan: Kebutuhan Khusus - Desain Dibuat Clean & Solid */}
+          <TimelineAnimation
+            animationNum={5}
+            timelineRef={timelineRef}
+            className="lg:col-span-4 bg-[#2e3749] text-white rounded-3xl p-8 flex flex-col shadow-lg border border-slate-700/50"
+          >
+            {/* Ikon dan Judul */}
+            <div className="flex-1">
+              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-[#FFD33B] mb-6">
+                <Building2 size={24} strokeWidth={1.5} />
+              </div>
+
+              <h3 className="text-2xl font-bold mb-4 text-white leading-snug">
+                Kebutuhan Khusus / Yayasan Besar?
+              </h3>
+
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Dapatkan kustomisasi domain (.sch.id), integrasi Payment
+                Gateway, server dedicated, serta pendampingan sistem langsung
+                oleh tim ahli kami.
+              </p>
+            </div>
+
+            {/* Tombol Aksi di Bawah (Dibersihkan dari ikon AI Slop) */}
+            <div className="mt-10 space-y-4">
+              <Link
+                href="/kontak"
+                className="w-full py-3.5 px-6 bg-white hover:bg-slate-100 text-[#2e3749] text-sm font-bold rounded-xl flex items-center justify-center transition-colors active:scale-95"
+              >
+                Konsultasi Kebutuhan
+              </Link>
+              <p className="text-[11px] text-center text-slate-400 font-medium">
+                Solusi kustom khusus multi-sekolah & yayasan
+              </p>
+            </div>
           </TimelineAnimation>
-        )}
+        </div>
+
+        {/* Footer Note */}
+        <p className="text-center text-xs text-slate-400 mt-12">
+          Semua paket sudah termasuk update sistem berkala, perlindungan data,
+          dan panduan penggunaan.
+        </p>
       </div>
     </section>
   );

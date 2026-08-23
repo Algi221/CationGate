@@ -158,12 +158,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
           logoutAdmin();
-          router.push(`/masuk?expired=true`);
+          router.push(`/login?expired=true`);
           return;
         }
       }
       if (!adminToken) {
-        router.push(`/masuk`);
+        router.push(`/login`);
         return;
       }
       // Redirect unverified schools to verification onboarding in dashboard
@@ -187,7 +187,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
         logoutAdmin();
-        router.push(`/masuk?expired=true`);
+        router.push(`/login?expired=true`);
       }, limit);
       const now = Date.now();
       if (now - lastStorageUpdate > 10000) {
@@ -259,7 +259,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const confirmLogout = () => {
     logoutAdmin();
     setShowLogoutConfirm(false);
-    router.push("/masuk");
+    router.push("/login");
   };
 
   if (!mounted) return null;

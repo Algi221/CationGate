@@ -445,11 +445,6 @@ export function CatBotWidget() {
                   <Send className="w-4 h-4" />
                 </button>
               </form>
-              <div className="mt-2 text-center">
-                <span className="text-[9px] text-slate-500 font-medium">
-                  Didukung oleh Google Gemini AI &bull; Catpeer CationGate
-                </span>
-              </div>
             </div>
           </motion.div>
         )}

@@ -450,7 +450,7 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
   }
 });
 
-// 8. ADMIN ONLY: Import Excel Data
+// 8. ADMIN ONLY: Import Excel Data (Bulk Import with Chunking & Field Normalization)
 siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
@@ -464,28 +464,83 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
       return c.json({ success: false, message: 'Invalid payload. Expected an array of students.' }, 400);
     }
 
-    const studentsToInsert = body.students.map((student: Record<string, unknown>) => ({
-      ...student,
-      school_id: schoolId, // Critical: Enforce tenant isolation
-    }));
-
-    const { data, error } = await supabase
-      .from('active_students')
-      .insert(studentsToInsert)
-      .select('id');
-
-    if (error) {
-      console.error('Supabase insert error during import:', error);
-      throw error;
+    const rawStudents: Record<string, unknown>[] = body.students;
+    if (rawStudents.length === 0) {
+      return c.json({ success: false, message: 'Array data siswa kosong.' }, 400);
     }
 
-    // Broadcast to update UI
+    // Normalize and sanitize fields for each student
+    const sanitizedStudents = rawStudents.map((s) => {
+      const rawJk = String(s.jenis_kelamin || s.jk || s.gender || '').trim().toLowerCase();
+      let normalizedJk = '';
+      if (rawJk.startsWith('l')) normalizedJk = 'Laki-laki';
+      else if (rawJk.startsWith('p')) normalizedJk = 'Perempuan';
+
+      const nama = String(s.nama || s.nama_lengkap || s.namaLengkap || '').trim();
+      const nisn = String(s.nisn || '').trim();
+      const nik = s.nik ? String(s.nik).trim() : null;
+      const nipd = s.nipd ? String(s.nipd).trim() : null;
+      const jurusan = String(s.jurusan || s.jurusan_1 || s.jurusan1 || s.prodi || '').trim();
+      const kelas = String(s.diterima_kelas || s.diterimaKelas || s.kelas || s.rombel || '').trim() || null;
+      const periode = String(s.periode || s.tahun_ajaran || s.angkatan || '2026-2027').trim();
+
+      return {
+        school_id: schoolId,
+        nama,
+        nisn,
+        nik,
+        nipd,
+        jurusan,
+        diterima_kelas: kelas,
+        periode,
+        jenis_kelamin: normalizedJk,
+        tempat_lahir: s.tempat_lahir ? String(s.tempat_lahir).trim() : null,
+        tgl_lahir: s.tgl_lahir ? String(s.tgl_lahir).trim() : null,
+        agama: s.agama ? String(s.agama).trim() : null,
+        alamat: s.alamat ? String(s.alamat).trim() : null,
+        rt_rw: s.rt_rw ? String(s.rt_rw).trim() : null,
+        kelurahan: s.kelurahan ? String(s.kelurahan).trim() : null,
+        kecamatan: s.kecamatan ? String(s.kecamatan).trim() : null,
+        kode_pos: s.kode_pos ? String(s.kode_pos).trim() : null,
+        whatsapp: s.whatsapp ? String(s.whatsapp).trim() : null,
+        email: s.email ? String(s.email).trim() : null,
+        sekolah_asal: s.sekolah_asal ? String(s.sekolah_asal).trim() : null,
+        nama_ayah: s.nama_ayah ? String(s.nama_ayah).trim() : null,
+        pekerjaan_ayah: s.pekerjaan_ayah ? String(s.pekerjaan_ayah).trim() : null,
+        penghasilan_ayah: s.penghasilan_ayah ? String(s.penghasilan_ayah).trim() : null,
+        nama_ibu: s.nama_ibu ? String(s.nama_ibu).trim() : null,
+        pekerjaan_ibu: s.pekerjaan_ibu ? String(s.pekerjaan_ibu).trim() : null,
+        penghasilan_ibu: s.penghasilan_ibu ? String(s.penghasilan_ibu).trim() : null,
+        telepon_ortu: s.telepon_ortu ? String(s.telepon_ortu).trim() : null,
+        diterima_tanggal: s.diterima_tanggal ? String(s.diterima_tanggal).trim() : new Date().toISOString().split('T')[0],
+      };
+    }).filter(s => s.nama.length > 0);
+
+    // Process in chunks of 200 items to prevent database timeout and payload overflow
+    const chunkSize = 200;
+    let totalInserted = 0;
+
+    for (let i = 0; i < sanitizedStudents.length; i += chunkSize) {
+      const chunk = sanitizedStudents.slice(i, i + chunkSize);
+      const { data, error } = await supabase
+        .from('active_students')
+        .insert(chunk)
+        .select('id');
+
+      if (error) {
+        console.error('Supabase batch insert error during import:', error);
+        throw error;
+      }
+      totalInserted += data?.length || 0;
+    }
+
+    // Broadcast WebSocket event to update clients
     broadcast({ event: 'siswa_aktif_update', data: { school_id: schoolId } });
 
     return c.json({
       success: true,
-      message: `Berhasil mengimpor ${data?.length || 0} siswa.`,
-      count: data?.length || 0,
+      message: `Berhasil mengimpor ${totalInserted} data siswa aktif.`,
+      count: totalInserted,
     });
   } catch (err: unknown) {
     console.error('Import active students error:', err);

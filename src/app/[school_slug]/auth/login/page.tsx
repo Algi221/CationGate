@@ -7,7 +7,7 @@ export default function AdminLoginRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/masuk");
+    router.replace("/login");
   }, [router]);
 
   return null;

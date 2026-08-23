@@ -5,7 +5,7 @@ import { getSupabaseClient } from '../db/supabase';
 import { adminAuth, requireTenantId } from '../middleware/auth';
 import { sendTelegramNotification } from '../utils/telegram';
 import { loginSchema, changePasswordSchema } from '../validations/auth';
-import { rateLimiter } from '../middleware/rate-limiter';
+import { authLimiter } from '../middleware/rate-limiter';
 import { isValidUUID, resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 
@@ -18,11 +18,7 @@ const getJwtSecret = () => {
   return secret;
 };
 
-authRouter.post('/login', rateLimiter({
-  windowMs: 60 * 1000,
-  max: 5,
-  message: 'Batas percobaan login terlampaui. Silakan coba lagi dalam 1 menit.'
-}), async (c) => {
+authRouter.post('/login', authLimiter, async (c) => {
   try {
     const body = await c.req.json();
     const result = loginSchema.safeParse(body);
@@ -160,7 +156,7 @@ authRouter.post('/login', rateLimiter({
       });
     }
 
-    let query = supabase.from('admin_users').select('*').eq('username', username);
+    let query = supabase.from('admin_users').select('*').or(`username.eq.${username},email.eq.${username}`);
     if (schoolId) query = query.eq('school_id', schoolId);
     const { data: adminUser } = await query.maybeSingle();
 

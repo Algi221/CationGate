@@ -19,7 +19,7 @@ export default function HeroSPMB() {
   return (
     <section className="relative min-h-screen w-full bg-white overflow-hidden flex flex-col justify-between px-6 sm:px-12 pt-28 pb-8 font-sans selection:bg-amber-200">
       {}
-      <div className="w-full max-w-[1550px] mx-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-8 my-auto z-20">
+      <div className="w-full max-w-387.5 mx-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-8 my-auto z-20">
         {}
         <div className="lg:col-span-4 text-center lg:text-left space-y-6">
           <h1 className="text-4xl sm:text-5xl lg:text-[3.8rem] font-black text-gray-900 leading-[1.02] tracking-tight">
@@ -104,7 +104,7 @@ export default function HeroSPMB() {
       </div>
 
       {}
-      <div className="relative w-full max-w-[1550px] mx-auto pt-6 flex flex-col md:flex-row justify-between items-center border-t border-gray-200/60 gap-4 px-2 z-30 bg-white">
+      <div className="relative w-full max-w-387.5 mx-auto pt-6 flex flex-col md:flex-row justify-between items-center border-t border-gray-200/60 gap-4 px-2 z-30 bg-white">
         {}
         <div className="flex items-center gap-3 text-xs text-gray-500 font-bold">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />

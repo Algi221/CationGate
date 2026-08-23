@@ -6,6 +6,8 @@ import { motion, Variants } from "framer-motion";
 
 interface ProfileHeroProps {
   ppdbTitle: string;
+  ringkasan?: string;
+  heroImage?: string;
 }
 
 const fadeInVariant: Variants = {
@@ -17,18 +19,21 @@ const fadeInVariant: Variants = {
   }
 };
 
-export const ProfileHero: React.FC<ProfileHeroProps> = ({ ppdbTitle }) => {
+export const ProfileHero: React.FC<ProfileHeroProps> = ({ ppdbTitle, ringkasan, heroImage }) => {
+  const bgImg = heroImage || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1920&auto=format&fit=crop";
+
   return (
     <>
       <div className="relative w-full h-[50vh] min-h-95 flex items-center justify-center overflow-hidden bg-slate-950">
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1920&auto=format&fit=crop"
+            src={bgImg}
             alt="Campus Background"
             fill
             priority
             sizes="100vw"
             className="object-cover opacity-40 scale-105"
+            unoptimized={bgImg.startsWith("http") || bgImg.startsWith("/assets")}
           />
           <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
         </div>
@@ -53,10 +58,9 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({ ppdbTitle }) => {
           variants={fadeInVariant}
           className="max-w-4xl mx-auto text-center"
         >
-          <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg font-normal leading-relaxed">
-            {ppdbTitle} merupakan institusi pendidikan teknik dan kejuruan yang didirikan dengan
-            misi pengabdian ilmu pengetahuan dan teknologi untuk memajukan bangsa. {ppdbTitle} hadir
-            untuk mengoptimalkan pembangunan pendidikan yang maju dan bermartabat.
+          <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg font-normal leading-relaxed whitespace-pre-wrap">
+            {ringkasan ||
+              `${ppdbTitle} merupakan institusi pendidikan teknik dan kejuruan yang didirikan dengan misi pengabdian ilmu pengetahuan dan teknologi untuk memajukan bangsa. ${ppdbTitle} hadir untuk mengoptimalkan pembangunan pendidikan yang maju dan bermartabat.`}
           </p>
         </motion.div>
       </section>

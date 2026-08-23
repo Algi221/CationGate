@@ -124,10 +124,16 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
           <div className="flex items-center shrink-0 min-w-0">
             <Link href={`/${schoolSlug}`} className="flex items-center gap-3 overflow-visible group min-w-0">
               <div className="relative h-10 w-10 shrink-0 overflow-visible">
-                <SafeImage src={schoolSlug === 'demo' ? "/assets/logo_sekolah/logo_smktb.png" : (ppdbLogo || "/assets/logo_sekolah/logo_smktb.png")} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
+                <SafeImage
+                  src={ppdbLogo || "/assets/logo_sekolah/logo_smktb.png"}
+                  alt="Logo Sekolah"
+                  fill
+                  sizes="48px"
+                  className="object-contain"
+                />
               </div>
-              <span className="text-xl font-extrabold text-slate-900 dark:text-white truncate max-w-45 sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                {schoolSlug === 'demo' ? "SMK TB" : (ppdbTitle || "SPMB SMK Taruna Bhakti")}
+              <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white truncate max-w-45 sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                {ppdbTitle || (schoolSlug === "demo" ? "SMK Demo Indonesia" : "SMK Taruna Bhakti")}
               </span>
             </Link>
           </div>

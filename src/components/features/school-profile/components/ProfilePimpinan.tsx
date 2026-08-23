@@ -6,6 +6,12 @@ import { motion, Variants } from "framer-motion";
 
 interface ProfilePimpinanProps {
   ppdbTitle: string;
+  pimpinan?: {
+    nama?: string;
+    jabatan?: string;
+    foto?: string;
+    sambutan?: string;
+  };
 }
 
 const fadeInVariant: Variants = {
@@ -17,7 +23,14 @@ const fadeInVariant: Variants = {
   }
 };
 
-export const ProfilePimpinan: React.FC<ProfilePimpinanProps> = ({ ppdbTitle }) => {
+export const ProfilePimpinan: React.FC<ProfilePimpinanProps> = ({ ppdbTitle, pimpinan }) => {
+  const leaderName = pimpinan?.nama || "Dr. H. Ahmad Fauzi, M.Pd.";
+  const leaderRole = pimpinan?.jabatan || "Kepala Sekolah";
+  const leaderPhoto = pimpinan?.foto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop";
+  const leaderSpeech =
+    pimpinan?.sambutan ||
+    `${leaderName}, sebagai ${leaderRole} yang memimpin arah kebijakan akademik, pengembangan teknologi, serta pengabdian masyarakat guna membawa ${ppdbTitle} unggul di tingkat nasional maupun global.`;
+
   return (
     <section
       id="pimpinan"
@@ -38,25 +51,24 @@ export const ProfilePimpinan: React.FC<ProfilePimpinanProps> = ({ ppdbTitle }) =
           <div className="md:col-span-4 flex justify-center">
             <div className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-blue-900 dark:border-blue-500 shadow-md">
               <Image
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop"
-                alt="Kepala Sekolah"
+                src={leaderPhoto}
+                alt={leaderName}
                 fill
                 sizes="(max-width: 640px) 224px, 256px"
                 className="object-cover object-top"
+                unoptimized={leaderPhoto.startsWith("http") || leaderPhoto.startsWith("/assets")}
               />
             </div>
           </div>
           <div className="md:col-span-8 space-y-3 text-center md:text-left">
             <span className="text-xs font-bold text-blue-900 dark:text-blue-400 uppercase tracking-widest block">
-              Rektor / Kepala Sekolah
+              {leaderRole}
             </span>
             <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-              Dr. H. Ahmad Fauzi, M.Pd.
+              {leaderName}
             </h3>
-            <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm sm:text-base pt-2">
-              Dr. H. Ahmad Fauzi, M.Pd., sebagai Kepala Sekolah periode 2023-2028 yang memimpin arah
-              kebijakan akademik, pengembangan teknologi, serta pengabdian masyarakat guna membawa{" "}
-              {ppdbTitle} unggul di tingkat nasional maupun global.
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm sm:text-base pt-2 whitespace-pre-wrap">
+              {leaderSpeech}
             </p>
           </div>
         </div>

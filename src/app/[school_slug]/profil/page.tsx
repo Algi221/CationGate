@@ -73,10 +73,18 @@ export default function ProfilSekolahPublicPage() {
         <SchoolNavbar schoolSlug={schoolSlug} />
       </header>
 
-      <ProfileHero ppdbTitle={ppdbTitle} />
-      <ProfileSejarah sejarah={sejarah} />
+      <ProfileHero
+        ppdbTitle={ppdbTitle}
+        ringkasan={profilSekolah?.ringkasan}
+        heroImage={profilSekolah?.hero_image}
+      />
+      <ProfileSejarah
+        sejarah={sejarah}
+        videoUrl={profilSekolah?.video_profil_url}
+        ppdbTitle={ppdbTitle}
+      />
       <ProfileFaktaAngka />
-      <ProfilePimpinan ppdbTitle={ppdbTitle} />
+      <ProfilePimpinan ppdbTitle={ppdbTitle} pimpinan={profilSekolah?.pimpinan} />
       <ProfileIdentitas identitas={identitas} />
       <ProfileVisiMisi visi={visi} misi={misi} tujuan={tujuan} />
       <ProfileKunjungan identitas={identitas} />

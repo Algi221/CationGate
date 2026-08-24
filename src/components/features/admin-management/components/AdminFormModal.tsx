@@ -3,6 +3,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Save, User, KeyRound, Eye, EyeOff } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 interface AdminFormModalProps {
   editAdminId: number | null;
@@ -103,14 +110,15 @@ export const AdminFormModal: React.FC<AdminFormModalProps> = ({
             <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-1.5">
               Hak Akses / Peran
             </label>
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData((prev) => ({ ...prev, role: e.target.value }))}
-              className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="admin">Admin / Panitia PPDB</option>
-              <option value="superadmin">Superadmin Sekolah</option>
-            </select>
+            <Select value={formData.role} onValueChange={(val) => setFormData((prev) => ({ ...prev, role: val }))}>
+              <SelectTrigger className="w-full h-11 bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 rounded-xl px-4 text-xs font-bold text-slate-800 dark:text-white">
+                <SelectValue placeholder="Pilih Peran" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin / Panitia PPDB</SelectItem>
+                <SelectItem value="superadmin">Superadmin Sekolah</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

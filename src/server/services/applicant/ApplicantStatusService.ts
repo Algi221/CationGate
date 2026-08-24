@@ -1,5 +1,4 @@
 import { getSupabaseClient } from "../../db/supabase";
-import { broadcast } from "../../ws/handler";
 import { ApplicantSyncService } from "./ApplicantSyncService";
 
 export class ApplicantStatusService {
@@ -60,16 +59,6 @@ export class ApplicantStatusService {
 
     await ApplicantSyncService.syncCandidateToSiswaAktif(updatedRecord);
 
-    broadcast({
-      event: "STATUS_UPDATE",
-      data: {
-        id: updatedRecord.id,
-        nama: updatedRecord.nama,
-        status: updatedRecord.status,
-        alasan_ditolak: updatedRecord.alasan_ditolak
-      }
-    });
-
     return {
       success: true as const,
       statusCode: 200 as const,
@@ -112,16 +101,6 @@ export class ApplicantStatusService {
       .eq("school_id", schoolId);
     const { data: updatedRecord, error } = await query.select().single();
     if (error) throw error;
-
-    broadcast({
-      event: "PHYSICAL_DOC_VERIFIED",
-      data: {
-        id: updatedRecord.id,
-        physical_doc_verified: updatedRecord.physical_doc_verified,
-        physical_doc_verified_by: updatedRecord.physical_doc_verified_by,
-        physical_docs_checklist: updatedRecord.physical_docs_checklist
-      }
-    });
 
     return updatedRecord;
   }

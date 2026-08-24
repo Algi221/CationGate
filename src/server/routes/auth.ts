@@ -29,7 +29,7 @@ authRouter.post('/login', authLimiter, async (c) => {
         errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
-    const { username, password } = result.data;
+    const { username, password, rememberMe } = result.data;
     const rawSchoolId = c.req.query('school_id') || null;
 
     let schoolId: string | null = rawSchoolId;
@@ -131,7 +131,7 @@ authRouter.post('/login', authLimiter, async (c) => {
           isYSBMO: true
         },
         getJwtSecret(),
-        { expiresIn: '7d' }
+        { expiresIn: rememberMe ? '30d' : '7d' }
       );
 
       sendTelegramNotification(
@@ -217,7 +217,7 @@ authRouter.post('/login', authLimiter, async (c) => {
         school_slug: resolvedSlug || undefined
       },
       getJwtSecret(),
-      { expiresIn: '7d' }
+      { expiresIn: rememberMe ? '30d' : '7d' }
     );
 
     sendTelegramNotification(

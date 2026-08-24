@@ -4,6 +4,13 @@ import React from "react";
 import { Briefcase, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import DOMPurify from "dompurify";
 import { sanitizeSrc } from "@/utils/security";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { PartnerItem } from "../types";
 
 interface PartnersTabProps {
@@ -113,21 +120,24 @@ export const PartnersTab: React.FC<PartnersTabProps> = ({
 
               <div className="space-y-2">
                 <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Ukuran Logo</label>
-                <select
-                  value={partner.h}
-                  onChange={(e) => {
-                    const val = e.target.value;
+                <Select
+                  value={partner.h || "h-12"}
+                  onValueChange={(val) => {
                     setPartnersList(prev => prev.map(p => p.id === partner.id ? { ...p, h: val } : p));
                   }}
-                  className="w-full px-3 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
                 >
-                  <option value="h-8">Sangat Kecil (h-8)</option>
-                  <option value="h-10">Kecil (h-10)</option>
-                  <option value="h-12">Sedang (h-12)</option>
-                  <option value="h-14">Besar (h-14)</option>
-                  <option value="h-16">Sangat Besar (h-16)</option>
-                  <option value="h-20">Raksasa (h-20)</option>
-                </select>
+                  <SelectTrigger className="w-full h-9 rounded-xl bg-white dark:bg-[#0f172a] border-slate-200 dark:border-white/5 text-xs font-semibold text-slate-800 dark:text-white">
+                    <SelectValue placeholder="Pilih Ukuran" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="h-8">Sangat Kecil (h-8)</SelectItem>
+                    <SelectItem value="h-10">Kecil (h-10)</SelectItem>
+                    <SelectItem value="h-12">Sedang (h-12)</SelectItem>
+                    <SelectItem value="h-14">Besar (h-14)</SelectItem>
+                    <SelectItem value="h-16">Sangat Besar (h-16)</SelectItem>
+                    <SelectItem value="h-20">Raksasa (h-20)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
             </div>

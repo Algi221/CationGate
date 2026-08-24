@@ -101,7 +101,7 @@ export const Step1Instansi: React.FC<Step1InstansiProps> = ({
               )}
               {emailErrorState && (
                 <span className="flex items-center gap-1 text-[10px] font-semibold text-rose-600">
-                  <AlertCircle className="h-3 w-3" /> Terdaftar
+                  <AlertCircle className="h-3 w-3 shrink-0" /> {emailErrorState.toLowerCase().includes("terdaftar") ? "Terdaftar" : "Format Tidak Valid"}
                 </span>
               )}
             </div>

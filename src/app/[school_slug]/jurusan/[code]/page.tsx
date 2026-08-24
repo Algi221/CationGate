@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, Sun, Moon, Palette } from "lucide-react";
+import { ArrowLeft, Palette } from "lucide-react";
+import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import { useJurusanDetailState } from "@/components/features/jurusan-detail/hooks/useJurusanDetailState";
 import { JurusanHero } from "@/components/features/jurusan-detail/components/JurusanHero";
@@ -20,8 +21,6 @@ export default function JurusanDetailPage() {
     major,
     nextMajor,
     kuotaData,
-    isDark,
-    toggleDark,
     accentColor,
     accentRgb,
     darkerColor,
@@ -114,13 +113,11 @@ export default function JurusanDetailPage() {
       </div>
 
       <div className="fixed top-6 right-6 z-50">
-        <button
-          onClick={toggleDark}
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all cursor-pointer"
-          title={isDark ? "Mode Terang" : "Mode Gelap"}
-        >
-          {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-700" />}
-        </button>
+        <ToggleTheme
+          animationType="circle-spread"
+          duration={1000}
+          className="w-10 h-10 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700"
+        />
       </div>
 
       {/* MAIN SECTIONS */}

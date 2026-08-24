@@ -1,5 +1,4 @@
 import { getSupabaseClient } from "../../db/supabase";
-import { broadcast } from "../../ws/handler";
 import { ApplicantSyncService } from "./ApplicantSyncService";
 
 export class ApplicantDeleteService {
@@ -15,7 +14,6 @@ export class ApplicantDeleteService {
     if (permanent) {
       await supabase.from("active_students").delete().eq("calon_siswa_id", id).eq("school_id", schoolId);
       await supabase.from("student_applicants").delete().eq("id", id).eq("school_id", schoolId);
-      broadcast({ event: "APPLICANT_DELETED", data: { id } });
       return { success: true as const, message: "Data calon siswa berhasil dihapus secara permanen." };
     } else {
       await supabase
@@ -24,7 +22,6 @@ export class ApplicantDeleteService {
         .eq("id", id)
         .eq("school_id", schoolId);
       await supabase.from("active_students").delete().eq("calon_siswa_id", id).eq("school_id", schoolId);
-      broadcast({ event: "APPLICANT_DELETED", data: { id } });
       return { success: true as const, message: "Data calon siswa berhasil dipindahkan ke tempat sampah." };
     }
   }
@@ -49,7 +46,6 @@ export class ApplicantDeleteService {
     if (error) throw error;
 
     await ApplicantSyncService.syncCandidateToSiswaAktif(updated);
-    broadcast({ event: "APPLICANT_UPDATED", data: updated }, true);
     return updated;
   }
 }

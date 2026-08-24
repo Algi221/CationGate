@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '../db/supabase';
 import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
-import { broadcast } from '../ws/handler';
 import { gatekeeperAuth } from '../middleware/auth';
 import { authLimiter } from '../middleware/rate-limiter';
 import { redis } from '../../utils/redis';
@@ -357,8 +356,6 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
         console.warn('Failed to clear redis cache:', e);
       }
     }
-
-    broadcast({ event: 'SCHOOL_VERIFIED', data: { slug: sSlug, status: 'FULL_VERIFIED' } }, true);
 
     return c.json({
       success: true,

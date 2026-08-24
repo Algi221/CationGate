@@ -1,6 +1,13 @@
 "use client";
 
 import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { RegistrationFormData } from "../types";
 
 interface StepProps {
@@ -20,6 +27,11 @@ export const Step4Kesehatan: React.FC<StepProps> = ({
   isFieldRequired,
   isFieldActive,
 }) => {
+  const triggerSelectChange = (name: string, value: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleInputChange({ target: { name, value } } as any);
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       <h3 className="text-xl font-extrabold text-slate-800 dark:text-white mb-1">Tahap 4: Data Kesehatan & Berkebutuhan Khusus</h3>
@@ -33,19 +45,21 @@ export const Step4Kesehatan: React.FC<StepProps> = ({
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
               {getFieldLabel("golonganDarah", "Golongan Darah")} {isFieldRequired("golonganDarah") && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <select
-              name="golonganDarah"
-              className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
+            <Select
               value={formData.golonganDarah}
-              onChange={handleInputChange}
+              onValueChange={(val) => triggerSelectChange("golonganDarah", val)}
             >
-              <option value="">-- Pilih --</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="AB">AB</option>
-              <option value="O">O</option>
-              <option value="Tidak Tahu">Tidak Tahu</option>
-            </select>
+              <SelectTrigger className="w-full h-11.5 rounded-xl bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 px-4 text-sm font-medium">
+                <SelectValue placeholder="-- Pilih --" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="A">A</SelectItem>
+                <SelectItem value="B">B</SelectItem>
+                <SelectItem value="AB">AB</SelectItem>
+                <SelectItem value="O">O</SelectItem>
+                <SelectItem value="Tidak Tahu">Tidak Tahu</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         )}
         {isFieldActive("penyakitDiderita") && (

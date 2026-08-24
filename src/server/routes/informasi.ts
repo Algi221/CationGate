@@ -1,7 +1,6 @@
 import { Hono, Context } from 'hono';
 import { getSupabaseClient } from '../db/supabase';
 import { adminAuth } from '../middleware/auth';
-import { broadcast } from '../ws/handler';
 import { createInformasiSchema, updateInformasiSchema } from '../validations/informasi';
 
 const router = new Hono();
@@ -26,7 +25,16 @@ router.get('/', async (c: Context) => {
     const schoolId = c.req.query('school_id') || null;
 
     let query = supabase.from('school_announcements').select('*').order('tanggal', { ascending: false }).order('created_at', { ascending: false });
-    if (schoolId) query = query.eq('school_id', schoolId);
+    if (schoolId) {
+      const { resolveSchoolUUID } = await import('../db/resolve-school');
+      const { fontInMemSchools } = await import('./saas');
+      const resolved = await resolveSchoolUUID(schoolId, fontInMemSchools);
+      if (resolved && resolved !== schoolId) {
+        query = query.or(`school_id.eq.${schoolId},school_id.eq.${resolved}`);
+      } else {
+        query = query.eq('school_id', schoolId);
+      }
+    }
 
     const { data: rows, error } = await query;
     if (error) throw error;
@@ -135,7 +143,6 @@ router.post('/', adminAuth, async (c: Context) => {
     const { data: savedRecord, error } = await supabase.from('school_announcements').insert(insertData).select().single();
     if (error) throw error;
 
-    broadcast({ event: 'REFRESH_INFORMASI', data: null });
 
     return c.json({
       success: true,
@@ -196,7 +203,6 @@ router.put('/:id', adminAuth, async (c: Context) => {
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
 
-    broadcast({ event: 'REFRESH_INFORMASI', data: null });
 
     return c.json({
       success: true,
@@ -235,7 +241,6 @@ router.delete('/:id', adminAuth, async (c: Context) => {
       }, 404);
     }
 
-    broadcast({ event: 'REFRESH_INFORMASI', data: null });
 
     return c.json({
       success: true,

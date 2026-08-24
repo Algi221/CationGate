@@ -7,7 +7,7 @@ import {
   Building2, ShieldCheck, CheckCircle2, Clock, RefreshCw,
   TrendingUp, ArrowUpRight, AlertCircle, Bell, PieChart,
   Landmark, Hourglass, FileQuestion, Activity, MapPin, XCircle,
-  Server, HardDrive, Layers, Globe2
+  Globe2
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -387,62 +387,49 @@ export default function GatekeeperOverviewPage() {
 
       {/* BARIS 2: Sebaran Wilayah Institusi (Interactive Leaflet Map) & Infrastructure Health */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-          <div className="bg-white dark:bg-[#2e3749] rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between">
+        {/* Infrastructure & Service Status (Minimalist Widget) */}
+        <div className="bg-white dark:bg-[#2e3749] rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-                <Server className="w-5 h-5 text-emerald-500" /> Infrastructure Health
-              </h3>
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Status Infrastruktur</h3>
+              </div>
+              <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                Normal
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-white/60 mb-5">Status kesehatan real-time server database & multi-tenant SaaS</p>
 
-            <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/10 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <HardDrive className="w-4 h-4 text-[#F3C625]" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-white/90">Supabase Postgres DB</span>
-                  </div>
-                  <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                    Healthy
-                  </span>
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5">
+                <div className="space-y-0.5">
+                  <p className="font-bold text-slate-800 dark:text-white">Database Postgres</p>
+                  <p className="text-[11px] text-slate-400 dark:text-white/40 font-mono">18ms Latency • 99.9% Uptime</p>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-white/50 font-mono">
-                  <span>Latency: 18ms</span>
-                  <span>Uptime: 99.98%</span>
-                </div>
+                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Online</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/10 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-[#FFD33B]" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-white/90">Multi-Tenant Routing</span>
-                  </div>
-                  <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                    99.99% Operational
-                  </span>
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5">
+                <div className="space-y-0.5">
+                  <p className="font-bold text-slate-800 dark:text-white">Routing Multi-Tenant</p>
+                  <p className="text-[11px] text-slate-400 dark:text-white/40 font-mono">{totalSchoolsCount} Tenant Aktif</p>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-white/50 font-mono">
-                  <span>Active Tenants: {totalSchoolsCount}</span>
-                  <span>0 Dropouts</span>
-                </div>
+                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Terhubung</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-white/10 mt-5 grid grid-cols-2 gap-2 text-center">
-            <div className="p-2 rounded-xl bg-slate-50 dark:bg-black/10">
-              <span className="block text-[10px] font-bold text-slate-400 dark:text-white/40">CPU Load</span>
-              <span className="text-xs font-black text-slate-800 dark:text-white">12.4% Avg</span>
+          <div className="pt-3 border-t border-slate-100 dark:border-white/10 mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 flex flex-col justify-between">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-white/40">CPU Server</span>
+              <span className="text-xs font-mono font-bold text-slate-800 dark:text-white mt-0.5">12.4%</span>
             </div>
-            <div className="p-2 rounded-xl bg-slate-50 dark:bg-black/10">
-              <span className="block text-[10px] font-bold text-slate-400 dark:text-white/40">Memory Usage</span>
-              <span className="text-xs font-black text-slate-800 dark:text-white">1.8 / 8 GB</span>
+            <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 flex flex-col justify-between">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-white/40">Penggunaan RAM</span>
+              <span className="text-xs font-mono font-bold text-slate-800 dark:text-white mt-0.5">1.8 / 8.0 GB</span>
             </div>
           </div>
         </div>

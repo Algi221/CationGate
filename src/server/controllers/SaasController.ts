@@ -69,7 +69,7 @@ export class SaasController {
   static async createPaymentToken(c: Context) {
     try {
       const { school_name, email, amount, plan_id, billing_cycle } = await c.req.json();
-      const grossAmount = amount || 750000;
+      let grossAmount = amount || 750000;
 
       let itemName = 'Paket SaaS CationGate Pro (1 Tahun)';
       if (plan_id) {
@@ -77,6 +77,10 @@ export class SaasController {
           const supabase = getSupabaseClient();
           const { data: plan } = await supabase.from('plans').select('*').eq('id', plan_id).maybeSingle();
           if (plan) {
+            const planPrice = billing_cycle === 'monthly' ? (plan.price_monthly || plan.price_yearly) : (plan.price_yearly || plan.price_monthly);
+            if (typeof planPrice === 'number' && planPrice > 0) {
+              grossAmount = planPrice;
+            }
             itemName = `Paket ${plan.name} (${billing_cycle === 'monthly' ? 'Bulanan' : 'Tahunan'})`;
           }
         } catch (_e) {}

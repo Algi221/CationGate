@@ -1,12 +1,47 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import { Informasi } from "../types";
 import { parseMedia, formatInputDate } from "../utils/mediaHelper";
 
+const DEMO_INFORMASI_SEED: Informasi[] = [
+  {
+    id: 1,
+    judul: "Pengumuman Pembukaan SPMB Online SMK Demo Indonesia 2026/2027",
+    konten:
+      "Selamat datang di Portal Simulasi SPMB SMK Demo Indonesia. Seluruh alur pendaftaran, tes seleksi, verifikasi berkas hingga pembagian rombel dapat Anda uji coba secara interaktif dan real-time di sini.",
+    tanggal: "2026-06-01",
+    foto_url: "",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 2,
+    judul: "Panduan Registrasi Akun & Unggah Berkas Persyaratan Siswa Baru",
+    konten:
+      "Calon peserta didik baru dapat mengisi formulir 14 langkah dan mengunggah dokumen digital (Kartu Keluarga, Akta Kelahiran, Rapor SMP). Petugas administrasi akan memvalidasi data dalam waktu 1x24 jam.",
+    tanggal: "2026-06-10",
+    foto_url: "",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 3,
+    judul: "Jadwal Wawancara & Tes Minat Bakat Program Keahlian Unggulan",
+    konten:
+      "Tes peminatan kejuruan dan wawancara calon siswa gelombang 1 akan dilaksanakan secara daring/luring. Pastikan nomor WhatsApp siswa dan orang tua aktif untuk menerima jadwal sesi.",
+    tanggal: "2026-06-15",
+    foto_url: "",
+    created_at: new Date().toISOString()
+  }
+];
+
 export function useInformasiState() {
-  const { adminToken, addToast } = usePPDB();
+  const { adminToken, addToast, isDemoMode } = usePPDB();
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "";
+  const isDemo = isDemoMode || schoolSlug === "demo";
+
   const [informasiList, setInformasiList] = useState<Informasi[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -32,9 +67,16 @@ export function useInformasiState() {
   const BACKEND_URL = "/api";
 
   const fetchDetailItem = async (id: number): Promise<Informasi | null> => {
+    if (isDemo) {
+      const found = informasiList.find((item) => item.id === id);
+      return found || null;
+    }
+
     try {
       setLoadingDetailId(id);
-      const res = await fetch(`${BACKEND_URL}/informasi/${id}`);
+      const res = await fetch(`${BACKEND_URL}/informasi/${id}?school_id=${schoolSlug}`, {
+        headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+      });
       const data = await res.json();
       if (data.success && data.data) {
         return data.data;
@@ -66,8 +108,31 @@ export function useInformasiState() {
   const fetchInformasi = useCallback(
     async (showSpinner = false) => {
       if (showSpinner) setLoading(true);
+
+      // Demo Mode Isolation
+      if (isDemo) {
+        setLoading(false);
+        try {
+          const stored = typeof window !== "undefined" ? localStorage.getItem("demo_informasi_list") : null;
+          if (stored) {
+            setInformasiList(JSON.parse(stored));
+          } else {
+            setInformasiList(DEMO_INFORMASI_SEED);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("demo_informasi_list", JSON.stringify(DEMO_INFORMASI_SEED));
+            }
+          }
+        } catch (_e) {
+          setInformasiList(DEMO_INFORMASI_SEED);
+        }
+        return;
+      }
+
       try {
-        const res = await fetch(`${BACKEND_URL}/informasi`);
+        const queryParams = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+        const res = await fetch(`${BACKEND_URL}/informasi${queryParams}`, {
+          headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+        });
         const data = await res.json();
         if (data.success) {
           setInformasiList(data.data);
@@ -78,32 +143,11 @@ export function useInformasiState() {
         }
       } catch (err: unknown) {
         console.warn("Backend offline, using fallback seeded data:", err instanceof Error ? err.message : String(err));
-        const fallbackData: Informasi[] = [
-          {
-            id: 101,
-            judul: "Pendaftaran Peserta Didik Baru (PPDB) SMK Taruna Bhakti 2026/2027 Resmi Dibuka!",
-            konten:
-              "SMK Taruna Bhakti Depok resmi membuka pendaftaran bagi calon peserta didik baru untuk tahun ajaran 2026/2027. Tersedia 6 Program Keahlian unggulan yaitu Rekayasa Perangkat Lunak, Teknik Jaringan Komputer, Desain Komunikasi Visual, Broadcasting & Perfilman, Teknik Elektronika, dan Animasi. Segera lakukan registrasi online dan unggah berkas Anda sebelum kuota penuh!",
-            tanggal: "2026-05-15",
-            foto_url: "",
-            created_at: new Date().toISOString()
-          },
-          {
-            id: 102,
-            judul: "Sosialisasi Jurusan Baru: Teknik Elektronika (TE) dengan Fokus Robotika Industri",
-            konten:
-              "Menjawab tantangan revolusi industri 4.0, SMK Taruna Bhakti menghadirkan inovasi di jurusan Teknik Elektronika. Kurikulum diperkuat dengan pemelajaran mikrokontroler, IoT, PLC, dan Robotika Industri modern. Lulusan TE siap diserap oleh industri manufaktur dan teknologi terkemuka.",
-            tanggal: "2026-05-20",
-            foto_url: "",
-            created_at: new Date().toISOString()
-          }
-        ];
-        setInformasiList(fallbackData);
       } finally {
         setLoading(false);
       }
     },
-    [addToast]
+    [addToast, adminToken, isDemo, schoolSlug]
   );
 
   useEffect(() => {
@@ -193,7 +237,7 @@ export function useInformasiState() {
 
     if (!file.type.startsWith("video/")) {
       if (typeof addToast === "function") {
-        addToast("Format Tidak Valid", "Hanya berkas video yang diperbolehkan.", "warning");
+        addToast("Format Tidak Valid", "Hanya berkas video (MP4/WebM) yang diperbolehkan.", "warning");
       }
       return;
     }
@@ -308,6 +352,34 @@ export function useInformasiState() {
       foto_url: hasMedia ? JSON.stringify(mediaObj) : null
     };
 
+    // Demo Mode CRUD isolation
+    if (isDemo) {
+      setTimeout(() => {
+        if (isEditMode) {
+          const next = informasiList.map((item) =>
+            item.id === selectedId ? { ...item, ...payload } : item
+          );
+          setInformasiList(next);
+          localStorage.setItem("demo_informasi_list", JSON.stringify(next));
+          addToast?.("Berhasil Diperbarui (Demo)", "Informasi demo berhasil diperbarui.", "success");
+        } else {
+          const newId = Date.now();
+          const newItem: Informasi = {
+            id: newId,
+            ...payload,
+            created_at: new Date().toISOString()
+          };
+          const next = [newItem, ...informasiList];
+          setInformasiList(next);
+          localStorage.setItem("demo_informasi_list", JSON.stringify(next));
+          addToast?.("Berhasil Ditambahkan (Demo)", "Informasi baru berhasil dibuat di sesi demo.", "success");
+        }
+        setSubmitting(false);
+        setIsOpenModal(false);
+      }, 300);
+      return;
+    }
+
     try {
       const url = isEditMode ? `${BACKEND_URL}/informasi/${selectedId}` : `${BACKEND_URL}/informasi`;
       const method = isEditMode ? "PUT" : "POST";
@@ -338,36 +410,39 @@ export function useInformasiState() {
         }
       }
     } catch (err) {
-      console.error("API error, executing offline fallback operations:", err);
-      if (isEditMode) {
-        setInformasiList((prev) => prev.map((item) => (item.id === selectedId ? { ...item, ...payload } : item)));
-        if (typeof addToast === "function") {
-          addToast("Diperbarui (Offline)", "Perubahan disimpan secara lokal di memori.", "success");
-        }
-      } else {
-        const mockNew: Informasi = {
-          id: Date.now(),
-          ...payload,
-          created_at: new Date().toISOString()
-        };
-        setInformasiList((prev) => [mockNew, ...prev]);
-        if (typeof addToast === "function") {
-          addToast("Ditambahkan (Offline)", "Informasi ditambahkan secara lokal di memori.", "success");
-        }
+      console.error("API error:", err);
+      if (typeof addToast === "function") {
+        addToast("Error Koneksi", "Gagal menyimpan informasi ke server.", "danger");
       }
-      setIsOpenModal(false);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const executeDelete = async () => {
-    if (!deleteConfirmId) return;
-    const id = deleteConfirmId;
+  const handleOpenDeleteModal = (id: number) => {
+    setDeleteConfirmId(id);
+  };
+
+  const handleCloseDeleteModal = () => {
     setDeleteConfirmId(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmId === null) return;
+    setSubmitting(true);
+
+    if (isDemo) {
+      const next = informasiList.filter((item) => item.id !== deleteConfirmId);
+      setInformasiList(next);
+      localStorage.setItem("demo_informasi_list", JSON.stringify(next));
+      addToast?.("Berhasil Dihapus (Demo)", "Informasi demo berhasil dihapus.", "success");
+      setSubmitting(false);
+      setDeleteConfirmId(null);
+      return;
+    }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/informasi/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/informasi/${deleteConfirmId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${adminToken}`
@@ -376,20 +451,22 @@ export function useInformasiState() {
       const data = await res.json();
       if (data.success) {
         if (typeof addToast === "function") {
-          addToast("Berhasil Dihapus", "Pengumuman informasi berhasil dihapus dari sistem.", "success");
+          addToast("Berhasil Dihapus", "Informasi telah dihapus dari sistem.", "success");
         }
+        setDeleteConfirmId(null);
         fetchInformasi();
       } else {
         if (typeof addToast === "function") {
-          addToast("Gagal Hapus", data.message || "Gagal menghapus informasi dari database.", "danger");
+          addToast("Error", data.message || "Gagal menghapus data.", "danger");
         }
       }
     } catch (err) {
-      console.error("API error, executing offline fallback deletion:", err);
-      setInformasiList((prev) => prev.filter((item) => item.id !== id));
+      console.error("API delete error:", err);
       if (typeof addToast === "function") {
-        addToast("Dihapus (Offline)", "Informasi dihapus dari memori lokal.", "success");
+        addToast("Error", "Gagal menghubungi server untuk menghapus.", "danger");
       }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -421,17 +498,21 @@ export function useInformasiState() {
     setPreviewItem,
     loadingDetailId,
     deleteConfirmId,
-    setDeleteConfirmId,
     fetchInformasi,
     handleOpenCreateModal,
     handleOpenEditModal,
-    handleOpenPreview,
-    handleDrag,
-    handleDrop,
     handleFileChange,
     handleVideoFileChange,
     handleDokumenFileChange,
+    handleDrag,
+    handleDrop,
     handleSubmit,
-    executeDelete
+    handleOpenPreview,
+    handleOpenDeleteModal,
+    handleCloseDeleteModal,
+    handleConfirmDelete,
+    executeDelete: handleConfirmDelete,
+    setDeleteConfirmId,
+    processFile
   };
 }

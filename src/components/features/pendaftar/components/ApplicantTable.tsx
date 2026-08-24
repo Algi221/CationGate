@@ -3,9 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { 
   Search, 
-  Filter, 
-  Layers, 
-  User, 
   TableProperties, 
   FileSpreadsheet, 
   Download, 
@@ -18,6 +15,13 @@ import {
   Banknote,
   FileImage
 } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import Swal from "sweetalert2";
 import { Applicant } from "../types";
 import { formatNoPendaftaran } from "./DetailModal";
@@ -120,88 +124,87 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
     }
   };
 
+
+
   return (
-    <div className="space-y-6">
-      {/* Search, Filter & Spreadsheet Toggle Toolbar */}
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
-        {/* Search Field */}
+    <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl overflow-hidden shadow-xs transition-colors duration-300">
+      {/* Search and Toolbar Header */}
+      <div className="p-6 border-b border-slate-100 dark:border-white/5 flex flex-col xl:flex-row items-center justify-between gap-4">
+        {/* Search Input */}
         <div className="relative w-full xl:max-w-md">
-          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-            <Search size={16} />
-          </span>
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Cari: nama, jurusan, sekolah, gelombang..."
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold"
+            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold"
           />
         </div>
 
         {/* Toolbar Action Buttons */}
-        <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
           {/* Status Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
-            <Filter size={13} className="text-slate-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-400 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer"
-            >
-              <option value="ALL">Semua Status</option>
-              <option value="Pending">Menunggu Verifikasi</option>
-              <option value="Approved">Terverifikasi</option>
-              <option value="Rejected">Ditolak / Gugur</option>
-            </select>
+          <div className="w-full sm:w-auto min-w-32.5">
+            <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val)}>
+              <SelectTrigger className="h-9.5 rounded-xl bg-slate-50 dark:bg-[#020617]/40 border-slate-200 dark:border-white/5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                <SelectValue placeholder="Semua Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Semua Status</SelectItem>
+                <SelectItem value="Pending">Menunggu Verifikasi</SelectItem>
+                <SelectItem value="Approved">Terverifikasi</SelectItem>
+                <SelectItem value="Rejected">Ditolak / Gugur</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Payment Method Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
-            <CreditCard size={13} className="text-slate-400" />
-            <select
-              value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-400 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-40"
-            >
-              <option value="ALL">Semua Pembayaran</option>
-              <option value="TU">🏢 Tunai di TU (24 Jam)</option>
-              <option value="TRANSFER">💳 Transfer Bank</option>
-              <option value="LUNAS">✅ Sudah Lunas</option>
-              <option value="UNPAID">⌛ Belum Lunas</option>
-            </select>
+          <div className="w-full sm:w-auto min-w-35">
+            <Select value={paymentFilter} onValueChange={(val) => setPaymentFilter(val)}>
+              <SelectTrigger className="h-9.5 rounded-xl bg-slate-50 dark:bg-[#020617]/40 border-slate-200 dark:border-white/5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                <SelectValue placeholder="Semua Pembayaran" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Semua Pembayaran</SelectItem>
+                <SelectItem value="TU">Tunai</SelectItem>
+                <SelectItem value="TRANSFER">Transfer Bank</SelectItem>
+                <SelectItem value="LUNAS">Lunas</SelectItem>
+                <SelectItem value="UNPAID">Belum Lunas</SelectItem>              </SelectContent>
+            </Select>
           </div>
 
           {/* Major Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
-            <Layers size={13} className="text-slate-400" />
-            <select
-              value={majorFilter}
-              onChange={(e) => setMajorFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-400 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-40"
-            >
-              <option value="ALL">Semua Jurusan</option>
-              {majorsList.map((m, idx) => (
-                <option key={idx} value={m}>
-                  {m.replace("Teknik ", "").replace("Komunikasi ", "")}
-                </option>
-              ))}
-            </select>
+          <div className="w-full sm:w-auto min-w-35">
+            <Select value={majorFilter} onValueChange={(val) => setMajorFilter(val)}>
+              <SelectTrigger className="h-9.5 rounded-xl bg-slate-50 dark:bg-[#020617]/40 border-slate-200 dark:border-white/5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                <SelectValue placeholder="Semua Jurusan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Semua Jurusan</SelectItem>
+                {majorsList.map((m, idx) => (
+                  <SelectItem key={idx} value={m}>
+                    {m.replace("Teknik ", "").replace("Komunikasi ", "")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Gelombang Filter Buttons */}
-          <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-700 shrink-0 shadow-inner">
+          <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0 shadow-inner">
             {[
               { id: "ALL", label: "Semua Gelombang" },
-              { id: "Gelombang 1", label: "Gelombang 1" },
-              { id: "Gelombang 2", label: "Gelombang 2" }
+              { id: "Gelombang 1", label: "Gel. 1" },
+              { id: "Gelombang 2", label: "Gel. 2" }
             ].map((g) => (
               <button
                 key={g.id}
                 type="button"
                 onClick={() => setGelombangFilter(g.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
                   gelombangFilter === g.id
-                    ? "bg-black text-white border-black dark:bg-black dark:border-slate-500 shadow-sm"
+                    ? "bg-black text-white border-black dark:bg-black dark:border-slate-500 shadow-xs"
                     : "bg-transparent text-slate-600 dark:text-slate-300 border-transparent hover:bg-slate-200/70 dark:hover:bg-slate-800"
                 }`}
               >
@@ -210,22 +213,58 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
             ))}
           </div>
 
-          {/* Gender Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
-            <User size={13} className="text-slate-400" />
-            <select
-              value={genderFilter}
-              onChange={(e) => setGenderFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-400 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-35"
+          {/* Gender Segmented Switch (Semua, Cowo [Biru], Cewe [Pink]) */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0 gap-1 shadow-inner">
+            <button
+              type="button"
+              onClick={() => setGenderFilter("ALL")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                genderFilter === "ALL"
+                  ? "bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-950 dark:border-white shadow-xs"
+                  : "bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/70 dark:hover:bg-slate-800"
+              }`}
+              title="Tampilkan Semua Gender"
             >
-              <option value="ALL">Semua Gender</option>
-              <option value="L">Laki-Laki</option>
-              <option value="P">Perempuan</option>
-            </select>
+              Semua
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setGenderFilter("L")}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                genderFilter === "L"
+                  ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                  : "bg-blue-50/80 text-blue-700 hover:bg-blue-100 border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/50"
+              }`}
+              title="Filter Calon Siswa Laki-Laki (Cowo)"
+            >
+              <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="4" r="2.2" />
+                <path d="M8.5 8.5C8.5 7.67 9.17 7 10 7h4c.83 0 1.5.67 1.5 1.5V14h-1.5v7h-4v-7H8.5V8.5z" />
+              </svg>
+              <span>Laki-Laki</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setGenderFilter("P")}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                genderFilter === "P"
+                  ? "bg-pink-600 text-white border-pink-600 shadow-xs"
+                  : "bg-pink-50/80 text-pink-700 hover:bg-pink-100 border-pink-200/80 dark:bg-pink-950/40 dark:text-pink-300 dark:border-pink-800/50"
+              }`}
+              title="Filter Calon Siswa Perempuan (Cewe)"
+            >
+              <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="4" r="2.2" />
+                <path d="M12 7.5L7.5 15h3v6h3v-6h3L12 7.5z" />
+              </svg>
+              <span>Perempuan</span>
+            </button>
           </div>
 
           {/* Toggle View: Standard Table vs Excel Spreadsheet Grid */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/50 shrink-0 shadow-inner">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800/50 shrink-0 shadow-inner">
             <button
               onClick={() => setIsSpreadsheetMode(false)}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
@@ -347,7 +386,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
                       <td className="py-4 px-6 text-center">
                         {isLunas ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-wider bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:border-emerald-800 dark:text-emerald-300 shadow-2xs">
-                            ✓ LUNAS {isCashTU ? "(TU)" : "(Bank)"}
+                            LUNAS {isCashTU ? "(Tunai)" : "(Transfer)"}
                           </span>
                         ) : isCashTU ? (
                           <div className="flex flex-col items-center gap-1">
@@ -373,7 +412,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
                           <div className="flex flex-col items-center gap-1">
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-wider bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:border-blue-800 dark:text-blue-300">
                               <CreditCard size={11} />
-                              <span>Transfer Bank</span>
+                              <span>Transfer</span>
                             </span>
                             {a.bukti_bayar ? (
                               <button
@@ -405,7 +444,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
                           }`}
                           title={a.physical_doc_verified ? `Diverifikasi oleh ${a.physical_doc_verified_by || 'Admin'} - Klik untuk batalkan` : "Klik jika Berkas Fisik siswa sudah diterima di sekolah"}
                         >
-                          {a.physical_doc_verified ? "✓ Diterima" : "⌛ Belum Ada"}
+                          {a.physical_doc_verified ? "Diterima" : "Belum Ada"}
                         </button>
                       </td>
                     <td className="py-4 px-6 text-right pr-8 shrink-0">
@@ -484,13 +523,6 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
         ) : (
           /* Spreadsheet Excel Mode */
           <div className="overflow-x-auto select-none">
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border-b border-emerald-200/50 dark:border-emerald-800/30 flex items-center justify-between">
-              <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 uppercase tracking-widest font-black flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                Excel Live Grid Mode • Double click baris untuk membuka modal
-              </span>
-            </div>
-
             <table className="w-full text-left text-xs font-mono border-collapse border border-slate-200 dark:border-slate-800">
               <thead>
                 <tr className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 font-black">

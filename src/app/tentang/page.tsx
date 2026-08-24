@@ -28,7 +28,7 @@ const defaultTeam = [
     role: "Fullstack Developer",
     clipPathId: "clip-squiggle",
     badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
-    photo_url: "/assets/team/Algi.jpg",
+    photo_url: "/assets/Team/algi.jpg",
   },
   {
     id: 2,
@@ -36,7 +36,7 @@ const defaultTeam = [
     role: "Frontend Developer",
     clipPathId: "differentone16",
     badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
-    photo_url: "/assets/team/jepan.jpg",
+    photo_url: "/assets/Team/jepan.jpg",
   },
   {
     id: 3,
@@ -44,7 +44,7 @@ const defaultTeam = [
     role: "Frontend Developer",
     clipPathId: "differentone8",
     badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
-    photo_url: "/assets/team/farel.jpg",
+    photo_url: "/assets/Team/farell.jpg",
   },
   {
     id: 4,
@@ -52,7 +52,7 @@ const defaultTeam = [
     role: "QA & Backend Developer",
     clipPathId: "clip-rect",
     badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
-    photo_url: "/assets/team/husein.jpg",
+    photo_url: "/assets/Team/husein.jpg",
   },
 ];
 

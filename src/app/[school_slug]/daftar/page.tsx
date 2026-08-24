@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, Home, Sun, Moon, Clock } from "lucide-react";
+import { ArrowRight, ArrowLeft, Home, Clock } from "lucide-react";
+import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { useRegistrationForm } from "@/components/features/registration/useRegistrationForm";
 import { SuccessInvoiceView } from "@/components/features/registration/SuccessInvoiceView";
 import { PaymentGateModal } from "@/components/features/registration/PaymentGateModal";
@@ -37,8 +38,6 @@ export default function DaftarPage() {
     setFormData,
     submittedCandidate,
     successData,
-    isDark,
-    toggleDark,
     schoolPeriod,
     regCost,
     waGroupUrl,
@@ -144,13 +143,11 @@ export default function DaftarPage() {
       </div>
 
       <div className="fixed top-6 right-6 z-50">
-        <button
-          onClick={toggleDark}
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all"
-          title={isDark ? "Mode Terang" : "Mode Gelap"}
-        >
-          {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
-        </button>
+        <ToggleTheme
+          animationType="circle-spread"
+          duration={1000}
+          className="w-10 h-10 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700"
+        />
       </div>
 
       <div className="mb-10 text-center mt-12 relative z-10 flex flex-col items-center">

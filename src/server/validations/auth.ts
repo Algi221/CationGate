@@ -9,7 +9,8 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, 'Kata sandi tidak boleh kosong.')
-    .max(100, 'Kata sandi maksimal 100 karakter.')
+    .max(100, 'Kata sandi maksimal 100 karakter.'),
+  rememberMe: z.boolean().optional()
 });
 
 export const changePasswordSchema = z.object({

@@ -7,8 +7,9 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
 import {
-  Sun, Moon, LogOut, Menu, ChevronDown, UserCircle, ShieldCheck
+  LogOut, Menu, ChevronDown, UserCircle, ShieldCheck
 } from "lucide-react";
+import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { GatekeeperSidebar } from "@/components/layout/gatekeeper/GatekeeperSidebar";
 
 function GatekeeperBreadcrumbs({ pathname }: { pathname: string }) {
@@ -67,7 +68,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const _searchParams = useSearchParams();
 
   const [mounted, setMounted] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -97,10 +97,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem("ppdb-theme");
       if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
         document.documentElement.classList.add("dark");
-        setIsDark(true);
       } else {
         document.documentElement.classList.remove("dark");
-        setIsDark(false);
       }
       const savedCollapse = localStorage.getItem("ppdb-sidebar-collapsed");
       if (savedCollapse === "true") {
@@ -178,16 +176,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gatekeeperToken, pathname]);
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    if (!isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("ppdb-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("ppdb-theme", "light");
-    }
-  };
+
 
   const handleLogout = () => {
     setShowUserDropdown(false);
@@ -246,13 +235,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-              <button
-                onClick={toggleTheme}
-                className="w-9 h-9 rounded-full text-slate-500 hover:text-[#2e3749] dark:text-slate-300 dark:hover:text-[#FFD33B] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex items-center justify-center focus:outline-none"
-                title={isDark ? "Mode Terang" : "Mode Gelap"}
-              >
-                {isDark ? <Sun size={18} strokeWidth={2.2} /> : <Moon size={18} strokeWidth={2.2} />}
-              </button>
+              <ToggleTheme
+                animationType="circle-spread"
+                duration={1000}
+                className="w-9 h-9 rounded-full text-slate-500 hover:text-[#2e3749] dark:text-slate-300 dark:hover:text-[#FFD33B] hover:bg-slate-100 dark:hover:bg-white/10 transition-all border-0 bg-transparent dark:bg-transparent"
+              />
 
               <div className="relative" ref={userDropdownRef}>
                 <button

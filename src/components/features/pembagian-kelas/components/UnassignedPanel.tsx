@@ -3,12 +3,18 @@
 import React from "react";
 import { 
   Search, 
-  Filter, 
   CheckSquare, 
   MinusSquare, 
   Layers, 
   ShieldAlert
 } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { Applicant, ClassItem } from "../types";
 
 interface UnassignedPanelProps {
@@ -48,12 +54,12 @@ export const UnassignedPanel: React.FC<UnassignedPanelProps> = ({
   const isPartialSelected = selectedStudentIds.length > 0 && !isAllSelected;
 
   return (
-    <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col h-full text-left">
-      {/* Header & Filter Controls */}
-      <div className="space-y-4 pb-5 border-b border-slate-100 dark:border-white/5">
+    <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 shadow-xs flex flex-col h-187.5 transition-colors duration-300">
+      {/* Header */}
+      <div className="space-y-4 pb-4 border-b border-slate-100 dark:border-white/5 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs">
               <Layers size={16} />
             </div>
             <div>
@@ -69,26 +75,28 @@ export const UnassignedPanel: React.FC<UnassignedPanelProps> = ({
           {/* Quick Assign Dropdown for Batch */}
           {selectedStudentIds.length > 0 && (
             <div className="flex items-center gap-2 animate-in fade-in">
-              <select
+              <Select
                 disabled={isLoading}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    onAssignSelected(e.target.value === "REMOVE" ? "" : e.target.value);
-                    e.target.value = "";
+                onValueChange={(val) => {
+                  if (val) {
+                    onAssignSelected(val === "REMOVE" ? "" : val);
                   }
                 }}
-                className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider py-2 px-3 rounded-xl focus:outline-none cursor-pointer shadow-md"
               >
-                <option value="">+ Masukkan Ke ({selectedStudentIds.length})...</option>
-                {classes.map((c) => (
-                  <option key={c.id} value={c.name} className="text-slate-800 bg-white">
-                    {c.name}
-                  </option>
-                ))}
-                <option value="REMOVE" className="text-rose-600 bg-white">
-                  Keluarkan Dari Kelas
-                </option>
-              </select>
+                <SelectTrigger className="h-9 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 rounded-xl border-blue-500 shadow-md">
+                  <SelectValue placeholder={`+ Masukkan (${selectedStudentIds.length})...`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes.map((c) => (
+                    <SelectItem key={c.id} value={c.name}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="REMOVE" className="text-rose-600 focus:text-rose-600">
+                    Keluarkan Dari Kelas
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
@@ -107,31 +115,27 @@ export const UnassignedPanel: React.FC<UnassignedPanelProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
-              <select
-                value={assignmentFilter}
-                onChange={(e) => setAssignmentFilter(e.target.value as "ALL" | "UNASSIGNED" | "ASSIGNED")}
-                className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-[#020617]/50 border border-slate-200 dark:border-white/5 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer uppercase"
-              >
-                <option value="ALL">Status: Semua</option>
-                <option value="UNASSIGNED">Belum Dapat Kelas</option>
-                <option value="ASSIGNED">Sudah Ada Kelas</option>
-              </select>
-            </div>
+            <Select value={assignmentFilter} onValueChange={(val) => setAssignmentFilter(val as "ALL" | "UNASSIGNED" | "ASSIGNED")}>
+              <SelectTrigger className="h-9 px-3 bg-slate-50 dark:bg-[#020617]/50 border-slate-200 dark:border-white/5 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                <SelectValue placeholder="Status: Semua" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Status: Semua</SelectItem>
+                <SelectItem value="UNASSIGNED">Belum Dapat Kelas</SelectItem>
+                <SelectItem value="ASSIGNED">Sudah Ada Kelas</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
-              <select
-                value={genderFilter}
-                onChange={(e) => setGenderFilter(e.target.value as "ALL" | "L" | "P")}
-                className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-[#020617]/50 border border-slate-200 dark:border-white/5 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer uppercase"
-              >
-                <option value="ALL">Gender: Semua</option>
-                <option value="L">Laki-Laki (L)</option>
-                <option value="P">Perempuan (P)</option>
-              </select>
-            </div>
+            <Select value={genderFilter} onValueChange={(val) => setGenderFilter(val as "ALL" | "L" | "P")}>
+              <SelectTrigger className="h-9 px-3 bg-slate-50 dark:bg-[#020617]/50 border-slate-200 dark:border-white/5 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                <SelectValue placeholder="Gender: Semua" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Gender: Semua</SelectItem>
+                <SelectItem value="L">Laki-Laki (L)</SelectItem>
+                <SelectItem value="P">Perempuan (P)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

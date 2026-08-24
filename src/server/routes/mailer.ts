@@ -4,6 +4,8 @@ import { EmailService } from '../services/EmailService';
 import { authLimiter } from '../middleware/rate-limiter';
 import { z } from 'zod';
 
+import jwt from 'jsonwebtoken';
+
 const mailerRouter = new Hono();
 
 const sendOtpSchema = z.object({
@@ -154,9 +156,45 @@ mailerRouter.post('/verify-otp', async (c) => {
     // Mark OTP as used
     await supabase.from('verification_otps').update({ is_used: true }).eq('id', records[0].id);
 
+    // Query admin user by email if exists
+    const { data: adminUser } = await supabase
+      .from('school_admins')
+      .select('id, username, nama, email, role, school_id')
+      .eq('email', email)
+      .limit(1)
+      .maybeSingle();
+
+    let schoolSlug = 'smktarunabhakti';
+    if (adminUser?.school_id) {
+      const { data: school } = await supabase
+        .from('schools')
+        .select('slug')
+        .eq('id', adminUser.school_id)
+        .maybeSingle();
+      if (school?.slug) {
+        schoolSlug = school.slug;
+      }
+    }
+
+    const adminPayload = {
+      id: adminUser?.id || 1,
+      username: adminUser?.username || email.split('@')[0],
+      nama: adminUser?.nama || email.split('@')[0],
+      email,
+      role: adminUser?.role || 'admin',
+      school_id: adminUser?.school_id || schoolSlug,
+      school_slug: schoolSlug
+    };
+
+    const jwtSecret = process.env.JWT_SECRET || 'secret';
+    const token = jwt.sign(adminPayload, jwtSecret, { expiresIn: '7d' });
+
     return c.json({
       success: true,
-      message: 'Verifikasi kode OTP berhasil.'
+      message: 'Verifikasi kode OTP berhasil.',
+      token,
+      admin: adminPayload,
+      schoolSlug
     });
   } catch (err: unknown) {
     console.error('Verify OTP Error:', err);

@@ -8,10 +8,11 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import _Swal from 'sweetalert2';
 import {
-  Sun, Moon, LogOut,
+  LogOut,
   Globe, Menu, ChevronDown, UserCircle, User, Search
 } from "lucide-react";
-import SchoolNotFound from "@/components/SchoolNotFound";
+import { ToggleTheme } from "@/components/lightswind/toggle-theme";
+import { ErrorView } from "@/components/features/error";
 import { AdminSidebar } from "@/components/layout/admin-sekolah/AdminSidebar";
 import TrialExpiredPopup from "@/components/TrialExpiredPopup";
 
@@ -81,7 +82,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     () => true,
     () => false
   );
-  const [isDark, setIsDark] = useState(() => typeof window !== 'undefined' ? localStorage.getItem("ppdb-theme") === "dark" || document.documentElement.classList.contains("dark") : false);
   const [isCollapsed, setIsCollapsed] = useState(() => typeof window !== 'undefined' ? localStorage.getItem("ppdb-sidebar-collapsed") === "true" : false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -208,51 +208,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminToken, pathname]);
 
-  const toggleTheme = async () => {
-    const nextIsDark = !isDark;
 
-    // Check if View Transitions API is supported
-    if (!document.startViewTransition) {
-      setIsDark(nextIsDark);
-      if (nextIsDark) {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("ppdb-theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("ppdb-theme", "light");
-      }
-      return;
-    }
-
-    const transition = document.startViewTransition(() => {
-      setIsDark(nextIsDark);
-      if (nextIsDark) {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("ppdb-theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("ppdb-theme", "light");
-      }
-    });
-
-    transition.ready.then(() => {
-      const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
-
-      document.documentElement.animate(
-        {
-          clipPath: [
-            `circle(0px at 0% 0%)`,
-            `circle(${endRadius}px at 0% 0%)`
-          ]
-        },
-        {
-          duration: 400,
-          easing: "ease-in",
-          pseudoElement: nextIsDark ? "::view-transition-new(root)" : "::view-transition-old(root)"
-        }
-      );
-    });
-  };
 
   const handleLogout = () => {
     setShowUserDropdown(false);
@@ -267,7 +223,20 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   if (!mounted) return null;
   if (isSchoolNotFound || schoolStatus === 'TAKEDOWN' || schoolStatus === 'SUSPENDED') {
-    return <SchoolNotFound slug={schoolSlug} isTakedown={schoolStatus === 'TAKEDOWN' || schoolStatus === 'SUSPENDED'} />;
+    const isTakedown = schoolStatus === 'TAKEDOWN' || schoolStatus === 'SUSPENDED';
+    return (
+      <ErrorView
+        title={isTakedown ? "Akses Instansi Ditangguhkan 🔒" : "Halaman Tidak Ditemukan"}
+        description={
+          isTakedown
+            ? `Portal instansi '/${schoolSlug || ""}' telah ditangguhkan oleh Gatekeeper CationGate karena belum melengkapi verifikasi legalitas & SK operasional.`
+            : `Maaf, halaman instansi '${schoolSlug || ""}' tidak dapat ditemukan atau belum terdaftar di platform CationGate.`
+        }
+        urlPath={schoolSlug ? `/${schoolSlug}` : undefined}
+        ctaText="Kembali ke Beranda CationGate"
+        ctaHref="/"
+      />
+    );
   }
   if (!adminToken && schoolSlug !== 'demo') {
     return (
@@ -387,13 +356,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm hover:shadow shrink-0"
-              title={isDark ? "Beralih ke Terang" : "Beralih ke Gelap"}
-            >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
+            <ToggleTheme
+              animationType="circle-spread"
+              duration={1000}
+              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs hover:shadow text-slate-500 dark:text-slate-400"
+            />
 
             {/* ── User Avatar Dropdown ──────────────────────────────────── */}
             <div className="relative" ref={userDropdownRef}>

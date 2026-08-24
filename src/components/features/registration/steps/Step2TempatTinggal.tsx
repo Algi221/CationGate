@@ -1,6 +1,13 @@
 "use client";
 
 import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { RegistrationFormData } from "../types";
 
 interface StepProps {
@@ -18,6 +25,11 @@ export const Step2TempatTinggal: React.FC<StepProps> = ({
   isFieldRequired,
   isFieldActive,
 }) => {
+  const triggerSelectChange = (name: string, value: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleInputChange({ target: { name, value } } as any);
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       <h3 className="text-xl font-extrabold text-slate-800 dark:text-white mb-1">Tahap 2: Data Tempat Tinggal</h3>
@@ -165,20 +177,22 @@ export const Step2TempatTinggal: React.FC<StepProps> = ({
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
               {getFieldLabel("tinggalDengan", "Tinggal Bersama dengan")} {isFieldRequired("tinggalDengan") && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <select
-              name="tinggalDengan"
-              className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
+            <Select
               value={formData.tinggalDengan}
-              onChange={handleInputChange}
+              onValueChange={(val) => triggerSelectChange("tinggalDengan", val)}
             >
-              <option value="">-- Pilih --</option>
-              <option value="Orang Tua">Orang Tua</option>
-              <option value="Saudara">Saudara</option>
-              <option value="Kos/Asrama">Kos / Asrama</option>
-              <option value="Wali">Wali</option>
-              <option value="Panti Asuhan">Panti Asuhan</option>
-              <option value="Lainnya">Lainnya</option>
-            </select>
+              <SelectTrigger className="w-full h-11.5 rounded-xl bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 px-4 text-sm font-medium">
+                <SelectValue placeholder="-- Pilih --" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Orang Tua">Orang Tua</SelectItem>
+                <SelectItem value="Saudara">Saudara</SelectItem>
+                <SelectItem value="Kos/Asrama">Kos / Asrama</SelectItem>
+                <SelectItem value="Wali">Wali</SelectItem>
+                <SelectItem value="Panti Asuhan">Panti Asuhan</SelectItem>
+                <SelectItem value="Lainnya">Lainnya</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         )}
         {isFieldActive("transportasi") && (
@@ -186,23 +200,25 @@ export const Step2TempatTinggal: React.FC<StepProps> = ({
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
               {getFieldLabel("transportasi", "Moda Transportasi")} {isFieldRequired("transportasi") && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <select
-              name="transportasi"
-              className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
+            <Select
               value={formData.transportasi}
-              onChange={handleInputChange}
+              onValueChange={(val) => triggerSelectChange("transportasi", val)}
             >
-              <option value="">-- Pilih --</option>
-              <option value="Jalan Kaki">Jalan Kaki</option>
-              <option value="Angkutan Umum">Angkutan Umum</option>
-              <option value="Mobil Antar Jemput">Mobil Antar Jemput</option>
-              <option value="Kereta Api">Kereta Api</option>
-              <option value="Mobil Pribadi">Mobil Pribadi</option>
-              <option value="Sepeda Motor">Sepeda Motor</option>
-              <option value="Sepeda">Sepeda</option>
-              <option value="Ojek">Ojek</option>
-              <option value="Lainnya">Lainnya</option>
-            </select>
+              <SelectTrigger className="w-full h-11.5 rounded-xl bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 px-4 text-sm font-medium">
+                <SelectValue placeholder="-- Pilih --" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Jalan Kaki">Jalan Kaki</SelectItem>
+                <SelectItem value="Angkutan Umum">Angkutan Umum</SelectItem>
+                <SelectItem value="Mobil Antar Jemput">Mobil Antar Jemput</SelectItem>
+                <SelectItem value="Kereta Api">Kereta Api</SelectItem>
+                <SelectItem value="Mobil Pribadi">Mobil Pribadi</SelectItem>
+                <SelectItem value="Sepeda Motor">Sepeda Motor</SelectItem>
+                <SelectItem value="Sepeda">Sepeda</SelectItem>
+                <SelectItem value="Ojek">Ojek</SelectItem>
+                <SelectItem value="Lainnya">Lainnya</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>

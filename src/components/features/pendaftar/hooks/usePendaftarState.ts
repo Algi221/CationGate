@@ -79,6 +79,22 @@ export function usePendaftarState() {
   };
 
   const fetchTrashedApplicants = useCallback(async () => {
+    if (isDemoMode || schoolSlug === "demo") {
+      setTrashLoading(false);
+      setTrashError("");
+      try {
+        const local = typeof window !== "undefined" ? localStorage.getItem("demo_trashed_applicants") : null;
+        if (local) {
+          setTrashedApplicants(JSON.parse(local));
+        } else {
+          setTrashedApplicants([]);
+        }
+      } catch (_e) {
+        setTrashedApplicants([]);
+      }
+      return;
+    }
+
     try {
       setTrashLoading(true);
       setTrashError("");
@@ -97,9 +113,29 @@ export function usePendaftarState() {
     } finally {
       setTrashLoading(false);
     }
-  }, []);
+  }, [isDemoMode, schoolSlug]);
 
   const handleRestoreApplicant = async (id: number) => {
+    if (isDemoMode || schoolSlug === "demo") {
+      try {
+        setTrashLoading(true);
+        const itemToRestore = trashedApplicants.find(a => a.id === id);
+        const remaining = trashedApplicants.filter(a => a.id !== id);
+        setTrashedApplicants(remaining);
+        localStorage.setItem("demo_trashed_applicants", JSON.stringify(remaining));
+
+        if (itemToRestore) {
+          setApplicants(prev => [itemToRestore, ...prev]);
+        }
+        setTrashSuccess("Data calon siswa berhasil dipulihkan (Demo)!");
+      } catch (_e) {
+        setTrashError("Gagal memulihkan data demo");
+      } finally {
+        setTrashLoading(false);
+      }
+      return;
+    }
+
     try {
       setTrashLoading(true);
       setTrashError("");
@@ -134,6 +170,15 @@ export function usePendaftarState() {
       cancelButtonText: "Batal"
     });
     if (!result.isConfirmed) return;
+
+    if (isDemoMode || schoolSlug === "demo") {
+      const remaining = trashedApplicants.filter(a => a.id !== id);
+      setTrashedApplicants(remaining);
+      localStorage.setItem("demo_trashed_applicants", JSON.stringify(remaining));
+      setTrashSuccess("Data calon siswa berhasil dihapus secara permanen (Demo).");
+      return;
+    }
+
     try {
       setTrashLoading(true);
       setTrashError("");

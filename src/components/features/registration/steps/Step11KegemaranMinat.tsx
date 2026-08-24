@@ -1,6 +1,13 @@
 "use client";
 
 import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { RegistrationFormData } from "../types";
 
 interface StepProps {
@@ -20,6 +27,11 @@ export const Step11KegemaranMinat: React.FC<StepProps> = ({
   isFieldRequired,
   isFieldActive,
 }) => {
+  const triggerSelectChange = (name: string, value: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleInputChange({ target: { name, value } } as any);
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       <h3 className="text-xl font-extrabold text-slate-800 dark:text-white mb-1">Tahap 11: Data Kegemaran & Minat</h3>
@@ -71,22 +83,24 @@ export const Step11KegemaranMinat: React.FC<StepProps> = ({
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
               {getFieldLabel("citaCita", "2. Cita-cita")} {isFieldRequired("citaCita") && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <select
-              name="citaCita"
-              className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
+            <Select
               value={formData.citaCita}
-              onChange={handleInputChange}
+              onValueChange={(val) => triggerSelectChange("citaCita", val)}
             >
-              <option value="">-- Pilih Cita-cita --</option>
-              <option value="PNS">PNS</option>
-              <option value="TNI/POLRI">TNI/POLRI</option>
-              <option value="Guru/Dosen">Guru/Dosen</option>
-              <option value="Dokter">Dokter</option>
-              <option value="Politikus">Politikus</option>
-              <option value="Wiraswasta">Wiraswasta</option>
-              <option value="Seni Lukis/Artis">Seni Lukis/Artis/Sejenisnya</option>
-              <option value="Lainnya">Lainnya</option>
-            </select>
+              <SelectTrigger className="w-full h-11.5 rounded-xl bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 px-4 text-sm font-medium">
+                <SelectValue placeholder="-- Pilih Cita-cita --" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PNS">PNS</SelectItem>
+                <SelectItem value="TNI/POLRI">TNI/POLRI</SelectItem>
+                <SelectItem value="Guru/Dosen">Guru/Dosen</SelectItem>
+                <SelectItem value="Dokter">Dokter</SelectItem>
+                <SelectItem value="Politikus">Politikus</SelectItem>
+                <SelectItem value="Wiraswasta">Wiraswasta</SelectItem>
+                <SelectItem value="Seni Lukis/Artis">Seni Lukis/Artis/Sejenisnya</SelectItem>
+                <SelectItem value="Lainnya">Lainnya</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>

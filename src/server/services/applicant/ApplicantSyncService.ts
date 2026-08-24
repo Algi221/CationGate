@@ -1,5 +1,4 @@
 import { getSupabaseClient } from "../../db/supabase";
-import { broadcast } from "../../ws/handler";
 
 export class ApplicantSyncService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -364,20 +363,6 @@ export class ApplicantSyncService {
             .from("student_applicants")
             .update({ status: "Rejected" })
             .eq("id", applicant.id);
-
-          const updatedApplicant = { ...applicant, status: "Rejected" };
-          broadcast({
-            event: "STATUS_UPDATE",
-            data: {
-              id: updatedApplicant.id,
-              nama: updatedApplicant.nama,
-              status: "Rejected"
-            }
-          });
-          broadcast({
-            event: "APPLICANT_UPDATED",
-            data: updatedApplicant
-          });
         }
       }
     } catch (err: unknown) {

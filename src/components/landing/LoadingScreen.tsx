@@ -18,7 +18,9 @@ export default function LoadingScreen() {
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    const isInternalNav = sessionStorage.getItem("cationgate_internal_navigation") === "true";
+    const isInternalNav =
+      sessionStorage.getItem("cationgate_internal_navigation") === "true" ||
+      sessionStorage.getItem("cationgate_skip_splash") === "true";
     if (isInternalNav) {
       setIsMounted(false);
       window.dispatchEvent(new CustomEvent("cationgate:loading-complete"));

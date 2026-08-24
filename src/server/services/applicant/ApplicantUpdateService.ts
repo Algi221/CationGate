@@ -1,5 +1,4 @@
 import { getSupabaseClient } from "../../db/supabase";
-import { broadcast } from "../../ws/handler";
 import { updateApplicantSchema } from "../../validations/applicants";
 import { ApplicantSyncService } from "./ApplicantSyncService";
 
@@ -193,7 +192,6 @@ export class ApplicantUpdateService {
     if (error) throw error;
 
     await ApplicantSyncService.syncCandidateToSiswaAktif(updatedRecord);
-    broadcast({ event: "APPLICANT_UPDATED", data: updatedRecord }, true);
 
     return {
       success: true as const,

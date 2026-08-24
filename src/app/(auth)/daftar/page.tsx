@@ -181,7 +181,7 @@ export default function DaftarSaaS() {
                     <div className="mt-5 sm:mt-6 flex justify-end border-t border-slate-100 pt-4">
                       <Button
                         type="submit"
-                        className="h-10 sm:h-11 rounded-xl bg-[#EAB844] hover:bg-[#d9a92f] px-6 text-xs font-bold text-white shadow-md shadow-[#EAB844]/20 cursor-pointer transition-all"
+                        className="h-10 sm:h-11 rounded-xl bg-[#FFC000] hover:bg-[#F3C625] px-6 text-xs font-bold text-slate-950 shadow-md shadow-[#FFC000]/20 cursor-pointer transition-all"
                       >
                         Lanjutkan <ArrowRight className="ml-2 h-3.5 w-3.5" />
                       </Button>
@@ -211,7 +211,7 @@ export default function DaftarSaaS() {
                       <Button
                         type="submit"
                         disabled={loading}
-                        className="h-10 sm:h-11 rounded-xl bg-[#0284C7] hover:bg-[#0369a1] px-6 text-xs font-bold text-white shadow-md shadow-blue-500/20 cursor-pointer transition-all"
+                        className="h-10 sm:h-11 rounded-xl bg-[#FFC000] hover:bg-[#F3C625] px-6 text-xs font-bold text-slate-950 shadow-md shadow-[#FFC000]/20 cursor-pointer transition-all"
                       >
                         Lanjutkan <ArrowRight className="ml-2 h-3.5 w-3.5" />
                       </Button>

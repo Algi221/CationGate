@@ -4,14 +4,21 @@ import React, { Suspense } from "react";
 import Image from "next/image";
 import { 
   Download, 
-  GraduationCap,
-  Plus,
-  Layers,
-  Trash2,
-  ChevronRight,
-  ChevronLeft,
-  Search
+  GraduationCap, 
+  Plus, 
+  Layers, 
+  Trash2, 
+  ChevronRight, 
+  ChevronLeft, 
+  Search 
 } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { usePPDB } from "@/context/PPDBContext";
 import { usePembagianKelasState } from "@/components/features/pembagian-kelas/hooks/usePembagianKelasState";
 import { AddClassModal } from "@/components/features/pembagian-kelas/components/AddClassModal";
@@ -129,23 +136,6 @@ function ClassDivisionManagementContent() {
               {filledClassesCount}
             </span>
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Terisi</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Auto-Sync Live Status Banner */}
-      <div className="p-4 bg-linear-to-r from-blue-500/10 via-emerald-500/10 to-transparent border border-blue-200/80 dark:border-blue-900/50 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm shadow-blue-500/30">
-            ⚡
-          </div>
-          <div>
-            <span className="font-extrabold text-slate-800 dark:text-white block">
-              Auto-Sync Siswa Aktif Terhubung Otomatis
-            </span>
-            <span className="text-slate-500 dark:text-slate-400 text-[11px]">
-              Setiap calon siswa yang dipindahkan ke rombel kelas otomatis disinkronisasi ke data Siswa Aktif tahun ajaran baru tanpa perlu impor Excel.
-            </span>
           </div>
         </div>
       </div>
@@ -337,49 +327,57 @@ function ClassDivisionManagementContent() {
               />
             </div>
 
-            <select
-              value={assignmentFilter}
-              onChange={(e) => setAssignmentFilter(e.target.value as "ALL" | "UNASSIGNED" | "ASSIGNED")}
-              className="px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer"
-            >
-              <option value="ALL">Semua Calon Kelas</option>
-              <option value="UNASSIGNED">Belum Diatur</option>
-              <option value="ASSIGNED">Sudah Diatur</option>
-            </select>
+            <div className="w-full sm:w-auto min-w-37.5">
+              <Select value={assignmentFilter} onValueChange={(val) => setAssignmentFilter(val as "ALL" | "UNASSIGNED" | "ASSIGNED")}>
+                <SelectTrigger className="h-9.5 rounded-xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <SelectValue placeholder="Semua Calon Kelas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Semua Calon Kelas</SelectItem>
+                  <SelectItem value="UNASSIGNED">Belum Diatur</SelectItem>
+                  <SelectItem value="ASSIGNED">Sudah Diatur</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <select
-              value={genderFilter}
-              onChange={(e) => setGenderFilter(e.target.value as "ALL" | "L" | "P")}
-              className="px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer"
-            >
-              <option value="ALL">Semua Gender</option>
-              <option value="L">Laki-Laki (L)</option>
-              <option value="P">Perempuan (P)</option>
-            </select>
+            <div className="w-full sm:w-auto min-w-32.5">
+              <Select value={genderFilter} onValueChange={(val) => setGenderFilter(val as "ALL" | "L" | "P")}>
+                <SelectTrigger className="h-9.5 rounded-xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <SelectValue placeholder="Semua Gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Semua Gender</SelectItem>
+                  <SelectItem value="L">Laki-Laki (L)</SelectItem>
+                  <SelectItem value="P">Perempuan (P)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {selectedStudentIds.length > 0 && (
             <div className="flex items-center gap-2 shrink-0 animate-in fade-in">
-              <select
+              <Select
                 disabled={isLoading}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    handleAssignSelectedToClass(e.target.value === "REMOVE" ? "" : e.target.value);
-                    e.target.value = "";
+                onValueChange={(val) => {
+                  if (val) {
+                    handleAssignSelectedToClass(val === "REMOVE" ? "" : val);
                   }
                 }}
-                className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider py-2.5 px-4 rounded-2xl focus:outline-none cursor-pointer shadow-md"
               >
-                <option value="">+ Masukkan Ke ({selectedStudentIds.length} Siswa)...</option>
-                {classesOfSelectedMajor.map((c) => (
-                  <option key={c.id} value={c.name} className="text-slate-800 bg-white">
-                    {c.name}
-                  </option>
-                ))}
-                <option value="REMOVE" className="text-rose-600 bg-white">
-                  Keluarkan Dari Kelas
-                </option>
-              </select>
+                <SelectTrigger className="h-9.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 rounded-xl border-blue-500 shadow-md">
+                  <SelectValue placeholder={`+ Masukkan Ke (${selectedStudentIds.length} Siswa)...`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {classesOfSelectedMajor.map((c) => (
+                    <SelectItem key={c.id} value={c.name}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="REMOVE" className="text-rose-600 focus:text-rose-600">
+                    Keluarkan Dari Kelas
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
@@ -476,19 +474,25 @@ function ClassDivisionManagementContent() {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <select
-                          value={currentClass || ""}
-                          disabled={isLoading}
-                          onChange={(e) => handleAssignSingleStudent(student.id, e.target.value)}
-                          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer shadow-2xs"
-                        >
-                          <option value="">Belum Diatur</option>
-                          {classesOfSelectedMajor.map((c) => (
-                            <option key={c.id} value={c.name}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="inline-block min-w-32.5">
+                          <Select
+                            value={currentClass || "UNASSIGNED"}
+                            disabled={isLoading}
+                            onValueChange={(val) => handleAssignSingleStudent(student.id, val === "UNASSIGNED" ? "" : val)}
+                          >
+                            <SelectTrigger className="h-8 rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs">
+                              <SelectValue placeholder="Belum Diatur" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="UNASSIGNED">Belum Diatur</SelectItem>
+                              {classesOfSelectedMajor.map((c) => (
+                                <SelectItem key={c.id} value={c.name}>
+                                  {c.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -520,16 +524,22 @@ function ClassDivisionManagementContent() {
 
               <div className="flex items-center gap-1.5 ml-2">
                 <span className="text-slate-400">Baris:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold focus:outline-none focus:border-blue-500 cursor-pointer"
-                >
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
+                <div className="w-18">
+                  <Select
+                    value={String(pageSize)}
+                    onValueChange={(val) => setPageSize(Number(val))}
+                  >
+                    <SelectTrigger className="h-7.5 px-2 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold">
+                      <SelectValue placeholder="10" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 

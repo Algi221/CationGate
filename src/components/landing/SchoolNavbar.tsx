@@ -4,8 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Sun,
-  Moon,
   Menu,
   X,
   Cpu,
@@ -14,6 +12,7 @@ import {
   Video,
   Palette,
 } from "lucide-react";
+import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 
 import SafeImage from "@/components/SafeImage";
 import { usePPDB } from "@/context/PPDBContext";
@@ -45,23 +44,12 @@ const DEFAULT_MAJORS = [
 
 export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("ppdb-theme");
-      if (savedTheme === "dark") return true;
-      if (savedTheme === "light") return false;
-      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-    return false;
-  });
-  const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [majors, setMajors] = useState<any[]>(DEFAULT_MAJORS);
   const _pathname = usePathname();
 
   useEffect(() => {
-    setMounted(true);
     const savedTheme = localStorage.getItem("ppdb-theme");
     if (savedTheme === "dark" || (!savedTheme && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
       document.documentElement.classList.add("dark");
@@ -104,18 +92,6 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
       loadMajors();
     }
   }, [schoolSlug]);
-
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("ppdb-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("ppdb-theme", "light");
-    }
-  };
 
   return (
     <>
@@ -219,13 +195,11 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <button
-              onClick={toggleDark}
-              className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              aria-label="Toggle Theme"
-            >
-              {mounted && isDark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
-            </button>
+            <ToggleTheme
+              animationType="circle-spread"
+              duration={1000}
+              className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-0 bg-transparent dark:bg-transparent"
+            />
             <Link href={schoolSlug === 'demo' ? "/demo/dashboard" : `/${schoolSlug}/daftar`} className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
               {schoolSlug === 'demo' ? "Dashboard Demo" : "Daftar"}
             </Link>

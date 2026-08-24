@@ -4,6 +4,13 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ArrowRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { SchoolVerificationFormData } from "../types";
 
 interface Step1LegalitasProps {
@@ -69,16 +76,22 @@ export const Step1Legalitas: React.FC<Step1LegalitasProps> = ({
           <Label className="text-xs font-black uppercase text-slate-500">
             Peringkat Akreditasi BAN-S/M
           </Label>
-          <select
-            value={formData.accreditation}
-            onChange={(e) => setFormData((p) => ({ ...p, accreditation: e.target.value }))}
-            className="mt-1 w-full rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold p-3 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="A (Unggul)">A (Unggul / Sangat Baik)</option>
-            <option value="B (Baik)">B (Baik)</option>
-            <option value="C (Cukup)">C (Cukup)</option>
-            <option value="Belum Terakreditasi">Belum Terakreditasi</option>
-          </select>
+          <div className="mt-1">
+            <Select
+              value={formData.accreditation}
+              onValueChange={(val) => setFormData((p) => ({ ...p, accreditation: val }))}
+            >
+              <SelectTrigger className="w-full h-11 rounded-2xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-white">
+                <SelectValue placeholder="Pilih Akreditasi" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="A (Unggul)">A (Unggul / Sangat Baik)</SelectItem>
+                <SelectItem value="B (Baik)">B (Baik)</SelectItem>
+                <SelectItem value="C (Cukup)">C (Cukup)</SelectItem>
+                <SelectItem value="Belum Terakreditasi">Belum Terakreditasi</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="md:col-span-2">

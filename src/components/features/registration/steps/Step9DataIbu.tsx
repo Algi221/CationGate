@@ -1,6 +1,13 @@
 "use client";
 
 import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { RegistrationFormData } from "../types";
 
 interface StepProps {
@@ -18,6 +25,11 @@ export const Step9DataIbu: React.FC<StepProps> = ({
   isFieldRequired,
   isFieldActive,
 }) => {
+  const triggerSelectChange = (name: string, value: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleInputChange({ target: { name, value } } as any);
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       <h3 className="text-xl font-extrabold text-slate-800 dark:text-white mb-1">Tahap 9: Data Ibu Kandung</h3>
@@ -84,20 +96,22 @@ export const Step9DataIbu: React.FC<StepProps> = ({
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                 {getFieldLabel("agamaIbu", "3. Agama")} {isFieldRequired("agamaIbu") && <span className="text-red-500 ml-1">*</span>}
               </label>
-              <select
-                name="agamaIbu"
-                className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
+              <Select
                 value={formData.agamaIbu}
-                onChange={handleInputChange}
+                onValueChange={(val) => triggerSelectChange("agamaIbu", val)}
               >
-                <option value="">-- Pilih Agama --</option>
-                <option value="Islam">Islam</option>
-                <option value="Kristen">Kristen Protestan</option>
-                <option value="Katolik">Katolik</option>
-                <option value="Hindu">Hindu</option>
-                <option value="Buddha">Buddha</option>
-                <option value="Konghucu">Konghucu</option>
-              </select>
+                <SelectTrigger className="w-full h-11.5 rounded-xl bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 px-4 text-sm font-medium">
+                  <SelectValue placeholder="-- Pilih Agama --" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Islam">Islam</SelectItem>
+                  <SelectItem value="Kristen">Kristen Protestan</SelectItem>
+                  <SelectItem value="Katolik">Katolik</SelectItem>
+                  <SelectItem value="Hindu">Hindu</SelectItem>
+                  <SelectItem value="Buddha">Buddha</SelectItem>
+                  <SelectItem value="Konghucu">Konghucu</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
           {isFieldActive("kewarganegaraanIbu") && (
@@ -105,15 +119,18 @@ export const Step9DataIbu: React.FC<StepProps> = ({
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                 {getFieldLabel("kewarganegaraanIbu", "4. Kewarganegaraan")} {isFieldRequired("kewarganegaraanIbu") && <span className="text-red-500 ml-1">*</span>}
               </label>
-              <select
-                name="kewarganegaraanIbu"
-                className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
-                value={formData.kewarganegaraanIbu}
-                onChange={handleInputChange}
+              <Select
+                value={formData.kewarganegaraanIbu || "WNI"}
+                onValueChange={(val) => triggerSelectChange("kewarganegaraanIbu", val)}
               >
-                <option value="WNI">WNI</option>
-                <option value="WNA">WNA</option>
-              </select>
+                <SelectTrigger className="w-full h-11.5 rounded-xl bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 px-4 text-sm font-medium">
+                  <SelectValue placeholder="-- Pilih --" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="WNI">WNI</SelectItem>
+                  <SelectItem value="WNA">WNA</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
@@ -154,18 +171,20 @@ export const Step9DataIbu: React.FC<StepProps> = ({
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                 {getFieldLabel("penghasilanIbu", "7. Penghasilan Per Bulan")} {isFieldRequired("penghasilanIbu") && <span className="text-red-500 ml-1">*</span>}
               </label>
-              <select
-                name="penghasilanIbu"
-                className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
+              <Select
                 value={formData.penghasilanIbu}
-                onChange={handleInputChange}
+                onValueChange={(val) => triggerSelectChange("penghasilanIbu", val)}
               >
-                <option value="">-- Pilih --</option>
-                <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
-                <option value="Rp 1.000.000 - Rp 3.000.000">Rp 1.000.000 - Rp 3.000.000</option>
-                <option value="Rp 3.000.000 - Rp 5.000.000">Rp 3.000.000 - Rp 5.000.000</option>
-                <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
-              </select>
+                <SelectTrigger className="w-full h-11.5 rounded-xl bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 px-4 text-sm font-medium">
+                  <SelectValue placeholder="-- Pilih --" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="< Rp 1.000.000">&lt; Rp 1.000.000</SelectItem>
+                  <SelectItem value="Rp 1.000.000 - Rp 3.000.000">Rp 1.000.000 - Rp 3.000.000</SelectItem>
+                  <SelectItem value="Rp 3.000.000 - Rp 5.000.000">Rp 3.000.000 - Rp 5.000.000</SelectItem>
+                  <SelectItem value="> Rp 5.000.000">&gt; Rp 5.000.000</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
@@ -233,15 +252,18 @@ export const Step9DataIbu: React.FC<StepProps> = ({
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
               {getFieldLabel("statusIbu", "9. Status Hidup/Meninggal Dunia")} {isFieldRequired("statusIbu") && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <select
-              name="statusIbu"
-              className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
-              value={formData.statusIbu}
-              onChange={handleInputChange}
+            <Select
+              value={formData.statusIbu || "Masih Hidup"}
+              onValueChange={(val) => triggerSelectChange("statusIbu", val)}
             >
-              <option value="Masih Hidup">Masih Hidup</option>
-              <option value="Meninggal Dunia">Meninggal Dunia</option>
-            </select>
+              <SelectTrigger className="w-full h-11.5 rounded-xl bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 px-4 text-sm font-medium">
+                <SelectValue placeholder="Pilih Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Masih Hidup">Masih Hidup</SelectItem>
+                <SelectItem value="Meninggal Dunia">Meninggal Dunia</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>

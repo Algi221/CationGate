@@ -1,12 +1,30 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Check, Building2 } from "lucide-react";
 import Link from "next/link";
 import { TimelineAnimation } from "@/components/ui/product-packs-utils/timeline-animation";
 
 export const ProductPacks = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
+  const [proPrice, setProPrice] = useState("Rp 750.000");
+
+  useEffect(() => {
+    fetch("/api/saas/plans")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          const proPlan = data.data.find(
+            (p: { id?: number; name?: string }) =>
+              p.name?.toLowerCase().includes("pro") || p.id === 2
+          );
+          if (proPlan && typeof proPlan.price_yearly === "number") {
+            setProPrice(`Rp ${proPlan.price_yearly.toLocaleString("id-ID")}`);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <section
@@ -115,7 +133,7 @@ export const ProductPacks = () => {
                   </span>
                   <div className="flex items-baseline gap-1.5 whitespace-nowrap">
                     <span className="text-4xl font-bold text-[#2e3749] dark:text-white">
-                      Rp 750.000
+                      {proPrice}
                     </span>
                     <span className="text-slate-400 text-sm">/ Tahun</span>
                   </div>

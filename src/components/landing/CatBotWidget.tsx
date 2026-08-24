@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, SquarePen, Loader2, GripHorizontal } from "lucide-react";
+import {
+  X,
+  Send,
+  SquarePen,
+  Loader2,
+  GripHorizontal,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
@@ -40,8 +48,12 @@ const MASCOT_ASSETS = {
 export function CatBotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVideoVisible, setIsVideoVisible] = useState(true);
+  const [isVideoDockedBottomRight, setIsVideoDockedBottomRight] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
+
+  // State untuk mengontrol panel pertanyaan populer (default: true / terbuka)
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(true);
 
   // State untuk animasi tooltip
   const [tooltipIndex, setTooltipIndex] = useState(0);
@@ -91,7 +103,7 @@ export function CatBotWidget() {
     };
   }, []);
 
-  // Handle Resize (Responsive) & Floating Video Event
+  // Handle Resize (Responsive) & Floating Video Events
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
     handleResize(); // Set initial state
@@ -105,9 +117,21 @@ export function CatBotWidget() {
     };
     window.addEventListener("floatingVideoToggle", handleVideoToggle);
 
+    const handlePositionChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail?.isDockedBottomRight === "boolean") {
+        setIsVideoDockedBottomRight(detail.isDockedBottomRight);
+      }
+      if (typeof detail?.isVisible === "boolean") {
+        setIsVideoVisible(detail.isVisible);
+      }
+    };
+    window.addEventListener("floatingVideoPositionChange", handlePositionChange);
+
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("floatingVideoToggle", handleVideoToggle);
+      window.removeEventListener("floatingVideoPositionChange", handlePositionChange);
     };
   }, []);
 
@@ -233,6 +257,9 @@ export function CatBotWidget() {
 
   const showSuggestions = !isLoading;
 
+  const isVideoNearBottomRight = isVideoVisible && isVideoDockedBottomRight;
+  const effectiveBottom = isMobile ? 24 : isVideoNearBottomRight ? 150 : 24;
+
   return (
     <div
       ref={constraintsRef}
@@ -241,17 +268,19 @@ export function CatBotWidget() {
       {/* WIDGET SEBELUM DI-KLIK (PRE-CLICK) */}
       <AnimatePresence>
         {isPageLoaded && !isOpen && (
-          <div
+          <motion.div
             className="absolute right-4 sm:right-6 pointer-events-auto z-950"
-            style={{ bottom: isMobile ? 24 : isVideoVisible ? 150 : 24 }}
+            initial={{ scale: 0, opacity: 0, y: 20, bottom: effectiveBottom }}
+            animate={{ scale: 1, opacity: 1, y: 0, bottom: effectiveBottom }}
+            exit={{ scale: 0, opacity: 0, y: 20 }}
+            transition={{
+              type: "spring",
+              stiffness: 280,
+              damping: 24,
+              mass: 0.8,
+            }}
           >
-            <motion.div
-              initial={{ scale: 0, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0, opacity: 0, y: 20 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="flex items-center gap-4"
-            >
+            <div className="flex items-center gap-4">
               {/* Tooltip Animasi Dinamis */}
               <div className="hidden sm:flex items-center relative bg-[#0a0a0a] text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg select-none overflow-hidden h-9 min-w-42.5 justify-center">
                 <AnimatePresence mode="wait">
@@ -286,8 +315,8 @@ export function CatBotWidget() {
                 {/* Online Indicator */}
                 <span className="absolute bottom-0 right-0 sm:bottom-1 sm:right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#FFC000] rounded-full" />
               </button>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -300,15 +329,23 @@ export function CatBotWidget() {
             dragElastic={0.05}
             dragMomentum={false}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              bottom: isMobile ? 0 : effectiveBottom,
+            }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: 0.25,
+              ease: [0.16, 1, 0.3, 1],
+              bottom: { type: "spring", stiffness: 280, damping: 24 },
+            }}
             style={{
-              bottom: isMobile ? 0 : isVideoVisible ? 150 : 24,
-              height: isMobile ? "100dvh" : "auto", // Gunakan 100dvh agar presisi di mobile browser
+              height: isMobile ? "100dvh" : "auto",
               maxHeight: isMobile
                 ? "100dvh"
-                : `calc(100vh - ${isVideoVisible ? 180 : 54}px)`,
+                : `calc(100vh - ${effectiveBottom + 30}px)`,
             }}
             className={`
               pointer-events-auto absolute flex flex-col 
@@ -457,30 +494,54 @@ export function CatBotWidget() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Area Pertanyaan Populer (Total 5 Pertanyaan) */}
+              {/* Area Pertanyaan Populer (Default Terbuka & Bisa Ditutup/Dibuka) */}
               <AnimatePresence>
                 {showSuggestions && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="relative z-20 px-4 sm:px-5 pb-4 sm:pb-5 pt-2 bg-transparent shrink-0"
+                    className="relative z-20 px-4 sm:px-5 pb-3.5 pt-2.5 bg-linear-to-t from-black/10 via-black/5 to-transparent border-t border-black/10 shrink-0"
                   >
-                    <p className="text-[10px] uppercase font-black text-black/80 tracking-wider mb-2.5">
-                      Pertanyaan Populer:
-                    </p>
-                    {/* Menggunakan scroll menyamping (overflow-x-auto) di mobile supaya tidak memakan tinggi layar */}
-                    <div className="flex sm:flex-wrap overflow-x-auto sm:overflow-visible gap-2 pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
-                      {DEFAULT_SUGGESTIONS.map((sug, i) => (
-                        <button
-                          key={i}
-                          onClick={() => handleSendMessage(sug)}
-                          className="shrink-0 sm:shrink text-[11px] bg-[#0a0a0a] hover:bg-black text-white font-medium px-4 py-2 rounded-full transition-all border border-white/20 active:scale-95 cursor-pointer shadow-sm text-left whitespace-nowrap sm:whitespace-normal"
+                    {/* Header Panel Pertanyaan dengan Tombol Toggle */}
+                    <button
+                      onClick={() => setIsSuggestionsOpen(!isSuggestionsOpen)}
+                      className="w-full flex items-center justify-between text-left text-[10px] uppercase font-black text-black/80 tracking-wider mb-2.5 cursor-pointer select-none group"
+                    >
+                      <span>Pertanyaan Populer</span>
+                      <span className="p-1 rounded-full bg-black/10 group-hover:bg-black/20 transition-colors">
+                        {isSuggestionsOpen ? (
+                          <ChevronDown className="w-3.5 h-3.5 text-black" />
+                        ) : (
+                          <ChevronUp className="w-3.5 h-3.5 text-black" />
+                        )}
+                      </span>
+                    </button>
+
+                    {/* Daftar Tombol Pertanyaan yang Bisa Disembunyikan/Ditampilkan */}
+                    <AnimatePresence>
+                      {isSuggestionsOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                          className="overflow-hidden"
                         >
-                          {sug}
-                        </button>
-                      ))}
-                    </div>
+                          <div className="flex sm:flex-wrap overflow-x-auto sm:overflow-visible gap-2 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
+                            {DEFAULT_SUGGESTIONS.map((sug, i) => (
+                              <button
+                                key={i}
+                                onClick={() => handleSendMessage(sug)}
+                                className="shrink-0 sm:shrink text-[11px] bg-[#0a0a0a] hover:bg-black text-white font-medium px-4 py-2 rounded-full transition-all border border-white/20 active:scale-95 cursor-pointer shadow-sm text-left whitespace-nowrap sm:whitespace-normal"
+                              >
+                                {sug}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 )}
               </AnimatePresence>

@@ -1,5 +1,4 @@
 import { getSupabaseClient } from "../../db/supabase";
-import { broadcast } from "../../ws/handler";
 import { resolveSchoolUUID } from "../../db/resolve-school";
 import { fontInMemSchools } from "../../routes/saas";
 import { registerApplicantSchema } from "../../validations/applicants";
@@ -350,32 +349,6 @@ export class ApplicantCreateService {
       .eq("school_id", schoolId);
     if (registrationError) throw registrationError;
     savedRecord = { ...savedRecord, registration_no: registrationNo };
-
-    broadcast(
-      {
-        event: "NEW_APPLICANT",
-        data: savedRecord
-      },
-      true
-    );
-
-    broadcast(
-      {
-        event: "NEW_APPLICANT_PUBLIC",
-        data: {
-          id: savedRecord.id,
-          nama: savedRecord.nama,
-          nisn: savedRecord.nisn,
-          sekolah_asal: savedRecord.sekolah_asal,
-          jurusan_1: savedRecord.jurusan_1,
-          diterima_kelas: savedRecord.diterima_kelas,
-          jenis_kelamin: savedRecord.jenis_kelamin,
-          status: savedRecord.status,
-          tgl_daftar: savedRecord.tgl_daftar
-        }
-      },
-      false
-    );
 
     return {
       success: true as const,

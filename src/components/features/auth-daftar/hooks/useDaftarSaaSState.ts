@@ -219,7 +219,7 @@ export function useDaftarSaaSState() {
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       setEmailErrorState("Format email tidak valid.");
       setEmailSuccessState(false);
@@ -260,7 +260,7 @@ export function useDaftarSaaSState() {
         return;
       }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(formData.email.trim())) {
         setEmailErrorState("Format email tidak valid.");
         setErrorMsg("Format email tidak valid.");

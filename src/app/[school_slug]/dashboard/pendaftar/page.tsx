@@ -74,12 +74,12 @@ function ApplicantsDirectoryContent() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left">
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 sm:gap-6 overflow-x-auto no-scrollbar scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
         <button
           onClick={() => handleTabChange("active")}
-          className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap px-1 ${
             activePageTab === "active"
-              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
               : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
@@ -87,9 +87,9 @@ function ApplicantsDirectoryContent() {
         </button>
         <button
           onClick={() => handleTabChange("transfer")}
-          className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap px-1 ${
             activePageTab === "transfer"
-              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
               : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
@@ -97,26 +97,25 @@ function ApplicantsDirectoryContent() {
         </button>
         <button
           onClick={() => handleTabChange("kuota")}
-          className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
+          className={`pb-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap px-1 ${
             activePageTab === "kuota"
-              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
               : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
           <PieChart size={15} />
-          Data Kuota
+          <span>Data Kuota</span>
         </button>
-
         <button
           onClick={() => handleTabChange("trash")}
-          className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
+          className={`pb-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap px-1 ${
             activePageTab === "trash"
-              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
               : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           }`}
         >
           <Trash2 size={15} />
-          Sampah / Calon Siswa Dihapus
+          <span>Sampah / Calon Siswa Dihapus</span>
         </button>
       </div>
 

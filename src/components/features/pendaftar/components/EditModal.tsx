@@ -2,6 +2,13 @@
 
 import React from "react";
 import { Pencil, X, User, School, Heart, Layers, Users } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { Applicant, EditFormState } from "../types";
 
 interface EditModalProps {
@@ -154,13 +161,21 @@ export const EditModal: React.FC<EditModalProps> = ({
                       {f.label}
                     </label>
                     {f.type === "select" ? (
-                      <select
-                        value={(editForm as Record<string, string | number>)[f.key] || ""}
-                        onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                        className="w-full bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
+                      <Select
+                        value={String((editForm as Record<string, string | number>)[f.key] || "")}
+                        onValueChange={(val) => setEditForm(prev => ({ ...prev, [f.key]: val }))}
                       >
-                        {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
+                        <SelectTrigger className="w-full h-11 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 text-xs font-bold text-slate-700 dark:text-white">
+                          <SelectValue placeholder={`Pilih ${f.label}`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(f.options || []).map(o => (
+                            <SelectItem key={o} value={o}>
+                              {o}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     ) : (
                       <input
                         type={f.type || "text"}

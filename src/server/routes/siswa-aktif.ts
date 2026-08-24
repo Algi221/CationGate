@@ -1,7 +1,6 @@
 import { Hono, Context } from 'hono';
 import { adminAuth } from '../middleware/auth';
 import { getSupabaseClient } from '../db/supabase';
-import { broadcast } from '../ws/handler';
 import { updateSiswaAktifSchema } from '../validations/siswa-aktif';
 
 const siswaAktifRouter = new Hono();
@@ -251,8 +250,6 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
 
-    broadcast({ event: 'STUDENT_UPDATED', data: updatedRecord }, true);
-
     return c.json({
       success: true,
       message: 'Data siswa aktif berhasil diperbarui.',
@@ -296,18 +293,9 @@ siswaAktifRouter.delete('/:id', adminAuth, async (c: Context) => {
         rejected_by: null
       }).eq('id', student.calon_siswa_id);
       if (schoolId) updateCSQuery = updateCSQuery.eq('school_id', schoolId);
+      await updateCSQuery;
 
-      const { data: updatedApplicant } = await updateCSQuery.select().single();
-
-      if (updatedApplicant) {
-        broadcast({ event: 'APPLICANT_UPDATED', data: updatedApplicant });
-      }
     }
-
-    broadcast({
-      event: 'STUDENT_DELETED',
-      data: { id }
-    });
 
     return c.json({
       success: true,
@@ -365,8 +353,6 @@ siswaAktifRouter.post('/generate-nipd', adminAuth, async (c: Context) => {
       currentSequence++;
       updatesCount++;
     }
-
-    broadcast({ event: 'STUDENT_NIPD_GENERATED', data: { count: updatesCount } }, true);
 
     return c.json({
       success: true,
@@ -436,8 +422,6 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
       if (schoolId) updateCS = updateCS.eq('school_id', schoolId);
       await updateCS;
     }
-
-    broadcast({ event: 'STUDENT_UPDATED', data: updatedSiswa }, true);
 
     return c.json({
       success: true,
@@ -548,9 +532,6 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
       }
       totalInserted += data?.length || 0;
     }
-
-    // Broadcast WebSocket event to update clients
-    broadcast({ event: 'siswa_aktif_update', data: { school_id: schoolId } });
 
     return c.json({
       success: true,

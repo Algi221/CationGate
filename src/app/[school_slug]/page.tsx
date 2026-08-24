@@ -3,7 +3,7 @@
 import React from "react";
 import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
-import SchoolNotFound from "@/components/SchoolNotFound";
+import { ErrorView } from "@/components/features/error";
 import { useSchoolLandingState } from "@/components/features/school-landing/hooks/useSchoolLandingState";
 import { SchoolHero } from "@/components/features/school-landing/components/SchoolHero";
 import { SchoolGelombang } from "@/components/features/school-landing/components/SchoolGelombang";
@@ -37,7 +37,15 @@ export default function SchoolLandingPage() {
   } = useSchoolLandingState();
 
   if (isSchoolNotFound) {
-    return <SchoolNotFound slug={schoolSlug} />;
+    return (
+      <ErrorView
+        title="Halaman Tidak Ditemukan"
+        description={`Maaf, halaman instansi '${schoolSlug}' tidak dapat ditemukan atau belum terdaftar di platform CationGate.`}
+        urlPath={`/${schoolSlug}`}
+        ctaText="Kembali ke Beranda CationGate"
+        ctaHref="/"
+      />
+    );
   }
 
   return (

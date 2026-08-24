@@ -127,7 +127,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
           logoutGatekeeper();
-          router.push(`/gatekeeper/auth/login?expired=true`);
+          router.push(`/gatekeeper/login?expired=true`);
           return;
         }
       }
@@ -135,7 +135,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         if (localStorage.getItem("gatekeeper_token")) {
            return;
         }
-        router.push(`/gatekeeper/auth/login`);
+        router.push(`/gatekeeper/login`);
         return;
       }
 
@@ -160,7 +160,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
         logoutGatekeeper();
-        router.push("/gatekeeper/auth/login?expired=true");
+        router.push("/gatekeeper/login?expired=true");
       }, limit);
       const now = Date.now();
       if (now - lastStorageUpdate > 10000) {
@@ -173,7 +173,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     events.forEach((ev) => window.addEventListener(ev, resetTimer));
     return () => {
       clearTimeout(timeoutId);
-      events.forEach((ev) => window.addEventListener(ev, resetTimer));
+      events.forEach((ev) => window.removeEventListener(ev, resetTimer));
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gatekeeperToken, pathname]);
@@ -197,7 +197,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const confirmLogout = () => {
     logoutGatekeeper();
     setShowLogoutConfirm(false);
-    router.push("/gatekeeper/auth/login");
+    router.push("/gatekeeper/login");
   };
 
   if (!mounted) return null;

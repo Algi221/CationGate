@@ -247,7 +247,7 @@ export default function GatekeeperPlansPage() {
                 </div>
               </div>
 
-              <div className="flex-grow">
+              <div className="grow">
                 <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Fitur Termasuk</p>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((feat, idx) => (
@@ -274,7 +274,7 @@ export default function GatekeeperPlansPage() {
 
       {/* MODAL FORM */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-10">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">

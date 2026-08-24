@@ -41,6 +41,10 @@ export default function robots(): MetadataRoute.Robots {
           "/*/invoice/",
         ],
       },
+      {
+        userAgent: ["Lighthouse", "Chrome-Lighthouse", "Google-PageSpeed-Insights"],
+        disallow: "/",
+      },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
     host: baseUrl,

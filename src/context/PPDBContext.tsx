@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { ToastProvider, useToast } from "./ToastContext";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { SchoolProvider, useSchool } from "./SchoolContext";
+import { getBrowserSupabase } from "@/lib/supabase-client";
 
 export { useToast } from "./ToastContext";
 export { useAuth } from "./AuthContext";
@@ -190,11 +191,6 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [activeStudents]);
 
-
-  const wsRef = useRef<WebSocket | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const reconnectTimeoutRef = useRef<any>(null);
-  const connectWsRef = useRef<(() => void) | null>(null);
   const adminTokenRef = useRef<string | null>(adminToken);
 
   useEffect(() => { adminTokenRef.current = adminToken; }, [adminToken]);
@@ -449,37 +445,32 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchActiveStudents, fetchAdminApplicants, addToast, isDemoMode]);
 
-  // ── WebSocket / Real-Time ───────────────────────────────────────────────────
-  const connectWs = useCallback(() => {
-    if (wsRef.current) return;
-    if (typeof window === "undefined") return;
+  // ── Supabase Realtime Subscription ──────────────────────────────────────────
+  useEffect(() => {
+    if (isDemoMode || typeof window === "undefined") return;
+    const supabase = getBrowserSupabase();
+    if (!supabase) return;
 
-    try {
-      const isHttps = window.location.protocol === "https:";
-      const wsUrl = `${isHttps ? "wss:" : "ws:"}//${window.location.host}/api/ws`;
-      const ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        setWsStatus("CONNECTED");
-        if (schoolId) {
-          ws.send(JSON.stringify({ type: "SUBSCRIBE_SCHOOL", school_id: schoolId }));
-        }
-      };
-
-      ws.onerror = () => {
-        // Silent error handler for environments where WebSocket endpoint is not running
-      };
-
-      ws.onmessage = (e) => {
-        try {
-          const payload = JSON.parse(e.data);
-          if (payload.type === "NEW_APPLICANT") {
-            const applicant = payload.data;
-            setApplicants((prev) => [applicant, ...prev]);
-            setPublicApplicants((prev) => [applicant, ...prev]);
-            addToast("Pendaftaran Baru", `${applicant.nama} - ${applicant.jurusan_1}`, "success");
-          } else if (payload.type === "STATUS_UPDATED") {
-            const updated = payload.data;
+    const channelName = schoolId ? `ppdb:applicants:${schoolId}` : "ppdb:applicants:all";
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "student_applicants",
+          ...(schoolId ? { filter: `school_id=eq.${schoolId}` } : {})
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (payload: any) => {
+          if (payload.eventType === "INSERT") {
+            const newApp = payload.new;
+            setApplicants((prev) => [newApp, ...prev.filter((a) => a.id !== newApp.id)]);
+            setPublicApplicants((prev) => [newApp, ...prev.filter((a) => a.id !== newApp.id)]);
+            addToast("Pendaftaran Baru", `${newApp.nama} - ${newApp.jurusan_1 || newApp.jurusan || "Baru"}`, "success");
+          } else if (payload.eventType === "UPDATE") {
+            const updated = payload.new;
             setApplicants((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
             setPublicApplicants((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
             if (updated.status === "Approved") {
@@ -487,27 +478,28 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
             } else {
               setActiveStudents((prev) => prev.filter((a) => a.id !== updated.id));
             }
+          } else if (payload.eventType === "DELETE") {
+            const oldId = payload.old?.id;
+            if (oldId) {
+              setApplicants((prev) => prev.filter((a) => a.id !== oldId));
+              setPublicApplicants((prev) => prev.filter((a) => a.id !== oldId));
+              setActiveStudents((prev) => prev.filter((a) => a.id !== oldId));
+            }
           }
-        } catch {}
-      };
+        }
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          setWsStatus("CONNECTED");
+        } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+          setWsStatus("DISCONNECTED");
+        }
+      });
 
-      ws.onclose = () => {
-        setWsStatus("DISCONNECTED");
-        wsRef.current = null;
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connectWsRef.current?.();
-        }, 5000);
-      };
-
-      wsRef.current = ws;
-    } catch {
-      setWsStatus("ERROR");
-    }
-  }, [schoolId, addToast]);
-
-  useEffect(() => {
-    connectWsRef.current = connectWs;
-  }, [connectWs]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [schoolId, isDemoMode, addToast]);
 
   // ── Simulation ──────────────────────────────────────────────────────────────
   const simulateRegistration = useCallback(async () => {
@@ -558,23 +550,6 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       ignore = true;
     };
   }, [fetchPublicApplicants]);
-
-  useEffect(() => {
-    let ignore = false;
-    const timer = setTimeout(() => {
-      if (!ignore) {
-        connectWs();
-      }
-    }, 0);
-    const currentWs = wsRef.current;
-    const currentTimer = reconnectTimeoutRef.current;
-    return () => {
-      ignore = true;
-      clearTimeout(timer);
-      if (currentWs) { currentWs.onclose = null; currentWs.close(); }
-      if (currentTimer) clearTimeout(currentTimer);
-    };
-  }, [adminToken, connectWs]);
 
   useEffect(() => {
     let ignore = false;

@@ -5,8 +5,8 @@ import { getSupabaseClient } from '../db/supabase';
 import { adminAuth, requireTenantId } from '../middleware/auth';
 import { sendTelegramNotification } from '../utils/telegram';
 import { loginSchema, changePasswordSchema } from '../validations/auth';
-import { rateLimiter } from '../middleware/rate-limiter';
-import { isValidUUID, resolveSchoolUUID } from '../db/resolve-school';
+import { authLimiter } from '../middleware/rate-limiter';
+import { isValidUUID, resolveSchoolUUID, resolveSchoolSlug } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 
 const authRouter = new Hono();
@@ -18,11 +18,7 @@ const getJwtSecret = () => {
   return secret;
 };
 
-authRouter.post('/login', rateLimiter({
-  windowMs: 60 * 1000,
-  max: 5,
-  message: 'Batas percobaan login terlampaui. Silakan coba lagi dalam 1 menit.'
-}), async (c) => {
+authRouter.post('/login', authLimiter, async (c) => {
   try {
     const body = await c.req.json();
     const result = loginSchema.safeParse(body);
@@ -160,7 +156,7 @@ authRouter.post('/login', rateLimiter({
       });
     }
 
-    let query = supabase.from('admin_users').select('*').eq('username', username);
+    let query = supabase.from('admin_users').select('*').or(`username.eq.${username},email.eq.${username}`);
     if (schoolId) query = query.eq('school_id', schoolId);
     const { data: adminUser } = await query.maybeSingle();
 
@@ -185,13 +181,40 @@ authRouter.post('/login', rateLimiter({
       return c.json({ success: false, message: 'Username atau Password salah' }, 401);
     }
 
+    // Direct Gatekeeper check
+    if (adminUser.role === 'gatekeeper') {
+      return c.json({
+        success: false,
+        message: 'Akun Gatekeeper (Platform Superadmin) silakan login di /gatekeeper/login.'
+      }, 403);
+    }
+
+    // Resolve School Slug and ID reliably
+    const effectiveIdentifier = adminUser.school_id || schoolId || null;
+    const resolvedSlug = await resolveSchoolSlug(effectiveIdentifier, adminUser.email || adminUser.username, fontInMemSchools);
+    let resolvedSchoolUUID = effectiveIdentifier ? await resolveSchoolUUID(String(effectiveIdentifier), fontInMemSchools) : null;
+
+    if (!resolvedSchoolUUID && resolvedSlug) {
+      resolvedSchoolUUID = await resolveSchoolUUID(resolvedSlug, fontInMemSchools);
+    }
+
+    const finalEffectiveSchoolId = resolvedSchoolUUID || adminUser.school_id || schoolId || resolvedSlug || undefined;
+
+    // Backfill admin_users.school_id if previously missing
+    if (!adminUser.school_id && finalEffectiveSchoolId) {
+      try {
+        await supabase.from('admin_users').update({ school_id: finalEffectiveSchoolId }).eq('id', adminUser.id);
+      } catch (_syncErr) {}
+    }
+
     const token = jwt.sign(
       {
         id: adminUser.id,
         username: adminUser.username,
         nama: adminUser.nama_lengkap,
         role: adminUser.role,
-        school_id: adminUser.school_id || schoolId || undefined
+        school_id: finalEffectiveSchoolId,
+        school_slug: resolvedSlug || undefined
       },
       getJwtSecret(),
       { expiresIn: '7d' }
@@ -201,46 +224,25 @@ authRouter.post('/login', rateLimiter({
       `🔐 <b>LOGIN BERHASIL (Lokal)</b>\n\n` +
       `👤 User: <code>${adminUser.username}</code>\n` +
       `🏷️ Role: ${adminUser.role}\n` +
-      `🏫 Sekolah: <code>${adminUser.school_id || schoolId || 'Multi-tenant'}</code>\n` +
+      `🏫 Sekolah: <code>${resolvedSlug || finalEffectiveSchoolId || 'Multi-tenant'}</code>\n` +
       `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
     ).catch((err) => {
       console.error('[Telegram Bot] Gagal mengirim notifikasi login:', err);
     });
 
-    let schoolSlug = null;
-    const effectiveSchoolId = adminUser.school_id || schoolId;
-    if (effectiveSchoolId) {
-      for (const [, s] of fontInMemSchools) {
-        if (s.school_uuid === effectiveSchoolId || String(s.id) === String(effectiveSchoolId) || s.slug === effectiveSchoolId) {
-          schoolSlug = s.slug;
-          break;
-        }
-      }
-      if (!schoolSlug) {
-        try {
-          const { data: sch } = await supabase.from('schools').select('slug').eq('id', effectiveSchoolId).maybeSingle();
-          if (sch?.slug) schoolSlug = sch.slug;
-        } catch (_) {}
-      }
-      if (!schoolSlug) {
-        try {
-          const { data: psch } = await supabase.from('prospective_schools').select('slug').eq('id', effectiveSchoolId).maybeSingle();
-          if (psch?.slug) schoolSlug = psch.slug;
-        } catch (_) {}
-      }
-    }
-
     return c.json({
       success: true,
       message: 'Asyik! Kamu berhasil login. Selamat datang!',
       token,
-      school_slug: schoolSlug,
+      school_slug: resolvedSlug,
       admin: {
+        id: adminUser.id,
         username: adminUser.username,
         nama: adminUser.nama_lengkap,
         role: adminUser.role,
         foto_profil: adminUser.foto_profil,
-        school_id: effectiveSchoolId
+        school_id: finalEffectiveSchoolId,
+        school_slug: resolvedSlug
       }
     });
 

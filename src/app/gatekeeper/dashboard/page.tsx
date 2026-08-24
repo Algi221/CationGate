@@ -7,7 +7,7 @@ import {
   Building2, ShieldCheck, CheckCircle2, Clock, RefreshCw,
   TrendingUp, ArrowUpRight, AlertCircle, Bell, PieChart,
   Landmark, Hourglass, FileQuestion, Activity, MapPin, XCircle,
-  Server, HardDrive, Layers, Globe2, Sparkles
+  Server, HardDrive, Layers, Globe2
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -130,11 +130,11 @@ export default function GatekeeperOverviewPage() {
 
   // Format data peta dari data sekolah real/fallback koordinat wilayah
   const mapSchools = schools.length > 0
-    ? schools.map((s) => ({
+    ? schools.map((s, idx) => ({
         id: s.id,
         name: s.name,
-        lat: s.lat || -6.2088 + (Math.random() - 0.5) * 2,
-        lng: s.lng || 106.8456 + (Math.random() - 0.5) * 4,
+        lat: s.lat || -6.2088 + (((idx * 17) % 10) - 5) * 0.1,
+        lng: s.lng || 106.8456 + (((idx * 23) % 10) - 5) * 0.2,
         region: s.region || "Jawa",
       }))
     : [
@@ -464,7 +464,7 @@ export default function GatekeeperOverviewPage() {
       {/* Peta Terang */}
       <SchoolMap schools={mapSchools} />
 
-<div className="space-y-2.5 max-h-64 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] dark:[scrollbar-color:#475569_transparent]">
+<div className="space-y-2.5 max-h-64 overflow-y-auto pr-1.5 scrollbar-thin [scrollbar-color:#cbd5e1_transparent] dark:[scrollbar-color:#475569_transparent]">
   {[
     { region: "Jawa Barat", count: 45, percentage: "37%" },
     { region: "DKI Jakarta", count: 32, percentage: "26%" },

@@ -9,11 +9,10 @@ interface ErrorProps {
   reset: () => void;
 }
 
-export default function Error({ error, reset }: ErrorProps) {
+export default function ErrorBoundary({ error: _error, reset }: ErrorProps) {
   useEffect(() => {
-
-    console.error("Unhandled runtime error:", error);
-  }, [error]);
+    // Keep client console clean, error details are handled on server logs
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
@@ -29,12 +28,6 @@ export default function Error({ error, reset }: ErrorProps) {
           Maaf, halaman mengalami masalah atau tidak dapat dimuat saat ini.
         </p>
 
-        {error?.message && (
-          <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl text-[11px] font-mono text-red-600 dark:text-red-400 wrap-break-word max-w-xs mx-auto">
-            {error.message}
-          </div>
-        )}
-
         <div className="mt-8 flex gap-4 justify-center">
           <button
             onClick={() => reset()}
@@ -44,7 +37,7 @@ export default function Error({ error, reset }: ErrorProps) {
           </button>
           <button
             onClick={() => (window.location.href = "/")}
-            className="px-6 py-3 bg-slate-200 hover:bg-slate-400 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+            className="px-6 py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
           >
             Kembali ke Beranda
           </button>

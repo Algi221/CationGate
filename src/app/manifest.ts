@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/seo";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: siteConfig.name + " - Platform Manajemen PPDB & SPMB Sekolah",
+    name: siteConfig.name + " - Platform Manajemen SPMB & PPDB Khusus SMK",
     short_name: siteConfig.shortName,
     description: siteConfig.description,
     start_url: "/",

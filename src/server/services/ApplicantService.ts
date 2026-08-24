@@ -1,53 +1,104 @@
-import { getSupabaseClient } from "../db/supabase";
+import { ApplicantSyncService } from "./applicant/ApplicantSyncService";
+import { ApplicantQueryService } from "./applicant/ApplicantQueryService";
+import { ApplicantMutationService } from "./applicant/ApplicantMutationService";
 
 export class ApplicantService {
-
+  // ── Sync Methods ─────────────────────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static async syncToActive(candidate: any): Promise<void> {
-    try {
-      const supabase = getSupabaseClient(); 
-      const schoolId = candidate.school_id;
+  static async syncCandidateToSiswaAktif(candidate: any): Promise<void> {
+    return ApplicantSyncService.syncCandidateToSiswaAktif(candidate);
+  }
 
-      if (!schoolId) {
-        console.warn("Sync ignored: Candidate missing school_id", candidate.id);
-        return;
-      }
+  static async syncAllExistingApprovedApplicants(): Promise<void> {
+    return ApplicantSyncService.syncAllExistingApprovedApplicants();
+  }
 
-      if (candidate.status === "Approved") {
-        const payload = {
-          school_id: schoolId,
-          calon_siswa_id: candidate.id,
-          nama: candidate.nama,
-          nisn: candidate.nisn,
-          jenis_kelamin: candidate.jenis_kelamin,
+  static async checkAndDisqualifyExpiredApplicants(): Promise<void> {
+    return ApplicantSyncService.checkAndDisqualifyExpiredApplicants();
+  }
 
-        };
+  // ── Query Methods ────────────────────────────────────────────────────────────
+  static async getPublicApplicants(schoolIdOrSlug?: string, authToken?: string) {
+    return ApplicantQueryService.getPublicApplicants(schoolIdOrSlug, authToken);
+  }
 
-        const { data: existingSiswa } = await supabase
-          .from("active_students")
-          .select("id")
-          .eq("calon_siswa_id", candidate.id)
-          .eq("school_id", schoolId)
-          .maybeSingle();
+  static async getAdminApplicants(schoolId: string, authToken?: string) {
+    return ApplicantQueryService.getAdminApplicants(schoolId, authToken);
+  }
 
-        if (existingSiswa) {
-          await supabase
-            .from("active_students")
-            .update(payload)
-            .eq("id", existingSiswa.id)
-            .eq("school_id", schoolId);
-        } else {
-          await supabase.from("active_students").insert(payload);
-        }
-      } else {
-        await supabase
-          .from("active_students")
-          .delete()
-          .eq("calon_siswa_id", candidate.id)
-          .eq("school_id", schoolId);
-      }
-    } catch (err) {
-      console.error("Error syncing candidate to SiswaAktif:", err);
-    }
+  static async getTrashedApplicants(schoolId: string, authToken?: string) {
+    return ApplicantQueryService.getTrashedApplicants(schoolId, authToken);
+  }
+
+  static async getApplicantById(id: number, schoolId: string, authToken?: string) {
+    return ApplicantQueryService.getApplicantById(id, schoolId, authToken);
+  }
+
+  static async getRegistrationCard(nisn: string, schoolSlug?: string) {
+    return ApplicantQueryService.getRegistrationCard(nisn, schoolSlug);
+  }
+
+  static async verifyApplicantIdentity(id: number, nik: string, schoolSlug: string) {
+    return ApplicantQueryService.verifyApplicantIdentity(id, nik, schoolSlug);
+  }
+
+  // ── Mutation Methods ─────────────────────────────────────────────────────────
+  static async registerApplicant(rawBody: unknown, schoolSlug: string | undefined) {
+    return ApplicantMutationService.registerApplicant(rawBody, schoolSlug);
+  }
+
+  static async restoreApplicant(id: number, schoolId: string, authToken?: string) {
+    return ApplicantMutationService.restoreApplicant(id, schoolId, authToken);
+  }
+
+  static async updateApplicant(id: number, schoolId: string, rawBody: unknown, authToken?: string) {
+    return ApplicantMutationService.updateApplicant(id, schoolId, rawBody, authToken);
+  }
+
+  static async updateApplicantStatus(
+    id: number,
+    schoolId: string,
+    status: string,
+    alasanDitolak?: string,
+    adminName: string = "Sistem",
+    authToken?: string
+  ) {
+    return ApplicantMutationService.updateApplicantStatus(
+      id,
+      schoolId,
+      status,
+      alasanDitolak,
+      adminName,
+      authToken
+    );
+  }
+
+  static async deleteApplicant(
+    id: number,
+    schoolId: string,
+    permanent: boolean,
+    adminName: string = "Sistem",
+    authToken?: string
+  ) {
+    return ApplicantMutationService.deleteApplicant(id, schoolId, permanent, adminName, authToken);
+  }
+
+  static async verifyPhysicalDoc(
+    id: number,
+    schoolId: string,
+    verified: boolean,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    checklist: any,
+    adminName: string = "Admin",
+    authToken?: string
+  ) {
+    return ApplicantMutationService.verifyPhysicalDoc(
+      id,
+      schoolId,
+      verified,
+      checklist,
+      adminName,
+      authToken
+    );
   }
 }

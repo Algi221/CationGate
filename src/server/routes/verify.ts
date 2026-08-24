@@ -5,6 +5,7 @@ import { fontInMemSchools } from './saas';
 import crypto from 'crypto';
 import { gatekeeperAuth } from '../middleware/auth';
 import { rateLimiter } from '../middleware/rate-limiter';
+import { EmailService } from '../services/EmailService';
 
 const verifyRouter = new Hono();
 
@@ -138,38 +139,10 @@ verifyRouter.post('/submit-data', rateLimiter({ windowMs: 15 * 60 * 1000, max: 3
       }
     }
 
-    // Send OTP via email using Nodemailer
+    // Send OTP via email using professional template
     if (official_email) {
       try {
-        const nodemailer = await import('nodemailer');
-        const transporter = nodemailer.default.createTransport({
-          host: process.env.SMTP_HOST || 'smtp.gmail.com',
-          port: parseInt(process.env.SMTP_PORT || '587'),
-          secure: process.env.SMTP_SECURE === 'true',
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
-
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM || '"CationGate" <noreply@cationgate.com>',
-          to: official_email,
-          subject: 'Kode Verifikasi CationGate',
-          html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-              <div style="text-align: center; margin-bottom: 32px;">
-                <div style="width: 48px; height: 48px; border-radius: 12px; background: #09090b; color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">CG</div>
-              </div>
-              <h2 style="font-size: 20px; font-weight: 600; color: #09090b; margin-bottom: 8px; text-align: center;">Kode Verifikasi Anda</h2>
-              <p style="font-size: 14px; color: #71717a; text-align: center; margin-bottom: 24px;">Gunakan kode berikut untuk memverifikasi email resmi sekolah Anda di CationGate.</p>
-              <div style="background: #f4f4f5; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
-                <p style="font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #09090b; font-family: monospace; margin: 0;">${otpCode}</p>
-              </div>
-              <p style="font-size: 12px; color: #a1a1aa; text-align: center;">Kode ini berlaku selama 10 menit. Jangan bagikan kode ini kepada siapapun.</p>
-            </div>
-          `
-        });
+        await EmailService.sendRegistrationOtpEmail(official_email, otpCode);
       } catch (_emailErr) {
         console.warn('OTP generated but email failed to send. OTP code:', otpCode);
       }
@@ -226,37 +199,9 @@ verifyRouter.post('/send-otp', async (c) => {
       return c.json({ success: false, message: 'Gagal membuat kode OTP baru.' }, 500);
     }
 
-    // Send email
+    // Send email using professional template
     try {
-      const nodemailer = await import('nodemailer');
-      const transporter = nodemailer.default.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || '"CationGate" <noreply@cationgate.com>',
-        to: email,
-        subject: 'Kode Verifikasi CationGate (Kirim Ulang)',
-        html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-            <div style="text-align: center; margin-bottom: 32px;">
-              <div style="width: 48px; height: 48px; border-radius: 12px; background: #09090b; color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">CG</div>
-            </div>
-            <h2 style="font-size: 20px; font-weight: 600; color: #09090b; margin-bottom: 8px; text-align: center;">Kode Verifikasi Baru</h2>
-            <p style="font-size: 14px; color: #71717a; text-align: center; margin-bottom: 24px;">Berikut kode OTP baru untuk verifikasi email Anda.</p>
-            <div style="background: #f4f4f5; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
-              <p style="font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #09090b; font-family: monospace; margin: 0;">${otpCode}</p>
-            </div>
-            <p style="font-size: 12px; color: #a1a1aa; text-align: center;">Kode ini berlaku selama 10 menit.</p>
-          </div>
-        `
-      });
+      await EmailService.sendRegistrationOtpEmail(email, otpCode);
     } catch (emailErr) {
       console.error('Resend OTP email error:', emailErr);
       console.warn('OTP generated but email failed. OTP code:', otpCode);

@@ -1,36 +1,46 @@
 import { Metadata } from "next";
 
+export const getBaseUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.FRONTEND_URL;
+  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    return envUrl.replace(/\/$/, "");
+  }
+  return "https://cationgate.site";
+};
+
 export const siteConfig = {
   name: "CationGate",
   shortName: "CationGate",
   domain: "cationgate.site",
-  url: process.env.NEXT_PUBLIC_APP_URL || process.env.FRONTEND_URL || "https://cationgate.site",
-  title: "CationGate - Platform Manajemen PPDB & SPMB SMK Modern",
+  url: getBaseUrl(),
+  title: "CationGate - Platform Manajemen SPMB & PPDB Khusus SMK",
   description:
-    "Solusi SaaS manajemen Penerimaan Peserta Didik Baru (PPDB) & SPMB online cerdas, verifikasi berkas otomatis, dan sistem administrasi pendaftaran sekolah terpadu yang terintegrasi Dapodik khusus SMK di seluruh Indonesia.",
+    "Platform manajemen SPMB & PPDB khusus SMK modern di Indonesia. Digitalisasi penerimaan siswa baru, verifikasi berkas, seleksi jalur masuk, dan pembagian kelas terpadu berbasis cloud.",
   keywords: [
-    "PPDB Online",
-    "SPMB Online",
-    "PPDB SMK",
     "SPMB SMK",
-    "Aplikasi PPDB SMK",
+    "PPDB SMK",
+    "Platform SPMB SMK",
+    "Manajemen SPMB SMK",
+    "Aplikasi SPMB SMK",
+    "SPMB Online SMK",
+    "PPDB Online SMK",
     "Sistem SPMB SMK Terintegrasi",
     "Manajemen PPDB SMK",
-    "Platform SPMB SMK Digital",
-    "Penerimaan Peserta Didik Baru SMK",
-    "Sistem Informasi PPDB SMK",
+    "Platform PPDB SMK Digital",
+    "Penerimaan Siswa Baru SMK",
+    "Sistem Informasi SPMB SMK",
     "Sistem Penerimaan Murid Baru",
     "Pendaftaran SMK Online",
     "Sistem Seleksi PPDB Otomatis",
-    "Verifikasi Berkas PPDB Online",
+    "Verifikasi Berkas SPMB Online",
     "Integrasi Dapodik PPDB",
     "Software Administrasi SMK Cloud",
     "SaaS Sekolah Indonesia",
-    "Website PPDB Custom SMK",
+    "Website SPMB Custom SMK",
     "Pendaftaran Sekolah Digital",
     "CationGate",
-    "CationGate PPDB",
     "CationGate SPMB",
+    "CationGate PPDB",
   ],
   authors: [
     {

@@ -3,7 +3,17 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { usePPDB } from "@/context/PPDBContext";
-import { Save, FileText, School, Target, ListChecks, Building2, Upload, Image as ImageIcon } from "lucide-react";
+import { 
+  Save, 
+  School, 
+  Target, 
+  ListChecks, 
+  Building2, 
+  Upload, 
+  Image as ImageIcon,
+  UserCheck,
+  Video
+} from "lucide-react";
 import Swal from "sweetalert2";
 import { uploadFileDirect, base64ToFile } from "@/utils/storage";
 import { compressImage } from "@/utils/mediaCompressor";
@@ -21,9 +31,19 @@ export default function ProfilSekolahPage() {
     nis: "",
     nss: "",
     tahun_berdiri: "",
-    email: ""
+    email: "",
+    telepon: ""
   });
   const [sejarah, setSejarah] = useState("");
+  const [ringkasan, setRingkasan] = useState("");
+  const [videoProfilUrl, setVideoProfilUrl] = useState("");
+  const [heroImage, setHeroImage] = useState("");
+  const [pimpinan, setPimpinan] = useState({
+    nama: "",
+    jabatan: "",
+    foto: "",
+    sambutan: ""
+  });
   const [visi, setVisi] = useState("");
   const [misi, setMisi] = useState("");
   const [tujuan, setTujuan] = useState("");
@@ -41,6 +61,12 @@ export default function ProfilSekolahPage() {
         setIdentitas(prev => ({ ...prev, ...profilSekolah.identitas }));
       }
       if (profilSekolah.sejarah) setSejarah(profilSekolah.sejarah);
+      if (profilSekolah.ringkasan) setRingkasan(profilSekolah.ringkasan);
+      if (profilSekolah.video_profil_url) setVideoProfilUrl(profilSekolah.video_profil_url);
+      if (profilSekolah.hero_image) setHeroImage(profilSekolah.hero_image);
+      if (profilSekolah.pimpinan) {
+        setPimpinan(prev => ({ ...prev, ...profilSekolah.pimpinan }));
+      }
       if (profilSekolah.visi_misi) {
         setVisi(profilSekolah.visi_misi.visi || "");
         setMisi(profilSekolah.visi_misi.misi || "");
@@ -79,6 +105,10 @@ export default function ProfilSekolahPage() {
     const payload = {
       identitas,
       sejarah,
+      ringkasan,
+      video_profil_url: videoProfilUrl,
+      hero_image: heroImage,
+      pimpinan,
       visi_misi: { visi, misi },
       tujuan
     };
@@ -121,6 +151,21 @@ export default function ProfilSekolahPage() {
     }
   };
 
+  const handlePimpinanPhotoChange = async (file: File) => {
+    try {
+      setLoading(true);
+      const result = await compressImage(file, 600, 600, 0.85);
+      const compressedFile = base64ToFile(result.base64, file.name);
+      const publicUrl = await uploadFileDirect(compressedFile, 'pimpinan_photo');
+      setPimpinan(prev => ({ ...prev, foto: publicUrl }));
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Gagal", "Gagal mengunggah foto pimpinan.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleIdentitasChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setIdentitas(prev => ({ ...prev, [name]: value }));
@@ -137,13 +182,13 @@ export default function ProfilSekolahPage() {
               <Building2 className="w-8 h-8 text-blue-600" />
               Kelola Profil Sekolah
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Atur identitas, nama sekolah, logo, sejarah, visi-misi, dan tujuan.</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Atur identitas, nama sekolah, video profil, pimpinan, sejarah, dan visi-misi.</p>
           </div>
 
           <button
             onClick={handleSaveAll}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-5 h-5" />
             {loading ? "Menyimpan..." : "Simpan Semua Perubahan"}
@@ -157,7 +202,7 @@ export default function ProfilSekolahPage() {
           <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
             <button
               onClick={() => setActiveTab("identitas")}
-              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                 activeTab === "identitas"
                   ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
                   : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -167,8 +212,30 @@ export default function ProfilSekolahPage() {
               Identitas &amp; Logo
             </button>
             <button
+              onClick={() => setActiveTab("sejarah")}
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
+                activeTab === "sejarah"
+                  ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              <Video className="w-4 h-4" />
+              Sejarah &amp; Video Profil
+            </button>
+            <button
+              onClick={() => setActiveTab("pimpinan")}
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
+                activeTab === "pimpinan"
+                  ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              Pimpinan Sekolah
+            </button>
+            <button
               onClick={() => setActiveTab("visi_misi")}
-              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                 activeTab === "visi_misi"
                   ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
                   : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -178,19 +245,8 @@ export default function ProfilSekolahPage() {
               Visi &amp; Misi
             </button>
             <button
-              onClick={() => setActiveTab("sejarah")}
-              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === "sejarah"
-                  ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
-                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              Sejarah Sekolah
-            </button>
-            <button
               onClick={() => setActiveTab("tujuan")}
-              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                 activeTab === "tujuan"
                   ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
                   : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -229,7 +285,7 @@ export default function ProfilSekolahPage() {
                     </div>
                     <div className="flex-1 space-y-2">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white">Logo Resmi Sekolah</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Logo ini akan digunakan pada seluruh halaman portal PPDB, formulir pendaftaran, dan dokumen kelulusan. (Format: PNG transparan, maks 2MB).</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Logo ini akan digunakan pada seluruh halaman portal PPDB, formulir pendaftaran, dan dokumen kelulusan.</p>
                     </div>
                   </div>
 
@@ -258,9 +314,90 @@ export default function ProfilSekolahPage() {
                     <input type="email" name="email" value={identitas.email} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="admin@sekolah.sch.id" />
                   </div>
 
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">No. Telepon / WhatsApp</label>
+                    <input type="text" name="telepon" value={identitas.telepon} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="081234567890" />
+                  </div>
+
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Alamat Lengkap</label>
                     <textarea name="alamat" value={identitas.alamat} onChange={handleIdentitasChange} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Jl. Pekapuran No. 1..." />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Sejarah & Video Profil */}
+            {activeTab === "sejarah" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Sejarah &amp; Media Profil</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Atur deskripsi ringkas, video YouTube company profile, dan sejarah lengkap.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Ringkasan / Tagline Profil (Hero)</label>
+                    <textarea value={ringkasan} onChange={(e) => setRingkasan(e.target.value)} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Deskripsi ringkas yang tampil di bawah judul 'Tentang Sekolah'..." />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">URL Video YouTube Company Profile</label>
+                    <input type="text" value={videoProfilUrl} onChange={(e) => setVideoProfilUrl(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: https://www.youtube.com/watch?v=GR5wYYT4PJ8" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Sejarah Lengkap Sekolah</label>
+                    <textarea value={sejarah} onChange={(e) => setSejarah(e.target.value)} rows={8} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="SMK Taruna Bhakti didirikan pada tahun..." />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Pimpinan Sekolah */}
+            {activeTab === "pimpinan" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Pimpinan / Kepala Sekolah</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Informasi figur kepala sekolah atau pimpinan institusi.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div className="relative w-28 h-28 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden group">
+                      {pimpinan.foto ? (
+                        <Image src={pimpinan.foto} alt="Foto Pimpinan" width={112} height={112} className="w-full h-full object-cover object-top" unoptimized />
+                      ) : (
+                        <UserCheck className="w-8 h-8 text-slate-400 mb-1" />
+                      )}
+                      <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer">
+                        <Upload className="w-5 h-5 text-white mb-1" />
+                        <span className="text-white text-[10px] font-semibold">Foto</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handlePimpinanPhotoChange(file);
+                        }} />
+                      </label>
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <h4 className="font-bold text-slate-900 dark:text-white">Foto Kepala Sekolah</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Unggah foto resmi pimpinan sekolah (rasio 1:1, format PNG/JPG, maks 2MB).</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Lengkap &amp; Gelar</label>
+                    <input type="text" value={pimpinan.nama} onChange={(e) => setPimpinan(p => ({ ...p, nama: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Dr. H. Ahmad Fauzi, M.Pd." />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Jabatan</label>
+                    <input type="text" value={pimpinan.jabatan} onChange={(e) => setPimpinan(p => ({ ...p, jabatan: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Kepala Sekolah / Rektor" />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Sambutan / Pernyataan Pimpinan</label>
+                    <textarea value={pimpinan.sambutan} onChange={(e) => setPimpinan(p => ({ ...p, sambutan: e.target.value }))} rows={4} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Sambutan singkat mengenai visi kepemimpinan dan dedikasi mutu pendidikan..." />
                   </div>
                 </div>
               </div>
@@ -284,20 +421,6 @@ export default function ProfilSekolahPage() {
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Misi Institusi</label>
                     <textarea value={misi} onChange={(e) => setMisi(e.target.value)} rows={6} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="1. Menyelenggarakan proses pembelajaran...&#10;2. Membentuk karakter peserta didik..." />
                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab: Sejarah */}
-            {activeTab === "sejarah" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Sejarah Singkat</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Ceritakan latar belakang pendirian institusi dan tonggak pencapaian penting.</p>
-                </div>
-
-                <div className="space-y-2">
-                  <textarea value={sejarah} onChange={(e) => setSejarah(e.target.value)} rows={10} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="SMK Taruna Bhakti didirikan pada tahun..." />
                 </div>
               </div>
             )}

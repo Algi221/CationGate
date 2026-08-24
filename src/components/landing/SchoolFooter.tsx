@@ -125,7 +125,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
         </div>
 
         <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-          <div>© {new Date().getFullYear()} {schoolDisplayName}. All Rights Reserved.</div>
+          <div>© {new Date().getFullYear()} {schoolDisplayName}. Hak Cipta Dilindungi.</div>
           <div className="flex gap-4">
             <Link href="/" className="hover:text-slate-300 transition-colors">Kebijakan Privasi</Link>
             <span>·</span>

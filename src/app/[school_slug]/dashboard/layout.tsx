@@ -163,6 +163,9 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         }
       }
       if (!adminToken) {
+        if (localStorage.getItem("ppdb_admin_token")) {
+          return; // Allow context state to finish syncing without kicking the user
+        }
         router.push(`/login`);
         return;
       }

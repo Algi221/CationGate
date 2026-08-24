@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Lottie from "lottie-react";
-import { ArrowLeft, ArrowRight, Info, Eye, EyeOff, Loader2, Lock, User, ShieldAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, Info, Eye, EyeOff, Loader2, Lock, User, ShieldAlert, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { z } from "zod";
@@ -16,8 +16,10 @@ const loginFormSchema = z.object({
   password: z.string().min(1, "Harap masukkan kata sandi akun Anda.")
 });
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isRegistered = searchParams.get("registered") === "true";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -71,6 +73,11 @@ export default function LoginPage() {
         return;
       }
 
+      if (res.status === 403 && data.message?.includes("Gatekeeper")) {
+        setErrorMsg(data.message);
+        return;
+      }
+
       if (data.success && data.token) {
         localStorage.setItem("ppdb_admin_token", data.token);
         if (data.admin) {
@@ -78,10 +85,16 @@ export default function LoginPage() {
         }
         localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
 
-        if (data.school_slug) {
-          router.push(`/${data.school_slug}/dashboard`);
-        } else if (data.admin?.role === "gatekeeper" || data.admin?.role === "superadmin") {
-          router.push("/gatekeeper/dashboard");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("storage"));
+        }
+
+        const targetSlug = data.school_slug || data.admin?.school_slug || (data.admin?.school_id && !String(data.admin.school_id).includes('-') ? data.admin.school_id : null);
+
+        if (targetSlug) {
+          router.push(`/${targetSlug}/dashboard`);
+        } else if (data.admin?.role === "gatekeeper") {
+          router.push("/gatekeeper/login");
         } else {
           router.push("/");
         }
@@ -157,9 +170,17 @@ export default function LoginPage() {
           </div>
         </Link>
 
-        {/* LINK DAFTAR INSTANSI */}
+        {/* ACTIONS */}
         <div className="flex items-center gap-2.5 text-xs">
-          <span className="hidden text-slate-500 font-medium sm:block">Belum mendaftarkan instansi?</span>
+          <Link
+            href="/gatekeeper/login"
+            className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-white/90 px-3.5 py-1.5 font-bold text-slate-600 hover:text-slate-950 hover:bg-white transition-all shadow-xs"
+            title="Masuk ke Konsol Gatekeeper Platform"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+            <span>Gatekeeper</span>
+          </Link>
+          <span className="hidden text-slate-500 font-medium lg:block">Belum mendaftarkan instansi?</span>
           <Link
             href="/daftar"
             className="rounded-full border border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-1.5 font-bold text-slate-700 transition-all hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-sm active:scale-95 shadow-xs"
@@ -227,6 +248,17 @@ export default function LoginPage() {
                 </Link>
               </p>
             </div>
+
+            {isRegistered && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-semibold text-emerald-800"
+              >
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <span>Registrasi sekolah berhasil! Silakan masuk dengan email dan kata sandi yang telah Anda buat.</span>
+              </motion.div>
+            )}
 
             {errorMsg && (
               <motion.div
@@ -304,14 +336,20 @@ export default function LoginPage() {
                     </>
                   ) : (
                     <>
-                      <span>Masuk</span>
+                      <span>Masuk ke Portal Sekolah</span>
                       <ArrowRight className="w-4 h-4 text-slate-950" />
                     </>
                   )}
                 </button>
               </div>
 
-              <div className="pt-1 text-right">
+              <div className="pt-1 flex items-center justify-between">
+                <Link
+                  href="/gatekeeper/login"
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+                >
+                  Masuk sebagai Gatekeeper?
+                </Link>
                 <Link
                   href="/forgot-password"
                   className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
@@ -331,3 +369,12 @@ export default function LoginPage() {
     </main>
   );
 }
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+

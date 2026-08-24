@@ -1,4 +1,5 @@
 import { getSupabaseClient } from './supabase';
+import { pool } from './client';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -15,56 +16,164 @@ export async function resolveSchoolUUID(
 
   const strVal = String(schoolIdOrSlug).trim();
 
+  // 1. Direct valid UUID check
   if (isValidUUID(strVal)) {
     return strVal;
   }
 
+  // 2. Check in-memory map
   if (inMemSchools) {
-    for (const [, school] of inMemSchools) {
-      if (String(school.id) === strVal && isValidUUID(String(school.id))) {
-        return String(school.id);
+    const directMem = inMemSchools.get(strVal);
+    if (directMem) {
+      if (directMem.school_uuid && isValidUUID(String(directMem.school_uuid))) {
+        return String(directMem.school_uuid);
       }
+      if (directMem.id) return String(directMem.id);
     }
-
-    const memSchool = inMemSchools.get(strVal);
-    if (memSchool && isValidUUID(String(memSchool.id))) {
-      return String(memSchool.id);
+    for (const [slug, school] of inMemSchools) {
+      if (
+        String(school.id) === strVal ||
+        String(school.school_uuid) === strVal ||
+        slug === strVal ||
+        school.slug === strVal ||
+        school.official_email?.toLowerCase() === strVal.toLowerCase() ||
+        school.email?.toLowerCase() === strVal.toLowerCase()
+      ) {
+        if (school.school_uuid && isValidUUID(String(school.school_uuid))) {
+          return String(school.school_uuid);
+        }
+        if (school.id) return String(school.id);
+      }
     }
   }
 
   const supabase = getSupabaseClient();
+  const isNumeric = !isNaN(Number(strVal)) && Number(strVal) > 0;
 
+  // 3. Check 'schools' table in Supabase
+  try {
+    if (isNumeric) {
+      const { data } = await supabase.from('schools').select('id, slug').eq('id', Number(strVal)).maybeSingle();
+      if (data?.id) return String(data.id);
+    }
+    const { data: slugData } = await supabase.from('schools').select('id, slug').eq('slug', strVal).maybeSingle();
+    if (slugData?.id) return String(slugData.id);
+  } catch (_sbErr) {}
+
+  // 4. Check 'prospective_schools' table in Supabase
+  try {
+    if (isNumeric) {
+      const { data } = await supabase.from('prospective_schools').select('id, slug').eq('id', Number(strVal)).maybeSingle();
+      if (data?.id) return String(data.id);
+    }
+    const { data: slugData } = await supabase.from('prospective_schools').select('id, slug').eq('slug', strVal).maybeSingle();
+    if (slugData?.id) return String(slugData.id);
+  } catch (_sbErr) {}
+
+  // 5. Direct Postgres pool check
+  try {
+    const pgRes = await pool.query(
+      `SELECT id::text FROM schools WHERE slug = $1 OR (CASE WHEN $2 = true THEN id = $3::integer ELSE false END) OR LOWER(official_email) = LOWER($1)
+       UNION ALL
+       SELECT id::text FROM prospective_schools WHERE slug = $1 OR (CASE WHEN $2 = true THEN id = $3::integer ELSE false END) OR LOWER(official_email) = LOWER($1)
+       LIMIT 1`,
+      [strVal, isNumeric, isNumeric ? Number(strVal) : 0]
+    );
+    if (pgRes.rows && pgRes.rows.length > 0 && pgRes.rows[0].id) {
+      return String(pgRes.rows[0].id);
+    }
+  } catch (_pgErr) {}
+
+  // Fallback for demo / smktarunabhakti
+  if (strVal === 'demo' || strVal === 'smktarunabhakti') {
+    return strVal;
+  }
+
+  return isNumeric ? strVal : null;
+}
+
+export async function resolveSchoolSlug(
+  schoolIdentifier?: string | number | null,
+  userEmailOrUsername?: string | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inMemSchools?: Map<string, any>
+): Promise<string | null> {
+  const cleanId = schoolIdentifier ? String(schoolIdentifier).trim() : '';
+  const cleanEmail = userEmailOrUsername ? String(userEmailOrUsername).trim().toLowerCase() : '';
+
+  // 1. Check in-memory map
   if (inMemSchools) {
+    if (cleanId) {
+      const direct = inMemSchools.get(cleanId);
+      if (direct?.slug) return direct.slug;
+    }
     for (const [slug, school] of inMemSchools) {
-      if (String(school.id) === strVal) {
-
-        const { data } = await supabase.from('schools').select('id').eq('slug', slug).maybeSingle();
-        if (data?.id) {
-
-          school.id = data.id;
-          return String(data.id);
-        }
+      if (
+        (cleanId && (String(school.id) === cleanId || String(school.school_uuid) === cleanId || slug === cleanId || school.slug === cleanId)) ||
+        (cleanEmail && (school.official_email?.toLowerCase() === cleanEmail || school.email?.toLowerCase() === cleanEmail || school.admin_name?.toLowerCase() === cleanEmail))
+      ) {
+        return school.slug || slug;
       }
     }
   }
 
-  const { data: slugLookup } = await supabase.from('schools').select('id').eq('slug', strVal).maybeSingle();
-  if (slugLookup?.id) {
-    return String(slugLookup.id);
-  }
+  const supabase = getSupabaseClient();
+  const isNumeric = cleanId && !isNaN(Number(cleanId)) && Number(cleanId) > 0;
 
-  if (inMemSchools) {
-    if (inMemSchools.has(strVal)) {
-      const id = String(inMemSchools.get(strVal).id || strVal);
-      if (isValidUUID(id)) return id;
-    }
-    for (const [_slug, school] of inMemSchools) {
-      if (String(school.id) === strVal) {
-        const id = String(school.id);
-        if (isValidUUID(id)) return id;
+  // 2. Query Supabase 'schools'
+  try {
+    if (cleanId) {
+      if (isNumeric) {
+        const { data } = await supabase.from('schools').select('slug').eq('id', Number(cleanId)).maybeSingle();
+        if (data?.slug) return data.slug;
+      } else if (isValidUUID(cleanId)) {
+        const { data } = await supabase.from('schools').select('slug').eq('id', cleanId).maybeSingle();
+        if (data?.slug) return data.slug;
       }
+      const { data: slugMatch } = await supabase.from('schools').select('slug').eq('slug', cleanId).maybeSingle();
+      if (slugMatch?.slug) return slugMatch.slug;
     }
-  }
+    if (cleanEmail) {
+      const { data: emailMatch } = await supabase.from('schools').select('slug').ilike('official_email', cleanEmail).maybeSingle();
+      if (emailMatch?.slug) return emailMatch.slug;
+    }
+  } catch (_e) {}
+
+  // 3. Query Supabase 'prospective_schools'
+  try {
+    if (cleanId) {
+      if (isNumeric) {
+        const { data } = await supabase.from('prospective_schools').select('slug').eq('id', Number(cleanId)).maybeSingle();
+        if (data?.slug) return data.slug;
+      }
+      const { data: slugMatch } = await supabase.from('prospective_schools').select('slug').eq('slug', cleanId).maybeSingle();
+      if (slugMatch?.slug) return slugMatch.slug;
+    }
+    if (cleanEmail) {
+      const { data: emailMatch } = await supabase.from('prospective_schools').select('slug').ilike('official_email', cleanEmail).maybeSingle();
+      if (emailMatch?.slug) return emailMatch.slug;
+    }
+  } catch (_e) {}
+
+  // 4. Query PostgreSQL direct pool
+  try {
+    const pgRes = await pool.query(
+      `SELECT slug FROM schools 
+       WHERE ($1 <> '' AND slug = $1)
+          OR ($2 = true AND id = $3::integer)
+          OR ($4 <> '' AND LOWER(official_email) = $4)
+       UNION ALL
+       SELECT slug FROM prospective_schools 
+       WHERE ($1 <> '' AND slug = $1)
+          OR ($2 = true AND id = $3::integer)
+          OR ($4 <> '' AND LOWER(official_email) = $4)
+       LIMIT 1`,
+      [cleanId, isNumeric, isNumeric ? Number(cleanId) : 0, cleanEmail]
+    );
+    if (pgRes.rows && pgRes.rows.length > 0 && pgRes.rows[0].slug) {
+      return pgRes.rows[0].slug;
+    }
+  } catch (_pgErr) {}
 
   return null;
 }

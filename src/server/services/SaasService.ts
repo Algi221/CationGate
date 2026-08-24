@@ -304,47 +304,65 @@ export class SaasService {
     }
 
     newSchoolObj.school_uuid = generatedSchoolUUID;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fontInMemSchools.set(slug, newSchoolObj as any);
+    fontInMemSchools.set(slug, newSchoolObj);
+    if (insertedSchoolId) {
+      fontInMemSchools.set(String(insertedSchoolId), newSchoolObj);
+    }
 
+    // Try inserting into schools table (compatibility layer)
     try {
-      await supabase.from('schools').insert({
-        id: generatedSchoolUUID,
+      await supabase.from('schools').upsert({
         name: school_name,
         slug: slug,
-        email: email || '',
-        status: 'unverified',
-        subscription_plan: 'free'
-      });
+        official_email: email,
+        status: 'UNVERIFIED',
+        is_verified: false,
+        plan_type: isTrial ? 'TRIAL' : 'YEARLY',
+        admin_name: admin_name || admin_username,
+        created_at: createdAtIso
+      }, { onConflict: 'slug' });
     } catch (_schoolsErr: unknown) {
       try {
         await pool.query(
-          `INSERT INTO schools (id, name, slug, email, status, subscription_plan, created_at)
-           VALUES ($1::uuid, $2, $3, $4, 'unverified', 'free', NOW())
-           ON CONFLICT (id) DO NOTHING`,
-          [generatedSchoolUUID, school_name, slug, email || '']
+          `INSERT INTO schools (name, slug, official_email, status, is_verified, plan_type, admin_name, created_at)
+           VALUES ($1, $2, $3, 'UNVERIFIED', false, $4, $5, NOW())
+           ON CONFLICT (slug) DO NOTHING`,
+          [school_name, slug, email, isTrial ? 'TRIAL' : 'YEARLY', admin_name || admin_username]
         );
       } catch (_e) {}
     }
 
     const hashedPassword = bcrypt.hashSync(admin_password, 10);
+    const adminSchoolRef = insertedSchoolId ? String(insertedSchoolId) : slug;
+
     try {
-      await supabase.from('admin_users').insert({
+      await supabase.from('admin_users').upsert({
         username: admin_email || email,
         email: admin_email || email,
         password_hash: hashedPassword,
         nama_lengkap: admin_name || admin_username,
         role: 'superadmin',
-        school_id: generatedSchoolUUID
-      });
+        school_id: adminSchoolRef
+      }, { onConflict: 'username' });
     } catch (_adminErr: unknown) {
       try {
-        await pool.query(
-          `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, school_id)
-           VALUES ($1, $2, $3, $4, 'superadmin', $5::uuid)
-           ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
-          [admin_email || email, admin_email || email, hashedPassword, admin_name || admin_username, generatedSchoolUUID]
-        );
+        // Try with numeric school_id or string
+        const numericId = insertedSchoolId && !isNaN(Number(insertedSchoolId)) ? Number(insertedSchoolId) : null;
+        if (numericId !== null) {
+          await pool.query(
+            `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, school_id)
+             VALUES ($1, $2, $3, $4, 'superadmin', $5)
+             ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, school_id = EXCLUDED.school_id`,
+            [admin_email || email, admin_email || email, hashedPassword, admin_name || admin_username, numericId]
+          );
+        } else {
+          await pool.query(
+            `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role)
+             VALUES ($1, $2, $3, $4, 'superadmin')
+             ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+            [admin_email || email, admin_email || email, hashedPassword, admin_name || admin_username]
+          );
+        }
       } catch (_e) {}
     }
 

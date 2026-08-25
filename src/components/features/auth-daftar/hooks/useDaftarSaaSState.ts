@@ -36,19 +36,55 @@ export const stepEditorialVisuals: StepVisual[] = [
 
 export function useDaftarSaaSState() {
   const router = useRouter();
-  const [formData, setFormData] = useState<SaaSFormData>({
-    school_name: "",
-    slug: "",
-    email: "",
-    phone: "",
-    address: "",
-    admin_name: "",
-    admin_password: ""
+  const [formData, setFormData] = useState<SaaSFormData>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("cationgate_daftar_form_draft");
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (_e) {}
+    }
+    return {
+      school_name: "",
+      slug: "",
+      email: "",
+      phone: "",
+      address: "",
+      admin_name: "",
+      admin_password: ""
+    };
   });
 
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
-  const [maxReachedStep, setMaxReachedStep] = useState(1);
+  const [step, setStep] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedStep = sessionStorage.getItem("cationgate_daftar_step");
+        if (savedStep) {
+          const parsed = parseInt(savedStep, 10);
+          if (!isNaN(parsed) && parsed >= 1 && parsed <= 4) {
+            return parsed;
+          }
+        }
+      } catch (_e) {}
+    }
+    return 1;
+  });
+
+  const [maxReachedStep, setMaxReachedStep] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedMax = sessionStorage.getItem("cationgate_daftar_max_step");
+        if (savedMax) {
+          const parsed = parseInt(savedMax, 10);
+          if (!isNaN(parsed) && parsed >= 1) return parsed;
+        }
+      } catch (_e) {}
+    }
+    return 1;
+  });
+
   const [errorMsg, setErrorMsg] = useState("");
 
   const [emailChecking, setEmailChecking] = useState(false);
@@ -59,7 +95,37 @@ export function useDaftarSaaSState() {
   const [_otpVerified, setOtpVerified] = useState(false);
   const [_otpLoading, setOtpLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
+  const [cooldown, setCooldown] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const sentTimeStr = sessionStorage.getItem("cationgate_otp_sent_time");
+        if (sentTimeStr) {
+          const sentTime = parseInt(sentTimeStr, 10);
+          const elapsed = Math.floor((Date.now() - sentTime) / 1000);
+          if (elapsed < 60) return 60 - elapsed;
+        }
+      } catch (_e) {}
+    }
+    return 0;
+  });
+
+  // Persist form state & step to sessionStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("cationgate_daftar_form_draft", JSON.stringify(formData));
+      } catch (_e) {}
+    }
+  }, [formData]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("cationgate_daftar_step", String(step));
+        sessionStorage.setItem("cationgate_daftar_max_step", String(maxReachedStep));
+      } catch (_e) {}
+    }
+  }, [step, maxReachedStep]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [animationsData, setAnimationsData] = useState<{ [key: number]: any }>({});
@@ -164,6 +230,9 @@ export function useDaftarSaaSState() {
       const data = await res.json();
       if (data.success) {
         setOtpSent(true);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("cationgate_otp_sent_time", String(Date.now()));
+        }
         setCooldown(60);
       } else {
         setErrorMsg(data.message || "Gagal mengirim OTP.");
@@ -332,6 +401,14 @@ export function useDaftarSaaSState() {
       });
       const data = await res.json();
       if (data.success) {
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.removeItem("cationgate_daftar_form_draft");
+            sessionStorage.removeItem("cationgate_daftar_step");
+            sessionStorage.removeItem("cationgate_daftar_max_step");
+            sessionStorage.removeItem("cationgate_otp_sent_time");
+          } catch (_e) {}
+        }
         router.push("/login?registered=true");
       } else {
         setErrorMsg(data.message || "Gagal mendaftar");

@@ -92,8 +92,6 @@ export function GatekeeperSidebar({
           icon: <Activity size={18} />,
           label: "Layanan & Log",
           subItems: [
-            { label: "Feedback & Tiket", href: "/gatekeeper/dashboard/services/feedback" },
-            { label: "Broadcast Info", href: "/gatekeeper/dashboard/services/broadcast" },
             { label: "Aktivitas Sistem", href: "/gatekeeper/dashboard/services/logs" },
           ]
         }

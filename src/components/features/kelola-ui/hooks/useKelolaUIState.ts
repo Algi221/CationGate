@@ -578,12 +578,26 @@ export function useKelolaUIState() {
       if (result.isConfirmed) {
         setIsLandingPageActive(nextStatus);
         try {
+          if (slug === "demo") {
+            Swal.fire({
+              title: "Status Berhasil Diperbarui!",
+              text: `Landing page sekolah (Demo) sekarang ${statusText}.`,
+              icon: "success",
+              confirmButtonColor: "#2563EB",
+              customClass: { popup: "rounded-2xl" }
+            });
+            return;
+          }
+
           const token = adminToken || localStorage.getItem("ppdb_admin_token");
           await fetch("/api/config/save-all", {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             body: JSON.stringify({
-              configs: { ppdb_landing_active: nextStatus },
+              configs: { 
+                ppdb_landing_active: nextStatus,
+                ppdb_portal_status: nextStatus ? "open" : "closed"
+              },
               description: `Ubah status publikasi landing page ke ${statusText}`
             })
           });

@@ -126,6 +126,7 @@ export function useSchoolLandingState() {
 
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
   const [majors, setMajors] = useState<MajorItem[]>(DEFAULT_MAJORS);
+  const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
   const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>([]);
 
   const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>({
@@ -156,6 +157,14 @@ export function useSchoolLandingState() {
         const json = await res.json();
         if (json.success && json.data) {
           const cfg = json.data;
+          if (cfg.ppdb_landing_active !== undefined) {
+            setIsLandingPageActive(
+              cfg.ppdb_landing_active === true ||
+              cfg.ppdb_landing_active === "true" ||
+              cfg.ppdb_landing_active === 1 ||
+              cfg.ppdb_landing_active === "1"
+            );
+          }
           if (cfg.ppdb_hero_title) setHeroTitle(cfg.ppdb_hero_title);
           if (cfg.ppdb_hero_title_sub) setHeroTitleSub(cfg.ppdb_hero_title_sub);
           if (cfg.ppdb_hero_subtitle) setHeroSubtitle(cfg.ppdb_hero_subtitle);
@@ -195,6 +204,7 @@ export function useSchoolLandingState() {
     schoolSlug,
     schoolDisplayName,
     isSchoolNotFound,
+    isLandingPageActive,
     mobileMenuOpen,
     setMobileMenuOpen,
     heroTitle,

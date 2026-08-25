@@ -330,12 +330,6 @@ export default function GatekeeperLoginPage() {
                     Ingatkan saya
                   </span>
                 </label>
-                <Link
-                  href="/login"
-                  className="text-xs font-semibold text-slate-500 hover:text-[#2e3749] transition-colors"
-                >
-                  Masuk sebagai Admin Sekolah?
-                </Link>
               </div>
             </form>
           </div>

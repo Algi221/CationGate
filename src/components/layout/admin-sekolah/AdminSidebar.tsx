@@ -195,7 +195,7 @@ export function AdminSidebar({
           {hoveredItem === item.href && !isLocked && !(isActive && (!hasSub || isCollapsed)) && (
             <motion.div
               layoutId="sidebar-hover"
-              className="absolute inset-0 bg-slate-200/70 dark:bg-slate-800/70 rounded-2xl"
+              className="absolute inset-0 bg-blue-50/70 dark:bg-blue-950/30 rounded-xl border border-blue-100/50 dark:border-blue-900/30"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -211,8 +211,8 @@ export function AdminSidebar({
               isLocked
                 ? "opacity-35 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none hover:bg-transparent"
                 : isActive && (!hasSub || isCollapsed)
-                ? "bg-[#FFD33B]/10 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] font-bold"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold shadow-xs border border-blue-100 dark:border-blue-900/50"
+                : "text-slate-600 dark:text-slate-300 hover:bg-blue-50/60 dark:hover:bg-blue-950/30 hover:text-blue-600 dark:hover:text-blue-400"
             }`}
             title={isCollapsed ? (isLocked ? `${item.label} (Terkunci)` : item.label) : undefined}
           >
@@ -230,7 +230,7 @@ export function AdminSidebar({
               <ChevronDown
                 size={14}
                 className={`text-slate-400 dark:text-slate-500 transition-transform duration-300 shrink-0 ml-2 ${
-                  isOpen ? "rotate-180 text-[#F3C625]" : ""
+                  isOpen ? "rotate-180 text-blue-600 dark:text-blue-400" : ""
                 }`}
               />
             ) : null}
@@ -267,8 +267,8 @@ export function AdminSidebar({
                           isLocked
                             ? "opacity-35 text-slate-400 dark:text-slate-500 cursor-not-allowed select-none hover:bg-transparent"
                             : isSubActive
-                            ? "bg-[#FFD33B]/15 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] font-bold"
-                            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40"
+                            ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100/80 dark:border-blue-900/40"
+                            : "text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/30"
                         }`}
                       >
                         {sub.label}
@@ -311,7 +311,7 @@ export function AdminSidebar({
         {/* Toggle Collapse Button */}
         <button
           onClick={handleToggleCollapse}
-          className="hidden md:flex absolute top-6 -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] text-slate-500 hover:text-[#F3C625] dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
+          className="hidden md:flex absolute top-6 -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
           title={isCollapsed ? "Perluas Sidebar" : "Sembunyikan Sidebar"}
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}

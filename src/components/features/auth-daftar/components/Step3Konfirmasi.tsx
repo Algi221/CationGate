@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ShieldCheck, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OtpInput, OtpStatus } from "@/components/ui/otp-input";
 import { SaaSFormData } from "../types";
@@ -34,13 +35,38 @@ export const Step3Konfirmasi: React.FC<Step3KonfirmasiProps> = ({
   const [status, setStatus] = useState<OtpStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [verifying, setVerifying] = useState(false);
-  const [cooldown, setCooldown] = useState(60);
+  const [cooldown, setCooldown] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const sentTimeStr = sessionStorage.getItem("cationgate_otp_sent_time");
+        if (sentTimeStr) {
+          const sentTime = parseInt(sentTimeStr, 10);
+          const elapsed = Math.floor((Date.now() - sentTime) / 1000);
+          if (elapsed < 60) return 60 - elapsed;
+        }
+      } catch (_e) {}
+    }
+    return 60;
+  });
 
   useEffect(() => {
     if (step === 4) {
       setCode("");
       setStatus("idle");
       setErrorMessage("");
+      if (typeof window !== "undefined") {
+        try {
+          const sentTimeStr = sessionStorage.getItem("cationgate_otp_sent_time");
+          if (sentTimeStr) {
+            const sentTime = parseInt(sentTimeStr, 10);
+            const elapsed = Math.floor((Date.now() - sentTime) / 1000);
+            if (elapsed < 60) {
+              setCooldown(60 - elapsed);
+              return;
+            }
+          }
+        } catch (_e) {}
+      }
       setCooldown(60);
     }
   }, [step]);
@@ -70,7 +96,7 @@ export const Step3Konfirmasi: React.FC<Step3KonfirmasiProps> = ({
       }
     } catch (_e) {
       setStatus("error");
-      setErrorMessage("Terjadi kesalahan saat memverifikasi kode OTP.");
+      setErrorMessage("Terjadi kesalahan saat memverify kode OTP.");
     } finally {
       setVerifying(false);
     }
@@ -78,6 +104,11 @@ export const Step3Konfirmasi: React.FC<Step3KonfirmasiProps> = ({
 
   const handleResend = async () => {
     if (cooldown > 0 || verifying) return;
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("cationgate_otp_sent_time", String(Date.now()));
+      } catch (_e) {}
+    }
     setCooldown(60);
     setStatus("idle");
     setErrorMessage("");
@@ -167,8 +198,14 @@ export const Step3Konfirmasi: React.FC<Step3KonfirmasiProps> = ({
               </button>
 
               <div className="rounded-3xl bg-white shadow-2xl p-6 sm:p-8 border border-slate-200/80 text-center space-y-5">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
-                  <ShieldCheck className="w-6 h-6" />
+                <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-md flex items-center justify-center mx-auto p-2.5">
+                  <Image
+                    src="/assets/logo_cationgate/CationGate_Logo.png"
+                    alt="CationGate Logo"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
 
                 <div>

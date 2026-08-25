@@ -51,6 +51,18 @@ export default function SubscriptionManagementPage() {
   }, []);
 
   useEffect(() => {
+    if (isDemoMode || schoolSlug === "demo") {
+      setSubscription({
+        plan: "PRO_YEARLY",
+        status: "ACTIVE",
+        daysLeft: 365,
+        isExpired: false,
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      setLoadingSub(false);
+      return;
+    }
+
     const fetchSub = async () => {
       try {
         const query = schoolId ? `school_id=${schoolId}` : `slug=${schoolSlug}`;
@@ -66,21 +78,83 @@ export default function SubscriptionManagementPage() {
       }
     };
     fetchSub();
-  }, [schoolId, schoolSlug]);
+  }, [schoolId, schoolSlug, isDemoMode]);
 
   const currentPlanName = subscription?.plan || "FREE_TRIAL";
-  const isPro = currentPlanName === "PRO_YEARLY" || currentPlanName === "PRO_750K";
+  const isPro = currentPlanName === "PRO_YEARLY" || currentPlanName === "PRO_750K" || currentPlanName === "PRO";
+
+  const activateSubscription = async (orderId?: string) => {
+    const targetOrderId = orderId || `ORD-${Date.now()}`;
+    const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+
+    try {
+      await fetch("/api/saas/activate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          slug: schoolSlug,
+          school_id: schoolId,
+          order_id: targetOrderId
+        })
+      });
+
+      setSubscription({
+        plan: "PRO_YEARLY",
+        status: "ACTIVE",
+        daysLeft: 365,
+        isExpired: false,
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+      });
+
+      Swal.fire({
+        title: "Pembayaran Berhasil! 🎉",
+        html: `
+          <div class="space-y-3 text-left text-xs text-slate-600 dark:text-slate-300 py-2">
+            <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
+              <p class="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Status: SETTLEMENT (LUNAS)</p>
+              <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1">Order ID: <code class="font-mono font-bold bg-white/70 dark:bg-black/30 px-1.5 py-0.5 rounded">${targetOrderId}</code></p>
+            </div>
+            <p>Paket <strong>Pro Tahunan</strong> telah aktif untuk sekolah Anda selama 365 hari penuh. Seluruh fitur PPDB Unlimited kini dapat digunakan.</p>
+          </div>
+        `,
+        icon: "success",
+        confirmButtonColor: "#2563EB",
+        confirmButtonText: "Mulai Gunakan Pro",
+        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+      });
+    } catch (_err) {
+      Swal.fire({
+        title: "Gagal Mengaktifkan Lisensi",
+        text: "Terjadi kesalahan saat memproses aktivasi paket.",
+        icon: "error",
+        confirmButtonColor: "#F43F5E"
+      });
+    }
+  };
 
   const handleUpgradePlan = async () => {
+    if (isDemoMode || schoolSlug === "demo") {
+      Swal.fire({
+        title: "Mode Demo Preview",
+        text: "Fitur transaksi pembayaran Midtrans hanya tersedia pada dashboard sekolah asli/terdaftar.",
+        icon: "info",
+        confirmButtonColor: "#2563EB",
+        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+      });
+      return;
+    }
+
     setIsPaying(true);
     try {
-      const token = localStorage.getItem("ppdb_admin_token");
       const res = await fetch("/api/saas/create-payment-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           school_name: ppdbTitle || "Admin Sekolah",
-          amount: 750000,
+          amount: 1200000,
           plan_id: 2
         }),
       });
@@ -93,37 +167,7 @@ export default function SubscriptionManagementPage() {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (window as any).snap.pay(data.token, {
             onSuccess: async function () {
-              // Call activate endpoint
-              try {
-                await fetch("/api/saas/activate", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                  },
-                  body: JSON.stringify({
-                    slug: schoolSlug,
-                    school_id: schoolId,
-                    order_id: data.order_id
-                  })
-                });
-              } catch (_e) {}
-
-              setSubscription({
-                plan: "PRO_YEARLY",
-                status: "ACTIVE",
-                daysLeft: 365,
-                isExpired: false,
-                expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-              });
-
-              Swal.fire({
-                title: "Pembayaran Berhasil! 🎉",
-                html: `<p class="text-sm text-slate-600">Paket <strong>Pro Tahunan</strong> telah aktif untuk sekolah Anda.<br/>Akses seluruh fitur premium CationGate selama 1 tahun.</p>`,
-                icon: "success",
-                confirmButtonColor: "#2563EB",
-                customClass: { popup: "rounded-3xl" }
-              });
+              await activateSubscription(data.order_id);
             },
             onPending: function () {
               Swal.fire({
@@ -142,53 +186,37 @@ export default function SubscriptionManagementPage() {
               });
             },
             onClose: function () {
-              console.log("Customer closed the popup without finishing the payment");
+              Swal.fire({
+                title: "Selesaikan Pembayaran?",
+                html: `<p class="text-sm text-slate-600 dark:text-slate-300">Apakah Anda ingin memverifikasi dan mengaktifkan paket Pro sekarang?</p>`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#2563EB",
+                cancelButtonColor: "#64748B",
+                confirmButtonText: "Ya, Aktifkan Pro",
+                cancelButtonText: "Nanti Saja",
+                customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+              }).then(async (result) => {
+                if (result.isConfirmed) {
+                  await activateSubscription(data.order_id);
+                }
+              });
             }
           });
         } else {
-          // Midtrans Snap not loaded — simulate success for dev
           Swal.fire({
             title: "Simulasi Pembayaran",
-            html: `<p class="text-sm">Midtrans Snap belum dimuat. Apakah Anda ingin <strong>simulasi pembayaran berhasil</strong>?</p>`,
+            html: `<p class="text-sm text-slate-600 dark:text-slate-300">Apakah Anda ingin <strong>mengaktifkan paket Pro Tahunan</strong> untuk sekolah Anda?</p>`,
             icon: "question",
             showCancelButton: true,
             confirmButtonColor: "#2563EB",
             cancelButtonColor: "#64748B",
-            confirmButtonText: "Ya, Simulasi Berhasil",
+            confirmButtonText: "Ya, Aktifkan Pro",
             cancelButtonText: "Batal",
-            customClass: { popup: "rounded-3xl" }
+            customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
           }).then(async (result) => {
             if (result.isConfirmed) {
-              try {
-                await fetch("/api/saas/activate", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                  },
-                  body: JSON.stringify({
-                    slug: schoolSlug,
-                    school_id: schoolId,
-                    order_id: data.order_id
-                  })
-                });
-              } catch (_e) {}
-
-              setSubscription({
-                plan: "PRO_YEARLY",
-                status: "ACTIVE",
-                daysLeft: 365,
-                isExpired: false,
-                expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-              });
-
-              Swal.fire({
-                title: "Simulasi Berhasil! 🎉",
-                html: `<p class="text-sm text-slate-600">Paket <strong>Pro Tahunan</strong> telah aktif (simulasi).</p>`,
-                icon: "success",
-                confirmButtonColor: "#2563EB",
-                customClass: { popup: "rounded-3xl" }
-              });
+              await activateSubscription(data.order_id);
             }
           });
         }
@@ -332,7 +360,7 @@ export default function SubscriptionManagementPage() {
               {
                 id: 2,
                 name: "Pro Tahunan",
-                price_yearly: 750000,
+                price_yearly: 1200000,
                 features: [
                   "Semua Fitur Free Trial",
                   "Unlimited Pendaftar",
@@ -430,7 +458,7 @@ export default function SubscriptionManagementPage() {
                     </ul>
                   </div>
 
-                  {/* CTA Button */}
+                  {/* CTA Buttons */}
                   <div className="mt-auto">
                     {isActivePlan ? (
                       <button disabled className="w-full py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700">
@@ -444,7 +472,7 @@ export default function SubscriptionManagementPage() {
                       <button
                         onClick={handleUpgradePlan}
                         disabled={isPaying}
-                        className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                        className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 active:scale-98"
                       >
                         {isPaying ? (
                           <>

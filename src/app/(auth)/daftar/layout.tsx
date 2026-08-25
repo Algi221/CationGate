@@ -1,4 +1,5 @@
 import { constructMetadata } from "@/lib/seo";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Metadata } from "next";
 
 export const metadata: Metadata = constructMetadata({
@@ -13,5 +14,15 @@ export default function DaftarLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Beranda", url: "/" },
+          { name: "Pendaftaran Sekolah Baru", url: "/daftar" },
+        ]}
+      />
+      {children}
+    </>
+  );
 }

@@ -362,7 +362,17 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
                           <span className="text-slate-400">-</span>
                         )}
                       </td>
-                      <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
+                      <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">
+                        <div>{a.pindahan_dari || a.sekolah_asal || a.sekolahAsal}</div>
+                        {a.alasan_pindah && (
+                          <span
+                            className="text-[9px] text-slate-400 font-normal block truncate max-w-55"
+                            title={a.alasan_pindah}
+                          >
+                            {a.alasan_pindah}
+                          </span>
+                        )}
+                      </td>
                       <td className="py-4 px-6">
                         <span className="px-2.5 py-1 rounded-full bg-blue-50/70 dark:bg-blue-950/40 text-blue-550 dark:text-blue-400 border border-blue-100/80 dark:border-blue-900/40 font-extrabold text-[9px] uppercase tracking-wide">
                           {a.jurusan_1 || a.jurusan1}

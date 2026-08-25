@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { usePPDB } from "@/context/PPDBContext";
+import { usePPDB, DEMO_TRASHED_APPLICANTS_SEED } from "@/context/PPDBContext";
 import Swal from "sweetalert2";
 import { 
   Applicant, 
@@ -87,10 +87,13 @@ export function usePendaftarState() {
         if (local) {
           setTrashedApplicants(JSON.parse(local));
         } else {
-          setTrashedApplicants([]);
+          setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("demo_trashed_applicants", JSON.stringify(DEMO_TRASHED_APPLICANTS_SEED));
+          }
         }
       } catch (_e) {
-        setTrashedApplicants([]);
+        setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);
       }
       return;
     }
@@ -307,7 +310,14 @@ export function usePendaftarState() {
 
   const filteredApplicants = useMemo(() => {
     return applicants.filter((a: Applicant) => {
-      const isTransfer = a.diterima_kelas && (a.diterima_kelas.includes("XI") || a.diterima_kelas.includes("XII"));
+      const isTransfer = Boolean(
+        (a.diterima_kelas && (a.diterima_kelas.includes("XI") || a.diterima_kelas.includes("XII"))) ||
+        a.is_pindahan ||
+        a.tipe_pendaftar === "PINDAHAN" ||
+        a.jalur_pendaftaran === "PINDAHAN" ||
+        a.pindahan_dari ||
+        a.pindahanDari
+      );
       if (activePageTab === "active" && isTransfer) return false;
       if (activePageTab === "transfer" && !isTransfer) return false;
 

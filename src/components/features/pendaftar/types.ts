@@ -108,7 +108,14 @@ export interface Applicant {
   diterima_kelas?: string | null;
   diterimaKelas?: string | null;
   diterima_tanggal?: string | null;
-  diterimaTanggal?: string | null; 
+  diterimaTanggal?: string | null;
+  pindahan_dari?: string;
+  pindahanDari?: string;
+  alasan_pindah?: string;
+  is_pindahan?: boolean;
+  tipe_pendaftar?: string;
+  jalur_pendaftaran?: string;
+  alasan_hapus?: string;
   [key: string]: unknown;
 }
 

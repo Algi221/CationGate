@@ -27,7 +27,7 @@ export function VideoModal({ isOpen, onClose, videoUrl }: VideoModalProps) {
     <AnimatePresence>
       {isOpen && (
         // PERBAIKAN: Mengubah z-[100] menjadi z-[99999] agar menutupi Navbar & Chatbot
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-99999 flex items-center justify-center p-4 sm:p-6">
           {/* Backdrop Blur Tipis & Gelap */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -97,7 +97,7 @@ export function VideoModal({ isOpen, onClose, videoUrl }: VideoModalProps) {
 
               <button
                 onClick={onClose}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#FFC000] hover:bg-[#e5ac00] text-black font-bold text-xs sm:text-sm transition-all active:scale-95 flex-shrink-0 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#FFC000] hover:bg-[#e5ac00] text-black font-bold text-xs sm:text-sm transition-all active:scale-95 shrink-0 cursor-pointer"
               >
                 Tutup Video
               </button>

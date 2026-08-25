@@ -118,14 +118,33 @@ const SCHOOLS_ORIGIN = [
   "SMP IT Nurul Fikri", "SMPN 1 Cibinong", "SMP Mardi Yuana"
 ];
 
+const TRANSFER_ORIGINS = [
+  "SMK Negeri 1 Jakarta",
+  "SMA Negeri 8 Jakarta",
+  "SMK Telkom Sandhy Putra",
+  "SMA Negeri 1 Bogor",
+  "SMK Negeri 2 Depok",
+  "SMA Labschool Cibubur",
+  "SMK Taruna Terpadu 1",
+  "SMA Negeri 3 Bekasi"
+];
+
+const TRANSFER_REASONS = [
+  "Mengikuti perpindahan dinas tugas kerja orang tua ke wilayah Depok",
+  "Penyesuaian kurikulum peminatan kejuruan vokasi industri",
+  "Pindah domisili keluarga dari luar daerah ke Kota Depok",
+  "Mencari program vokasi yang memiliki kerja sama sertifikasi industri"
+];
+
 function generateDemoApplicants() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any[] = [];
-  const statuses = ["Approved", "Approved", "Approved", "Pending", "Approved", "Approved", "Rejected", "Pending"];
+  const statuses = ["Approved", "Approved", "Pending", "Approved", "Pending", "Approved", "Rejected", "Approved"];
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
   const currentPeriode = "2026-2027";
 
+  // 1. Pendaftar Reguler (Kelas X) - 50 Siswa
   for (let i = 1; i <= 50; i++) {
     const fn = NAMES_FIRST[i % NAMES_FIRST.length];
     const ln = NAMES_LAST[(i * 3) % NAMES_LAST.length];
@@ -135,9 +154,9 @@ function generateDemoApplicants() {
     const secondaryMajor = MAJORS_LIST[(i + 1) % MAJORS_LIST.length];
     const status = statuses[i % statuses.length];
     const school = SCHOOLS_ORIGIN[i % SCHOOLS_ORIGIN.length];
-    const daysAgo = (i % 7);
-    const dateStr = new Date(now - daysAgo * dayMs - (i * 3600000)).toISOString();
-    const gender = (i % 2 === 0) ? "L" : "P";
+    const daysAgo = i % 7;
+    const dateStr = new Date(now - daysAgo * dayMs - i * 3600000).toISOString();
+    const gender = i % 2 === 0 ? "L" : "P";
     const regNo = formatNoPendaftaran(currentPeriode, i, "demo");
 
     // Assign classes for demo: Some approved students get assigned to class X, while others remain unassigned
@@ -160,6 +179,13 @@ function generateDemoApplicants() {
       }
     }
 
+    const payMethod =
+      i % 3 === 0
+        ? "Bayar Tunai di TU (Cash)"
+        : i % 3 === 1
+          ? "Transfer Manual"
+          : "Midtrans Payment Gateway";
+
     result.push({
       id: i,
       nama: `${fn} ${ln}`,
@@ -169,12 +195,24 @@ function generateDemoApplicants() {
       no_pendaftaran: regNo,
       periode: currentPeriode,
       sekolah_asal: school,
+      sekolahAsal: school,
       jurusan_1: major,
       jurusan_2: secondaryMajor,
       jurusan1: major,
       jurusan2: secondaryMajor,
       status,
-      status_pembayaran: status === "Rejected" ? "BELUM_BAYAR" : (i % 5 === 0 ? "PENDING" : "LUNAS"),
+      tipe_pendaftar: "REGULER",
+      jalur_pendaftaran: "REGULER",
+      is_pindahan: false,
+      pindahan_dari: "",
+      pindahanDari: "",
+      metode_pembayaran: payMethod,
+      status_pembayaran:
+        status === "Rejected" ? "BELUM_BAYAR" : i % 5 === 0 ? "PENDING" : "LUNAS",
+      bukti_bayar:
+        payMethod === "Transfer Manual"
+          ? "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400"
+          : null,
       diterima_kelas: diterimaKelas,
       diterimaKelas,
       tgl_daftar: dateStr,
@@ -190,12 +228,146 @@ function generateDemoApplicants() {
       nama_ibu: `Ibu Siti ${ln}`,
       pekerjaan_ayah: i % 2 === 0 ? "Karyawan Swasta" : "Wiraswasta",
       alamat_jalan: `Jl. Margonda Raya No. ${i * 3}, Kota Depok`,
-      alasan_ditolak: status === "Rejected" ? "Berkas administrasi tidak memenuhi kelengkapan NISN & Surat Keterangan Lulus." : null,
+      alasan_ditolak:
+        status === "Rejected"
+          ? "Berkas administrasi tidak memenuhi kelengkapan NISN & Surat Keterangan Lulus."
+          : null,
       verified_by: status === "Approved" ? "Admin PPDB" : null,
+    });
+  }
+
+  // 2. Pendaftar Pindahan (Kelas XI & XII) - 15 Siswa
+  for (let j = 1; j <= 15; j++) {
+    const id = 50 + j;
+    const fn = NAMES_FIRST[(id * 2) % NAMES_FIRST.length];
+    const ln = NAMES_LAST[(id * 4) % NAMES_LAST.length];
+    const nisn = `007${1000000 + id * 24680}`.slice(0, 10);
+    const nik = `327601${String(20 + (j % 10)).padStart(2, "0")}0408${String(id).padStart(4, "0")}`;
+    const major = MAJORS_LIST[(j - 1) % MAJORS_LIST.length];
+    const transferSchool = TRANSFER_ORIGINS[(j - 1) % TRANSFER_ORIGINS.length];
+    const transferReason = TRANSFER_REASONS[(j - 1) % TRANSFER_REASONS.length];
+    const status = j % 6 === 0 ? "Rejected" : j % 4 === 0 ? "Pending" : "Approved";
+    const gradeLevel = j % 2 === 0 ? "XI" : "XII";
+    const majorCode =
+      major === "Rekayasa Perangkat Lunak"
+        ? "RPL"
+        : major === "Teknik Komputer dan Jaringan"
+          ? "TJKT"
+          : major === "Desain Komunikasi Visual"
+            ? "DKV"
+            : major === "Broadcasting dan Perfilman"
+              ? "BC"
+              : major === "Animasi"
+                ? "ANM"
+                : "TE";
+    const assignedClass = status === "Approved" ? `${gradeLevel} ${majorCode} 1` : null;
+    const regNo = formatNoPendaftaran(currentPeriode, id, "demo");
+    const dateStr = new Date(now - (j + 2) * dayMs).toISOString();
+    const gender = j % 2 === 0 ? "L" : "P";
+
+    result.push({
+      id,
+      nama: `${fn} ${ln}`,
+      nisn,
+      nik,
+      registration_no: regNo,
+      no_pendaftaran: regNo,
+      periode: currentPeriode,
+      sekolah_asal: transferSchool,
+      sekolahAsal: transferSchool,
+      pindahan_dari: transferSchool,
+      pindahanDari: transferSchool,
+      alasan_pindah: transferReason,
+      is_pindahan: true,
+      tipe_pendaftar: "PINDAHAN",
+      jalur_pendaftaran: "PINDAHAN",
+      jurusan_1: major,
+      jurusan_2: major,
+      jurusan1: major,
+      jurusan2: major,
+      status,
+      metode_pembayaran: "Transfer Manual",
+      status_pembayaran: status === "Rejected" ? "BELUM_BAYAR" : "LUNAS",
+      bukti_bayar: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400",
+      diterima_kelas: assignedClass,
+      diterimaKelas: assignedClass,
+      tgl_daftar: dateStr,
+      createdAt: dateStr,
+      jenis_kelamin: gender,
+      jenisKelamin: gender,
+      tempat_lahir: "Jakarta",
+      tgl_lahir: "2008-03-20",
+      gelombang: "Jalur Mutasi Pindahan",
+      no_telepon: `08138${2000000 + j * 6789}`.slice(0, 12),
+      email: `${fn.toLowerCase()}.${ln.toLowerCase()}${id}@gmail.com`,
+      nama_ayah: `Bpk. ${ln} ${fn}`,
+      nama_ibu: `Ibu ${fn} ${ln}`,
+      pekerjaan_ayah: "PNS / Pegawai BUMN",
+      alamat_jalan: `Jl. Raya Sawangan No. ${j * 5}, Kota Depok`,
+      alasan_ditolak:
+        status === "Rejected"
+          ? "Akreditasi sekolah asal dan kesesuaian kurikulum mata pelajaran vokasi belum terpenuhi."
+          : null,
+      verified_by: status === "Approved" ? "Admin PPDB" : null,
+    });
+  }
+
+  return result;
+}
+
+function generateDemoTrashedApplicants() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result: any[] = [];
+  const currentPeriode = "2026-2027";
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  const reasons = [
+    "Permintaan pembatalan pendaftaran resmi dari orang tua karena diterima di SMA Negeri",
+    "Data pendaftaran ganda / duplikasi data calon siswa",
+    "Mengundurkan diri karena kendala perpindahan lokasi domisili keluarga",
+    "Salah input jurusan dan mengajukan pendaftaran ulang",
+    "Tidak melengkapi berkas fisik persyaratan hingga batas akhir penutupan gelombang",
+    "Pindah domisili ke luar provinsi mengikuti dinas orang tua"
+  ];
+
+  for (let k = 1; k <= 6; k++) {
+    const id = 90 + k;
+    const fn = NAMES_FIRST[(id * 3) % NAMES_FIRST.length];
+    const ln = NAMES_LAST[(id * 7) % NAMES_LAST.length];
+    const nisn = `008${9000000 + k * 12345}`.slice(0, 10);
+    const major = MAJORS_LIST[(k + 2) % MAJORS_LIST.length];
+    const school = SCHOOLS_ORIGIN[k % SCHOOLS_ORIGIN.length];
+    const regNo = formatNoPendaftaran(currentPeriode, id, "demo");
+    const dateStr = new Date(now - (k + 5) * dayMs).toISOString();
+    const deletedStr = new Date(now - k * dayMs).toISOString();
+
+    result.push({
+      id,
+      nama: `${fn} ${ln}`,
+      nisn,
+      registration_no: regNo,
+      no_pendaftaran: regNo,
+      periode: currentPeriode,
+      sekolah_asal: school,
+      sekolahAsal: school,
+      jurusan_1: major,
+      jurusan1: major,
+      status: "Rejected",
+      deleted_at: deletedStr,
+      deleted_by: "Admin PPDB",
+      alasan_hapus: reasons[k - 1] || "Pembatalan berkas pendaftaran",
+      alasan_ditolak: reasons[k - 1] || "Pembatalan berkas pendaftaran",
+      tgl_daftar: dateStr,
+      jenis_kelamin: k % 2 === 0 ? "L" : "P",
+      jenisKelamin: k % 2 === 0 ? "L" : "P",
+      gelombang: "Gelombang 1",
     });
   }
   return result;
 }
+
+export const DEMO_TRASHED_APPLICANTS_SEED = generateDemoTrashedApplicants();
 
 function generateDemoActiveStudents() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

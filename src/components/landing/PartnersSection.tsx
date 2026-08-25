@@ -8,11 +8,10 @@ export function PartnersSection() {
 
   const partners = [
     { src: "/assets/partners/disdik.png", alt: "Dinas Pendidikan" },
-    { src: "/assets/partners/download.jpg", alt: "Mitra" },
-    { src: "/assets/partners/luwes.png", alt: "Luwes" },
-
+    { src: "/assets/partners/oscar.png", alt: "Oscar" },
+    { src: "/assets/partners/tb.png", alt: "Tb" },
     { src: "/assets/partners/midtrans-logo-png_se.png", alt: "Midtrans" }, 
-    { src: "/assets/partners/pionicon.jpg", alt: "Pionicon" },
+    { src: "/assets/partners/pplg.png", alt: "PPLG" },
     { src: "/assets/partners/yayasan.png", alt: "Yayasan Cendekia" },
   ];
 

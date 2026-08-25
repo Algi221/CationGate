@@ -82,7 +82,7 @@ export function ComparisonSection() {
                   Metode Tradisional
                 </span>
                 <h3 className="text-xl font-bold text-neutral-900 dark:text-white mt-2">
-                  Cara Konvensional
+                  Cara Tradisional
                 </h3>
               </div>
               <div className="w-10 h-10 rounded-xl bg-neutral-200/60 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0">

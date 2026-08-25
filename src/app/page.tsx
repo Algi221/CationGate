@@ -31,16 +31,23 @@ export default function LandingPage() {
       <Navbar />
 
       <main className="flex-1">
-        {}
         <HeroPPDB />
-        <PartnersSection/>
-        {}
+        <PartnersSection />
         <SystemFlowSection />
         <ComparisonSection />
         <TestimonialsSection />
-        <ProductPacks />
-        <FaqSection />
-        <ContactScreen /> 
+
+        {/* Tambahkan id="pricing" agar link footer menuju ke Paket Biaya */}
+        <div id="pricing">
+          <ProductPacks />
+        </div>
+
+        {/* Tambahkan id="faq" agar link footer menuju ke Pertanyaan Umum */}
+        <div id="faq">
+          <FaqSection />
+        </div>
+
+        <ContactScreen />
       </main>
 
       <CinematicFooter />

@@ -1,13 +1,16 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Lottie from "lottie-react";
 import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+const keywords = ["SPMB", "PPDB"];
+
 export default function HeroSPMB() {
   const [animationData, setAnimationData] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     fetch("/assets/lottie_animation/Dunia.json")
@@ -16,13 +19,39 @@ export default function HeroSPMB() {
       .catch((err) => console.error("Gagal memuat animasi:", err));
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % keywords.length);
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative min-h-screen w-full bg-white overflow-hidden flex flex-col justify-between px-6 sm:px-12 pt-28 pb-8 font-sans selection:bg-amber-200">
       <div className="w-full max-w-[1550px] mx-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-8 my-auto z-20">
         <div className="lg:col-span-4 text-center lg:text-left space-y-6">
           <h1 className="text-4xl sm:text-5xl lg:text-[3.8rem] font-black text-gray-900 leading-[1.02] tracking-tight">
             BIKIN WEBSITE <br />
-            <span className="text-amber-500">SPMB SEKOLAH</span> <br />
+            {/* Baris ini menggunakan flex agar SEKOLAH aman dan tidak ikut goyang */}
+            <span className="inline-flex items-center flex-wrap justify-center lg:justify-start gap-x-3 text-amber-500">
+              <span className="inline-block min-w-[110px] sm:min-w-[130px] text-center lg:text-left overflow-hidden py-1">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={keywords[currentIndex]}
+                    initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, scale: 1.2, filter: "blur(4px)" }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="inline-block"
+                  >
+                    {keywords[currentIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+              <span className="text-amber-500">SEKOLAH</span>
+            </span>{" "}
+            <br />
             JADI LEBIH MUDAH.
           </h1>
 
@@ -75,7 +104,6 @@ export default function HeroSPMB() {
 
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-medium text-gray-500">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider"></span>
               <span>Eksplorasi langsung tanpa perlu login:</span>
             </div>
 
@@ -99,13 +127,11 @@ export default function HeroSPMB() {
 
       <div className="relative w-full max-w-[1550px] mx-auto pt-6 flex flex-col md:flex-row justify-between items-center border-t border-gray-200/60 gap-4 px-2 z-30 bg-white">
         <div className="flex items-center gap-3 text-xs text-gray-500 font-bold">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>
             Dipercaya oleh puluhan SMK & instansi pendidikan di Indonesia
           </span>
         </div>
 
-        {/* Indikator Scroll: Disembunyikan di Mobile (hidden), dimunculkan di Desktop (md:flex) */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-2 hidden md:flex flex-col items-center gap-1 pointer-events-none">
           <span className="text-[9px] font-black tracking-[0.25em] text-gray-400 uppercase">
             SCROLL
@@ -139,7 +165,7 @@ export default function HeroSPMB() {
               24/7
             </div>
             <div className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">
-              Support Teknis
+              Support Teknisdi
             </div>
           </div>
         </div>

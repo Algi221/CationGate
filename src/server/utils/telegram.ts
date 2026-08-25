@@ -74,11 +74,54 @@ export async function sendTelegramNotification(message: string): Promise<boolean
       return true;
     } else {
       const errorText = await response.text();
-      console.error(`[Telegram Bot] Failed to send message: ${response.status} ${response.statusText} - ${errorText}`);
+      // Auto-heal if Chat ID is invalid ("chat not found")
+      if (errorText.includes("chat not found")) {
+        console.warn(`[Telegram Bot] Chat ID "${chatId}" not found. Attempting to rediscover via /getUpdates...`);
+        cachedChatId = null;
+        const discovered = await discoverChatId(token);
+        if (discovered && discovered !== chatId) {
+          cachedChatId = discovered;
+          const retryRes = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: discovered, text: message, parse_mode: 'HTML' })
+          });
+          if (retryRes.ok) {
+            console.log(`[Telegram Bot] Notification sent successfully to rediscovered Chat ID ${discovered}`);
+            return true;
+          }
+        }
+      }
+      console.warn(`[Telegram Bot] Failed to send message: ${response.status} - ${errorText}`);
       return false;
     }
   } catch (error: unknown) {
-    console.error(`[Telegram Bot] Network error sending notification: ${error instanceof Error ? error.message : String(error)}`);
+    console.warn(`[Telegram Bot] Network error sending notification: ${error instanceof Error ? error.message : String(error)}`);
     return false;
   }
+}
+
+export async function notifyGatekeeperLogin(params: {
+  username: string;
+  nama: string;
+  ip?: string;
+  userAgent?: string;
+}): Promise<boolean> {
+  const now = new Date().toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    dateStyle: 'full',
+    timeStyle: 'medium'
+  });
+
+  const text = `🚨 <b>GATEKEEPER LOGIN DETECTED</b> 🚨\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
+    `👤 <b>Nama:</b> ${params.nama}\n` +
+    `🔑 <b>Username:</b> <code>${params.username}</code>\n` +
+    `🕒 <b>Waktu:</b> ${now} WIB\n` +
+    `🌐 <b>IP Address:</b> <code>${params.ip || 'Unknown'}</code>\n` +
+    `📱 <b>Perangkat:</b> <code>${params.userAgent || 'Web Browser'}</code>\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
+    `🛡️ <i>Status: Login Berhasil</i>`;
+
+  return sendTelegramNotification(text);
 }

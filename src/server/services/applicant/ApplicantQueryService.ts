@@ -156,6 +156,18 @@ export class ApplicantQueryService {
       return { success: true, data: [] };
     }
 
+    if ((!data || data.length === 0) && (schoolIdOrSlug === 'demo' || resolvedId === 'demo')) {
+      const demoPublicSeed = [
+        { id: 1, nama: "Budi Santoso", nisn: "******4567", status: "Approved", tgl_daftar: new Date().toISOString(), jurusan_1: "Rekayasa Perangkat Lunak", sekolah_asal: "SMPN 1 Depok", diterima_kelas: "X RPL 1", jenis_kelamin: "L" },
+        { id: 2, nama: "Siti Rahma", nisn: "******1234", status: "Approved", tgl_daftar: new Date().toISOString(), jurusan_1: "Teknik Jaringan Komputer & Telekomunikasi", sekolah_asal: "SMPN 2 Depok", diterima_kelas: "X TJKT 1", jenis_kelamin: "P" },
+        { id: 3, nama: "Ahmad Fauzi", nisn: "******7890", status: "Pending", tgl_daftar: new Date().toISOString(), jurusan_1: "Desain Komunikasi Visual", sekolah_asal: "SMPN 3 Depok", diterima_kelas: null, jenis_kelamin: "L" },
+        { id: 4, nama: "Dewi Lestari", nisn: "******2345", status: "Approved", tgl_daftar: new Date().toISOString(), jurusan_1: "Broadcasting & Perfilman", sekolah_asal: "SMPN 4 Depok", diterima_kelas: "X BC 1", jenis_kelamin: "P" },
+        { id: 5, nama: "Rizky Pratama", nisn: "******6789", status: "Approved", tgl_daftar: new Date().toISOString(), jurusan_1: "Animasi", sekolah_asal: "SMPN 5 Depok", diterima_kelas: "X ANM 1", jenis_kelamin: "L" },
+        { id: 6, nama: "Nabila Putri", nisn: "******3456", status: "Pending", tgl_daftar: new Date().toISOString(), jurusan_1: "Teknik Elektronika", sekolah_asal: "SMP IT Al-Hikmah", diterima_kelas: null, jenis_kelamin: "P" }
+      ];
+      return { success: true, data: demoPublicSeed };
+    }
+
     const sanitizedRows = (data || []).map((row) => ({
       ...row,
       nisn: row.nisn ? "******" + row.nisn.slice(-4) : null

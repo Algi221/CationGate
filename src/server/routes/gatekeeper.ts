@@ -7,6 +7,7 @@ import { fontInMemSchools } from './saas';
 import { gatekeeperAuth } from '../middleware/auth';
 import { authLimiter } from '../middleware/rate-limiter';
 import { redis } from '../../utils/redis';
+import { notifyGatekeeperLogin } from '../utils/telegram';
 
 const gatekeeperRouter = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -23,47 +24,6 @@ const GATEKEEPER_ACCOUNTS = [
   { id: 4, username: 'husein', nama_lengkap: 'Husein', email: 'husein@cationgate.id', password: 'cihuahua123' },
   { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id', password: GATEKEEPER_PASSWORD }
 ];
-
-async function notifyTelegramGatekeeperLogin(params: {
-  username: string;
-  nama: string;
-  ip: string;
-  userAgent: string;
-}) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
-
-  const now = new Date().toLocaleString('id-ID', {
-    timeZone: 'Asia/Jakarta',
-    dateStyle: 'full',
-    timeStyle: 'medium'
-  });
-
-  const text = `🚨 <b>GATEKEEPER LOGIN DETECTED</b> 🚨\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `👤 <b>Nama:</b> ${params.nama}\n` +
-    `🔑 <b>Username:</b> <code>${params.username}</code>\n` +
-    `🕒 <b>Waktu:</b> ${now} WIB\n` +
-    `🌐 <b>IP Address:</b> <code>${params.ip}</code>\n` +
-    `📱 <b>Device/UA:</b> <code>${params.userAgent}</code>\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `🛡️ <i>Status: Login Berhasil</i>`;
-
-  try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'HTML'
-      })
-    });
-  } catch (e) {
-    console.error('[Telegram] Failed to send Gatekeeper login notification:', e);
-  }
-}
 
 gatekeeperRouter.post('/login', authLimiter, async (c) => {
   try {
@@ -106,7 +66,7 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
       );
 
       // Trigger Telegram notification asynchronously
-      notifyTelegramGatekeeperLogin({
+      notifyGatekeeperLogin({
         username: defaultGatekeeper.username,
         nama: defaultGatekeeper.nama_lengkap,
         ip,
@@ -151,7 +111,7 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
       { expiresIn: '7d' }
     );
 
-    notifyTelegramGatekeeperLogin({
+    notifyGatekeeperLogin({
       username: gatekeeper.username,
       nama: gatekeeper.nama_lengkap,
       ip,

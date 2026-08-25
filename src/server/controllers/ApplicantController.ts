@@ -35,17 +35,8 @@ export class ApplicantController {
       const rows = await ApplicantService.getAdminApplicants(schoolId, authToken);
       return c.json({ success: true, data: rows });
     } catch (err: unknown) {
-      console.error('Fetch applicants list error, returning safe fallback:', err);
-      const defaultSeed = [
-        { id: 252610466, nama: "Elisa Pratiwi", nisn: "0091234567", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 3 Depok", sekolahAsal: "SMPN 3 Depok", jurusan_1: "Desain Komunikasi Visual", jurusan1: "Desain Komunikasi Visual", status: "Approved", gelombang: "Gelombang 1", tgl_daftar: new Date().toISOString() },
-        { id: 252610429, nama: "Rani Nugroho", nisn: "0092345678", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 2 Depok", sekolahAsal: "SMPN 2 Depok", jurusan_1: "Teknik Jaringan Komputer & Telekomunikasi", jurusan1: "Teknik Jaringan Komputer & Telekomunikasi", status: "Approved", gelombang: "Gelombang 2", tgl_daftar: new Date().toISOString() },
-        { id: 252610430, nama: "Rizky Kusuma", nisn: "0093456789", jenis_kelamin: "L", jenisKelamin: "L", sekolah_asal: "SMPN 3 Depok", sekolahAsal: "SMPN 3 Depok", jurusan_1: "Desain Komunikasi Visual", jurusan1: "Desain Komunikasi Visual", status: "Approved", gelombang: "Gelombang 1", tgl_daftar: new Date().toISOString() },
-        { id: 252610431, nama: "Dewi Kusuma", nisn: "0094567890", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 4 Depok", sekolahAsal: "SMPN 4 Depok", jurusan_1: "Broadcasting & Perfilman", jurusan1: "Broadcasting & Perfilman", status: "Approved", gelombang: "Gelombang 2", tgl_daftar: new Date().toISOString() },
-        { id: 252610432, nama: "Jasmine Pratama", nisn: "0095678901", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMPN 7 Depok", sekolahAsal: "SMPN 7 Depok", jurusan_1: "Teknik Elektronika", jurusan1: "Teknik Elektronika", status: "Approved", gelombang: "Gelombang 1", tgl_daftar: new Date().toISOString() },
-        { id: 252610433, nama: "Fitri Wijaya", nisn: "0096789012", jenis_kelamin: "P", jenisKelamin: "P", sekolah_asal: "SMP IT Al-Hikmah", sekolahAsal: "SMP IT Al-Hikmah", jurusan_1: "Animasi", jurusan1: "Animasi", status: "Approved", gelombang: "Gelombang 2", tgl_daftar: new Date().toISOString() },
-        { id: 252610434, nama: "Mahendra Santoso", nisn: "0097890123", jenis_kelamin: "L", jenisKelamin: "L", sekolah_asal: "SMK Taruna Bhakti", sekolahAsal: "SMK Taruna Bhakti", jurusan_1: "Rekayasa Perangkat Lunak", jurusan1: "Rekayasa Perangkat Lunak", status: "Approved", gelombang: "Gelombang 1", tgl_daftar: new Date().toISOString() }
-      ];
-      return c.json({ success: true, data: defaultSeed });
+      console.error('Fetch applicants list error:', err);
+      return c.json({ success: false, message: 'Gagal mengambil data pendaftar', data: [] }, 500);
     }
   }
 

@@ -447,32 +447,79 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [applicants, setApplicants] = useState<any[]>([]);
+  const [applicants, setApplicants] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      const isDemo = window.location.pathname.startsWith("/demo") || window.location.pathname.includes("/demo");
+      if (isDemo) {
+        const localStr = localStorage.getItem("demo_admin_applicants");
+        if (localStr) {
+          try {
+            const parsed = JSON.parse(localStr);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          } catch (_e) {}
+        }
+        return DEMO_APPLICANTS_SEED;
+      }
+    }
+    return [];
+  });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
+  const [publicApplicants, setPublicApplicants] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      const isDemo = window.location.pathname.startsWith("/demo") || window.location.pathname.includes("/demo");
+      if (isDemo) {
+        const localStr = localStorage.getItem("demo_public_applicants");
+        if (localStr) {
+          try {
+            const parsed = JSON.parse(localStr);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          } catch (_e) {}
+        }
+        return DEMO_APPLICANTS_SEED;
+      }
+    }
+    return [];
+  });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [activeStudents, setActiveStudents] = useState<any[]>([]);
+  const [activeStudents, setActiveStudents] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      const isDemo = window.location.pathname.startsWith("/demo") || window.location.pathname.includes("/demo");
+      if (isDemo) {
+        const localStr = localStorage.getItem("demo_active_students");
+        if (localStr) {
+          try {
+            const parsed = JSON.parse(localStr);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          } catch (_e) {}
+        }
+        return DEMO_ACTIVE_STUDENTS_SEED;
+      }
+    }
+    return [];
+  });
   const [wsStatus, setWsStatus] = useState<string>("SYNCING (15s)");
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
   const [simulationActive, setSimulationActive] = useState<boolean>(false);
 
+  const isDemoActive = isDemoMode || slug === "demo" || (typeof window !== "undefined" && window.location.pathname.includes("/demo"));
+
   useEffect(() => {
-    if (applicants.length > 0 && typeof window !== 'undefined') {
+    if (isDemoActive && applicants.length > 0 && typeof window !== 'undefined') {
       localStorage.setItem('demo_admin_applicants', JSON.stringify(applicants));
     }
-  }, [applicants]);
+  }, [applicants, isDemoActive]);
 
   useEffect(() => {
-    if (publicApplicants.length > 0 && typeof window !== 'undefined') {
+    if (isDemoActive && publicApplicants.length > 0 && typeof window !== 'undefined') {
       localStorage.setItem('demo_public_applicants', JSON.stringify(publicApplicants));
     }
-  }, [publicApplicants]);
+  }, [publicApplicants, isDemoActive]);
 
   useEffect(() => {
-    if (activeStudents.length > 0 && typeof window !== 'undefined') {
+    if (isDemoActive && activeStudents.length > 0 && typeof window !== 'undefined') {
       localStorage.setItem('demo_active_students', JSON.stringify(activeStudents));
     }
-  }, [activeStudents]);
+  }, [activeStudents, isDemoActive]);
 
   const adminTokenRef = useRef<string | null>(adminToken);
 
@@ -485,10 +532,22 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
 
   // ── Fetch Functions ─────────────────────────────────────────────────────────
   const fetchPublicApplicants = useCallback(async () => {
-    if (isDemoMode) {
-      const localStr = localStorage.getItem('demo_public_applicants');
-      if (localStr) { try { setPublicApplicants(JSON.parse(localStr)); return; } catch (_e) {} }
+    const isDemo = isDemoMode || slug === 'demo' || (typeof window !== 'undefined' && window.location.pathname.includes('/demo'));
+    if (isDemo) {
+      const localStr = typeof window !== 'undefined' ? localStorage.getItem('demo_public_applicants') : null;
+      if (localStr) {
+        try {
+          const parsed = JSON.parse(localStr);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setPublicApplicants(parsed);
+            return;
+          }
+        } catch (_e) {}
+      }
       setPublicApplicants(DEMO_APPLICANTS_SEED);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('demo_public_applicants', JSON.stringify(DEMO_APPLICANTS_SEED));
+      }
       return;
     }
     try {
@@ -496,10 +555,16 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
-      if (data && data.success && Array.isArray(data.data)) setPublicApplicants(data.data);
+      if (data && data.success && Array.isArray(data.data)) {
+        if (data.data.length === 0 && (slug === 'demo' || slug === 'smktarunabhakti')) {
+          setPublicApplicants(DEMO_APPLICANTS_SEED);
+        } else {
+          setPublicApplicants(data.data);
+        }
+      }
     } catch (err: unknown) {
-      console.warn("Public API fetch error, using local fallback seed:", err instanceof Error ? err.message : String(err));
-      setPublicApplicants(prev => prev.length > 0 ? prev : DEMO_APPLICANTS_SEED);
+      console.warn("Public API fetch error:", err instanceof Error ? err.message : String(err));
+      setPublicApplicants(prev => prev.length > 0 ? prev : (isDemo ? DEMO_APPLICANTS_SEED : []));
     }
   }, [isDemoMode, slug]);
 
@@ -520,10 +585,22 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const fetchAdminApplicants = useCallback(async () => {
-    if (isDemoMode) {
-      const localStr = localStorage.getItem('demo_admin_applicants');
-      if (localStr) { try { setApplicants(JSON.parse(localStr)); return; } catch (_e) {} }
+    const isDemo = isDemoMode || slug === 'demo' || (typeof window !== 'undefined' && window.location.pathname.includes('/demo'));
+    if (isDemo) {
+      const localStr = typeof window !== 'undefined' ? localStorage.getItem('demo_admin_applicants') : null;
+      if (localStr) {
+        try {
+          const parsed = JSON.parse(localStr);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setApplicants(parsed);
+            return;
+          }
+        } catch (_e) {}
+      }
       setApplicants(DEMO_APPLICANTS_SEED);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('demo_admin_applicants', JSON.stringify(DEMO_APPLICANTS_SEED));
+      }
       return;
     }
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -532,18 +609,34 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`${BACKEND_URL}/applicants`, { headers: { "Authorization": `Bearer ${token}` } });
       if (res.status === 401) { console.warn("Token is invalid or expired. Logging out admin."); logoutAdmin(); return; }
       const data = await res.json();
-      if (data.success) setApplicants(applyClassOverrides(data.data));
+      if (data.success && Array.isArray(data.data)) {
+        setApplicants(applyClassOverrides(data.data));
+      } else {
+        setApplicants([]);
+      }
     } catch (err: unknown) {
       console.warn("Admin API fetch error:", err instanceof Error ? err.message : String(err));
-      setApplicants(DEMO_APPLICANTS_SEED);
+      setApplicants([]);
     }
-  }, [adminToken, logoutAdmin, isDemoMode]);
+  }, [adminToken, logoutAdmin, isDemoMode, slug]);
 
   const fetchActiveStudents = useCallback(async () => {
-    if (isDemoMode) {
-      const localStr = localStorage.getItem('demo_active_students');
-      if (localStr) { try { setActiveStudents(JSON.parse(localStr)); return; } catch (_e) {} }
+    const isDemo = isDemoMode || slug === 'demo' || (typeof window !== 'undefined' && window.location.pathname.includes('/demo'));
+    if (isDemo) {
+      const localStr = typeof window !== 'undefined' ? localStorage.getItem('demo_active_students') : null;
+      if (localStr) {
+        try {
+          const parsed = JSON.parse(localStr);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setActiveStudents(parsed);
+            return;
+          }
+        } catch (_e) {}
+      }
       setActiveStudents(DEMO_ACTIVE_STUDENTS_SEED);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('demo_active_students', JSON.stringify(DEMO_ACTIVE_STUDENTS_SEED));
+      }
       return;
     }
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -552,12 +645,16 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`${BACKEND_URL}/applicants`, { headers: { "Authorization": `Bearer ${token}` } });
       if (res.status === 401) { console.warn("Token is invalid or expired. Logging out admin."); logoutAdmin(); return; }
       const data = await res.json();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (data.success) { setActiveStudents(applyClassOverrides(data.data.filter((a: any) => a.status === 'Approved'))); }
+      if (data.success && Array.isArray(data.data)) {
+        setActiveStudents(applyClassOverrides(data.data.filter((a: { status?: string }) => a.status === 'Approved')));
+      } else {
+        setActiveStudents([]);
+      }
     } catch (err: unknown) {
       console.warn("Active students API fetch error:", err instanceof Error ? err.message : String(err));
+      setActiveStudents([]);
     }
-  }, [adminToken, logoutAdmin, isDemoMode]);
+  }, [adminToken, logoutAdmin, isDemoMode, slug]);
 
   // ── CRUD Operations ─────────────────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -838,7 +935,8 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     let ignore = false;
     const loadAdmin = async () => {
       if (!ignore) {
-        if (isDemoMode) {
+        const isDemo = isDemoMode || slug === 'demo' || (typeof window !== 'undefined' && window.location.pathname.includes('/demo'));
+        if (isDemo) {
           await fetchAdminApplicants();
           await fetchActiveStudents();
         } else if (adminToken && (!adminUser || (adminUser.role !== 'gatekeeper' && !adminUser.isGatekeeper))) {
@@ -854,7 +952,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
     return () => {
       ignore = true;
     };
-  }, [adminToken, adminUser, fetchAdminApplicants, fetchActiveStudents, isDemoMode]);
+  }, [adminToken, adminUser, fetchAdminApplicants, fetchActiveStudents, isDemoMode, slug]);
 
   return (
     <PPDBContext.Provider

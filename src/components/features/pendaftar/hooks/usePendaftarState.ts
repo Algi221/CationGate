@@ -79,18 +79,22 @@ export function usePendaftarState() {
   };
 
   const fetchTrashedApplicants = useCallback(async () => {
-    if (isDemoMode || schoolSlug === "demo") {
+    const isDemo = isDemoMode || schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.includes("/demo"));
+    if (isDemo) {
       setTrashLoading(false);
       setTrashError("");
       try {
         const local = typeof window !== "undefined" ? localStorage.getItem("demo_trashed_applicants") : null;
         if (local) {
-          setTrashedApplicants(JSON.parse(local));
-        } else {
-          setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);
-          if (typeof window !== "undefined") {
-            localStorage.setItem("demo_trashed_applicants", JSON.stringify(DEMO_TRASHED_APPLICANTS_SEED));
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setTrashedApplicants(parsed);
+            return;
           }
+        }
+        setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("demo_trashed_applicants", JSON.stringify(DEMO_TRASHED_APPLICANTS_SEED));
         }
       } catch (_e) {
         setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);

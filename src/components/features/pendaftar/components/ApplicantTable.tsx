@@ -625,6 +625,13 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
                     </td>
                   </tr>
                 ))}
+                {paginatedApplicants.length === 0 && (
+                  <tr>
+                    <td colSpan={9} className="text-center py-12 text-slate-400 font-medium text-xs">
+                      Belum ada calon siswa yang mendaftar pada kriteria/tab ini.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

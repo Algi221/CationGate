@@ -110,17 +110,20 @@ export function useInformasiState() {
       if (showSpinner) setLoading(true);
 
       // Demo Mode Isolation
-      if (isDemo) {
+      if (isDemo || (typeof window !== "undefined" && window.location.pathname.includes("/demo"))) {
         setLoading(false);
         try {
           const stored = typeof window !== "undefined" ? localStorage.getItem("demo_informasi_list") : null;
           if (stored) {
-            setInformasiList(JSON.parse(stored));
-          } else {
-            setInformasiList(DEMO_INFORMASI_SEED);
-            if (typeof window !== "undefined") {
-              localStorage.setItem("demo_informasi_list", JSON.stringify(DEMO_INFORMASI_SEED));
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setInformasiList(parsed);
+              return;
             }
+          }
+          setInformasiList(DEMO_INFORMASI_SEED);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("demo_informasi_list", JSON.stringify(DEMO_INFORMASI_SEED));
           }
         } catch (_e) {
           setInformasiList(DEMO_INFORMASI_SEED);

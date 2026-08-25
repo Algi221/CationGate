@@ -2,6 +2,8 @@ import { Hono, Context } from 'hono';
 import { getSupabaseClient } from '../db/supabase';
 import { adminAuth } from '../middleware/auth';
 import { createInformasiSchema, updateInformasiSchema } from '../validations/informasi';
+import { isValidUUID, resolveSchoolUUID } from '../db/resolve-school';
+import { fontInMemSchools } from './saas';
 
 const router = new Hono();
 
@@ -22,17 +24,26 @@ function getAdminSchoolId(c: Context): string | undefined {
 router.get('/', async (c: Context) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const rawSchoolId = c.req.query('school_id') || null;
 
     let query = supabase.from('school_announcements').select('*').order('tanggal', { ascending: false }).order('created_at', { ascending: false });
-    if (schoolId) {
-      const { resolveSchoolUUID } = await import('../db/resolve-school');
-      const { fontInMemSchools } = await import('./saas');
-      const resolved = await resolveSchoolUUID(schoolId, fontInMemSchools);
-      if (resolved && resolved !== schoolId) {
-        query = query.or(`school_id.eq.${schoolId},school_id.eq.${resolved}`);
+
+    if (rawSchoolId) {
+      let targetUUID: string | null = null;
+      if (isValidUUID(rawSchoolId)) {
+        targetUUID = rawSchoolId;
       } else {
-        query = query.eq('school_id', schoolId);
+        targetUUID = await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+      }
+
+      if (targetUUID && isValidUUID(targetUUID)) {
+        query = query.eq('school_id', targetUUID);
+      } else {
+        // Return empty announcements safely without throwing invalid UUID syntax error (500)
+        return c.json({
+          success: true,
+          data: []
+        });
       }
     }
 
@@ -86,11 +97,17 @@ router.get('/:id', async (c: Context) => {
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    const rawSchoolId = c.req.query('school_id') || null;
     let query = supabase.from('school_announcements').select('*').eq('id', id);
-    if (schoolId) query = query.eq('school_id', schoolId);
 
-    const { data: record, error } = await query.single();
+    if (rawSchoolId) {
+      const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+      if (targetUUID && isValidUUID(targetUUID)) {
+        query = query.eq('school_id', targetUUID);
+      }
+    }
+
+    const { data: record, error } = await query.maybeSingle();
 
     if (error || !record) {
       return c.json({
@@ -127,10 +144,12 @@ router.post('/', adminAuth, async (c: Context) => {
     const { judul, konten, tanggal, foto_url } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = getAdminSchoolId(c);
-    if (!schoolId) {
+    const rawSchoolId = getAdminSchoolId(c);
+    if (!rawSchoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
+
+    const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
 
     const insertData: Record<string, unknown> = {
       judul,
@@ -138,11 +157,12 @@ router.post('/', adminAuth, async (c: Context) => {
       tanggal: new Date(tanggal).toISOString(),
       foto_url: foto_url || null
     };
-    if (schoolId) insertData.school_id = schoolId;
+    if (targetUUID && isValidUUID(targetUUID)) {
+      insertData.school_id = targetUUID;
+    }
 
     const { data: savedRecord, error } = await supabase.from('school_announcements').insert(insertData).select().single();
     if (error) throw error;
-
 
     return c.json({
       success: true,
@@ -174,15 +194,19 @@ router.put('/:id', adminAuth, async (c: Context) => {
     const { judul, konten, tanggal, foto_url } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = getAdminSchoolId(c);
-    if (!schoolId) {
+    const rawSchoolId = getAdminSchoolId(c);
+    if (!rawSchoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
-    let checkQuery = supabase.from('school_announcements').select('id').eq('id', id);
-    if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
+    const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
 
-    const { data: checkExists } = await checkQuery.single();
+    let checkQuery = supabase.from('school_announcements').select('id').eq('id', id);
+    if (targetUUID && isValidUUID(targetUUID)) {
+      checkQuery = checkQuery.eq('school_id', targetUUID);
+    }
+
+    const { data: checkExists } = await checkQuery.maybeSingle();
 
     if (!checkExists) {
       return c.json({
@@ -198,11 +222,12 @@ router.put('/:id', adminAuth, async (c: Context) => {
     if (foto_url !== undefined) dataToUpdate.foto_url = foto_url || null;
 
     let updateQuery = supabase.from('school_announcements').update(dataToUpdate).eq('id', id);
-    if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
+    if (targetUUID && isValidUUID(targetUUID)) {
+      updateQuery = updateQuery.eq('school_id', targetUUID);
+    }
 
     const { data: updatedRecord, error } = await updateQuery.select().single();
     if (error) throw error;
-
 
     return c.json({
       success: true,
@@ -224,13 +249,17 @@ router.delete('/:id', adminAuth, async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = getAdminSchoolId(c);
-    if (!schoolId) {
+    const rawSchoolId = getAdminSchoolId(c);
+    if (!rawSchoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
+    const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+
     let query = supabase.from('school_announcements').delete().eq('id', id);
-    if (schoolId) query = query.eq('school_id', schoolId);
+    if (targetUUID && isValidUUID(targetUUID)) {
+      query = query.eq('school_id', targetUUID);
+    }
 
     const { data, error } = await query.select();
 
@@ -240,7 +269,6 @@ router.delete('/:id', adminAuth, async (c: Context) => {
         message: 'Informasi tidak ditemukan atau gagal dihapus.'
       }, 404);
     }
-
 
     return c.json({
       success: true,

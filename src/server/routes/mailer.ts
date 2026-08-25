@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import { getSupabaseClient } from '../db/supabase';
+import { pool } from '../db/client';
 import { EmailService } from '../services/EmailService';
 import { authLimiter } from '../middleware/rate-limiter';
 import { z } from 'zod';
-
 import jwt from 'jsonwebtoken';
 
 const mailerRouter = new Hono();
@@ -27,24 +27,29 @@ mailerRouter.post('/send-otp', authLimiter, async (c) => {
     }
 
     const { email, type } = parseResult.data;
+    const cleanEmail = email.toLowerCase().trim();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
 
     // If forgot-password, strictly verify that this email exists in our system
     if (type === 'forgot-password') {
+      let isRegistered = false;
+
       const { data: userByEmail } = await supabase
         .from('admin_users')
         .select('id, email, username')
-        .or(`email.eq.${email},username.eq.${email}`)
+        .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`)
         .maybeSingle();
 
-      let isRegistered = !!userByEmail;
+      if (userByEmail) {
+        isRegistered = true;
+      }
 
       if (!isRegistered) {
         // Also check schools official_email
         const { data: schoolByEmail } = await supabase
           .from('schools')
           .select('id')
-          .eq('official_email', email)
+          .ilike('official_email', cleanEmail)
           .maybeSingle();
 
         if (schoolByEmail) {
@@ -56,12 +61,30 @@ mailerRouter.post('/send-otp', authLimiter, async (c) => {
         const { data: prospectiveSchool } = await supabase
           .from('prospective_schools')
           .select('id')
-          .eq('official_email', email)
+          .ilike('official_email', cleanEmail)
           .maybeSingle();
 
         if (prospectiveSchool) {
           isRegistered = true;
         }
+      }
+
+      // Check direct PostgreSQL pool fallback
+      if (!isRegistered) {
+        try {
+          const pgRes = await pool.query(
+            `SELECT id FROM admin_users WHERE LOWER(email) = LOWER($1) OR LOWER(username) = LOWER($1)
+             UNION
+             SELECT id FROM schools WHERE LOWER(official_email) = LOWER($1)
+             UNION
+             SELECT id FROM prospective_schools WHERE LOWER(official_email) = LOWER($1)
+             LIMIT 1`,
+            [cleanEmail]
+          );
+          if (pgRes.rows && pgRes.rows.length > 0) {
+            isRegistered = true;
+          }
+        } catch (_pgErr) {}
       }
 
       if (!isRegistered) {
@@ -73,32 +96,50 @@ mailerRouter.post('/send-otp', authLimiter, async (c) => {
     }
 
     // Invalidate old unused OTPs for this email
-    await supabase
-      .from('verification_otps')
-      .update({ is_used: true })
-      .eq('email', email)
-      .eq('is_used', false);
+    try {
+      await supabase
+        .from('verification_otps')
+        .update({ is_used: true })
+        .ilike('email', cleanEmail)
+        .eq('is_used', false);
+    } catch (_sbInv) {}
+
+    try {
+      await pool.query(`UPDATE verification_otps SET is_used = true WHERE LOWER(email) = LOWER($1) AND is_used = false`, [cleanEmail]);
+    } catch (_pgInv) {}
 
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60000).toISOString();
 
-    const { error: insertError } = await supabase.from('verification_otps').insert({
-      email,
-      otp_code: otp,
-      expires_at: expiresAt,
-      is_used: false
-    });
+    let inserted = false;
+    try {
+      const { error: insertError } = await supabase.from('verification_otps').insert({
+        email: cleanEmail,
+        otp_code: otp,
+        expires_at: expiresAt,
+        is_used: false
+      });
+      if (!insertError) inserted = true;
+    } catch (_sbIns) {}
 
-    if (insertError) {
-      console.error('Insert OTP DB error:', insertError);
-      throw insertError;
+    if (!inserted) {
+      try {
+        await pool.query(
+          `INSERT INTO verification_otps (email, otp_code, expires_at, is_used)
+           VALUES ($1, $2, $3, false)`,
+          [cleanEmail, otp, expiresAt]
+        );
+      } catch (pgErr) {
+        console.error('Insert OTP DB error:', pgErr);
+        throw pgErr;
+      }
     }
 
     // Send email using professional email template
     if (type === 'forgot-password') {
-      await EmailService.sendForgotPasswordOtpEmail(email, otp);
+      await EmailService.sendForgotPasswordOtpEmail(cleanEmail, otp);
     } else {
-      await EmailService.sendRegistrationOtpEmail(email, otp);
+      await EmailService.sendRegistrationOtpEmail(cleanEmail, otp);
     }
 
     return c.json({
@@ -131,56 +172,105 @@ mailerRouter.post('/verify-otp', async (c) => {
     }
 
     const { email, otp } = parseResult.data;
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanOtp = String(otp).trim();
     const supabase = getSupabaseClient(c.req.header('Authorization'));
 
     // Check OTP in database
-    const { data: records, error } = await supabase
-      .from('verification_otps')
-      .select('*')
-      .eq('email', email)
-      .eq('otp_code', otp)
-      .eq('is_used', false)
-      .gt('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1);
+    let otpRecord: { id: number | string; email: string } | null = null;
 
-    if (error) throw error;
+    try {
+      const { data: records } = await supabase
+        .from('verification_otps')
+        .select('*')
+        .ilike('email', cleanEmail)
+        .eq('otp_code', cleanOtp)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-    if (!records || records.length === 0) {
+      if (records && records.length > 0) {
+        otpRecord = records[0];
+      }
+    } catch (_sbOtp) {}
+
+    if (!otpRecord) {
+      try {
+        const pgRes = await pool.query(
+          `SELECT id, email FROM verification_otps
+           WHERE LOWER(email) = LOWER($1) AND otp_code = $2 AND expires_at > NOW()
+           ORDER BY created_at DESC LIMIT 1`,
+          [cleanEmail, cleanOtp]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          otpRecord = pgRes.rows[0];
+        }
+      } catch (_pgOtp) {}
+    }
+
+    if (!otpRecord) {
       return c.json({
         success: false,
         message: 'Kode OTP tidak valid atau sudah kedaluwarsa.'
       }, 400);
     }
 
-    // Mark OTP as used
-    await supabase.from('verification_otps').update({ is_used: true }).eq('id', records[0].id);
-
     // Query admin user by email if exists
-    const { data: adminUser } = await supabase
-      .from('school_admins')
-      .select('id, username, nama, email, role, school_id')
-      .eq('email', email)
-      .limit(1)
-      .maybeSingle();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let adminUser: any = null;
+
+    try {
+      const { data: user } = await supabase
+        .from('admin_users')
+        .select('id, username, nama_lengkap, email, role, school_id')
+        .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`)
+        .maybeSingle();
+      if (user) adminUser = user;
+    } catch (_sbU) {}
+
+    if (!adminUser) {
+      try {
+        const pgAdmin = await pool.query(
+          `SELECT id, username, nama_lengkap, email, role, school_id
+           FROM admin_users
+           WHERE LOWER(email) = LOWER($1) OR LOWER(username) = LOWER($1)
+           LIMIT 1`,
+          [cleanEmail]
+        );
+        if (pgAdmin.rows && pgAdmin.rows.length > 0) {
+          adminUser = pgAdmin.rows[0];
+        }
+      } catch (_pgU) {}
+    }
 
     let schoolSlug = 'smktarunabhakti';
     if (adminUser?.school_id) {
-      const { data: school } = await supabase
-        .from('schools')
-        .select('slug')
-        .eq('id', adminUser.school_id)
-        .maybeSingle();
-      if (school?.slug) {
-        schoolSlug = school.slug;
-      }
+      try {
+        const { data: school } = await supabase
+          .from('schools')
+          .select('slug')
+          .or(`id.eq.${adminUser.school_id},slug.eq.${adminUser.school_id}`)
+          .maybeSingle();
+        if (school?.slug) {
+          schoolSlug = school.slug;
+        }
+      } catch (_sErr) {}
+    } else {
+      try {
+        const { data: school } = await supabase
+          .from('schools')
+          .select('slug')
+          .ilike('official_email', cleanEmail)
+          .maybeSingle();
+        if (school?.slug) schoolSlug = school.slug;
+      } catch (_sErr2) {}
     }
 
     const adminPayload = {
       id: adminUser?.id || 1,
-      username: adminUser?.username || email.split('@')[0],
-      nama: adminUser?.nama || email.split('@')[0],
-      email,
+      username: adminUser?.username || cleanEmail.split('@')[0],
+      nama: adminUser?.nama_lengkap || adminUser?.username || cleanEmail.split('@')[0],
+      email: cleanEmail,
       role: adminUser?.role || 'admin',
       school_id: adminUser?.school_id || schoolSlug,
       school_slug: schoolSlug

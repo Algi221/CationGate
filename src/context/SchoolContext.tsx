@@ -39,8 +39,9 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   const [profilSekolah, setProfilSekolah] = useState<any>(null);
 
   const fetchConfigs = useCallback(async () => {
-    if (isDemoMode) {
-      setPpdbTitle("SMK TB");
+    const isDemo = isDemoMode || slug === 'demo' || (typeof window !== 'undefined' && window.location.pathname.startsWith('/demo'));
+    if (isDemo) {
+      setPpdbTitle("SMK Demo Indonesia");
       setPpdbLogo("/assets/logo_sekolah/logo_smktb.png");
       setPpdbFooterDesc("Portal simulasi dan demonstrasi interaktif sistem SPMB CationGate untuk sekolah kejuruan di Indonesia.");
       setIsConfigLoaded(true);
@@ -116,6 +117,15 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
 
   // ── Resolve school slug to school data ─────────────────────────────────────
   useEffect(() => {
+    if (slug === 'demo' || (typeof window !== 'undefined' && window.location.pathname.startsWith('/demo'))) {
+      setIsSchoolNotFound(false);
+      setSchoolId('demo');
+      setSchoolStatus('FULL_VERIFIED');
+      setPpdbTitle('SMK Demo Indonesia');
+      setPpdbLogo('/assets/logo_sekolah/logo_smktb.png');
+      return;
+    }
+
     if (slug) {
       fetch(`/api/saas/school-by-slug/${slug}?t=${Date.now()}`)
         .then(async (res) => {
@@ -136,7 +146,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
           } else {
             setIsSchoolNotFound(false);
             setSchoolId(slug);
-            setPpdbTitle(slug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : slug);
+            setPpdbTitle(slug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : 'SMK Demo Indonesia');
           }
         })
         .catch((err) => {

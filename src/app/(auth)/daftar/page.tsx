@@ -51,23 +51,24 @@ export default function DaftarSaaS() {
       />
 
       {/* BACKGROUND BUBBLE (FULL-BLEED 50% VIEWPORT ON DESKTOP) */}
-      <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0">
+      <motion.div
+        key={currentVisual.step}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0"
+      >
         <svg
           viewBox={isMobile ? "0 0 414 200" : "0 0 600 700"}
           className="w-full h-full"
           preserveAspectRatio="none"
         >
-          <motion.path
-            key={currentVisual.step}
-            initial={{ fill: currentVisual.solidColor }}
-            animate={{
-              d: isMobile ? currentVisual.svgPathMobile : currentVisual.svgPathDesktop,
-              fill: currentVisual.solidColor
-            }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
+          <path
+            d={isMobile ? currentVisual.svgPathMobile : currentVisual.svgPathDesktop}
+            fill={currentVisual.solidColor}
           />
         </svg>
-      </div>
+      </motion.div>
 
       {/* HEADER / NAVBAR */}
       <div className="relative lg:absolute top-2 lg:top-6 left-2 lg:left-8 right-2 lg:right-8 flex items-center justify-between z-20 mb-3 lg:mb-0">

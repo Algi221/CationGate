@@ -2,8 +2,8 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '../db/supabase';
+import { pool } from '../db/client';
 import { adminAuth, requireTenantId } from '../middleware/auth';
-import { sendTelegramNotification } from '../utils/telegram';
 import { loginSchema, changePasswordSchema } from '../validations/auth';
 import { authLimiter } from '../middleware/rate-limiter';
 import { isValidUUID, resolveSchoolUUID, resolveSchoolSlug } from '../db/resolve-school';
@@ -134,14 +134,6 @@ authRouter.post('/login', authLimiter, async (c) => {
         { expiresIn: rememberMe ? '30d' : '7d' }
       );
 
-      sendTelegramNotification(
-        `🔐 <b>LOGIN BERHASIL (YSBMO)</b>\n\n` +
-        `👤 User: <code>${usernameKey}</code>\n` +
-        `🏷️ Role: ${mappedRole}\n` +
-        `🏫 Sekolah: <code>${schoolId || 'Multi-tenant'}</code>\n` +
-        `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
-      ).catch(() => {});
-
       return c.json({
         success: true,
         token,
@@ -156,37 +148,120 @@ authRouter.post('/login', authLimiter, async (c) => {
       });
     }
 
-    let query = supabase.from('admin_users').select('*').or(`username.eq.${username},email.eq.${username}`);
+    const cleanUsername = String(username).trim();
+
+    // Check if this is a Gatekeeper platform account
+    const gatekeeperUsers = ['algi', 'farel', 'jepan', 'husein', 'uno'];
+    if (gatekeeperUsers.includes(cleanUsername.toLowerCase()) || cleanUsername.toLowerCase().endsWith('@cationgate.id')) {
+      return c.json({
+        success: false,
+        message: 'Akun Gatekeeper (Platform Superadmin) silakan login di /gatekeeper/login.'
+      }, 403);
+    }
+
+    // 1. Try Supabase query with case-insensitive search
+    let query = supabase.from('admin_users').select('*').or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername}`);
     if (schoolId) query = query.eq('school_id', schoolId);
-    const { data: adminUser } = await query.maybeSingle();
+    let { data: adminUser } = await query.maybeSingle();
+
+    // If query with schoolId returned nothing, retry without schoolId constraint
+    if (!adminUser && schoolId) {
+      const { data: userWithoutSchool } = await supabase
+        .from('admin_users')
+        .select('*')
+        .or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername}`)
+        .maybeSingle();
+      if (userWithoutSchool) adminUser = userWithoutSchool;
+    }
+
+    // 2. Direct PostgreSQL pool fallback (robust against connection/casing issues)
+    if (!adminUser) {
+      try {
+        const pgRes = await pool.query(
+          `SELECT id, username, email, password_hash, nama_lengkap, role, school_id
+           FROM admin_users
+           WHERE (LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($1))
+           LIMIT 1`,
+          [cleanUsername]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          adminUser = pgRes.rows[0];
+        }
+      } catch (_pgErr) {}
+    }
+
+    // 3. Fallback: Lookup in schools or prospective_schools by official email or slug
+    if (!adminUser) {
+      try {
+        const { data: school } = await supabase
+          .from('schools')
+          .select('id, slug, official_email')
+          .or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername}`)
+          .maybeSingle();
+
+        if (school) {
+          const { data: linkedAdmin } = await supabase
+            .from('admin_users')
+            .select('*')
+            .or(`school_id.eq.${school.id},school_id.eq.${school.slug}`)
+            .maybeSingle();
+          if (linkedAdmin) adminUser = linkedAdmin;
+        }
+      } catch (_sErr) {}
+    }
 
     if (!adminUser) {
-      sendTelegramNotification(
-        `⚠️ <b>PERCOBAAN LOGIN GAGAL</b>\n\n` +
-        `👤 User: <code>${username}</code> (Tidak Ditemukan)\n` +
-        `🏫 Sekolah: <code>${schoolId || 'Multi-tenant'}</code>\n` +
-        `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
-      ).catch(() => {});
-      return c.json({ success: false, message: 'Username atau Password salah' }, 401);
+      try {
+        const { data: ps } = await supabase
+          .from('prospective_schools')
+          .select('id, slug, official_email')
+          .or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername}`)
+          .maybeSingle();
+
+        if (ps) {
+          const { data: linkedAdmin } = await supabase
+            .from('admin_users')
+            .select('*')
+            .or(`school_id.eq.${ps.id},school_id.eq.${ps.slug}`)
+            .maybeSingle();
+          if (linkedAdmin) adminUser = linkedAdmin;
+        }
+      } catch (_psErr) {}
     }
 
-    const match = bcrypt.compareSync(password, adminUser.password_hash);
-    if (!match) {
-      sendTelegramNotification(
-        `⚠️ <b>PERCOBAAN LOGIN GAGAL</b>\n\n` +
-        `👤 User: <code>${username}</code> (Password Salah)\n` +
-        `🏫 Sekolah: <code>${schoolId || 'Multi-tenant'}</code>\n` +
-        `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
-      ).catch(() => {});
-      return c.json({ success: false, message: 'Username atau Password salah' }, 401);
+    if (!adminUser) {
+      return c.json({ success: false, message: 'Username / Email atau Password salah' }, 401);
     }
 
-    // Direct Gatekeeper check
+    // Direct Gatekeeper role check
     if (adminUser.role === 'gatekeeper') {
       return c.json({
         success: false,
         message: 'Akun Gatekeeper (Platform Superadmin) silakan login di /gatekeeper/login.'
       }, 403);
+    }
+
+    let match = false;
+    try {
+      if (adminUser.password_hash) {
+        match = bcrypt.compareSync(password, adminUser.password_hash);
+      }
+    } catch (_e) {
+      match = false;
+    }
+
+    // Support plain-text match (seed data / legacy setup) and auto-upgrade to bcrypt hash
+    if (!match && adminUser.password_hash && adminUser.password_hash === password) {
+      match = true;
+      try {
+        const newHash = bcrypt.hashSync(password, 10);
+        await supabase.from('admin_users').update({ password_hash: newHash }).eq('id', adminUser.id);
+        await pool.query(`UPDATE admin_users SET password_hash = $1 WHERE id = $2`, [newHash, adminUser.id]);
+      } catch (_upErr) {}
+    }
+
+    if (!match) {
+      return c.json({ success: false, message: 'Username / Email atau Password salah' }, 401);
     }
 
     // Resolve School Slug and ID reliably
@@ -219,16 +294,6 @@ authRouter.post('/login', authLimiter, async (c) => {
       getJwtSecret(),
       { expiresIn: rememberMe ? '30d' : '7d' }
     );
-
-    sendTelegramNotification(
-      `🔐 <b>LOGIN BERHASIL (Lokal)</b>\n\n` +
-      `👤 User: <code>${adminUser.username}</code>\n` +
-      `🏷️ Role: ${adminUser.role}\n` +
-      `🏫 Sekolah: <code>${resolvedSlug || finalEffectiveSchoolId || 'Multi-tenant'}</code>\n` +
-      `🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`
-    ).catch((err) => {
-      console.error('[Telegram Bot] Gagal mengirim notifikasi login:', err);
-    });
 
     return c.json({
       success: true,

@@ -240,18 +240,24 @@ export class SaasService {
       };
     }
 
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanAdminEmail = (admin_email || email).toLowerCase().trim();
+    const cleanAdminUsername = (admin_username || email).trim();
+    const cleanSchoolName = school_name.trim();
+    const cleanSlug = slug.toLowerCase().trim();
+
     const fallbackId = Math.floor(Date.now() / 1000);
     const createdAtIso = new Date().toISOString();
 
     const newSchoolObj: Record<string, unknown> = {
       id: fallbackId,
-      name: school_name,
-      slug,
-      official_email: email,
+      name: cleanSchoolName,
+      slug: cleanSlug,
+      official_email: cleanEmail,
       status: 'BELUM_KIRIM_VERIFIKASI',
       is_verified: false,
       plan_type: isTrial ? 'TRIAL' : 'YEARLY',
-      admin_name: admin_name || admin_username,
+      admin_name: admin_name || cleanAdminUsername,
       created_at: createdAtIso,
       logo_url: ''
     };
@@ -264,13 +270,13 @@ export class SaasService {
       const { data: psData } = await supabase
         .from('prospective_schools')
         .upsert({
-          name: school_name,
-          slug: slug,
-          official_email: email,
+          name: cleanSchoolName,
+          slug: cleanSlug,
+          official_email: cleanEmail,
           status: 'BELUM_KIRIM_VERIFIKASI',
           is_verified: false,
           plan_type: isTrial ? 'TRIAL' : 'YEARLY',
-          admin_name: admin_name || admin_username,
+          admin_name: admin_name || cleanAdminUsername,
           created_at: createdAtIso
         }, { onConflict: 'slug' })
         .select('*')
@@ -291,7 +297,7 @@ export class SaasService {
            VALUES ($1, $2, $3, 'BELUM_KIRIM_VERIFIKASI', false, $4, $5, NOW())
            ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, official_email = EXCLUDED.official_email
            RETURNING id`,
-          [school_name, slug, email, isTrial ? 'TRIAL' : 'YEARLY', admin_name || admin_username]
+          [cleanSchoolName, cleanSlug, cleanEmail, isTrial ? 'TRIAL' : 'YEARLY', admin_name || cleanAdminUsername]
         );
         if (pgRes.rows && pgRes.rows.length > 0) {
           insertedSchoolId = pgRes.rows[0].id;
@@ -304,7 +310,7 @@ export class SaasService {
     }
 
     newSchoolObj.school_uuid = generatedSchoolUUID;
-    fontInMemSchools.set(slug, newSchoolObj);
+    fontInMemSchools.set(cleanSlug, newSchoolObj);
     if (insertedSchoolId) {
       fontInMemSchools.set(String(insertedSchoolId), newSchoolObj);
     }
@@ -312,13 +318,13 @@ export class SaasService {
     // Try inserting into schools table (compatibility layer)
     try {
       await supabase.from('schools').upsert({
-        name: school_name,
-        slug: slug,
-        official_email: email,
+        name: cleanSchoolName,
+        slug: cleanSlug,
+        official_email: cleanEmail,
         status: 'UNVERIFIED',
         is_verified: false,
         plan_type: isTrial ? 'TRIAL' : 'YEARLY',
-        admin_name: admin_name || admin_username,
+        admin_name: admin_name || cleanAdminUsername,
         created_at: createdAtIso
       }, { onConflict: 'slug' });
     } catch (_schoolsErr: unknown) {
@@ -327,42 +333,45 @@ export class SaasService {
           `INSERT INTO schools (name, slug, official_email, status, is_verified, plan_type, admin_name, created_at)
            VALUES ($1, $2, $3, 'UNVERIFIED', false, $4, $5, NOW())
            ON CONFLICT (slug) DO NOTHING`,
-          [school_name, slug, email, isTrial ? 'TRIAL' : 'YEARLY', admin_name || admin_username]
+          [cleanSchoolName, cleanSlug, cleanEmail, isTrial ? 'TRIAL' : 'YEARLY', admin_name || cleanAdminUsername]
         );
       } catch (_e) {}
     }
 
     const hashedPassword = bcrypt.hashSync(admin_password, 10);
-    const adminSchoolRef = insertedSchoolId ? String(insertedSchoolId) : slug;
+    const isUUID = (v: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+    const adminSchoolRef = insertedSchoolId && isUUID(String(insertedSchoolId)) 
+      ? String(insertedSchoolId) 
+      : (generatedSchoolUUID || null);
+    const finalAdminUsername = cleanAdminUsername || cleanAdminEmail;
 
     try {
-      await supabase.from('admin_users').upsert({
-        username: admin_email || email,
-        email: admin_email || email,
+      const payload: Record<string, unknown> = {
+        username: finalAdminUsername,
+        email: cleanAdminEmail,
         password_hash: hashedPassword,
-        nama_lengkap: admin_name || admin_username,
-        role: 'superadmin',
-        school_id: adminSchoolRef
-      }, { onConflict: 'username' });
+        nama_lengkap: admin_name || cleanAdminUsername,
+        role: 'superadmin'
+      };
+      if (adminSchoolRef) {
+        payload.school_id = adminSchoolRef;
+      }
+
+      const { error: upsertErr } = await supabase.from('admin_users').upsert(payload, { onConflict: 'username' });
+      if (upsertErr) {
+        console.warn('Supabase admin_users upsert warning:', upsertErr.message);
+        // Fallback without school_id
+        delete payload.school_id;
+        await supabase.from('admin_users').upsert(payload, { onConflict: 'username' });
+      }
     } catch (_adminErr: unknown) {
       try {
-        // Try with numeric school_id or string
-        const numericId = insertedSchoolId && !isNaN(Number(insertedSchoolId)) ? Number(insertedSchoolId) : null;
-        if (numericId !== null) {
-          await pool.query(
-            `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, school_id)
-             VALUES ($1, $2, $3, $4, 'superadmin', $5)
-             ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, school_id = EXCLUDED.school_id`,
-            [admin_email || email, admin_email || email, hashedPassword, admin_name || admin_username, numericId]
-          );
-        } else {
-          await pool.query(
-            `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role)
-             VALUES ($1, $2, $3, $4, 'superadmin')
-             ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
-            [admin_email || email, admin_email || email, hashedPassword, admin_name || admin_username]
-          );
-        }
+        await pool.query(
+          `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role)
+           VALUES ($1, $2, $3, $4, 'superadmin')
+           ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, email = EXCLUDED.email`,
+          [finalAdminUsername, cleanAdminEmail, hashedPassword, admin_name || cleanAdminUsername]
+        );
       } catch (_e) {}
     }
 
@@ -370,7 +379,7 @@ export class SaasService {
       success: true as const, 
       statusCode: 200 as const,
       school_id: newSchoolObj.id,
-      slug: slug,
+      slug: cleanSlug,
       message: 'Registrasi berhasil! Account instansi aktif.'
     };
   }

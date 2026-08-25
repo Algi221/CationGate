@@ -50,19 +50,23 @@ export default function ForgotPasswordPage() {
   return (
     <main className="min-h-screen lg:h-screen w-screen bg-white text-slate-950 overflow-x-hidden relative flex flex-col justify-between p-4 sm:p-6 lg:p-10 pb-10 font-sans scheme-light">
       {/* BACKGROUND BUBBLE */}
-      <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0"
+      >
         <svg
           viewBox={isMobile ? "0 0 414 200" : "0 0 600 700"}
           className="w-full h-full"
           preserveAspectRatio="none"
         >
-          <motion.path
-            initial={{ d: isMobile ? svgPathMobile : svgPathDesktop, fill: solidColor }}
-            animate={{ d: isMobile ? svgPathMobile : svgPathDesktop, fill: solidColor }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
+          <path
+            d={isMobile ? svgPathMobile : svgPathDesktop}
+            fill={solidColor}
           />
         </svg>
-      </div>
+      </motion.div>
 
       {/* HEADER / NAVBAR */}
       <ForgotPasswordHeader solidColor={solidColor} />

@@ -17,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
           "/fitur",
           "/solusi",
           "/pricing",
+          "/daftar",
         ],
         disallow: [
           "/api/",
@@ -26,7 +27,6 @@ export default function robots(): MetadataRoute.Robots {
           "/*/verify-account/",
           "/*/invoice/",
           "/health",
-          "/(auth)/",
         ],
       },
       {
@@ -39,6 +39,7 @@ export default function robots(): MetadataRoute.Robots {
           "/*/verify/",
           "/*/verify-account/",
           "/*/invoice/",
+          "/health",
         ],
       },
       {

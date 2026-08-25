@@ -14,6 +14,8 @@ import {
   FaqJsonLd,
 } from "@/components/seo/JsonLd";
 
+import { Metadata } from "next";
+
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -22,7 +24,7 @@ const plusJakarta = Plus_Jakarta_Sans({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-export const metadata = constructMetadata();
+export const metadata: Metadata = constructMetadata();
 
 export default function RootLayout({
   children,

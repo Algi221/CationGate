@@ -98,7 +98,7 @@ export function GatekeeperSidebar({
       ]
     },
     {
-      category: "PENGATURAN",
+      category: "Pengaturan Platform",
       items: [
         { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Sistem" }
       ]

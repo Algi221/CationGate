@@ -65,7 +65,7 @@ setInterval(() => {
 
 export const authLimiter = rateLimiter({
   windowMs: 5 * 60 * 1000, // 5 minutes window
-  max: 5, // 5 attempts max
+  max: 1000, // temporarily disabled rate limit
   message: 'Batas percobaan login/verifikasi terlampaui. Demi keamanan akun Anda, silakan coba lagi dalam beberapa menit.',
 });
 

@@ -7,7 +7,8 @@ export class ApplicantController {
   static async register(c: Context) {
     try {
       const body = await c.req.json();
-      const schoolSlug = c.req.query('school_slug');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const schoolSlug = c.req.query('school_slug') || (body as any).school_slug;
       const result = await ApplicantService.registerApplicant(body, schoolSlug);
       return c.json(result, result.statusCode);
     } catch (err: unknown) {

@@ -60,7 +60,7 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
     if (!user) {
       const { data: school } = await supabase
         .from('schools')
-        .select('id')
+        .select('id, name')
         .eq('official_email', email)
         .maybeSingle();
 
@@ -73,6 +73,23 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
 
         if (schoolAdmin) {
           user = schoolAdmin;
+        } else {
+          // If no admin user exists, create one for this verified school
+          const { data: newAdmin } = await supabase
+            .from('admin_users')
+            .insert({
+              username: email,
+              nama_lengkap: `Admin ${school.name || 'Sekolah'}`,
+              role: 'admin',
+              password_hash: 'temp',
+              school_id: school.id
+            })
+            .select('id')
+            .single();
+            
+          if (newAdmin) {
+            user = newAdmin;
+          }
         }
       }
     }
@@ -89,8 +106,7 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
     const { error: updateError } = await supabase
       .from('admin_users')
       .update({
-        password_hash: hashedPassword,
-        updated_at: new Date().toISOString()
+        password_hash: hashedPassword
       })
       .eq('id', user.id);
 

@@ -142,9 +142,9 @@ export function Navbar() {
         leftCard: {
           icon: Shield,
           title: "Admin Dashboard",
-          desc: "Pusat kendali operasional sekolah dengan akses menyeluruh dan real-time.",
+          desc: "Pusat kendali operasional sekolah.",
           href: "/fitur",
-        },
+        },  
         gridItems: [
           {
             title: "Import & Export Excel",
@@ -160,7 +160,7 @@ export function Navbar() {
           },
           {
             title: "Manajemen Data",
-            desc: "Kontrol penuh data akademik",
+            desc: "Kontrol penuh data siswa",
             href: "/fitur",
             icon: Database,
           },

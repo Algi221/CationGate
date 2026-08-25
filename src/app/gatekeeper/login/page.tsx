@@ -45,7 +45,7 @@ export default function GatekeeperLoginPage() {
   }, [gatekeeperToken, router]);
 
   useEffect(() => {
-    fetch("/assets/lottie_animation/Digital Portal.json")
+    fetch("/assets/lottie_animation/verifyaplicants.json")
       .then((res) => res.json())
       .then((data) => setAnimationData(data))
       .catch((err) => console.error("Lottie fetch error:", err));

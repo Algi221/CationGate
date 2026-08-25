@@ -444,7 +444,7 @@ export default function GatekeeperPlansPage() {
                 }`}>
                   {isActive && <Check size={12} strokeWidth={4} className="text-[#2e3749]" />}
                 </div>
-                <div>
+                <div>rumah ke rumah
                   <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Status Publikasi</p>
                   <p className="text-xs text-slate-500 mt-0.5">Tampilkan paket berwarna menyala di halaman utama.</p>
                 </div>

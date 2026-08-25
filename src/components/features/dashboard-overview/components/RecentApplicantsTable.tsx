@@ -72,10 +72,10 @@ export const RecentApplicantsTable: React.FC<RecentApplicantsTableProps> = ({
                   <span
                     className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wide ${
                       a.status === "Approved"
-                        ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
+                        ? "bg-[#FFD33B]/15 dark:bg-[#2e3749] border-[#FFD33B]/30 dark:border-[#FFD33B]/30 text-[#2e3749] dark:text-[#FFD33B]"
                         : a.status === "Rejected"
-                        ? "bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400"
-                        : "bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-900 text-amber-600 dark:text-amber-400"
+                        ? "bg-[#FFD33B]/15 dark:bg-[#2e3749] border-[#FFD33B]/30 dark:border-[#FFD33B]/30 text-[#2e3749] dark:text-[#FFD33B]"
+                        : "bg-[#FFD33B]/15 dark:bg-[#2e3749] border-[#FFD33B]/30 dark:border-[#FFD33B]/30 text-[#2e3749] dark:text-[#FFD33B]"
                     }`}
                   >
                     {a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending"}

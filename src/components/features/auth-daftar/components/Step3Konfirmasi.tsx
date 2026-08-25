@@ -119,15 +119,18 @@ export const Step3Konfirmasi: React.FC<Step3KonfirmasiProps> = ({
         </div>
 
         <div className="mt-5 sm:mt-6 flex justify-between border-t border-slate-100 pt-4">
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            onClick={onPrevStep}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPrevStep();
+            }}
             disabled={loading}
-            className="h-10 sm:h-11 px-4 text-xs font-bold text-slate-500 cursor-pointer hover:bg-slate-100 rounded-xl"
+            className="h-10 sm:h-11 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer hover:bg-slate-100 rounded-xl transition-all inline-flex items-center justify-center"
           >
             Ubah Data
-          </Button>
+          </button>
           <Button
             type="button"
             onClick={onSendOtp}

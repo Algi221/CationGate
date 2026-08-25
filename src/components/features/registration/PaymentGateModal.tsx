@@ -151,18 +151,18 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         <div className="bg-glow bg-glow-2"></div>
         <div className="bg-glow bg-glow-3"></div>
       </div>
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-2xl rounded-[2.5rem] p-6 md:p-10 lg:p-12 max-w-7xl w-full relative z-10 animate-in fade-in zoom-in duration-300">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-2xl rounded-[2rem] p-5 md:p-6 lg:p-8 max-w-4xl w-full relative z-10 animate-in fade-in zoom-in duration-300">
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Grid Layout: Left Side (Billing Summary), Right Side (Payment Options) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
           {/* Left Side: Summary Panel (Col Span 4) */}
-          <div className="lg:col-span-4 flex flex-col justify-between bg-background/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-4xl p-6 relative overflow-hidden">
-            <div className="space-y-6">
+          <div className="lg:col-span-4 flex flex-col justify-between bg-background/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden">
+            <div className="space-y-4">
               {/* Profil Calon Siswa */}
-              <div className="flex flex-col items-center text-center pb-6 border-b border-slate-200 dark:border-slate-800">
-                <div className="w-16 h-16 bg-primary dark:bg-blue-500 rounded-full flex items-center justify-center text-white mb-3 shadow-lg ring-4 ring-primary/10">
+              <div className="flex flex-col items-center text-center pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="w-12 h-12 bg-primary dark:bg-blue-500 rounded-full flex items-center justify-center text-white mb-2 shadow-md ring-2 ring-primary/10">
                   <User className="w-8 h-8" />
                 </div>
                 <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider leading-tight">{submittedCandidate?.nama}</h4>
@@ -170,7 +170,7 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
               </div>
 
               {/* Stepper Vertikal */}
-              <div className="space-y-4 py-4">
+              <div className="space-y-3 py-2">
                 {/* Langkah 1 */}
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 flex items-center justify-center border border-emerald-200 dark:border-emerald-900 shadow-sm shrink-0">
@@ -264,7 +264,7 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
             </div>
 
             {/* Total Pembayaran Card */}
-            <div className="pt-6 border-t border-slate-200 dark:border-slate-800 mt-6">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 mt-4">
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Total Biaya Pendaftaran</span>
               <div className="flex justify-between items-baseline">
                 <span className="text-2xl font-black text-primary dark:text-sky-400">
@@ -279,9 +279,9 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
 
           {/* Right Side: Options Panel (Col Span 8) */}
           <div className="lg:col-span-8 flex flex-col justify-between">
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Header Title */}
-              <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
                 <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white">Pilih Cara Pembayaran</h3>
                 <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1 font-bold">
                   Selesaikan biaya pendaftaran untuk mengunci status calon siswa Anda.
@@ -289,7 +289,7 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
               </div>
 
               {/* Toggle Buttons */}
-              <div className="flex bg-background dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <div className="flex flex-col sm:flex-row gap-1.5 bg-background dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setActivePaymentMethod("transfer")}
@@ -317,7 +317,7 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
               </div>
 
               {activePaymentMethod === "transfer" ? (
-                <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="space-y-4 animate-in fade-in duration-200">
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-2">
                       Langkah Pembayaran Transfer Bank
@@ -337,33 +337,33 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
                   </div>
 
                   {/* Premium Bank Cards List */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto w-full">
+                  <div className="flex flex-wrap gap-4 w-full">
                     {bankConfigList.map((bank, index) => (
                       <div 
                         key={index} 
-                        className="relative overflow-hidden rounded-4xl bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-white/10 w-full transition-all duration-300 hover:scale-[1.02]"
+                        className="relative overflow-hidden rounded-3xl bg-linear-to-br from-blue-700 via-blue-800 to-blue-950 p-4 text-white shadow-md border border-white/10 w-full max-w-xs transition-all duration-300 hover:scale-[1.02]"
                       >
-                        <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-linear-to-tr from-blue-500/10 to-indigo-500/10 blur-2xl pointer-events-none"></div>
+                        <div className="absolute right-[-10%] top-[-20%] w-32 h-32 rounded-full bg-linear-to-tr from-sky-400/20 to-blue-400/10 blur-2xl pointer-events-none"></div>
 
                         {/* Header Kartu */}
-                        <div className="flex justify-between items-start mb-6">
+                        <div className="flex justify-between items-start mb-4">
                           <div className="space-y-1">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Pilihan #{index + 1}</span>
-                            <h4 className="text-sm md:text-base font-black tracking-wider uppercase text-slate-100">{bank.bankName || "BANK TRANSFER"}</h4>
+                            <span className="text-[8px] font-black uppercase tracking-widest text-sky-300">Pilihan #{index + 1}</span>
+                            <h4 className="text-sm font-black tracking-wider uppercase text-slate-100">{bank.bankName || "BANK TRANSFER"}</h4>
                           </div>
                         </div>
 
                         {/* Nomor Rekening */}
-                        <div className="space-y-1 mb-6">
-                          <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Nomor Rekening</span>
-                          <div className="flex items-center justify-between gap-3 bg-white dark:bg-[#0f172a]/5 border border-white/10 rounded-2xl py-2 px-3 backdrop-blur-sm">
-                            <span className="font-mono text-xs md:text-sm font-black tracking-wider text-slate-100 select-all">
+                        <div className="space-y-1 mb-4">
+                          <span className="text-[7px] font-black uppercase tracking-widest text-blue-200/70">Nomor Rekening</span>
+                          <div className="flex items-center justify-between gap-2 bg-white/10 border border-white/10 rounded-full py-1.5 pl-3 pr-1.5 backdrop-blur-sm">
+                            <span className="font-mono text-xs font-black tracking-wider text-slate-100 select-all">
                               {bank.accountNumber || "157-00-0174092-2"}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleCopy(bank.accountNumber || "157-00-0174092-2")}
-                              className="p-1.5 bg-white/10 dark:bg-[#0f172a]/20 border border-white/15 text-slate-400 hover:text-white rounded-lg transition duration-150 active:scale-95 cursor-pointer"
+                              className="p-1.5 bg-white/10 border border-white/15 text-slate-300 hover:text-white rounded-full transition duration-150 active:scale-95 cursor-pointer"
                               title="Salin Nomor Rekening"
                             >
                               {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
@@ -374,8 +374,8 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
                         {/* Footer Kartu */}
                         <div className="flex justify-between items-end">
                           <div className="space-y-0.5">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Atas Nama (A.N.)</span>
-                            <p className="text-[10px] font-extrabold tracking-wide uppercase text-slate-200">
+                            <span className="text-[7px] font-black uppercase tracking-widest text-blue-200/70">Atas Nama (A.N.)</span>
+                            <p className="text-[9px] font-extrabold tracking-wide uppercase text-slate-100">
                               {bank.accountHolder || "YAYASAN TARUNA BHAKTI"}
                             </p>
                           </div>
@@ -391,7 +391,7 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
                     </label>
 
                     {!manualReceiptBase64 ? (
-                      <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-3xl py-10 px-6 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
+                      <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-2xl py-6 px-4 text-center transition bg-background/20 dark:bg-slate-950/5 relative group cursor-pointer">
                         <input
                           type="file"
                           accept="image/*,application/pdf"
@@ -411,14 +411,14 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-background/80 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="flex items-center gap-4 w-full md:w-auto">
-                          <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-205 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">
-                            {manualReceiptBase64.startsWith("data:application/pdf") ? (
+                      <div className="bg-background/80 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-3 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                          <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-205 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">
+                            {manualReceiptBase64.startsWith("data:application/pdf") || manualReceiptBase64.toLowerCase().endsWith(".pdf") ? (
                               <FileText size={32} className="text-red-500" />
                             ) : (
                               /* eslint-disable-next-line @next/next/no-img-element */
-                              <img src={manualReceiptBase64.startsWith('data:image/') ? sanitizeUrl(manualReceiptBase64) : ''} alt="Preview Bukti Bayar" className="w-full h-full object-cover" />
+                              <img src={manualReceiptBase64 || undefined} alt="Preview Bukti Bayar" className="w-full h-full object-cover" />
                             )}
                           </div>
                           <div className="space-y-0.5 overflow-hidden w-full md:w-auto">
@@ -456,7 +456,7 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
                   </button>
                 </div>
               ) : (
-                <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="space-y-4 animate-in fade-in duration-200">
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-2">
                       Langkah Pembayaran Langsung ke TU Sekolah
@@ -466,7 +466,7 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
                     </p>
                   </div>
 
-                  <div className="bg-primary/5/60 dark:bg-blue-950/15 border border-blue-200/55 dark:border-blue-900/40 rounded-3xl p-6 text-left space-y-3.5 shadow-sm">
+                  <div className="bg-primary/5/60 dark:bg-blue-950/15 border border-blue-200/55 dark:border-blue-900/40 rounded-2xl p-5 text-left space-y-3 shadow-sm">
                     <div className="font-black text-xs uppercase tracking-wider text-blue-800 dark:text-sky-400 flex items-center gap-1.5 border-b border-blue-200/50 dark:border-blue-900/20 pb-2">
                       <FileText size={14} className="shrink-0" />
                       PENTING: BAWA BERKAS PERSYARATAN DI BAWAH INI!

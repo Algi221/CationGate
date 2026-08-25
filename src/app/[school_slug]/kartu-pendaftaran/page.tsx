@@ -55,7 +55,7 @@ export default function KartuPendaftaranPage({
         }
 
         // Fetch Applicant Data
-        const appRes = await fetch(`/api/applicants/registration-card/${nisn}`);
+        const appRes = await fetch(`/api/applicants/registration-card/${nisn}?school_slug=${school_slug}`);
         const appJson = await appRes.json();
 
         if (appJson.success && appJson.data) {

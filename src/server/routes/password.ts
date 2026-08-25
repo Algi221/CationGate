@@ -106,7 +106,7 @@ passwordRouter.post('/reset', authLimiter, async (c) => {
       try {
         const { data: school } = await supabase
           .from('schools')
-          .select('id, slug')
+          .select('id, slug, name')
           .ilike('official_email', cleanEmail)
           .maybeSingle();
 

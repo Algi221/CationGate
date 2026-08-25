@@ -65,12 +65,12 @@ setInterval(() => {
 
 export const authLimiter = rateLimiter({
   windowMs: 5 * 60 * 1000, // 5 minutes window
-  max: process.env.NODE_ENV === 'production' ? 10 : 100,
+  max: process.env.NODE_ENV === 'production' ? 10 : 1000,
   message: 'Batas percobaan login/verifikasi terlampaui. Demi keamanan akun Anda, silakan coba lagi dalam beberapa menit.',
 });
 
 export const registerLimiter = rateLimiter({
   windowMs: 60 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 10 : 100,
+  max: process.env.NODE_ENV === 'production' ? 10 : 1000,
   message: 'Terlalu banyak percobaan pendaftaran dari IP ini. Silakan coba lagi setelah 1 jam.',
 });

@@ -209,9 +209,14 @@ export const Step7Pendidikan: React.FC<Step7Props> = ({
               const majorDetails = getMajorDetails(major.title || major.code);
 
               let isFull = false;
-              if (kuotaData) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const k = kuotaData.find((item: any) => item.key === major.title);
+              if (kuotaData && Array.isArray(kuotaData)) {
+                let k = null;
+                for (let i = 0; i < kuotaData.length; i++) {
+                  if (kuotaData[i] && kuotaData[i].key === major.title) {
+                    k = kuotaData[i];
+                    break;
+                  }
+                }
                 if (k && k.target > 0) {
                   isFull = k.jumlah >= k.target;
                 }

@@ -313,7 +313,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   setIsSearchOpen(true);
                 }}
                 onFocus={() => setIsSearchOpen(true)}
-                className="w-48 lg:w-56 h-9 pl-9 pr-3 text-xs font-bold bg-slate-100 dark:bg-[#1e293b]/80 border border-slate-200 dark:border-slate-700/60 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/20 text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-48 lg:w-56 h-9 pl-9 pr-3 text-xs font-bold bg-slate-100 dark:bg-[#1e293b]/80 border border-slate-200 dark:border-slate-700/60 rounded-full focus:outline-none focus:ring-2 focus:ring-dark-blue/30 dark:focus:ring-yellow/20 text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <AnimatePresence>
                 {isSearchOpen && searchQuery.length > 0 && (
@@ -336,7 +336,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                             }}
                             className="flex flex-col px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors group"
                           >
-                            <span className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                            <span className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-dark-blue dark:group-hover:text-yellow">
                               {item.title}
                             </span>
                             <span className="text-xs text-slate-500 dark:text-slate-400">

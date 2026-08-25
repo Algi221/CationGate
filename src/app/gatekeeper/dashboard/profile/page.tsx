@@ -38,7 +38,7 @@ export default function GatekeeperProfilePage() {
         title: "Ukuran File Terlalu Besar",
         text: "Maksimal ukuran foto adalah 2 MB.",
         icon: "warning",
-        confirmButtonColor: "#2563EB",
+        confirmButtonColor: "#FFD33B",
         customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
       });
       return;
@@ -62,7 +62,7 @@ export default function GatekeeperProfilePage() {
         title: "Profil Berhasil Disimpan",
         text: "Informasi profil Anda telah berhasil diperbarui.",
         icon: "success",
-        confirmButtonColor: "#2563EB",
+        confirmButtonColor: "#FFD33B",
         customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
       });
     }, 500);
@@ -75,7 +75,7 @@ export default function GatekeeperProfilePage() {
         title: "Password Saat Ini Wajib Diisi",
         text: "Masukkan password lama Anda untuk konfirmasi perubahan.",
         icon: "warning",
-        confirmButtonColor: "#2563EB",
+        confirmButtonColor: "#FFD33B",
         customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
       });
       return;
@@ -86,7 +86,7 @@ export default function GatekeeperProfilePage() {
         title: "Password Kurang Kuat",
         text: "Password baru minimal harus 8 karakter.",
         icon: "warning",
-        confirmButtonColor: "#2563EB",
+        confirmButtonColor: "#FFD33B",
         customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
       });
       return;
@@ -97,7 +97,7 @@ export default function GatekeeperProfilePage() {
         title: "Password Tidak Cocok",
         text: "Password baru dan konfirmasi password harus sama.",
         icon: "error",
-        confirmButtonColor: "#2563EB",
+        confirmButtonColor: "#FFD33B",
         customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
       });
       return;
@@ -113,7 +113,7 @@ export default function GatekeeperProfilePage() {
         title: "Password Diperbarui",
         text: "Kata sandi akun Anda berhasil diganti.",
         icon: "success",
-        confirmButtonColor: "#2563EB",
+        confirmButtonColor: "#FFD33B",
         customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
       });
     }, 600);
@@ -135,7 +135,7 @@ export default function GatekeeperProfilePage() {
           title: "Berhasil",
           text: "Semua sesi di perangkat lain telah dihentikan.",
           icon: "success",
-          confirmButtonColor: "#2563EB",
+          confirmButtonColor: "#FFD33B",
           customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
         });
       }
@@ -155,10 +155,10 @@ export default function GatekeeperProfilePage() {
   const passStrength = getPasswordStrength();
 
   return (
-    <div className="space-y-6 max-w-4xl text-left pb-16">
+    <div className="min-h-screen w-full space-y-6 text-left pb-16">
       {/* ─── PAGE HEADER ─────────────────────────────────────────────────── */}
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        <h1 className="text-2xl font-extrabold text-dark-blue dark:text-white tracking-tight">
           Profil Saya
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -171,14 +171,14 @@ export default function GatekeeperProfilePage() {
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <User className="w-5 h-5 text-yellow dark:text-yellow" />
               Informasi Pengguna
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Data diri dan kontak resmi penanggung jawab platform Gatekeeper.
             </p>
           </div>
-          <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-200 dark:border-blue-900">
+          <span className="px-3 py-1 rounded-full bg-yellow/10 dark:bg-yellow/20 text-dark-blue dark:text-yellow text-xs font-bold border border-yellow/30 dark:border-yellow/40">
             Superadmin Platform
           </span>
         </div>
@@ -194,13 +194,13 @@ export default function GatekeeperProfilePage() {
                 className="w-20 h-20 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-700 shadow-sm"
               />
             ) : (
-              <div className="w-20 h-20 rounded-2xl bg-blue-600 text-white font-extrabold text-2xl flex items-center justify-center shadow-sm">
+              <div className="w-20 h-20 rounded-2xl bg-dark-blue text-yellow font-extrabold text-2xl flex items-center justify-center shadow-sm">
                 UN
               </div>
             )}
             <label
               htmlFor="avatar-upload"
-              className="absolute -bottom-2 -right-2 p-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 shadow-md cursor-pointer transition-colors"
+              className="absolute -bottom-2 -right-2 p-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-yellow-hover shadow-md cursor-pointer transition-colors"
               title="Ganti Foto"
             >
               <Camera size={14} />
@@ -295,7 +295,7 @@ export default function GatekeeperProfilePage() {
             <Button
               type="submit"
               disabled={savingProfile}
-              className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-sm shadow-blue-500/20 cursor-pointer"
+              className="h-10 px-5 rounded-xl bg-yellow text-dark-blue hover:bg-yellow-hover font-bold text-xs shadow-sm shadow-yellow/20 cursor-pointer"
             >
               {savingProfile ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
               Simpan Perubahan
@@ -411,7 +411,7 @@ export default function GatekeeperProfilePage() {
             <Button
               type="submit"
               disabled={savingPassword}
-              className="h-10 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-sm shadow-indigo-500/20 cursor-pointer"
+              className="h-10 px-5 rounded-xl bg-dark-blue hover:bg-yellow-hover text-yellow font-bold text-xs shadow-sm shadow-dark-blue/20 cursor-pointer"
             >
               {savingPassword ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Lock className="w-4 h-4 mr-2" />}
               Perbarui Kata Sandi
@@ -462,7 +462,7 @@ export default function GatekeeperProfilePage() {
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Laptop size={14} className="text-blue-500" /> Perangkat Terhubung (Sesi Aktif)
+              <Laptop size={14} className="text-yellow" /> Perangkat Terhubung (Sesi Aktif)
             </h3>
             <button
               type="button"
@@ -477,10 +477,10 @@ export default function GatekeeperProfilePage() {
             {/* Device 1 (Current) */}
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Laptop className="w-4 h-4 text-blue-600 shrink-0" />
+                <Laptop className="w-4 h-4 text-dark-blue shrink-0" />
                 <div>
                   <p className="font-bold text-slate-900 dark:text-white text-xs">
-                    Chrome di Windows <span className="text-blue-600 font-bold ml-1.5 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md text-[10px] border border-blue-200 dark:border-blue-900">Perangkat Ini</span>
+                    Chrome di Windows <span className="text-dark-blue font-bold ml-1.5 bg-yellow/10 dark:bg-yellow/20 px-2 py-0.5 rounded-md text-[10px] border border-yellow/30 dark:border-yellow/40 text-dark-blue dark:text-yellow">Perangkat Ini</span>
                   </p>
                   <p className="text-[10px] text-slate-400 mt-0.5">
                     Jakarta, Indonesia • IP: 103.144.18.24 • Aktif Sekarang

@@ -27,6 +27,7 @@ export interface Applicant {
   rejected_by?: string;
   alasan_ditolak?: string;
   no_pendaftaran?: string;
+  registration_no?: string;
   nipd?: string;
   diterima_tanggal?: string;
   diterimaTanggal?: string;

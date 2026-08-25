@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { Applicant, ClassItem, MajorConfigItem } from "../types";
+import { formatNoPendaftaran } from "@/components/features/pendaftar/components/detail-sections/sanitizeUrl";
 
 export const DEFAULT_MAJORS: MajorConfigItem[] = [
   { code: "RPL", name: "Rekayasa Perangkat Lunak" },
@@ -88,7 +89,7 @@ export const exportClassToExcel = async (
   classStudents.forEach((s: Applicant, index: number) => {
     worksheet.addRow({
       no: index + 1,
-      no_pendaftaran: s.no_pendaftaran || "-",
+      no_pendaftaran: s.registration_no || s.no_pendaftaran || formatNoPendaftaran(s.periode, s.id),
       nipd: nipdMap.get(s.id) || "-",
       nama: s.nama || "",
       jk: (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("l")
@@ -233,7 +234,7 @@ export const exportAllClassesToExcel = async (
       row.height = 22;
 
       row.getCell(1).value = index + 1;
-      row.getCell(2).value = s.no_pendaftaran || "-";
+      row.getCell(2).value = String(s.registration_no || s.no_pendaftaran || formatNoPendaftaran(s.periode, s.id));
       row.getCell(3).value = nipdMap.get(s.id) || "-";
       row.getCell(4).value = s.nama || "";
       row.getCell(5).value = (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("l")

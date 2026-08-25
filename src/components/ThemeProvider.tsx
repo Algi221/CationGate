@@ -17,16 +17,19 @@ export function ThemeProvider({
     () => false
   );
 
-  const isMainLanding =
+  const isForcedLight =
     pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/daftar" ||
+    pathname === "/register" ||
+    pathname === "/masuk" ||
+    pathname?.startsWith("/forgot-password") ||
     pathname?.startsWith("/tentang") ||
     pathname?.startsWith("/fitur") ||
     pathname?.startsWith("/harga") ||
     pathname?.startsWith("/kontak") ||
-    pathname?.startsWith("/login") ||
-    pathname?.startsWith("/register") ||
-    pathname?.startsWith("/daftar") ||
-    pathname?.startsWith("/blog");
+    pathname?.startsWith("/blog") ||
+    pathname?.startsWith("/gatekeeper");
 
   if (!mounted) {
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
@@ -35,7 +38,7 @@ export function ThemeProvider({
   return (
     <NextThemesProvider
       {...props}
-      forcedTheme={isMainLanding ? "light" : undefined}
+      forcedTheme={isForcedLight ? "light" : undefined}
     >
       {children}
     </NextThemesProvider>

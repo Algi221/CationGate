@@ -113,6 +113,12 @@ export function Navbar() {
       color: "#FF9D67",
       dropdown: [
         {
+          title: "Kisah CationGate",
+          desc: "Perjalanan inovasi platform dari sekolah pertama hingga nasional.",
+          href: "/tentang#kisah",
+          icon: BookOpen,
+        },
+        {
           title: "Visi & Misi",
           desc: "Komitmen kami dalam modernisasi pendidikan digital Indonesia.",
           href: "/tentang#visi-misi",
@@ -124,12 +130,7 @@ export function Navbar() {
           href: "/tentang#tim",
           icon: Users,
         },
-        {
-          title: "Kisah CationGate",
-          desc: "Perjalanan inovasi platform dari sekolah pertama hingga nasional.",
-          href: "/tentang#kisah",
-          icon: BookOpen,
-        },
+        
       ],
     },
     {
@@ -141,9 +142,9 @@ export function Navbar() {
         leftCard: {
           icon: Shield,
           title: "Admin Dashboard",
-          desc: "Pusat kendali operasional sekolah dengan akses menyeluruh dan real-time.",
+          desc: "Pusat kendali operasional sekolah.",
           href: "/fitur",
-        },
+        },  
         gridItems: [
           {
             title: "Import & Export Excel",
@@ -159,7 +160,7 @@ export function Navbar() {
           },
           {
             title: "Manajemen Data",
-            desc: "Kontrol penuh data akademik",
+            desc: "Kontrol penuh data siswa",
             href: "/fitur",
             icon: Database,
           },
@@ -341,7 +342,7 @@ export function Navbar() {
           <div className="flex items-center gap-3 shrink-0">
             {/* Tombol Masuk (Hanya muncul di Layar Besar/Desktop - lg:flex) */}
             <div className="hidden lg:flex items-center">
-              <Link href="/masuk" className="group/masuk block">
+              <Link href="/login" className="group/masuk block">
                 <button
                   type="button"
                   className="
@@ -407,7 +408,7 @@ export function Navbar() {
             }))}
             footer={
               <div className="flex flex-col w-full px-10 md:px-24 py-8 pb-12 gap-4">
-                <Link href="/masuk" onClick={() => setMobileMenuOpen(false)} className="group/m-masuk block w-full">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="group/m-masuk block w-full">
                   <button className="w-full justify-center bg-[#FFD33B] group-hover/m-masuk:bg-slate-950 hover:bg-slate-950 font-bold text-base rounded-2xl h-14 transition-all duration-300 flex items-center shadow-sm cursor-pointer">
                     <span className="text-slate-950 group-hover/m-masuk:text-[#FFD33B]! hover:text-[#FFD33B]! font-black transition-colors">
                       Masuk

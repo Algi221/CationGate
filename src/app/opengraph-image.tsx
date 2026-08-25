@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
-export const alt = "CationGate - Platform Manajemen PPDB & SPMB Sekolah Modern";
+export const alt = "CationGate - Platform Manajemen SPMB & PPDB Khusus SMK";
 export const size = {
   width: 1200,
   height: 630,

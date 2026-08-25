@@ -21,6 +21,7 @@ export function WebSiteJsonLd() {
   return (
     <script
       type="application/ld+json"
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );
@@ -35,7 +36,7 @@ export function SiteNavigationJsonLd() {
         "@type": "SiteNavigationElement",
         position: 1,
         name: "Beranda",
-        description: "Halaman utama platform manajemen PPDB & SPMB SMK CationGate",
+        description: "Halaman utama platform manajemen SPMB & PPDB khusus SMK CationGate",
         url: `${siteConfig.url}/`,
       },
       {
@@ -79,6 +80,7 @@ export function SiteNavigationJsonLd() {
   return (
     <script
       type="application/ld+json"
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );
@@ -127,6 +129,7 @@ export function OrganizationJsonLd() {
   return (
     <script
       type="application/ld+json"
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );
@@ -183,6 +186,7 @@ export function SoftwareApplicationJsonLd() {
   return (
     <script
       type="application/ld+json"
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );
@@ -239,6 +243,7 @@ export function FaqJsonLd() {
   return (
     <script
       type="application/ld+json"
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );
@@ -263,6 +268,7 @@ export function BreadcrumbJsonLd({
   return (
     <script
       type="application/ld+json"
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );
@@ -301,6 +307,7 @@ export function SchoolJsonLd({
   return (
     <script
       type="application/ld+json"
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

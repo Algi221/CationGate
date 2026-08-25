@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search, Filter, X, CheckCircle, Clock, XCircle, Moon, Sun, User, MapPin, Phone, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ArrowLeft, Search, X, CheckCircle, Clock, XCircle, User, MapPin, Phone, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ToggleTheme } from "@/components/lightswind/toggle-theme";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { usePPDB } from "@/context/PPDBContext";
 
 const StatusBadge = ({ status }: { status: string }) => {
@@ -14,7 +22,6 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 export default function DataPendaftarPage() {
   const { publicApplicants } = usePPDB();
-  const [isDark, setIsDark] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('ppdb-theme') === 'dark' || document.documentElement.classList.contains('dark') : false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
   const [_filterStatus, _setFilterStatus] = useState("Semua");
@@ -22,26 +29,6 @@ export default function DataPendaftarPage() {
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
-
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('ppdb-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('ppdb-theme', 'light');
-    }
-  };
 
   const filteredData = publicApplicants.filter(item => {
     const matchName = (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || (item.nisn || "").includes(searchTerm);
@@ -76,13 +63,11 @@ export default function DataPendaftarPage() {
             PPDB <span className="text-blue-600">SMK TB</span>
           </span>
           <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
-          <button 
-            onClick={toggleDark} 
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" 
-            title={isDark ? 'Mode Terang' : 'Mode Gelap'}
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          <ToggleTheme
+            animationType="circle-spread"
+            duration={1000}
+            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+          />
         </div>
       </nav>
 
@@ -116,23 +101,21 @@ export default function DataPendaftarPage() {
             />
           </div>
           <div className="flex gap-4 md:w-auto w-full">
-            <div className="relative w-full md:w-48 shrink-0">
-              <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <label htmlFor="pendaftar-filter-jurusan" className="sr-only">Filter Jurusan</label>
-              <select 
-                id="pendaftar-filter-jurusan"
-                value={filterJurusan}
-                onChange={(e) => setFilterJurusan(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white appearance-none cursor-pointer transition-all"
-              >
-                <option value="Semua">Semua Jurusan</option>
-                <option value="Rekayasa Perangkat Lunak">RPL</option>
-                <option value="Teknik Jaringan Komputer & Telekomunikasi">TJKT</option>
-                <option value="Desain Komunikasi Visual">DKV</option>
-                <option value="Broadcasting">Broadcasting</option>
-                <option value="Animasi">Animasi</option>
-                <option value="Teknik Elektronika">Teknik Elektronika</option>
-              </select>
+            <div className="w-full md:w-48 shrink-0">
+              <Select value={filterJurusan} onValueChange={(val) => setFilterJurusan(val)}>
+                <SelectTrigger className="h-11 bg-slate-50 dark:bg-[#020617] border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-800 dark:text-white">
+                  <SelectValue placeholder="Semua Jurusan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Semua">Semua Jurusan</SelectItem>
+                  <SelectItem value="Rekayasa Perangkat Lunak">RPL</SelectItem>
+                  <SelectItem value="Teknik Jaringan Komputer & Telekomunikasi">TJKT</SelectItem>
+                  <SelectItem value="Desain Komunikasi Visual">DKV</SelectItem>
+                  <SelectItem value="Broadcasting">Broadcasting</SelectItem>
+                  <SelectItem value="Animasi">Animasi</SelectItem>
+                  <SelectItem value="Teknik Elektronika">Teknik Elektronika</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

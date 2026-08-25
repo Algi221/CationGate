@@ -13,7 +13,7 @@ export function ComparisonSection() {
         desc: "Wajib datang ke sekolah, membeli formulir kertas, dan mengisi data manual di loket.",
       },
       cationgate: {
-        title: "Isi Mandiri dari Smartphone / Laptop",
+        title: "Isi Mandiri dari Device Pengguna",
         desc: "Formulir digital responsif yang dapat diakses dari mana saja, lengkap dengan validasi NISN & NIK.",
       },
     },

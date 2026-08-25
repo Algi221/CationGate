@@ -451,7 +451,7 @@ export function CinematicFooter() {
 
             <div className="pt-6 border-t border-zinc-200 flex items-center justify-between gap-4">
               <div className="text-xs text-zinc-500 font-medium">
-                © 2026 CationGate. All rights reserved.
+                © 2026 CationGate. Hak Cipta Dilindungi.
               </div>
 
               <MagneticButton

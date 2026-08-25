@@ -12,6 +12,7 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
   const [isVisible, setIsVisible] = useState(true);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const widgetRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +53,6 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
       let newY = e.clientY - dragInfo.current.startY;
 
       const { baseX, baseY, width, height } = dragInfo.current;
-
       const padding = 16;
 
       const minX = -baseX + padding;
@@ -65,7 +65,7 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
       newY = Math.max(minY, Math.min(maxY, newY));
 
       setPosition((prev) => {
-        if (Math.abs(newX - prev.x) > 3 || Math.abs(newY - prev.y) > 3) {
+        if (Math.abs(newX - prev.x) > 2 || Math.abs(newY - prev.y) > 2) {
           dragInfo.current.isMoved = true;
         }
         return { x: newX, y: newY };
@@ -85,7 +85,39 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [isDragging]); 
+  }, [isDragging]);
+
+  // Dispatch position changes to CatBotWidget in real-time
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isDocked =
+        isVisible && !isMenuOpen && Math.abs(position.x) < 80 && Math.abs(position.y) < 80;
+
+      window.dispatchEvent(
+        new CustomEvent("floatingVideoPositionChange", {
+          detail: {
+            isVisible: isVisible && !isMenuOpen,
+            isDockedBottomRight: isDocked,
+            x: position.x,
+            y: position.y,
+          },
+        })
+      );
+      window.dispatchEvent(
+        new CustomEvent("floatingVideoToggle", {
+          detail: { isVisible: isVisible && !isMenuOpen },
+        })
+      );
+    }
+  }, [position, isVisible, isMenuOpen]);
+
+  useEffect(() => {
+    const handleMenuToggle = (e: Event) => {
+      setIsMenuOpen((e as CustomEvent).detail);
+    };
+    window.addEventListener("mobileMenuToggle", handleMenuToggle);
+    return () => window.removeEventListener("mobileMenuToggle", handleMenuToggle);
+  }, []);
 
   const handleClick = () => {
     if (!dragInfo.current.isMoved) {
@@ -93,33 +125,17 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
     }
   };
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent('floatingVideoToggle', { detail: { isVisible: isVisible && !isMenuOpen } }));
-    }
-  }, [isVisible, isMenuOpen]);
-
-  useEffect(() => {
-    const handleMenuToggle = (e: Event) => {
-      setIsMenuOpen((e as CustomEvent).detail);
-    };
-    window.addEventListener('mobileMenuToggle', handleMenuToggle);
-    return () => window.removeEventListener('mobileMenuToggle', handleMenuToggle);
-  }, []);
-
   if (!isVisible || isMenuOpen) return null;
 
   return (
     <div
-      ref={widgetRef} 
+      ref={widgetRef}
       onPointerDown={handlePointerDown}
       onClick={handleClick}
       style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
       className={`fixed bottom-6 right-6 w-50 aspect-video rounded-xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.6)] z-90 group bg-slate-900 border border-slate-700 touch-none select-none ${
         isDragging
-          ? "cursor-grabbing"
+          ? "cursor-grabbing scale-102 transition-none"
           : "cursor-grab hover:scale-105 transition-transform duration-300"
       }`}
     >
@@ -128,7 +144,7 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
           e.stopPropagation();
           setIsVisible(false);
         }}
-        className="close-btn absolute top-2 right-2 z-30 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-red-500/90 text-white rounded-full transition-colors duration-200 backdrop-blur-md opacity-100 md:opacity-0 md:group-hover:opacity-100"
+        className="close-btn absolute top-2 right-2 z-30 w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-red-500/90 text-white rounded-full transition-colors duration-200 backdrop-blur-md opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer"
         title="Close Video"
       >
         <svg

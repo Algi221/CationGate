@@ -80,39 +80,77 @@ export function AuthProvider({ children, schoolId, schoolSlug }: { children: Rea
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem("ppdb_admin_token");
-      if (token && !token.includes('.')) {
-        localStorage.removeItem("ppdb_admin_token");
-        localStorage.removeItem("ppdb_admin_user");
-        localStorage.removeItem("ppdb_admin_last_active");
-      } else {
-        const lastActive = localStorage.getItem("ppdb_admin_last_active");
-        if (token && lastActive) {
-          const elapsed = Date.now() - parseInt(lastActive, 10);
-          if (elapsed > 60 * 60 * 1000) {
-            localStorage.removeItem("ppdb_admin_token");
-            localStorage.removeItem("ppdb_admin_user");
-            localStorage.removeItem("ppdb_admin_last_active");
+      const syncAuth = () => {
+        const token = localStorage.getItem("ppdb_admin_token");
+        if (token && !token.includes('.')) {
+          localStorage.removeItem("ppdb_admin_token");
+          localStorage.removeItem("ppdb_admin_user");
+          localStorage.removeItem("ppdb_admin_last_active");
+          setAdminToken(null);
+          setAdminUser(null);
+        } else if (token) {
+          const lastActive = localStorage.getItem("ppdb_admin_last_active");
+          if (lastActive) {
+            const elapsed = Date.now() - parseInt(lastActive, 10);
+            if (elapsed > 60 * 60 * 1000) {
+              localStorage.removeItem("ppdb_admin_token");
+              localStorage.removeItem("ppdb_admin_user");
+              localStorage.removeItem("ppdb_admin_last_active");
+              setAdminToken(null);
+              setAdminUser(null);
+            } else {
+              setAdminToken(token);
+              const savedUser = localStorage.getItem("ppdb_admin_user");
+              if (savedUser) {
+                try { setAdminUser(JSON.parse(savedUser)); } catch {}
+              }
+            }
+          } else {
+            setAdminToken(token);
+            const savedUser = localStorage.getItem("ppdb_admin_user");
+            if (savedUser) {
+              try { setAdminUser(JSON.parse(savedUser)); } catch {}
+            }
           }
         }
-      }
 
-      const gkToken = localStorage.getItem("gatekeeper_token");
-      if (gkToken && !gkToken.includes('.')) {
-        localStorage.removeItem("gatekeeper_token");
-        localStorage.removeItem("gatekeeper_user");
-        localStorage.removeItem("gatekeeper_last_active");
-      } else {
-        const gkLastActive = localStorage.getItem("gatekeeper_last_active");
-        if (gkToken && gkLastActive) {
-          const elapsed = Date.now() - parseInt(gkLastActive, 10);
-          if (elapsed > 60 * 60 * 1000) {
-            localStorage.removeItem("gatekeeper_token");
-            localStorage.removeItem("gatekeeper_user");
-            localStorage.removeItem("gatekeeper_last_active");
+        const gkToken = localStorage.getItem("gatekeeper_token");
+        if (gkToken && !gkToken.includes('.')) {
+          localStorage.removeItem("gatekeeper_token");
+          localStorage.removeItem("gatekeeper_user");
+          localStorage.removeItem("gatekeeper_last_active");
+          setGatekeeperToken(null);
+          setGatekeeperUser(null);
+        } else if (gkToken) {
+          const gkLastActive = localStorage.getItem("gatekeeper_last_active");
+          if (gkLastActive) {
+            const elapsed = Date.now() - parseInt(gkLastActive, 10);
+            if (elapsed > 60 * 60 * 1000) {
+              localStorage.removeItem("gatekeeper_token");
+              localStorage.removeItem("gatekeeper_user");
+              localStorage.removeItem("gatekeeper_last_active");
+              setGatekeeperToken(null);
+              setGatekeeperUser(null);
+            } else {
+              setGatekeeperToken(gkToken);
+              const savedGkUser = localStorage.getItem("gatekeeper_user");
+              if (savedGkUser) {
+                try { setGatekeeperUser(JSON.parse(savedGkUser)); } catch {}
+              }
+            }
+          } else {
+            setGatekeeperToken(gkToken);
+            const savedGkUser = localStorage.getItem("gatekeeper_user");
+            if (savedGkUser) {
+              try { setGatekeeperUser(JSON.parse(savedGkUser)); } catch {}
+            }
           }
         }
-      }
+      };
+
+      syncAuth();
+      window.addEventListener("storage", syncAuth);
+      return () => window.removeEventListener("storage", syncAuth);
     }
   }, []);
 

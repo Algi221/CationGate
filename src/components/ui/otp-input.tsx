@@ -1,400 +1,512 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ClipboardEvent,
+  type FocusEvent,
+  type KeyboardEvent,
+} from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CheckIcon = ({ size = 16, strokeWidth = 3, ...props }: any) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={strokeWidth}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M20 6 9 17l-5-5" />
-  </svg>
-);
+const CROSSFADE = {
+  type: "spring",
+  stiffness: 260,
+  damping: 34,
+  mass: 0.8,
+} as const;
+const EASE = [0.23, 1, 0.32, 1] as const;
 
-const OTPSuccess = () => {
-  return (
-    <div className="flex items-center justify-center gap-4 w-full">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        transition={{ delay: 0.3, type: "spring", stiffness: 500, damping: 30 } as any}
-        className="w-16 h-16 bg-green-500 ring-4 ring-green-100 dark:ring-green-900 text-white flex items-center justify-center rounded-full"
-      >
-        <CheckIcon size={32} strokeWidth={3} />
-      </motion.div>
-      <motion.p
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.4, duration: 0.4 }}
-        className="text-green-600 dark:text-green-400 font-semibold text-lg"
-      >
-        Verifikasi Berhasil!
-      </motion.p>
-    </div>
-  );
+export type OtpMode = "numeric" | "alphanumeric";
+
+const ALLOW: Record<OtpMode, RegExp> = {
+  numeric: /^[0-9]$/,
+  alphanumeric: /^[0-9a-zA-Z]$/,
 };
 
-const OTPError = ({ message = "Invalid OTP. Please try again." }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
-      className="text-center text-red-500 dark:text-red-400 font-medium mt-2 absolute -bottom-8 w-full"
-    >
-      {message}
-    </motion.div>
-  );
-};
-
-const OTPInputBox = ({
-  index,
-  length,
-  verifyOTP,
-  state,
-  stiffness = 700,
-  damping = 20,
-  y = 10,
-  opacity = 0,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-}: any) => {
-  const animationControls = useAnimationControls();
-  const noDelaySpringTransition = {
-    type: "spring",
-    stiffness,
-    damping,
-  };
-
-  useEffect(() => {
-    animationControls.start({
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness,
-        damping,
-        delay: index * 0.05,
-      },
-    });
-    return () => animationControls.stop();
-  }, [animationControls, damping, index, stiffness]);
-
-  useEffect(() => {
-    if (state === "success") {
-      const transitionX = index * 68; 
-      animationControls.start({
-        x: -transitionX,
-        transition: {
-          type: "spring",
-          stiffness: 300,
-          damping: 30,
-          delay: index * 0.06,
-        },
-      });
-    }
-  }, [state, index, animationControls]);
-
-  const onFocus = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    animationControls.start({ y: -5, transition: noDelaySpringTransition as any });
-  };
-
-  const onBlur = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    animationControls.start({ y: 0, transition: noDelaySpringTransition as any });
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const target = e.currentTarget;
-    const value = target.value;
-    if (e.key === "Backspace" && !value && index > 0) {
-      document.getElementById(`input-${index - 1}`)?.focus();
-    } else if (e.key === "ArrowLeft" && index > 0) {
-      document.getElementById(`input-${index - 1}`)?.focus();
-    } else if (e.key === "ArrowRight" && index < length - 1) {
-      document.getElementById(`input-${index + 1}`)?.focus();
-    }
-  };
-
-  const onInput = (e: React.FormEvent<HTMLInputElement>) => {
-    const target = e.currentTarget;
-    let value = target.value.trim();
-    if (value.length > 1) {
-      value = value.slice(-1);
-    }
-    if (value.match(/^[0-9]$/)) {
-      target.value = value;
-      if (index < length - 1) {
-        document.getElementById(`input-${index + 1}`)?.focus();
-      }
-    } else {
-      target.value = "";
-    }
-    verifyOTP();
-  };
-
-  const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").trim().slice(0, length);
-    const digits = pastedData.split("").filter((char: string) => /^[0-9]$/.test(char));
-
-    digits.forEach((digit: string, i: number) => {
-      const targetIndex = index + i;
-      if (targetIndex < length) {
-        const input = document.getElementById(`input-${targetIndex}`) as HTMLInputElement;
-        if (input) {
-          input.value = digit;
-        }
-      }
-    });
-
-    const nextFocusIndex = Math.min(index + digits.length, length - 1);
-    document.getElementById(`input-${nextFocusIndex}`)?.focus();
-
-    setTimeout(verifyOTP, 0);
-  };
-
-  return (
-    <motion.div
-      className={`w-12 h-14 sm:w-14 sm:h-16 rounded-lg ring-2 ring-transparent focus-within:shadow-inner overflow-hidden transition-all duration-300 ${
-        state === "error"
-          ? "ring-red-400 dark:ring-red-500"
-          : state === "success"
-            ? "ring-green-500"
-            : "focus-within:ring-gray-400 dark:focus-within:ring-gray-500 ring-gray-200 dark:ring-gray-700"
-      }`}
-      initial={{ opacity, y }}
-      animate={animationControls}
-    >
-      <input
-        id={`input-${index}`}
-        type="text"
-        inputMode="numeric"
-        maxLength={1}
-        onInput={onInput}
-        onKeyDown={onKeyDown}
-        onPaste={onPaste}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        className="w-full h-full text-center text-2xl sm:text-3xl font-semibold outline-none caret-gray-900 dark:caret-gray-200 bg-slate-50 text-slate-900 dark:bg-black dark:text-white"
-        disabled={state === "success" || state === "loading"}
-      />
-    </motion.div>
-  );
-};
-
-export type OTPVerificationProps = {
-  email: string;
+export type UseOtpInputOptions = {
   length?: number;
-  onVerify: (code: string) => Promise<boolean>;
-  onResend: () => Promise<boolean>;
-  className?: string;
-  stiffness?: number;
-  damping?: number;
-  y?: number;
-  opacity?: number;
+  mode?: OtpMode;
+  defaultValue?: string;
+  disabled?: boolean;
+  onChange?: (value: string) => void;
+  onComplete?: (value: string) => void;
 };
 
-export function OTPVerification({
-  email,
+export type OtpCellProps = {
+  ref: (el: HTMLInputElement | null) => void;
+  value: string;
+  disabled: boolean;
+  type: "text";
+  inputMode: "numeric" | "text";
+  autoComplete: string;
+  autoCorrect: "off";
+  autoCapitalize: "off";
+  spellCheck: false;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
+  onPaste: (e: ClipboardEvent<HTMLInputElement>) => void;
+  onFocus: (e: FocusEvent<HTMLInputElement>) => void;
+  onBlur: (e: FocusEvent<HTMLInputElement>) => void;
+};
+
+export type UseOtpInputReturn = {
+  chars: string[];
+  value: string;
+  length: number;
+  complete: boolean;
+  focusedIndex: number;
+  getCellProps: (index: number) => OtpCellProps;
+  focusAt: (index: number) => void;
+  clear: () => void;
+};
+
+export function useOtpInput({
   length = 6,
-  onVerify,
-  onResend,
-  className = "",
-  stiffness = 700,
-  damping = 20,
-  y = 10,
-  opacity = 0,
-}: OTPVerificationProps) {
-  const [state, setState] = useState<"idle" | "loading" | "error" | "success">("idle");
-  const [countdown, setCountdown] = useState(60);
-  const [isResendDisabled, setIsResendDisabled] = useState(true);
-  const [errorMessage, _setErrorMessage] = useState("Invalid OTP.");
-  const animationControls = useAnimationControls();
+  mode = "numeric",
+  defaultValue = "",
+  disabled = false,
+  onChange,
+  onComplete,
+}: UseOtpInputOptions = {}): UseOtpInputReturn {
+  const allow = ALLOW[mode];
+
+  const keep = useCallback(
+    (text: string) =>
+      text
+        .split("")
+        .filter((c) => allow.test(c))
+        .join(""),
+    [allow],
+  );
+
+  const [chars, setChars] = useState<string[]>(() => {
+    const seed = defaultValue
+      .split("")
+      .filter((c) => ALLOW[mode].test(c))
+      .slice(0, length);
+    return Array.from({ length }, (_, i) => seed[i] ?? "");
+  });
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+
+  const charsRef = useRef(chars);
+  const refs = useRef<(HTMLInputElement | null)[]>([]);
+  const changed = useRef(onChange);
+  const completed = useRef(onComplete);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let timer: any;
-    if (isResendDisabled) {
-      timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setIsResendDisabled(false);
-            return 0;
+    charsRef.current = chars;
+  }, [chars]);
+
+  useEffect(() => {
+    changed.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    completed.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    setChars((prev) =>
+      prev.length === length
+        ? prev
+        : Array.from({ length }, (_, i) => prev[i] ?? ""),
+    );
+    refs.current.length = length;
+  }, [length]);
+
+  const commit = useCallback((next: string[]) => {
+    charsRef.current = next;
+    setChars(next);
+    const value = next.join("");
+    changed.current?.(value);
+    if (next.length > 0 && next.every((c) => c !== ""))
+      completed.current?.(value);
+  }, []);
+
+  const focusAt = useCallback(
+    (index: number) => {
+      const el = refs.current[Math.max(0, Math.min(length - 1, index))];
+      if (!el) return;
+      el.focus();
+      el.select();
+    },
+    [length],
+  );
+
+  const fillFrom = useCallback(
+    (index: number, text: string) => {
+      const incoming = keep(text);
+      if (incoming.length === 0) return;
+      const next = [...charsRef.current];
+      let cursor = index;
+      for (const c of incoming) {
+        if (cursor >= length) break;
+        next[cursor] = c;
+        cursor += 1;
+      }
+      commit(next);
+      focusAt(cursor);
+    },
+    [commit, focusAt, keep, length],
+  );
+
+  const clear = useCallback(() => {
+    commit(Array.from({ length }, () => ""));
+    focusAt(0);
+  }, [commit, focusAt, length]);
+
+  const getCellProps = useCallback(
+    (index: number): OtpCellProps => ({
+      ref: (el) => {
+        refs.current[index] = el;
+      },
+      value: chars[index] ?? "",
+      disabled,
+      type: "text",
+      inputMode: mode === "numeric" ? "numeric" : "text",
+      autoComplete: index === 0 ? "one-time-code" : "off",
+      autoCorrect: "off",
+      autoCapitalize: "off",
+      spellCheck: false,
+      onChange: (e) => {
+        const previous = charsRef.current[index] ?? "";
+        const raw = e.currentTarget.value;
+        const trimmed =
+          raw.length > 1 && previous && raw.startsWith(previous)
+            ? raw.slice(previous.length)
+            : raw;
+        const incoming = keep(trimmed);
+
+        if (incoming.length === 0) {
+          if (raw.length === 0 && previous) {
+            const next = [...charsRef.current];
+            next[index] = "";
+            commit(next);
           }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isResendDisabled]);
+          e.currentTarget.value = charsRef.current[index] ?? "";
+          return;
+        }
 
-  const getCode = () => {
-    let code = "";
-    for (let i = 0; i < length; i++) {
-      const input = document.getElementById(`input-${i}`) as HTMLInputElement;
-      if (input) code += input.value;
-    }
-    return code;
+        if (incoming.length === 1) {
+          const next = [...charsRef.current];
+          next[index] = incoming;
+          e.currentTarget.value = incoming;
+          commit(next);
+          if (index < length - 1) focusAt(index + 1);
+          return;
+        }
+
+        fillFrom(index, incoming);
+      },
+      onKeyDown: (e) => {
+        if (e.key === "Backspace") {
+          e.preventDefault();
+          const current = charsRef.current;
+          const next = [...current];
+          if (current[index]) {
+            next[index] = "";
+            commit(next);
+            return;
+          }
+          if (index > 0) {
+            next[index - 1] = "";
+            commit(next);
+            focusAt(index - 1);
+          }
+          return;
+        }
+        if (e.key === "Delete") {
+          e.preventDefault();
+          const next = [...charsRef.current];
+          next[index] = "";
+          commit(next);
+          return;
+        }
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          focusAt(index - 1);
+          return;
+        }
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          focusAt(index + 1);
+          return;
+        }
+        if (e.key === "Home") {
+          e.preventDefault();
+          focusAt(0);
+          return;
+        }
+        if (e.key === "End") {
+          e.preventDefault();
+          focusAt(length - 1);
+        }
+      },
+      onPaste: (e) => {
+        e.preventDefault();
+        const text = keep(e.clipboardData.getData("text"));
+        fillFrom(text.length >= length ? 0 : index, text);
+      },
+      onFocus: (e) => {
+        e.currentTarget.select();
+        const firstEmpty = charsRef.current.findIndex((c) => c === "");
+        if (firstEmpty !== -1 && firstEmpty < index) {
+          focusAt(firstEmpty);
+          return;
+        }
+        setFocusedIndex(index);
+      },
+      onBlur: (e) => {
+        const to = e.relatedTarget as HTMLInputElement | null;
+        if (to && refs.current.includes(to)) return;
+        setFocusedIndex(-1);
+      },
+    }),
+    [chars, commit, disabled, fillFrom, focusAt, keep, length, mode],
+  );
+
+  const value = chars.join("");
+
+  return {
+    chars,
+    value,
+    length,
+    complete: chars.length > 0 && chars.every((c) => c !== ""),
+    focusedIndex,
+    getCellProps,
+    focusAt,
+    clear,
   };
+}
 
-  const verifyOTP = async () => {
-    const code = getCode();
-    if (code.length < length) {
-      setState("idle");
-      return null;
-    }
+export type OtpStatus = "idle" | "error" | "success";
 
-    setState("loading");
+export type OtpInputHandle = {
+  clear: () => void;
+  focus: () => void;
+};
 
-    // Call the provided onVerify
-    const isValid = await onVerify(code);
+export type OtpInputProps = {
+  length?: number;
+  mode?: OtpMode;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+  onComplete?: (value: string) => void;
+  status?: OtpStatus;
+  errorMessage?: string;
+  successMessage?: string;
+  hint?: string;
+  label?: string;
+  groupEvery?: number;
+  disabled?: boolean;
+  autoFocus?: boolean;
+  focusOnError?: boolean;
+  className?: string;
+  ref?: React.Ref<OtpInputHandle>;
+};
 
-    if (isValid) {
-      setState("success");
-      return true;
-    } else {
-      errorAnimation();
-      return false;
-    }
-  };
+export function OtpInput({
+  length = 6,
+  mode = "numeric",
+  defaultValue = "",
+  onChange,
+  onComplete,
+  status = "idle",
+  errorMessage = "",
+  successMessage = "",
+  hint = "",
+  label = "Verification code",
+  groupEvery = 3,
+  disabled = false,
+  autoFocus = false,
+  focusOnError = true,
+  className = "",
+  ref,
+}: OtpInputProps) {
+  const reduced = useReducedMotion();
+  const statusId = useId();
 
-  const errorAnimation = async () => {
-    setState("error");
-    await animationControls.start({
-      x: [0, 5, -5, 5, -5, 0],
-      transition: { duration: 0.3 },
-    });
-    setTimeout(() => {
-      if (getCode().length < length) setState("idle");
-    }, 500);
-  };
+  const { chars, focusedIndex, getCellProps, focusAt, clear } = useOtpInput({
+    length,
+    mode,
+    defaultValue,
+    disabled,
+    onChange,
+    onComplete,
+  });
 
-  const handleResend = async () => {
-    setIsResendDisabled(true);
-    setCountdown(60);
-    await onResend();
-  };
+  const wasError = useRef(false);
+  const error = status === "error";
+  const success = status === "success";
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      clear: () => {
+        clear();
+        focusAt(0);
+      },
+      focus: () => focusAt(0),
+    }),
+    [clear, focusAt],
+  );
+
+  useEffect(() => {
+    if (error && !wasError.current && focusOnError && !disabled) focusAt(0);
+    wasError.current = error;
+  }, [error, focusOnError, disabled, focusAt]);
+
+  useEffect(() => {
+    if (autoFocus && !disabled) focusAt(0);
+  }, [autoFocus, disabled, focusAt]);
+
+  const enter = reduced ? { duration: 0 } : { duration: 0.22, ease: EASE };
+  const swap = reduced ? { duration: 0 } : CROSSFADE;
+  const hasStatus =
+    hint.length > 0 || errorMessage.length > 0 || successMessage.length > 0;
+
+  const message = error ? errorMessage : success ? successMessage : hint;
+  const messageTone = error
+    ? "text-red-600 dark:text-red-400"
+    : success
+      ? "text-emerald-600 dark:text-emerald-400"
+      : "text-stone-500 dark:text-stone-400";
 
   return (
-    <div
-      className={`rounded-3xl p-6 sm:p-8 w-full max-w-112.5 shadow-2xl dark:shadow-gray-900/50 relative overflow-hidden ${className}`}
-      style={{
-        backgroundImage:
-          "url('https://cdn.21st.dev/assets/localized/16c55696aea9e60fe904ded95cfa9615f3dd5850411f794c155beb28679fd3a4.gif')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/95 backdrop-blur-sm rounded-3xl"></div>
+    <div className={`inline-flex flex-col items-center ${className}`}>
+      <motion.div
+        role="group"
+        aria-label={label}
+        className="relative flex items-center justify-center gap-2"
+        initial={false}
+        variants={{ idle: { x: 0 }, wrong: { x: [0, -5, 4, -3, 0] } }}
+        animate={error && !reduced ? "wrong" : "idle"}
+        transition={{ duration: 0.32, ease: EASE }}
+      >
+        {Array.from({ length }, (_, i) => {
+          const char = chars[i] ?? "";
+          const active = focusedIndex === i;
+          const gap = groupEvery > 0 && i > 0 && i % groupEvery === 0;
 
-      <div className="relative z-10">
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-slate-900 dark:bg-white rounded-full flex items-center justify-center shadow-lg">
-            <div className="flex space-x-1.5">
-              <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
-              <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-            </div>
-          </div>
-        </div>
+          return (
+            <div key={i} className={`relative h-12 sm:h-13 w-10 sm:w-11 ${gap ? "ml-2.5 sm:ml-3" : ""}`}>
+              <input
+                {...getCellProps(i)}
+                aria-label={`${label}, character ${i + 1} of ${length}`}
+                aria-invalid={error || undefined}
+                aria-describedby={hasStatus ? statusId : undefined}
+                className={`h-12 sm:h-13 w-10 sm:w-11 rounded-xl border-2 text-center text-lg sm:text-xl font-black text-transparent caret-transparent outline-none transition-all duration-150 selection:bg-transparent focus-visible:outline-none disabled:opacity-50 ${
+                  error
+                    ? "border-red-500 bg-red-50/50 dark:border-red-400 dark:bg-red-950/20"
+                    : success
+                      ? "border-emerald-500 bg-emerald-50/50 dark:border-emerald-400 dark:bg-emerald-950/20"
+                      : active
+                        ? "border-[#FFC000] bg-white ring-4 ring-[#FFC000]/15 dark:border-[#FFC000] dark:bg-slate-900"
+                        : char
+                          ? "border-amber-400 bg-white font-bold text-slate-900 dark:border-amber-500/50 dark:bg-slate-900"
+                          : "border-slate-200 bg-slate-50/80 shadow-inner dark:border-slate-800 dark:bg-slate-900/60"
+                }`}
+              />
 
-        <h1 className="text-2xl font-bold text-center text-slate-900 dark:text-white mb-2 tracking-tight">
-          {state === "success"
-            ? "Verifikasi Berhasil!"
-            : "Masukkan Kode Keamanan"}
-        </h1>
-
-        <AnimatePresence mode="wait">
-          {state === "success" ? (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center justify-center"
-              style={{ height: "232px" }}
-            >
-              <OTPSuccess />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <p className="text-center text-slate-600 dark:text-slate-300 mt-2 mb-8 text-sm sm:text-base px-4">
-                Kami telah mengirim kode {length}-digit ke email
-                <br />{" "}
-                <span className="font-bold text-slate-900 dark:text-white mt-1 block">
-                  {email}
-                </span>
-              </p>
-
-              <div className="flex flex-col items-center justify-center gap-2 mb-10 relative h-20">
-                <motion.div
-                  animate={animationControls}
-                  className="flex items-center justify-center gap-2 sm:gap-3"
-                >
-                  {Array.from({ length }).map((_, index) => (
-                    <OTPInputBox
-                      key={`input-${index}`}
-                      index={index}
-                      length={length}
-                      verifyOTP={verifyOTP}
-                      state={state}
-                      stiffness={stiffness}
-                      damping={damping}
-                      y={y}
-                      opacity={opacity}
-                    />
-                  ))}
-                </motion.div>
-                <AnimatePresence>
-                  {state === "error" && <OTPError message={errorMessage} />}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 grid place-items-center"
+              >
+                <AnimatePresence initial={false} mode="popLayout">
+                  {char ? (
+                    <motion.span
+                      key={char}
+                      initial={
+                        reduced
+                          ? false
+                          : {
+                              opacity: 0,
+                              scale: 0.97,
+                              y: 10,
+                              filter: "blur(6px)",
+                            }
+                      }
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                        y: 0,
+                        filter: "blur(0px)",
+                      }}
+                      exit={
+                        reduced
+                          ? { opacity: 0 }
+                          : {
+                              opacity: 0,
+                              scale: 0.98,
+                              y: -6,
+                              filter: "blur(3px)",
+                            }
+                      }
+                      transition={enter}
+                      className="col-start-1 row-start-1 font-mono text-lg sm:text-xl font-black tabular-nums text-slate-950 dark:text-white"
+                    >
+                      {char}
+                    </motion.span>
+                  ) : null}
                 </AnimatePresence>
-              </div>
 
-              <div className="text-center">
-                <span className="text-slate-600 dark:text-slate-400 text-sm">
-                  Tidak menerima kode?{" "}
-                </span>
-                {isResendDisabled ? (
-                  <span className="font-semibold text-slate-400 dark:text-slate-500 text-sm">
-                    Kirim ulang ({countdown}s)
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleResend}
-                    className="font-semibold text-slate-900 dark:text-white hover:underline focus:outline-none text-sm transition-all"
-                  >
-                    Kirim Ulang
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                {active && !char && !disabled ? (
+                  <motion.span
+                    className="col-start-1 row-start-1 block h-5 w-0.5 rounded-full bg-amber-500 dark:bg-amber-400"
+                    initial={{ opacity: 1 }}
+                    animate={
+                      reduced ? { opacity: 1 } : { opacity: [1, 1, 0, 0] }
+                    }
+                    transition={
+                      reduced
+                        ? { duration: 0 }
+                        : {
+                            duration: 1.06,
+                            times: [0, 0.5, 0.5, 1],
+                            repeat: Infinity,
+                            ease: "linear",
+                          }
+                    }
+                  />
+                ) : null}
+              </span>
+            </div>
+          );
+        })}
+      </motion.div>
+
+      {hasStatus && (
+        <>
+          <div
+            aria-hidden
+            className="mt-2.5 grid h-4 text-xs font-semibold text-center leading-tight"
+          >
+            <AnimatePresence initial={false} mode="wait">
+              <motion.span
+                key={status}
+                initial={reduced ? { opacity: 0 } : { opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduced ? { opacity: 0 } : { opacity: 0, y: -3 }}
+                transition={swap}
+                className={`col-start-1 row-start-1 ${messageTone}`}
+              >
+                {message}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+          <span id={statusId} role="status" className="sr-only">
+            {message}
+          </span>
+        </>
+      )}
     </div>
   );
 }
 
-export default OTPVerification;
+export default OtpInput;

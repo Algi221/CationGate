@@ -35,8 +35,8 @@ export function FaqSection() {
     },
     {
       id: "faq-2",
-      q: "Bagaimana alur pendaftaran murid baru (PPDB) bekerja di platform ini?",
-      a: "Calon siswa dapat mendaftar secara mandiri lewat formulir online yang responsif, mengunggah berkas, hingga mengikuti ujian seleksi CBT. Panitia sekolah dapat memverifikasi berkas dan mengumumkan kelulusan secara otomatis.",
+      q: "Bagaimana alur SPMB bekerja di platform ini?",
+      a: "Calon siswa dapat mendaftar secara mandiri lewat formulir online yang responsif, mengunggah berkas. Panitia sekolah dapat memverifikasi berkas dan mengumumkan kelulusan secara otomatis.",
     },
     {
       id: "faq-3",

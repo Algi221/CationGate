@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { X, Send, SquarePen, Loader2, GripHorizontal } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import {
+  X,
+  Send,
+  SquarePen,
+  Loader2,
+  GripHorizontal,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
@@ -40,8 +48,13 @@ const MASCOT_ASSETS = {
 export function CatBotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVideoVisible, setIsVideoVisible] = useState(true);
+  const [isVideoDockedBottomRight, setIsVideoDockedBottomRight] =
+    useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
+
+  // State untuk mengontrol panel pertanyaan populer (default: true / terbuka)
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(true);
 
   // State untuk animasi tooltip
   const [tooltipIndex, setTooltipIndex] = useState(0);
@@ -52,10 +65,7 @@ export function CatBotWidget() {
       id: "welcome-1",
       sender: "bot",
       text: "Halo! Saya Catpeer, asisten cerdas resmi dari CationGate.\n\nAda yang bisa saya bantu terkait pendaftaran sekolah SMK, alur SPMB mandiri, atau sistem pembayaran formulir? miaw",
-      time: new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      time: "09:00",
     },
   ]);
   const [inputText, setInputText] = useState("");
@@ -84,17 +94,23 @@ export function CatBotWidget() {
     }
 
     const handleLoadingComplete = () => setIsPageLoaded(true);
-    window.addEventListener("cationgate:loading-complete", handleLoadingComplete);
+    window.addEventListener(
+      "cationgate:loading-complete",
+      handleLoadingComplete,
+    );
 
     const fallbackTimer = setTimeout(() => setIsPageLoaded(true), 6000);
 
     return () => {
-      window.removeEventListener("cationgate:loading-complete", handleLoadingComplete);
+      window.removeEventListener(
+        "cationgate:loading-complete",
+        handleLoadingComplete,
+      );
       clearTimeout(fallbackTimer);
     };
   }, []);
 
-  // Handle Resize (Responsive) & Floating Video Event
+  // Handle Resize (Responsive) & Floating Video Events
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
     handleResize(); // Set initial state
@@ -108,9 +124,27 @@ export function CatBotWidget() {
     };
     window.addEventListener("floatingVideoToggle", handleVideoToggle);
 
+    const handlePositionChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail?.isDockedBottomRight === "boolean") {
+        setIsVideoDockedBottomRight(detail.isDockedBottomRight);
+      }
+      if (typeof detail?.isVisible === "boolean") {
+        setIsVideoVisible(detail.isVisible);
+      }
+    };
+    window.addEventListener(
+      "floatingVideoPositionChange",
+      handlePositionChange,
+    );
+
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("floatingVideoToggle", handleVideoToggle);
+      window.removeEventListener(
+        "floatingVideoPositionChange",
+        handlePositionChange,
+      );
     };
   }, []);
 
@@ -128,142 +162,143 @@ export function CatBotWidget() {
     }
   }, [isOpen, isMobile]);
 
-  const handleSendMessage = async (textToSend?: string) => {
-    const text = (textToSend || inputText).trim();
-    if (!text || isLoading) return;
+  const handleSendMessage = useCallback(
+    async (textToSend?: string) => {
+      const text = (textToSend || inputText).trim();
+      if (!text || isLoading) return;
 
-    setBotMood("writing");
-    setIsLoading(true);
-    setInputText("");
+      setBotMood("writing");
+      setIsLoading(true);
+      setInputText("");
 
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      sender: "user",
-      text: text,
-      time: new Date().toLocaleTimeString("id-ID", {
+      const now = new Date();
+      const currentTime = now.toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
-      }),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    setTimeout(() => scrollToBottom("smooth"), 50);
-
-    try {
-      const historyPayload = messages.map((m) => ({
-        role: m.sender === "user" ? "user" : "model",
-        text: m.text,
-      }));
-
-      const res = await fetch("/api/chatbot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history: historyPayload }),
       });
 
-      const data = await res.json();
+      const userMsg: ChatMessage = {
+        id: "usr-" + Date.now(),
+        sender: "user",
+        text: text,
+        time: currentTime,
+      };
 
-      if (data.success && data.reply) {
-        setBotMood("thinking");
+      setMessages((prev) => [...prev, userMsg]);
+      setTimeout(() => scrollToBottom("smooth"), 50);
 
-        const replyText = data.reply;
-        const botMsgId = (Date.now() + 1).toString();
-        const currentTime = new Date().toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
+      try {
+        const historyPayload = messages.map((m) => ({
+          role: m.sender === "user" ? "user" : "model",
+          text: m.text,
+        }));
+
+        const res = await fetch("/api/chatbot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, history: historyPayload }),
         });
 
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: botMsgId,
-            sender: "bot",
-            text: "",
-            time: currentTime,
-            source: data.source,
-          },
-        ]);
+        const data = await res.json();
 
-        let i = 0;
-        let currentText = "";
-        const chunkSize = 4;
+        if (data.success && data.reply) {
+          setBotMood("thinking");
 
-        const interval = setInterval(() => {
-          currentText += replyText.substring(i, i + chunkSize);
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === botMsgId ? { ...m, text: currentText } : m,
-            ),
-          );
-          i += chunkSize;
+          const replyText = data.reply;
+          const botMsgId = "bot-" + Date.now();
 
-          if (i % (chunkSize * 2) === 0) scrollToBottom("auto");
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: botMsgId,
+              sender: "bot",
+              text: "",
+              time: currentTime,
+              source: data.source,
+            },
+          ]);
 
-          if (i >= replyText.length) {
-            clearInterval(interval);
-            setBotMood("idle");
-            setIsLoading(false);
-            setTimeout(() => scrollToBottom("smooth"), 50);
-          }
-        }, 12);
-      } else {
-        throw new Error(data.message || "Gagal mendapatkan respon");
+          let i = 0;
+          let currentText = "";
+          const chunkSize = 4;
+
+          const interval = setInterval(() => {
+            currentText += replyText.substring(i, i + chunkSize);
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === botMsgId ? { ...m, text: currentText } : m,
+              ),
+            );
+            i += chunkSize;
+
+            if (i % (chunkSize * 2) === 0) scrollToBottom("auto");
+
+            if (i >= replyText.length) {
+              clearInterval(interval);
+              setBotMood("idle");
+              setIsLoading(false);
+              setTimeout(() => scrollToBottom("smooth"), 50);
+            }
+          }, 12);
+        } else {
+          throw new Error(data.message || "Gagal mendapatkan respon");
+        }
+      } catch {
+        const errorMsg: ChatMessage = {
+          id: "err-" + Date.now(),
+          sender: "bot",
+          text: "Maaf, koneksi ke server sedang sibuk. Silakan coba lagi beberapa saat lagi ya. miaw",
+          time: currentTime,
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+        setBotMood("sleepy");
+        setIsLoading(false);
+        setTimeout(() => scrollToBottom("smooth"), 100);
       }
-    } catch {
-      const errorMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: "bot",
-        text: "Maaf, koneksi ke server sedang sibuk. Silakan coba lagi beberapa saat lagi ya. miaw",
-        time: new Date().toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-      setBotMood("sleepy");
-      setIsLoading(false);
-      setTimeout(() => scrollToBottom("smooth"), 100);
-    }
-  };
+    },
+    [inputText, isLoading, messages],
+  );
 
-  const handleResetChat = () => {
+  const handleResetChat = useCallback(() => {
     setBotMood("idle");
     setMessages([
       {
-        id: Date.now().toString(),
+        id: "reset-" + Date.now(),
         sender: "bot",
         text: "Percakapan telah diatur ulang. Ada topik seputar CationGate yang ingin Anda ketahui? miaw",
-        time: new Date().toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        time: "09:00",
       },
     ]);
-  };
+  }, []);
 
   const showSuggestions = !isLoading;
+
+  const isVideoNearBottomRight = isVideoVisible && isVideoDockedBottomRight;
+  const effectiveBottom = isMobile ? 24 : isVideoNearBottomRight ? 150 : 24;
 
   return (
     <div
       ref={constraintsRef}
-      className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"
+      className="fixed inset-0 pointer-events-none z-9999 overflow-hidden"
     >
       {/* WIDGET SEBELUM DI-KLIK (PRE-CLICK) */}
       <AnimatePresence>
         {isPageLoaded && !isOpen && (
-          <div
-            className="absolute right-4 sm:right-6 pointer-events-auto z-[950]"
-            style={{ bottom: isMobile ? 24 : isVideoVisible ? 150 : 24 }}
+          <motion.div
+            className="absolute right-4 sm:right-6 pointer-events-auto z-950"
+            initial={{ scale: 0, opacity: 0, y: 20, bottom: effectiveBottom }}
+            animate={{ scale: 1, opacity: 1, y: 0, bottom: effectiveBottom }}
+            exit={{ scale: 0, opacity: 0, y: 20 }}
+            transition={{
+              type: "spring",
+              stiffness: 280,
+              damping: 24,
+              mass: 0.8,
+            }}
           >
-            <motion.div
-              initial={{ scale: 0, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0, opacity: 0, y: 20 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="flex items-center gap-4"
-            >
+            <div className="flex items-center gap-4">
               {/* Tooltip Animasi Dinamis */}
-              <div className="hidden sm:flex items-center relative bg-[#0a0a0a] text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg select-none overflow-hidden h-9 min-w-[170px] justify-center">
+              <div className="hidden sm:flex items-center relative bg-[#0a0a0a] text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg select-none overflow-hidden h-9 min-w-42.5 justify-center">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={tooltipIndex}
@@ -296,8 +331,8 @@ export function CatBotWidget() {
                 {/* Online Indicator */}
                 <span className="absolute bottom-0 right-0 sm:bottom-1 sm:right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#FFC000] rounded-full" />
               </button>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -310,23 +345,31 @@ export function CatBotWidget() {
             dragElastic={0.05}
             dragMomentum={false}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              bottom: isMobile ? 0 : effectiveBottom,
+            }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: 0.25,
+              ease: [0.16, 1, 0.3, 1],
+              bottom: { type: "spring", stiffness: 280, damping: 24 },
+            }}
             style={{
-              bottom: isMobile ? 0 : isVideoVisible ? 150 : 24,
-              height: isMobile ? "100dvh" : "auto", // Gunakan 100dvh agar presisi di mobile browser
+              height: isMobile ? "100dvh" : "auto",
               maxHeight: isMobile
                 ? "100dvh"
-                : `calc(100vh - ${isVideoVisible ? 180 : 54}px)`,
+                : `calc(100vh - ${effectiveBottom + 30}px)`,
             }}
             className={`
               pointer-events-auto absolute flex flex-col 
               shadow-2xl sm:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] 
               border-0 sm:border sm:border-slate-800
               inset-0 w-full rounded-none
-              sm:inset-auto sm:right-6 sm:w-[400px] sm:h-[680px]
-              sm:rounded-[1.5rem] overflow-hidden bg-[#0a0a0a]
+              sm:inset-auto sm:right-6 sm:w-100 sm:h-170
+              sm:rounded-3xl overflow-hidden bg-[#0a0a0a]
             `}
           >
             {/* Header (Black) */}
@@ -391,11 +434,11 @@ export function CatBotWidget() {
                   alt="Watermark"
                   width={300}
                   height={300}
-                  className="w-[200px] sm:w-[280px] h-auto object-contain"
+                  className="w-50 sm:w-70 h-auto object-contain"
                 />
               </div>
 
-              <div className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
                 {messages.map((msg, index) => {
                   const isBot = msg.sender === "bot";
                   return (
@@ -408,7 +451,9 @@ export function CatBotWidget() {
                         isBot ? "items-start" : "items-end"
                       } gap-1`}
                     >
-                      <div className={`flex items-end gap-2 max-w-[92%] sm:max-w-[85%] ${!isBot && 'flex-row-reverse'}`}>
+                      <div
+                        className={`flex items-end gap-2 max-w-[92%] sm:max-w-[85%] ${!isBot && "flex-row-reverse"}`}
+                      >
                         {/* Bot Avatar (Black Circle, Yellow Icon) */}
                         {isBot && (
                           <div className="w-7 h-7 rounded-full bg-[#0a0a0a] flex items-center justify-center shrink-0 mb-1">
@@ -429,12 +474,14 @@ export function CatBotWidget() {
                               : "bg-[#0a0a0a] text-white font-medium rounded-2xl rounded-tr-sm"
                           }`}
                         >
-                          <div className="whitespace-pre-line break-words font-sans">
+                          <div className="whitespace-pre-line wrap-break-word font-sans">
                             {msg.text}
                           </div>
                         </div>
                       </div>
-                      <span className={`text-[10px] font-bold text-black/40 ${isBot ? 'px-11 sm:px-9' : 'px-2'}`}>
+                      <span
+                        className={`text-[10px] font-bold text-black/40 ${isBot ? "px-11 sm:px-9" : "px-2"}`}
+                      >
                         {msg.time}
                       </span>
                     </motion.div>
@@ -467,30 +514,54 @@ export function CatBotWidget() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Area Pertanyaan Populer (Total 5 Pertanyaan) */}
+              {/* Area Pertanyaan Populer (Default Terbuka & Bisa Ditutup/Dibuka) */}
               <AnimatePresence>
                 {showSuggestions && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="relative z-20 px-4 sm:px-5 pb-4 sm:pb-5 pt-2 bg-transparent shrink-0"
+                    className="relative z-20 px-4 sm:px-5 pb-3.5 pt-2.5 bg-linear-to-t from-black/10 via-black/5 to-transparent border-t border-black/10 shrink-0"
                   >
-                    <p className="text-[10px] uppercase font-black text-black/80 tracking-wider mb-2.5">
-                      Pertanyaan Populer:
-                    </p>
-                    {/* Menggunakan scroll menyamping (overflow-x-auto) di mobile supaya tidak memakan tinggi layar */}
-                    <div className="flex sm:flex-wrap overflow-x-auto sm:overflow-visible gap-2 pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                      {DEFAULT_SUGGESTIONS.map((sug, i) => (
-                        <button
-                          key={i}
-                          onClick={() => handleSendMessage(sug)}
-                          className="shrink-0 sm:shrink text-[11px] bg-[#0a0a0a] hover:bg-black text-white font-medium px-4 py-2 rounded-full transition-all border border-white/20 active:scale-95 cursor-pointer shadow-sm text-left whitespace-nowrap sm:whitespace-normal"
+                    {/* Header Panel Pertanyaan dengan Tombol Toggle */}
+                    <button
+                      onClick={() => setIsSuggestionsOpen(!isSuggestionsOpen)}
+                      className="w-full flex items-center justify-between text-left text-[10px] uppercase font-black text-black/80 tracking-wider mb-2.5 cursor-pointer select-none group"
+                    >
+                      <span>Pertanyaan Populer</span>
+                      <span className="p-1 rounded-full bg-black/10 group-hover:bg-black/20 transition-colors">
+                        {isSuggestionsOpen ? (
+                          <ChevronDown className="w-3.5 h-3.5 text-black" />
+                        ) : (
+                          <ChevronUp className="w-3.5 h-3.5 text-black" />
+                        )}
+                      </span>
+                    </button>
+
+                    {/* Daftar Tombol Pertanyaan yang Bisa Disembunyikan/Ditampilkan */}
+                    <AnimatePresence>
+                      {isSuggestionsOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                          className="overflow-hidden"
                         >
-                          {sug}
-                        </button>
-                      ))}
-                    </div>
+                          <div className="flex sm:flex-wrap overflow-x-auto sm:overflow-visible gap-2 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
+                            {DEFAULT_SUGGESTIONS.map((sug, i) => (
+                              <button
+                                key={i}
+                                onClick={() => handleSendMessage(sug)}
+                                className="shrink-0 sm:shrink text-[11px] bg-[#0a0a0a] hover:bg-black text-white font-medium px-4 py-2 rounded-full transition-all border border-white/20 active:scale-95 cursor-pointer shadow-sm text-left whitespace-nowrap sm:whitespace-normal"
+                              >
+                                {sug}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 )}
               </AnimatePresence>

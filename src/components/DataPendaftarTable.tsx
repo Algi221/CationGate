@@ -1,9 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
 import { Search, User, Users, MapPin, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 import _Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 interface Student {
   id: number;
@@ -24,6 +32,8 @@ interface Student {
 }
 
 export default function DataPendaftarTable() {
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "smktarunabhakti";
   const { publicApplicants } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
@@ -166,8 +176,8 @@ export default function DataPendaftarTable() {
             <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border border-slate-200 dark:border-slate-700">
               {(() => {
                 const verifyUrl = typeof window !== 'undefined' 
-                  ? `${window.location.origin}/verify/${selectedStudent.id}` 
-                  : `http://localhost:3000/verify/${selectedStudent.id}`;
+                  ? `${window.location.origin}/${schoolSlug}/verify/${selectedStudent.id}` 
+                  : `https://cationgate.site/${schoolSlug}/verify/${selectedStudent.id}`;
                 return (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img 
@@ -261,20 +271,18 @@ export default function DataPendaftarTable() {
             className="w-full bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
           />
         </div>
-        <div className="flex gap-2">
-          <label htmlFor="filter-jurusan-select" className="sr-only">Filter berdasarkan jurusan</label>
-          <select
-            id="filter-jurusan-select"
-            value={filterJurusan}
-            onChange={(e) => setFilterJurusan(e.target.value)}
-            aria-label="Filter berdasarkan jurusan"
-            className="bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] text-slate-800 dark:text-white transition-all cursor-pointer min-w-45"
-          >
-            <option value="Semua">Semua Jurusan</option>
-            {uniqueMajors.map((major: string) => (
-              <option key={major} value={major}>{major}</option>
-            ))}
-          </select>
+        <div className="w-full sm:w-auto min-w-48">
+          <Select value={filterJurusan} onValueChange={(val) => setFilterJurusan(val)}>
+            <SelectTrigger className="h-11 rounded-xl bg-white dark:bg-[#0f172a] border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-white">
+              <SelectValue placeholder="Semua Jurusan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Semua">Semua Jurusan</SelectItem>
+              {uniqueMajors.map((major: string) => (
+                <SelectItem key={major} value={major}>{major}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

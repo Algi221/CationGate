@@ -2,7 +2,8 @@ import React from "react";
 import { Metadata } from "next";
 import { constructMetadata } from "@/lib/seo";
 import { SchoolJsonLd } from "@/components/seo/JsonLd";
-import { createClient } from "@supabase/supabase-js";
+import { notFound } from "next/navigation";
+import { SaasService } from "@/server/services/SaasService";
 
 interface SchoolLayoutProps {
   children: React.ReactNode;
@@ -25,31 +26,20 @@ export async function generateMetadata({
   params: Promise<{ school_slug: string }>;
 }): Promise<Metadata> {
   const { school_slug } = await params;
-  let schoolName = formatSchoolName(school_slug);
-  let schoolDescription = `Portal resmi Penerimaan Peserta Didik Baru (PPDB) & SPMB Online ${schoolName}. Daftar mandiri, pantau status verifikasi berkas jurusan, dan cek pengumuman seleksi.`;
-  let logoUrl: string | undefined = undefined;
+  const schoolRes = await SaasService.getSchoolBySlug(school_slug);
 
-  try {
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data: school } = await supabase
-        .from("schools")
-        .select("name, description, logo_url")
-        .eq("slug", school_slug)
-        .maybeSingle();
-
-      if (school) {
-        if (school.name) schoolName = school.name;
-        if (school.description) schoolDescription = school.description;
-        if (school.logo_url) logoUrl = school.logo_url;
-      }
-    }
-  } catch (err) {
-    console.warn(`Could not fetch metadata for school: ${school_slug}`, err);
+  if (!schoolRes.success || schoolRes.notFound) {
+    return constructMetadata({
+      title: "Halaman Tidak Ditemukan - CationGate",
+      description: "Halaman atau instansi yang Anda tuju tidak ditemukan di platform CationGate.",
+      canonicalUrl: `/${school_slug}`,
+    });
   }
+
+  const school = schoolRes.data;
+  const schoolName = school?.name || formatSchoolName(school_slug);
+  const schoolDescription = school?.description || `Portal resmi Penerimaan Peserta Didik Baru (PPDB) & SPMB Online ${schoolName}. Daftar mandiri, pantau status verifikasi berkas jurusan, dan cek pengumuman seleksi.`;
+  const logoUrl = school?.logo_url;
 
   return constructMetadata({
     title: `PPDB & SPMB Online ${schoolName}`,
@@ -74,7 +64,13 @@ export default async function SchoolLayout({
   params,
 }: SchoolLayoutProps) {
   const { school_slug } = await params;
-  const schoolName = formatSchoolName(school_slug);
+  const schoolRes = await SaasService.getSchoolBySlug(school_slug);
+
+  if (!schoolRes.success || schoolRes.notFound) {
+    notFound();
+  }
+
+  const schoolName = schoolRes.data?.name || formatSchoolName(school_slug);
 
   return (
     <>

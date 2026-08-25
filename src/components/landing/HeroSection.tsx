@@ -104,6 +104,7 @@ export default function HeroSPMB() {
 
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-medium text-gray-500">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider"></span>
               <span>Eksplorasi langsung tanpa perlu login:</span>
             </div>
 
@@ -132,6 +133,7 @@ export default function HeroSPMB() {
           </span>
         </div>
 
+        {/* Indikator Scroll: Disembunyikan di Mobile (hidden), dimunculkan di Desktop (md:flex) */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-2 hidden md:flex flex-col items-center gap-1 pointer-events-none">
           <span className="text-[9px] font-black tracking-[0.25em] text-gray-400 uppercase">
             SCROLL

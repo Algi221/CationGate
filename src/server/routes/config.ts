@@ -147,11 +147,14 @@ configRouter.get('/', async (c) => {
     let schoolId = c.req.query('school_id') || null;
     const schoolSlug = c.req.query('school_slug');
 
-    // If school_slug is provided, resolve it to school_id
-    if (schoolSlug && !schoolId) {
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+    // If school_slug is provided or school_id is not a UUID, resolve it
+    if ((schoolSlug || (schoolId && !isUUID(schoolId)))) {
       const { resolveSchoolUUID } = await import('../db/resolve-school');
       const { fontInMemSchools } = await import('./saas');
-      schoolId = await resolveSchoolUUID(schoolSlug, fontInMemSchools);
+      const targetIdentifier = schoolSlug || schoolId!;
+      schoolId = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
     }
 
     const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';

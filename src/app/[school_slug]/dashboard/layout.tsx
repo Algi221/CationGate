@@ -15,6 +15,7 @@ import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { ErrorView } from "@/components/features/error";
 import { AdminSidebar } from "@/components/layout/admin-sekolah/AdminSidebar";
 import TrialExpiredPopup from "@/components/TrialExpiredPopup";
+import { useAuthStore } from "@/stores";
 
 function Breadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
@@ -34,9 +35,15 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
   };
 
   const breadcrumbs: { label: string; href: string }[] = [];
-  paths.forEach((path, idx) => {
-    const label = labelMap[path] || path;
-    const href = "/" + paths.slice(0, idx + 1).join("/");
+  let currentPath = "";
+
+  paths.forEach((segment, index) => {
+    currentPath += `/${segment}`;
+    if (index === 0 && !["dashboard", "admin", "pendaftar", "siswa-aktif", "informasi", "kelola-ui", "pembagian-kelas", "settings", "profile"].includes(segment)) {
+      return;
+    }
+    const label = labelMap[segment] || segment;
+    const href = currentPath;
     breadcrumbs.push({ label, href });
   });
 
@@ -72,7 +79,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const isSchoolVerified = schoolStatus === "verified";
   const router = useRouter();
   const pathname = usePathname();
-  const _searchParams = useSearchParams();
+  const searchParams = useSearchParams();
   const params = useParams();
   const schoolSlugRaw = (params?.school_slug as string) || (pathname?.startsWith('/demo') ? 'demo' : '');
   const schoolSlug = schoolSlugRaw ? schoolSlugRaw.replace(/[^a-zA-Z0-9-]/g, '') : "demo";
@@ -97,7 +104,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const searchableMenus = [
     { title: "Beranda", desc: "Ringkasan & Metrik", href: `/${schoolSlug}/dashboard` },
     { title: "Verifikasi Berkas", desc: "Periksa kelengkapan berkas fisik", href: `/${schoolSlug}/dashboard/verifikasi-berkas` },
-    { title: "Data Pendaftar", desc: "Daftar semua calon siswa", href: `/${schoolSlug}/dashboard/data-pendaftar` },
+    { title: "Data Pendaftar", desc: "Daftar semua calon siswa", href: `/${schoolSlug}/dashboard/pendaftar` },
     { title: "Jalur Pendaftaran", desc: "Kelola kuota & afirmasi", href: `/${schoolSlug}/dashboard/jalur-pendaftaran` },
     { title: "Daftar Ulang", desc: "Kelola status daftar ulang", href: `/${schoolSlug}/dashboard/daftar-ulang` },
     { title: "Kelola Informasi", desc: "Pengumuman & Berita", href: `/${schoolSlug}/dashboard/informasi` },
@@ -148,6 +155,28 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     return isNaN(minutes) ? 60 * 60 * 1000 : minutes * 60 * 1000;
   };
 
+  const redirectToRootLogin = (expired = false) => {
+    logoutAdmin();
+    if (typeof window !== "undefined") {
+      const host = window.location.host.toLowerCase();
+      const isLocalhost = host.includes("localhost");
+      const port = window.location.port ? `:${window.location.port}` : "";
+      const rootUrl = isLocalhost ? `http://localhost${port}` : "https://cationgate.site";
+      window.location.href = `${rootUrl}/login${expired ? "?expired=true" : ""}`;
+    }
+  };
+
+  useEffect(() => {
+    const tokenFromUrl = searchParams?.get("auth_token");
+    if (tokenFromUrl) {
+      localStorage.setItem("ppdb_admin_token", tokenFromUrl);
+      localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
+      useAuthStore.getState().setAdminToken(tokenFromUrl);
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (mounted) {
       if (schoolSlug === 'demo') return; // Bypass auth for demo
@@ -157,8 +186,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         const elapsed = Date.now() - parseInt(lastActive, 10);
         const limit = getTimeoutDuration();
         if (elapsed > limit) {
-          logoutAdmin();
-          router.push(`/login?expired=true`);
+          redirectToRootLogin(true);
           return;
         }
       }
@@ -166,7 +194,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         if (localStorage.getItem("ppdb_admin_token")) {
           return; // Allow context state to finish syncing without kicking the user
         }
-        router.push(`/login`);
+        redirectToRootLogin(false);
         return;
       }
       // Redirect unverified schools to verification onboarding in dashboard
@@ -189,8 +217,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       clearTimeout(timeoutId);
       const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
-        logoutAdmin();
-        router.push(`/login?expired=true`);
+        redirectToRootLogin(true);
       }, limit);
       const now = Date.now();
       if (now - lastStorageUpdate > 10000) {
@@ -206,7 +233,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       events.forEach((ev) => window.removeEventListener(ev, resetTimer));
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminToken, pathname]);
+  }, [adminToken, pathname, schoolSlug]);
 
 
 
@@ -216,9 +243,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   const confirmLogout = () => {
-    logoutAdmin();
     setShowLogoutConfirm(false);
-    router.push("/login");
+    redirectToRootLogin(false);
   };
 
   if (!mounted) return null;

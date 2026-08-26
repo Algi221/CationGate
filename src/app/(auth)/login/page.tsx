@@ -138,7 +138,18 @@ function LoginForm() {
             : null);
 
         if (targetSlug) {
-          router.push(`/${targetSlug}/dashboard`);
+          if (typeof window !== "undefined") {
+            const host = window.location.host.toLowerCase();
+            const isLocalhost = host.includes("localhost");
+            const port = window.location.port ? `:${window.location.port}` : "";
+            if (isLocalhost) {
+              window.location.href = `http://${targetSlug}.localhost${port}/dashboard?auth_token=${encodeURIComponent(data.token)}`;
+            } else if (host.endsWith("cationgate.site") || host === "cationgate.site") {
+              window.location.href = `https://${targetSlug}.cationgate.site/dashboard?auth_token=${encodeURIComponent(data.token)}`;
+            } else {
+              router.push(`/${targetSlug}/dashboard`);
+            }
+          }
         } else if (data.admin?.role === "gatekeeper") {
           router.push("/gatekeeper/login");
         } else {

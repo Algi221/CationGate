@@ -83,12 +83,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
               priority: 0.7,
             },
             {
-              url: `${baseUrl}/${school.slug}/data-pendaftar`,
-              lastModified: schoolMod,
-              changeFrequency: "daily",
-              priority: 0.7,
-            },
-            {
               url: `${baseUrl}/${school.slug}/daftar`,
               lastModified: schoolMod,
               changeFrequency: "daily",
@@ -116,12 +110,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           url: `${baseUrl}/${slug}/profil`,
           lastModified: currentDate,
           changeFrequency: "weekly",
-          priority: 0.7,
-        },
-        {
-          url: `${baseUrl}/${slug}/data-pendaftar`,
-          lastModified: currentDate,
-          changeFrequency: "daily",
           priority: 0.7,
         },
         {

@@ -26,6 +26,8 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('FATAL UNHANDLED REJECTION at:', promise, 'reason:', reason);
 });
 
+import { systemLogger } from './utils/systemLogger';
+
 const app = new Hono().basePath('/api');
 
 app.use('*', async (c, next) => {
@@ -38,7 +40,35 @@ app.use('*', async (c, next) => {
       return {} as T;
     }
   };
+  
+  const start = Date.now();
   await next();
+  const durationMs = Date.now() - start;
+
+  try {
+    const url = new URL(c.req.url);
+    const host = c.req.header('host') || url.host || 'cationgate.site';
+    const status = c.res.status || 200;
+    
+    let level: 'info' | 'warn' | 'error' = 'info';
+    if (status >= 500) level = 'error';
+    else if (status >= 400) level = 'warn';
+
+    const method = c.req.method;
+    const path = url.pathname + (url.search || '');
+
+    systemLogger.addLog({
+      method,
+      status,
+      host,
+      request: path,
+      durationMs,
+      level,
+      message: status >= 500 
+        ? `Request returned status ${status} [${durationMs}ms]`
+        : `--> ${method} ${path} ${status} ${durationMs}ms`
+    });
+  } catch (_logErr) {}
 });
 
 app.use('*', logger());

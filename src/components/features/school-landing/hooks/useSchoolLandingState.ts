@@ -127,6 +127,7 @@ export function useSchoolLandingState() {
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
   const [majors, setMajors] = useState<MajorItem[]>(DEFAULT_MAJORS);
   const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
+  const [isPlatformMaintenance, setIsPlatformMaintenance] = useState<boolean>(false);
   const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>([]);
 
   const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>({
@@ -151,6 +152,18 @@ export function useSchoolLandingState() {
   useEffect(() => {
     const loadDynamicConfig = async () => {
       try {
+        // 1. Check Global Platform Maintenance Mode
+        try {
+          const maintRes = await fetch(`/api/saas/maintenance-status?_t=${Date.now()}`);
+          if (maintRes.ok) {
+            const maintJson = await maintRes.json();
+            if (maintJson.success && maintJson.is_maintenance) {
+              setIsPlatformMaintenance(true);
+            }
+          }
+        } catch (_e) {}
+
+        // 2. Check Specific School Landing Config
         const res = await fetch(`/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`, {
           cache: "no-store"
         });
@@ -204,6 +217,7 @@ export function useSchoolLandingState() {
     schoolDisplayName,
     isSchoolNotFound,
     isLandingPageActive,
+    isPlatformMaintenance,
     mobileMenuOpen,
     setMobileMenuOpen,
     heroTitle,

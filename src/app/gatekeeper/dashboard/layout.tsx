@@ -94,12 +94,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setMounted(true);
-      const saved = localStorage.getItem("ppdb-theme");
-      if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
       const savedCollapse = localStorage.getItem("ppdb-sidebar-collapsed");
       if (savedCollapse === "true") {
         setIsCollapsed(true);

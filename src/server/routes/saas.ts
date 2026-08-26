@@ -36,4 +36,13 @@ saasRouter.get('/plans', SaasController.getPlans);
 // 9. PUBLIC: Get subscription status for a school
 saasRouter.get('/subscription-status', SaasController.getSubscriptionStatus);
 
+// 10. PUBLIC/ADMIN: Submit school verification documents (SK & legal accreditation)
+saasRouter.post('/submit-school-verification', SaasController.submitSchoolVerification);
+
+// 11. PUBLIC: Platform Maintenance Status Check
+saasRouter.get('/maintenance-status', async (c) => {
+  const { globalIsMaintenanceMode } = await import('./gatekeeper');
+  return c.json({ success: true, is_maintenance: globalIsMaintenanceMode });
+});
+
 export default saasRouter;

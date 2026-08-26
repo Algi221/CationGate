@@ -36,7 +36,10 @@ export interface MajorDetail {
 }
 
 export interface KuotaItem {
+  no?: number;
   key: string;
   target: number;
   jumlah: number;
+  konsentrasi_keahlian?: string;
+  presentase?: string;
 }

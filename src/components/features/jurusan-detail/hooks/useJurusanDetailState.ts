@@ -145,15 +145,30 @@ export function useJurusanDetailState() {
   }, [code, nextCode, schoolSlug]);
 
   useEffect(() => {
+    if (schoolSlug === "demo") {
+      setKuotaData([
+        { no: 1, key: "Rekayasa Perangkat Lunak", konsentrasi_keahlian: "Rekayasa Perangkat Lunak (RPL)", jumlah: 120, target: 144, presentase: "83%" },
+        { no: 2, key: "Teknik Komputer dan Jaringan", konsentrasi_keahlian: "Teknik Komputer dan Jaringan (TKJ)", jumlah: 85, target: 108, presentase: "78%" },
+        { no: 3, key: "Desain Komunikasi Visual", konsentrasi_keahlian: "Desain Komunikasi Visual (DKV)", jumlah: 90, target: 108, presentase: "83%" },
+        { no: 4, key: "Broadcasting dan Perfilman", konsentrasi_keahlian: "Broadcasting dan Perfilman (BC)", jumlah: 60, target: 72, presentase: "83%" },
+        { no: 5, key: "Animasi", konsentrasi_keahlian: "Animasi (ANIMASI)", jumlah: 55, target: 72, presentase: "76%" },
+        { no: 6, key: "Teknik Elektronika", konsentrasi_keahlian: "Teknik Elektronika (TE)", jumlah: 40, target: 72, presentase: "55%" }
+      ]);
+      return;
+    }
+
     const loadKuota = async () => {
       try {
         const res = await fetch(`/api/kuota?school_slug=${schoolSlug}`);
         const json = await res.json();
-        if (json.success && json.data) {
+        if (json.success && json.data && Array.isArray(json.data.pendaftar)) {
           setKuotaData(json.data.pendaftar);
+        } else {
+          setKuotaData([]);
         }
       } catch (err) {
         console.log("Failed to fetch kuota data:", err);
+        setKuotaData([]);
       }
     };
     loadKuota();

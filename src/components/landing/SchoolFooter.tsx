@@ -12,7 +12,7 @@ interface SchoolFooterProps {
 
 export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
   const { ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah } = usePPDB();
-  const { href } = useSchoolHref();
+  const { href } = useSchoolHref(schoolSlug);
 
   const identitas = profilSekolah?.identitas || {};
   const address = identitas.alamat || "Jl. Raya Tapos No. 123, Depok";

@@ -20,6 +20,7 @@ export default function SchoolLandingPage() {
     schoolDisplayName,
     isSchoolNotFound,
     isLandingPageActive,
+    isPlatformMaintenance,
     heroTitle,
     heroTitleSub,
     heroSubtitle,
@@ -37,6 +38,42 @@ export default function SchoolLandingPage() {
     gelombangConfig,
     formatDate
   } = useSchoolLandingState();
+
+  const [isPathBasedBlocked] = React.useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname.toLowerCase();
+      const isSubdomain =
+        (hostname.endsWith(".cationgate.site") && hostname !== "cationgate.site" && hostname !== "www.cationgate.site") ||
+        (hostname.endsWith(".localhost") && hostname !== "localhost") ||
+        (hostname.endsWith(".vercel.app") && hostname !== "cationgate.vercel.app");
+      return !isSubdomain;
+    }
+    return false;
+  });
+
+  if (isPathBasedBlocked) {
+    return (
+      <ErrorView
+        title="404 - Halaman Tidak Ditemukan"
+        description={`Halaman instansi '${schoolSlug}' tidak dapat diakses melalui path URL utama. Silakan kunjungi subdomain resmi instansi ini.`}
+        urlPath={`/${schoolSlug}`}
+        ctaText="Kembali ke Beranda CationGate"
+        ctaHref="/"
+      />
+    );
+  }
+
+  if (isPlatformMaintenance) {
+    return (
+      <ErrorView
+        title="Mode Pemeliharaan Platform"
+        description="Platform CationGate sedang dalam proses pemeliharaan sistem & peningkatan infrastruktur. Layanan pendaftaran akan segera kembali aktif."
+        urlPath={`/${schoolSlug}`}
+        ctaText="Coba Muat Ulang"
+        ctaHref={`/${schoolSlug}`}
+      />
+    );
+  }
 
   if (isSchoolNotFound) {
     return (

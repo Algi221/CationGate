@@ -316,8 +316,25 @@ export class SaasController {
       console.error('Subscription status error:', err instanceof Error ? err.message : String(err));
       return c.json({
         success: true,
-        data: { plan: 'FREE_TRIAL', status: 'ACTIVE', daysLeft: 30, isExpired: false }
+        data: {
+          plan: 'FREE_TRIAL',
+          status: 'ACTIVE',
+          daysLeft: 30,
+          isExpired: false,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }
       });
+    }
+  }
+
+  static async submitSchoolVerification(c: Context) {
+    try {
+      const body = await c.req.json();
+      const result = await SaasService.submitSchoolVerification(body);
+      return c.json(result);
+    } catch (err: unknown) {
+      console.error('Submit school verification error:', err);
+      return c.json({ success: false, message: 'Gagal mengajukan verifikasi: ' + (err instanceof Error ? err.message : String(err)) }, 500);
     }
   }
 }

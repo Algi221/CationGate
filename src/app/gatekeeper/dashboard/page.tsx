@@ -7,7 +7,7 @@ import {
   Building2, ShieldCheck, CheckCircle2, Clock, RefreshCw,
   TrendingUp, ArrowUpRight, AlertCircle, Bell, PieChart,
   Landmark, Hourglass, FileQuestion, Activity, MapPin, XCircle,
-  Globe2
+  Globe2, Database
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -387,50 +387,86 @@ export default function GatekeeperOverviewPage() {
 
       {/* BARIS 2: Sebaran Wilayah Institusi (Interactive Leaflet Map) & Infrastructure Health */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        {/* Infrastructure & Service Status (Minimalist Widget) */}
-        <div className="bg-white dark:bg-[#2e3749] rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between">
+        {/* Supabase Free Plan Usage (CationGate Themed) */}
+        <div className="bg-white dark:bg-[#2e3749] text-slate-800 dark:text-slate-200 rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between transition-colors duration-300 relative overflow-hidden">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                </span>
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Status Infrastruktur</h3>
+            <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-white/10 mb-4">
+              <div>
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight flex items-center gap-2">
+                  <Database className="w-4 h-4 text-[#FFD33B]" /> Free Plan Usage
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-white/60 font-medium mt-0.5">Current billing cycle</p>
               </div>
-              <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                Normal
+              <span className="px-3 py-1 text-xs font-bold rounded-xl bg-[#FFD33B]/15 dark:bg-[#FFD33B]/20 text-[#2e3749] dark:text-[#FFD33B] border border-[#FFD33B]/40 transition-all hover:bg-[#FFD33B]/25 shadow-xs">
+                Upgrade to Pro
               </span>
             </div>
 
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5">
-                <div className="space-y-0.5">
-                  <p className="font-bold text-slate-800 dark:text-white">Database Postgres</p>
-                  <p className="text-[11px] text-slate-400 dark:text-white/40 font-mono">18ms Latency • 99.9% Uptime</p>
+            <div className="space-y-3 text-xs">
+              {/* Egress */}
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 shrink-0"></span>
+                    <span className="text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">EGRESS</span>
+                  </div>
+                  <span className="text-slate-900 dark:text-white font-mono font-bold text-xs">106 MB / 5 GB</span>
                 </div>
-                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Online</span>
+                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full mt-2 overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full w-[2%]"></div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5">
-                <div className="space-y-0.5">
-                  <p className="font-bold text-slate-800 dark:text-white">Routing Multi-Tenant</p>
-                  <p className="text-[11px] text-slate-400 dark:text-white/40 font-mono">{totalSchoolsCount} Tenant Aktif</p>
+              {/* Database Size (Supabase 500 MB Limit) */}
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 shrink-0"></span>
+                    <span className="text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">DATABASE SIZE</span>
+                  </div>
+                  <span className="text-slate-900 dark:text-white font-mono font-bold text-xs">30 MB / 500 MB</span>
                 </div>
-                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Terhubung</span>
+                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full mt-2 overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full w-[6%]"></div>
+                </div>
+              </div>
+
+              {/* Monthly Active Users */}
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#FFD33B] ring-2 ring-[#FFD33B]/20 shrink-0"></span>
+                    <span className="text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">MONTHLY ACTIVE USERS</span>
+                  </div>
+                  <span className="text-slate-900 dark:text-white font-mono font-bold text-xs">0 / 50,000</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full mt-2 overflow-hidden">
+                  <div className="h-full bg-[#FFD33B] rounded-full w-[1%]"></div>
+                </div>
+              </div>
+
+              {/* File Storage */}
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500 ring-2 ring-sky-500/20 shrink-0"></span>
+                    <span className="text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">FILE STORAGE</span>
+                  </div>
+                  <span className="text-slate-900 dark:text-white font-mono font-bold text-xs">2 MB / 1 GB</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full mt-2 overflow-hidden">
+                  <div className="h-full bg-sky-500 rounded-full w-[1%]"></div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-100 dark:border-white/10 mt-4 grid grid-cols-2 gap-2 text-xs">
-            <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 flex flex-col justify-between">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-white/40">CPU Server</span>
-              <span className="text-xs font-mono font-bold text-slate-800 dark:text-white mt-0.5">12.4%</span>
-            </div>
-            <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 flex flex-col justify-between">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-white/40">Penggunaan RAM</span>
-              <span className="text-xs font-mono font-bold text-slate-800 dark:text-white mt-0.5">1.8 / 8.0 GB</span>
-            </div>
+          <div className="pt-4 border-t border-slate-100 dark:border-white/10 mt-4 flex items-center justify-between text-[11px] text-slate-500 dark:text-white/60">
+            <span className="flex items-center gap-1.5 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Supabase Postgres DB
+            </span>
+            <span className="font-mono text-slate-700 dark:text-white font-bold">Uptime 99.9%</span>
           </div>
         </div>
         {/* Sebaran Wilayah (Interactive Map 2/3) */}

@@ -64,7 +64,9 @@ export function GatekeeperSidebar({
           icon: <Building2 size={18} />,
           label: "Manajemen Sekolah",
           subItems: [
-            { label: "Verifikasi Sekolah", href: "/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION" },
+            { label: "Semua Subdomain", href: "/gatekeeper/dashboard/schools" },
+            { label: "Verifikasi Berkas SK", href: "/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION" },
+            { label: "Belum Verifikasi", href: "/gatekeeper/dashboard/schools?filter=UNVERIFIED" },
             { label: "Sekolah Aktif (Verified)", href: "/gatekeeper/dashboard/schools?filter=FULL_VERIFIED" },
           ]
         }
@@ -78,7 +80,7 @@ export function GatekeeperSidebar({
           icon: <Wallet size={18} />,
           label: "Billing & Paket",
           subItems: [
-            { label: "Manajemen Paket", href: "/gatekeeper/dashboard/plans" },
+            { label: "Manajemen Paket", href: "/gatekeeper/dashboard/billing/packages" },
             { label: "Riwayat Transaksi", href: "/gatekeeper/dashboard/billing/transactions" },
           ]
         }
@@ -92,13 +94,13 @@ export function GatekeeperSidebar({
           icon: <Activity size={18} />,
           label: "Layanan & Log",
           subItems: [
-            { label: "Aktivitas Sistem", href: "/gatekeeper/dashboard/services/logs" },
+            { label: "Log Sistem & Vercel Realtime", href: "/gatekeeper/dashboard/services/logs" },
           ]
         }
       ]
     },
     {
-      category: "Pengaturan Platform",
+      category: "Pengaturan",
       items: [
         { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Sistem" }
       ]

@@ -1,42 +1,39 @@
 "use client";
 
 import { useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 /**
  * Returns a function `href(path)` that generates the correct URL path
  * based on whether the user is on a subdomain or root domain.
  *
- * - Subdomain (e.g., smktb.cationgate.site): href("/dashboard") → "/dashboard"
- * - Root domain (e.g., cationgate.site/smktb): href("/dashboard") → "/smktb/dashboard"
+ * Uses `usePathname()` to ensure 100% hydration consistency between SSR and Client.
+ * - Subdomain (e.g., pathname="/dashboard"): href("/forum") → "/forum"
+ * - Root domain (e.g., pathname="/smktb/dashboard"): href("/forum") → "/smktb/forum"
  */
-export function useSchoolHref() {
+export function useSchoolHref(explicitSlug?: string) {
   const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || "";
+  const pathname = usePathname();
+  const schoolSlug = explicitSlug || (params?.school_slug as string) || "";
 
-  const isSubdomain =
-    typeof window !== "undefined" &&
-    (() => {
-      const hostname = window.location.hostname.toLowerCase();
-      return (
-        (hostname.endsWith(".localhost") && hostname !== "localhost") ||
-        (hostname.endsWith(".cationgate.site") && hostname !== "cationgate.site") ||
-        (hostname.endsWith(".vercel.app") && !hostname.startsWith("cationgate."))
-      );
-    })();
+  // If pathname already starts with /${schoolSlug}, we are in path-based mode.
+  // Otherwise, we are in subdomain mode. This is 100% identical on SSR and Client.
+  const hasSlugInPath = Boolean(
+    schoolSlug &&
+    pathname &&
+    (pathname === `/${schoolSlug}` || pathname.startsWith(`/${schoolSlug}/`))
+  );
 
   const href = useCallback(
     (path: string) => {
-      if (isSubdomain) {
-        // On subdomain, no slug prefix needed
-        return path.startsWith("/") ? path : `/${path}`;
-      }
-      // On root domain, include slug prefix
       const cleanPath = path.startsWith("/") ? path : `/${path}`;
-      return `/${schoolSlug}${cleanPath}`;
+      if (hasSlugInPath) {
+        return `/${schoolSlug}${cleanPath}`;
+      }
+      return cleanPath;
     },
-    [isSubdomain, schoolSlug]
+    [hasSlugInPath, schoolSlug]
   );
 
-  return { href, schoolSlug, isSubdomain };
+  return { href, schoolSlug, isSubdomain: !hasSlugInPath };
 }

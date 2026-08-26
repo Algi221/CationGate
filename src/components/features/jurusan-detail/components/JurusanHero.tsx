@@ -16,14 +16,21 @@ interface JurusanHeroProps {
 }
 
 export const JurusanHero: React.FC<JurusanHeroProps> = ({
-  schoolSlug: _schoolSlug,
+  schoolSlug,
   major,
   kuotaData
 }) => {
-  const { href } = useSchoolHref();
+  const { href } = useSchoolHref(schoolSlug);
   let isFull = false;
-  if (kuotaData && major) {
-    const k = kuotaData.find((item: KuotaItem) => item.key === major.title);
+  if (Array.isArray(kuotaData) && major) {
+    const k = kuotaData.find(
+      (item: KuotaItem) =>
+        item &&
+        (item.key === major.title ||
+          item.key === major.code ||
+          item.konsentrasi_keahlian?.includes(major.code) ||
+          item.konsentrasi_keahlian?.includes(major.title))
+    );
     if (k && k.target > 0) {
       isFull = k.jumlah >= k.target;
     }

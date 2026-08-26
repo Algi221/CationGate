@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Package, Plus, Pencil, Trash2, X, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, X, CheckCircle2, AlertTriangle, Box, Sparkles, Shield, Crown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Swal from "sweetalert2";
 
 interface Plan {
   id: number;
@@ -14,19 +16,20 @@ interface Plan {
 }
 
 function formatRupiahDisplay(num: number): string {
-  return `Rp ${num.toLocaleString('id-ID')}`;
+  if (num === 0) return "Gratis";
+  return `Rp ${num.toLocaleString("id-ID")}`;
 }
 
-/** Parse "750.000" or "750000" back to number */
+/** Parse "15.000.000" or "15000000" back to number */
 function parseRupiahInput(raw: string): number {
-  const cleaned = raw.replace(/[^\d]/g, '');
+  const cleaned = raw.replace(/[^\d]/g, "");
   return cleaned ? parseInt(cleaned, 10) : 0;
 }
 
-/** Format raw number to "750.000" display string for input */
+/** Format raw number to "15.000.000" display string for input */
 function formatInputDisplay(num: number): string {
-  if (num === 0) return '';
-  return num.toLocaleString('id-ID');
+  if (num === 0) return "";
+  return num.toLocaleString("id-ID");
 }
 
 export default function GatekeeperPackagesPage() {
@@ -35,7 +38,6 @@ export default function GatekeeperPackagesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [saving, setSaving] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -53,7 +55,10 @@ export default function GatekeeperPackagesPage() {
       const text = await res.text();
       try {
         const json = JSON.parse(text);
-        if (json.success) setPlans(json.data || []);
+        if (json.success && Array.isArray(json.data)) {
+          // Limit to max 3 plans
+          setPlans(json.data.slice(0, 3));
+        }
       } catch (_parseError) {
         console.error("Invalid JSON from API:", text.substring(0, 150));
       }
@@ -69,6 +74,16 @@ export default function GatekeeperPackagesPage() {
   }, []);
 
   const openCreateModal = () => {
+    if (plans.length >= 3) {
+      Swal.fire({
+        title: "Batas Maksimal Paket",
+        text: "Maksimal paket langganan dibatasi 3 paket untuk menjaga kesederhanaan pilihan instansi.",
+        icon: "warning",
+        confirmButtonColor: "#2563EB",
+        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+      });
+      return;
+    }
     setEditingPlan(null);
     setFormName("");
     setFormPriceYearly(0);
@@ -89,37 +104,42 @@ export default function GatekeeperPackagesPage() {
   const handlePriceChange = (rawValue: string) => {
     const num = parseRupiahInput(rawValue);
     setFormPriceYearly(num);
-    setPriceYearlyDisplay(num > 0 ? formatInputDisplay(num) : '');
+    setPriceYearlyDisplay(num > 0 ? formatInputDisplay(num) : "");
   };
 
   const handleSave = async () => {
-    if (!formName.trim() || formPriceYearly <= 0) {
-      alert("Mohon lengkapi nama paket dan harga tahunan");
+    if (!formName.trim() || formPriceYearly < 0) {
+      Swal.fire({
+        title: "Data Belum Lengkap",
+        text: "Mohon lengkapi nama paket dan harga tahunan.",
+        icon: "warning",
+        confirmButtonColor: "#2563EB",
+        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+      });
       return;
     }
 
-    if (formPriceYearly < 10_000_000) {
-      alert("Harga tahunan paket dibatasi minimal Rp 10.000.000 (puluhan juta)");
+    if (formPriceYearly > 0 && formPriceYearly < 10_000_000) {
+      Swal.fire({
+        title: "Harga Minimal Puluhan Juta",
+        text: "Harga tahunan paket berbayar minimal adalah Rp 10.000.000.",
+        icon: "warning",
+        confirmButtonColor: "#2563EB",
+        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+      });
       return;
     }
 
+    setSaving(true);
     try {
-      setSaving(true);
       const token = localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token");
-      const payload = {
-        name: formName,
-        price_monthly: Math.round(formPriceYearly / 12),
-        price_yearly: formPriceYearly,
-        features: formFeatures.split("\n").map((f) => f.trim()).filter(Boolean),
-      };
+      const featuresArray = formFeatures
+        .split("\n")
+        .map((f) => f.trim())
+        .filter(Boolean);
 
-      let url = "/api/gatekeeper/plans";
-      let method = "POST";
-
-      if (editingPlan) {
-        url += `/${editingPlan.id}`;
-        method = "PUT";
-      }
+      const url = editingPlan ? `/api/gatekeeper/plans/${editingPlan.id}` : "/api/gatekeeper/plans";
+      const method = editingPlan ? "PUT" : "POST";
 
       const res = await fetch(url, {
         method,
@@ -127,39 +147,62 @@ export default function GatekeeperPackagesPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          name: formName,
+          price_yearly: formPriceYearly,
+          price_monthly: Math.round(formPriceYearly / 12),
+          features: featuresArray,
+        }),
       });
 
-      const text = await res.text();
-      try {
-        const json = JSON.parse(text);
-        if (json.success) {
-          setShowModal(false);
-          fetchPlans();
-        } else {
-          alert("Gagal menyimpan paket");
-        }
-      } catch (_parseError) {
-        console.error("Invalid JSON:", text.substring(0, 150));
+      const json = await res.json();
+      if (json.success) {
+        setShowModal(false);
+        fetchPlans();
+        Swal.fire({
+          title: "Paket Disimpan",
+          text: `Paket ${formName} berhasil diperbarui.`,
+          icon: "success",
+          confirmButtonColor: "#2563EB",
+          customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+        });
+      } else {
+        Swal.fire({
+          title: "Gagal Menyimpan",
+          text: json.message || "Terjadi kesalahan saat menyimpan paket.",
+          icon: "error",
+          confirmButtonColor: "#DC2626",
+          customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+        });
       }
-    } catch (err) {
-      console.error(err);
-      alert("Terjadi kesalahan saat menyimpan");
+    } catch (_err) {
+      Swal.fire({
+        title: "Kesalahan Server",
+        text: "Gagal menghubungi server API Gatekeeper.",
+        icon: "error",
+        confirmButtonColor: "#DC2626",
+        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const toggleActive = async (plan: Plan) => {
     try {
       const token = localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token");
-      const res = await fetch(`/api/gatekeeper/plans/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`/api/gatekeeper/plans/${plan.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          is_active: !plan.is_active,
+        }),
       });
       const json = await res.json();
       if (json.success) {
-        setDeleteConfirm(null);
         fetchPlans();
       }
     } catch (err) {
@@ -167,253 +210,441 @@ export default function GatekeeperPackagesPage() {
     }
   };
 
-  const toggleActive = async (plan: Plan) => {
-    try {
-      const token = localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token");
-      await fetch(`/api/gatekeeper/plans/${plan.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ is_active: !plan.is_active }),
-      });
-      fetchPlans();
-    } catch (err) {
-      console.error(err);
-    }
+  const handleDelete = (planId: number, planName: string) => {
+    Swal.fire({
+      title: `Hapus Paket ${planName}?`,
+      text: "Paket ini akan dihapus dari daftar penawaran SaaS CationGate.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DC2626",
+      cancelButtonColor: "#64748B",
+      confirmButtonText: "Ya, Hapus",
+      cancelButtonText: "Batal",
+      customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem("gatekeeper_token") || localStorage.getItem("ppdb_admin_token");
+          const res = await fetch(`/api/gatekeeper/plans/${planId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const json = await res.json();
+          if (json.success) {
+            fetchPlans();
+            Swal.fire({
+              title: "Dihapus",
+              text: "Paket berhasil dihapus.",
+              icon: "success",
+              confirmButtonColor: "#2563EB",
+              customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+            });
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-8 max-w-7xl mx-auto pb-16 transition-colors duration-300">
+      {/* Header Top Section */}
+      <div className="bg-white dark:bg-[#2e3749] p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-white/10 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-300">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <Package className="text-[#2e3749]" /> Paket Langganan
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">
-            Kelola tingkatan paket langganan untuk sekolah yang mendaftar. Data ini akan tampil di halaman Pricing Landing Page.
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+              <Box className="w-6 h-6 text-[#2e3749] dark:text-[#FFD33B]" />
+              Manajemen Paket SaaS
+            </h1>
+            <span className="px-3 py-0.5 rounded-full bg-[#FFD33B]/15 dark:bg-[#FFD33B]/20 text-[#2e3749] dark:text-[#FFD33B] text-xs font-mono font-bold border border-[#FFD33B]/30">
+              {plans.length}/3 Paket
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-white/60 font-medium mt-1">
+            Kelola tingkatan paket langganan untuk sekolah yang mendaftar. Dibatasi maksimal 3 paket aktif.
           </p>
         </div>
+
         <button
           onClick={openCreateModal}
-          className="px-5 py-2.5 bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold text-sm rounded-xl transition-all shadow-lg shadow-[#FFD33B]/30 flex items-center gap-2"
+          disabled={plans.length >= 3}
+          className={`px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-md ${
+            plans.length >= 3
+              ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-700 shadow-none"
+              : "bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] shadow-[#FFD33B]/30 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          }`}
         >
-          <Plus size={16} /> Buat Paket Baru
+          <Plus size={16} />
+          {plans.length >= 3 ? "Batas 3 Paket Tercapai" : "Buat Paket Baru"}
         </button>
       </div>
 
-      {/* Plans Grid */}
+      {/* ── 3-COLUMN PRODUCT PACKS GRID ────────────────────────────────────────── */}
       {loading ? (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 text-center">
-          <p className="text-slate-400 dark:text-slate-500 animate-pulse">Memuat data paket...</p>
+        <div className="bg-white dark:bg-slate-900 rounded-4xl p-16 border border-slate-200 dark:border-slate-800 text-center">
+          <p className="text-slate-400 dark:text-slate-500 font-mono text-sm font-bold animate-pulse">
+            Memuat data paket langganan CationGate...
+          </p>
         </div>
       ) : plans.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 text-center min-h-75 flex flex-col items-center justify-center gap-3">
-          <Package className="w-12 h-12 text-slate-300 dark:text-slate-600" />
-          <p className="text-slate-400 dark:text-slate-500 font-bold">Belum ada paket langganan</p>
+        <div className="bg-white dark:bg-slate-900 rounded-4xl p-16 border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center justify-center gap-3">
+          <Box className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+          <p className="text-slate-500 dark:text-slate-400 font-bold">Belum ada paket langganan terdaftar</p>
           <button
             onClick={openCreateModal}
-            className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-[#2e3749] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg text-sm font-bold transition-all"
+            className="px-5 py-2.5 bg-[#FFD33B] text-[#2e3749] font-bold rounded-xl text-xs"
           >
             Buat Paket Pertama
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative bg-white dark:bg-slate-900 rounded-2xl p-6 border-2 transition-all ${
-                plan.is_active
-                  ? "border-emerald-200 dark:border-emerald-800/60 shadow-sm"
-                  : "border-slate-200 dark:border-slate-800 opacity-70"
-              }`}
-            >
-              {/* Status Badge */}
-              <div className="flex items-center justify-between mb-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    plan.is_active
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                      : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+          {plans.map((plan, index) => {
+            const isCard1 = index === 0;
+            const isCard2 = index === 1;
+            const _isCard3 = index === 2;
+
+            if (isCard1) {
+              // ── CARD 1: AMBER / WARM YELLOW CARD (PRODUCT PACKS STYLE) ──
+              return (
+                <div
+                  key={plan.id}
+                  className={`bg-amber-300 dark:bg-[#EAB844] text-neutral-950 rounded-4xl p-8 md:p-9 flex flex-col justify-between shadow-xl space-y-6 relative overflow-hidden transition-all duration-200 border-2 ${
+                    plan.is_active ? "border-amber-400/80" : "border-neutral-400 opacity-75"
                   }`}
                 >
-                  {plan.is_active ? (
-                    <span className="flex items-center gap-1"><CheckCircle2 size={14} /> Aktif</span>
-                  ) : (
-                    <span className="flex items-center gap-1"><AlertTriangle size={14} /> Nonaktif</span>
-                  )}
-                </span>
+                  {/* Top Header & Actions */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="px-3 py-1 rounded-full bg-black/10 text-black text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-black/10">
+                        {plan.is_active ? (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                            Aktif
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-neutral-600"></span>
+                            Nonaktif
+                          </>
+                        )}
+                      </span>
 
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => openEditModal(plan)}
-                    className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg text-[#2e3749] transition-colors"
-                    title="Edit"
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => openEditModal(plan)}
+                          className="p-2 hover:bg-black/10 rounded-xl text-black transition-colors"
+                          title="Edit Paket"
+                        >
+                          <Pencil size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(plan.id, plan.name)}
+                          className="p-2 hover:bg-rose-500/20 rounded-xl text-rose-800 transition-colors"
+                          title="Hapus Paket"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
+                        <Sparkles className="w-6 h-6 text-black" />
+                        {plan.name}
+                      </h3>
+                      <p className="text-neutral-800 text-xs font-semibold leading-relaxed">
+                        Uji coba &amp; pengenalan sistem PPDB online untuk sekolah pendaftar baru.
+                      </p>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex flex-col gap-1 my-6">
+                      <span className="text-4xl md:text-5xl font-black tracking-tight">
+                        {plan.price_yearly === 0 ? "Free" : formatRupiahDisplay(plan.price_yearly)}
+                      </span>
+                      <span className="text-xs font-bold text-neutral-700">
+                        {plan.price_yearly === 0 ? "Tanpa biaya tersembunyi selama masa uji coba." : "/tahun lisensi penuh"}
+                      </span>
+                    </div>
+
+                    {/* Features List */}
+                    <div className="space-y-3 pt-6 border-t border-black/10 text-xs font-medium">
+                      {(Array.isArray(plan.features) ? plan.features : []).map((item, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 text-neutral-900 font-bold">
+                            <CheckCircle2 className="w-4 h-4 text-neutral-950 shrink-0" />
+                            <span>{item}</span>
+                          </div>
+                          <span className="text-[11px] font-mono font-black text-neutral-800 shrink-0">Tersedia</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Toggle Active Button */}
+                  <Button
+                    onClick={() => toggleActive(plan)}
+                    variant="outline"
+                    className="w-full h-12 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold border-2 border-black transition-all duration-100 shadow-[4px_4px_rgb(0_0_0)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
                   >
-                    <Pencil size={16} />
-                  </button>
-                  <button
-                    onClick={() => setDeleteConfirm(plan.id)}
-                    className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg text-red-500 transition-colors"
-                    title="Hapus"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                    {plan.is_active ? "Nonaktifkan Paket" : "Aktifkan Paket"}
+                  </Button>
                 </div>
-              </div>
+              );
+            }
 
-              {/* Plan Name & Price */}
-              <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">{plan.name}</h3>
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-2xl font-extrabold text-[#2e3749] dark:text-blue-500">{formatRupiahDisplay(plan.price_yearly)}</span>
-                <span className="text-sm text-slate-400">/tahun</span>
-              </div>
+            if (isCard2) {
+              // ── CARD 2: DEEP DARK / ENTERPRISE PRODUCT PACKS STYLE ──
+              return (
+                <div
+                  key={plan.id}
+                  className={`bg-neutral-950 dark:bg-[#151D2A] text-white rounded-4xl p-8 md:p-9 flex flex-col justify-between shadow-2xl space-y-6 relative overflow-hidden ring-2 ring-[#FFD33B]/40 transition-all duration-200 border border-white/10`}
+                >
+                  {/* Top Popular Glow Pill */}
+                  <div className="absolute top-0 right-8 px-4 py-1 rounded-b-xl bg-[#FFD33B] text-black font-black text-[10px] tracking-wider uppercase shadow-md flex items-center gap-1">
+                    <Crown size={12} /> Paling Populer
+                  </div>
 
-              {/* Features */}
-              {Array.isArray(plan.features) && plan.features.length > 0 && (
-                <ul className="space-y-2 mb-4">
-                  {plan.features.map((feat, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
-                      <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-500" />
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-              )}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-emerald-500/30">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        {plan.is_active ? "Aktif" : "Nonaktif"}
+                      </span>
 
-              {/* Toggle Active */}
-              <button
-                onClick={() => toggleActive(plan)}
-                className={`w-full mt-auto py-2 rounded-xl text-xs font-bold transition-all ${
-                  plan.is_active
-                    ? "bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                    : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:hover:bg-emerald-900/60"
-                }`}
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => openEditModal(plan)}
+                          className="p-2 hover:bg-white/10 rounded-xl text-white/80 hover:text-white transition-colors"
+                          title="Edit Paket"
+                        >
+                          <Pencil size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(plan.id, plan.name)}
+                          className="p-2 hover:bg-rose-500/20 rounded-xl text-rose-400 transition-colors"
+                          title="Hapus Paket"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
+                        <Box className="w-6 h-6 text-[#FFD33B]" />
+                        {plan.name}
+                      </h3>
+                      <p className="text-neutral-400 text-xs font-semibold leading-relaxed">
+                        Akses penuh seluruh fitur platform, multi-admin, export data, dan support 24/7.
+                      </p>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex flex-col gap-1 my-6">
+                      <span className="text-4xl md:text-5xl font-black tracking-tight text-[#FFD33B]">
+                        {formatRupiahDisplay(plan.price_yearly)}
+                      </span>
+                      <span className="text-xs font-medium text-neutral-400">
+                        /tahun lisensi sekolah lengkap.
+                      </span>
+                    </div>
+
+                    {/* Features List */}
+                    <div className="space-y-3 pt-6 border-t border-neutral-800 text-xs font-medium">
+                      {(Array.isArray(plan.features) ? plan.features : []).map((item, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 text-white font-bold">
+                            <CheckCircle2 className="w-4 h-4 text-[#FFD33B] shrink-0" />
+                            <span>{item}</span>
+                          </div>
+                          <span className="text-[11px] font-mono font-bold text-neutral-400 shrink-0">Included</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Toggle Active Button */}
+                  <Button
+                    onClick={() => toggleActive(plan)}
+                    variant="outline"
+                    className="w-full h-12 rounded-2xl bg-[#FFD33B] hover:bg-[#F3C625] text-black font-black border-2 border-black transition-all duration-100 shadow-[4px_4px_rgb(255_210_48)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                  >
+                    {plan.is_active ? "Nonaktifkan Paket" : "Aktifkan Paket"}
+                  </Button>
+                </div>
+              );
+            }
+
+            // ── CARD 3: SLEEK ENTERPRISE / CLEAN CARD (PRODUCT PACKS STYLE) ──
+            return (
+              <div
+                key={plan.id}
+                className={`bg-white dark:bg-[#1A2230] text-slate-900 dark:text-white rounded-4xl p-8 md:p-9 flex flex-col justify-between shadow-xl space-y-6 relative overflow-hidden transition-all duration-200 border-2 border-slate-200 dark:border-slate-800`}
               >
-                {plan.is_active ? "Nonaktifkan" : "Aktifkan"}
-              </button>
-            </div>
-          ))}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-blue-200 dark:border-blue-700/50">
+                      <Shield size={13} /> {plan.is_active ? "Aktif" : "Nonaktif"}
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => openEditModal(plan)}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 transition-colors"
+                        title="Edit Paket"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(plan.id, plan.name)}
+                        className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-rose-600 transition-colors"
+                        title="Hapus Paket"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
+                      <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                      {plan.name}
+                    </h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold leading-relaxed">
+                      Kustomisasi penuh untuk yayasan sekolah besar &amp; multi-kampus.
+                    </p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="flex flex-col gap-1 my-6">
+                    <span className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
+                      {formatRupiahDisplay(plan.price_yearly)}
+                    </span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      /tahun paket kustom instansi.
+                    </span>
+                  </div>
+
+                  {/* Features List */}
+                  <div className="space-y-3 pt-6 border-t border-slate-100 dark:border-slate-800 text-xs font-medium">
+                    {(Array.isArray(plan.features) ? plan.features : []).map((item, i) => (
+                      <div key={i} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <span>{item}</span>
+                        </div>
+                        <span className="text-[11px] font-mono font-bold text-slate-400 shrink-0">Enterprise</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Toggle Active Button */}
+                <Button
+                  onClick={() => toggleActive(plan)}
+                  variant="outline"
+                  className="w-full h-12 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black border-2 border-slate-900 dark:border-white transition-all duration-100 shadow-[4px_4px_rgb(15_23_42)] dark:shadow-[4px_4px_rgb(255_255_255/20%)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                >
+                  {plan.is_active ? "Nonaktifkan Paket" : "Aktifkan Paket"}
+                </Button>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Create/Edit Modal */}
+      {/* ── CREATE / EDIT PLAN MODAL ────────────────────────────────────────── */}
       {showModal && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-800">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur z-10">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {editingPlan ? "Edit Paket" : "Buat Paket Baru"}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-[#1e2533] rounded-3xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-white/10">
+            <div className="p-6 border-b border-slate-100 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-[#1e2533]/95 backdrop-blur z-10">
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                {editingPlan ? "Edit Paket SaaS" : "Buat Paket SaaS Baru"}
               </h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors"
+              >
                 <X size={20} />
               </button>
             </div>
 
             <div className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Paket *</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Nama Paket *
+                </label>
                 <input
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  placeholder="contoh: STARTER, PRO INSTITUTION"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] outline-none text-sm transition-all"
+                  placeholder="contoh: FREE TRIAL, PRO TAHUNAN, ENTERPRISE"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 text-xs font-bold outline-none focus:border-[#FFD33B] focus:ring-2 focus:ring-[#FFD33B]/20"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Harga Tahunan *</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Harga Tahunan *
+                </label>
                 <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500 dark:text-slate-400 select-none">
-                        Rp
-                    </span>
-                    <input
-                        type="text"
-                        inputMode="numeric"
-                        value={priceYearlyDisplay}
-                        onChange={(e) => handlePriceChange(e.target.value)}
-                        placeholder="15.000.000 (Min. Rp 10.000.000)"
-                        className={`w-full pl-12 pr-4 py-2.5 rounded-xl border bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none text-sm font-semibold tracking-wide transition-all ${
-                          formPriceYearly > 0 && formPriceYearly < 10_000_000
-                            ? "border-rose-400 focus:ring-2 focus:ring-rose-400/20"
-                            : "border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B]"
-                        }`}
-                    />
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 dark:text-slate-400 select-none">
+                    Rp
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={priceYearlyDisplay}
+                    onChange={(e) => handlePriceChange(e.target.value)}
+                    placeholder="15.000.000 (Min. Rp 10.000.000 untuk paket berbayar, atau 0 untuk Free Trial)"
+                    className={`w-full pl-12 pr-4 py-2.5 rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none text-xs font-mono font-bold transition-all ${
+                      formPriceYearly > 0 && formPriceYearly < 10_000_000
+                        ? "border-rose-400 focus:ring-2 focus:ring-rose-400/20"
+                        : "border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B]"
+                    }`}
+                  />
                 </div>
                 {formPriceYearly > 0 && formPriceYearly < 10_000_000 && (
                   <p className="mt-1.5 text-xs font-semibold text-rose-500 flex items-center gap-1">
                     <AlertTriangle size={12} />
-                    <span>Harga tahunan paket minimal Rp 10.000.000 (puluhan juta)</span>
-                  </p>
-                )}
-                {formPriceYearly >= 10_000_000 && (
-                  <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-                    ≈ {formatRupiahDisplay(Math.round(formPriceYearly / 12))} / bulan
+                    <span>Harga paket berbayar minimal Rp 10.000.000 (puluhan juta)</span>
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Fitur (satu per baris)</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Daftar Fitur Paket (1 per baris)
+                </label>
                 <textarea
+                  rows={6}
                   value={formFeatures}
                   onChange={(e) => setFormFeatures(e.target.value)}
-                  placeholder={"Subdomain (sekolah.cationgate.id)\n250 Active Learner Capacity\nAI Lesson Plan Generation (50/mo)\nEmail Support"}
-                  rows={6}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] outline-none text-sm resize-none transition-all"
+                  placeholder={`Pendaftaran Online PPDB Unlimited\nCustom Branding & Logo\nMulti-Admin Dashboard\nWhatsApp Notifikasi Otomatis\nPrioritas Support 24/7\nPembagian Kelas Otomatis`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 text-xs font-medium outline-none focus:border-[#FFD33B] focus:ring-2 focus:ring-[#FFD33B]/20"
                 />
               </div>
-            </div>
 
-            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3 sticky bottom-0">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || !formName.trim()}
-                className="px-6 py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors flex items-center gap-2 shadow-md shadow-blue-500/20"
-              >
-                {saving ? "Menyimpan..." : editingPlan ? "Simpan Perubahan" : "Buat Paket"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation */}
-      {deleteConfirm !== null && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-2xl p-6 border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-full">
-                <AlertTriangle className="text-red-500" size={24} />
+              <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-100 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving || (formPriceYearly > 0 && formPriceYearly < 10_000_000)}
+                  className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] shadow-md shadow-[#FFD33B]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? "Menyimpan..." : "Simpan Paket"}
+                </button>
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Hapus Paket?</h3>
-            </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-              Paket yang dihapus tidak bisa dikembalikan. Pastikan tidak ada sekolah yang sedang menggunakan paket ini.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm)}
-                className="px-4 py-2.5 rounded-xl text-sm font-bold bg-red-500 hover:bg-red-600 text-white transition-colors shadow-md shadow-red-500/20"
-              >
-                Hapus
-              </button>
             </div>
           </div>
         </div>

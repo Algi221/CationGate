@@ -1,5 +1,6 @@
 import { getSupabaseClient } from '../db/supabase';
 import { pool } from '../db/client';
+import { resolveSchoolUUID } from '../db/resolve-school';
 import { redis } from '../../utils/redis';
 import bcrypt from 'bcryptjs';
 import midtransClient from 'midtrans-client';
@@ -706,4 +707,53 @@ export class SaasService {
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     };
   }
+
+  static async submitSchoolVerification(payload: {
+    school_id?: string | number;
+    school_slug?: string;
+    sk_document_url?: string;
+    sk_document_name?: string;
+    legal_sk_number?: string;
+    accreditation?: string;
+    official_email?: string;
+    admin_name?: string;
+  }) {
+    const slug = payload.school_slug || String(payload.school_id);
+    const supabase = getSupabaseClient();
+    const resolvedId = await resolveSchoolUUID(slug, fontInMemSchools);
+
+    const updates = {
+      status: 'PENDING_VERIFICATION',
+      legal_sk_number: payload.legal_sk_number || 'SK-PENDING',
+      sk_document_url: payload.sk_document_url,
+      sk_document_name: payload.sk_document_name || 'SK_Operasional.pdf',
+      accreditation: payload.accreditation || 'A',
+      updated_at: new Date().toISOString()
+    };
+
+    if (resolvedId) {
+      try {
+        await supabase.from('schools').update(updates).eq('id', resolvedId);
+      } catch (_e) {}
+    }
+
+    try {
+      await supabase.from('prospective_schools').update(updates).eq('slug', slug);
+      await supabase.from('calon_sekolah').update(updates).eq('slug', slug);
+    } catch (_e) {}
+
+    fontInMemSchools.forEach((s, k) => {
+      if (k === slug || String(s.id) === String(resolvedId)) {
+        s.status = 'PENDING_VERIFICATION';
+        s.legal_sk_number = updates.legal_sk_number;
+        s.sk_document_url = updates.sk_document_url;
+      }
+    });
+
+    return {
+      success: true,
+      message: 'Dokumen verifikasi berhasil diajukan dan sedang diproses Gatekeeper.'
+    };
+  }
 }
+

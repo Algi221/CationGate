@@ -204,7 +204,9 @@ export class ApplicantQueryService {
     // Run auto-disqualify in background without blocking applicant fetch
     ApplicantSyncService.checkAndDisqualifyExpiredApplicants().catch(() => {});
     const supabase = getSupabaseClient(authToken);
-    const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : null;
+    const resolvedUUID = await resolveSchoolUUID(schoolId, fontInMemSchools);
+    const targetId = resolvedUUID || schoolId;
+    const numericSchoolId = !isNaN(Number(targetId)) ? Number(targetId) : null;
 
     let query = supabase
       .from("student_applicants")
@@ -213,9 +215,9 @@ export class ApplicantQueryService {
       .order("tgl_daftar", { ascending: false });
 
     if (numericSchoolId !== null) {
-      query = query.or(`school_id.eq.${schoolId},school_id.eq.${numericSchoolId}`);
+      query = query.eq("school_id", numericSchoolId);
     } else {
-      query = query.eq("school_id", schoolId);
+      query = query.eq("school_id", targetId);
     }
 
     const { data: rows, error } = await query;
@@ -227,11 +229,12 @@ export class ApplicantQueryService {
            WHERE deleted_at IS NULL 
              AND ((CASE WHEN $1 = true THEN school_id = $2::integer ELSE false END) OR school_id::text = $3)
            ORDER BY tgl_daftar DESC`,
-          [isNum, isNum ? numericSchoolId : 0, String(schoolId)]
+          [isNum, isNum ? numericSchoolId : 0, String(targetId)]
         );
         return pgRes.rows || [];
       } catch (_pgErr) {
-        throw error;
+        console.warn('getAdminApplicants fallback query error:', error.message || error);
+        return [];
       }
     }
     return rows || [];
@@ -239,16 +242,26 @@ export class ApplicantQueryService {
 
   static async getTrashedApplicants(schoolId: string, authToken?: string) {
     const supabase = getSupabaseClient(authToken);
+    const resolvedUUID = await resolveSchoolUUID(schoolId, fontInMemSchools);
+    const targetId = resolvedUUID || schoolId;
+    const numericSchoolId = !isNaN(Number(targetId)) ? Number(targetId) : null;
 
-    const query = supabase
+    let query = supabase
       .from("student_applicants")
       .select([...calonSiswaFields, "deleted_at"].join(","))
       .not("deleted_at", "is", null)
-      .order("deleted_at", { ascending: false })
-      .eq("school_id", schoolId);
+      .order("deleted_at", { ascending: false });
+
+    if (numericSchoolId !== null) {
+      query = query.eq("school_id", numericSchoolId);
+    } else {
+      query = query.eq("school_id", targetId);
+    }
 
     const { data: rows, error } = await query;
-    if (error) throw error;
+    if (error) {
+      return [];
+    }
     return rows || [];
   }
 

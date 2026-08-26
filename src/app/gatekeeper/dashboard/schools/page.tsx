@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, Suspense } from "react";
 import _Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  Building2, Search, Eye, ExternalLink, FileText, Check, RefreshCw, X
+  Building2, Search, Eye, ExternalLink, FileText, Check, RefreshCw, X, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -245,14 +245,54 @@ function GatekeeperSchoolManagementContent() {
           }
           Swal.fire({
             title: "Instansi Di-Takedown!",
-            text: `Sekolah ${school.name} telah di-takedown (Nonaktif).`,
+            text: `Subdomain dan akses akun admin ${school.name} telah di-takedown (Nonaktif).`,
             icon: "success",
             confirmButtonColor: "#2563EB",
-          customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
-        });
-      }
-    });
-  };
+            customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
+          });
+        }
+      });
+    };
+
+    const handlePurgeSchool = (school: SchoolTenant) => {
+      Swal.fire({
+        title: `Hapus Permanen ${school.name}?`,
+        text: `PERINGATAN: Subdomain (${school.slug}), data akun admin, dan seluruh konfigurasi instansi ini akan dihapus permanen dari database CationGate.`,
+        icon: "error",
+        showCancelButton: true,
+        confirmButtonColor: "#DC2626",
+        cancelButtonColor: "#64748B",
+        confirmButtonText: "Ya, Hapus Permanen",
+        cancelButtonText: "Batal",
+        customClass: {
+          popup: "rounded-2xl dark:bg-slate-900 dark:text-white border dark:border-slate-800"
+        }
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
+            await fetch("/api/gatekeeper/purge-school", {
+              method: "POST",
+              headers: { 
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+              },
+              body: JSON.stringify({ school_id: school.slug || school.id }),
+            });
+          } catch (_e) {}
+
+          await fetchSchools();
+          setSelectedSchoolModal(null);
+          Swal.fire({
+            title: "Instansi Dihapus",
+            text: `Subdomain dan akun ${school.name} berhasil dihapus permanen.`,
+            icon: "success",
+            confirmButtonColor: "#2563EB",
+            customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
+          });
+        }
+      });
+    };
 
   // Filtered List with Null-Safe Guards
   const filteredSchools = schools.filter(s => {
@@ -448,9 +488,18 @@ function GatekeeperSchoolManagementContent() {
                       <button
                         onClick={() => handleTakedownSchool(sc)}
                         className="px-2.5 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-100 text-xs font-bold border border-rose-200 dark:border-rose-900 transition-colors"
-                        title="Takedown / Dibekukan"
+                        title="Takedown / Dibekukan Subdomain & Akun"
                       >
                         Takedown
+                      </button>
+
+                      {/* Purge / Hapus Permanen */}
+                      <button
+                        onClick={() => handlePurgeSchool(sc)}
+                        className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Hapus Permanen Subdomain & Akun (Purge Data)"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
 
                       {/* Direct Links */}
@@ -609,9 +658,17 @@ function GatekeeperSchoolManagementContent() {
 
               <div className="flex items-center gap-2">
                 <Button
+                  onClick={() => handlePurgeSchool(selectedSchoolModal)}
+                  variant="outline"
+                  className="h-11 px-4 text-xs rounded-xl text-rose-600 hover:bg-rose-50 border-rose-200 dark:border-rose-900 font-bold flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-4 h-4" /> Hapus Permanen
+                </Button>
+
+                <Button
                   onClick={() => handleTakedownSchool(selectedSchoolModal)}
                   variant="outline"
-                  className="h-11 px-5 text-xs rounded-xl text-rose-600 hover:bg-rose-50 border-rose-200 dark:border-rose-900 font-bold"
+                  className="h-11 px-4 text-xs rounded-xl text-amber-600 hover:bg-amber-50 border-amber-200 dark:border-amber-900 font-bold"
                 >
                   Takedown Instansi
                 </Button>

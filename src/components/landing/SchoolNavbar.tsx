@@ -45,7 +45,7 @@ const DEFAULT_MAJORS = [
 
 export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
-  const { href } = useSchoolHref();
+  const { href } = useSchoolHref(schoolSlug);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [majors, setMajors] = useState<any[]>(DEFAULT_MAJORS);

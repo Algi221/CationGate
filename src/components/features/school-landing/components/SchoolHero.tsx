@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image"; // <-- Import lagi buat background
 import dynamic from "next/dynamic";
 import { ArrowRight, MapPin } from "lucide-react";
 import ShinyText from "@/components/ShinyText";
@@ -34,23 +35,32 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
   heroTitleSub,
   heroSubtitle,
   address,
-  majors // Props original tetap aman, walau gak dirender jadi bubble lagi
+  majors 
 }) => {
   return (
     <div className="relative w-full overflow-hidden">
-      {/* Mesh Gradient Background */}
-      <div className="absolute inset-0 -z-10 overflow-hidden bg-linear-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <div className="w-full h-full bg-linear-to-br from-blue-600/10 via-indigo-500/5 to-slate-900/10 dark:from-blue-900/20 dark:via-slate-900 dark:to-slate-950" />
-        <div className="absolute inset-0 bg-white/50 dark:bg-[#020617] backdrop-blur-none pointer-events-none" />
+      
+      {/* BACKGROUND IMAGE DENGAN FADE OUT */}
+      <div className="absolute inset-0 -z-10 overflow-hidden bg-slate-50 dark:bg-[#020617]">
+        {/* Gambar aslinya */}
+        <Image
+          src="/assets/background/bg-seklah.jpeg"
+          alt="Background Sekolah"
+          fill
+          priority
+          className="object-cover object-top opacity-30 dark:opacity-15" // Opacity dikurangin biar teks tetep kebaca
+        />
+        {/* Gradient overlay biar atasnya keliatan, makin ke bawah makin ilang/solid */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-50/80 to-slate-50 dark:via-[#020617]/80 dark:to-[#020617]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[90vh] flex flex-col justify-center">
         <section className="hero">
           
-          {/* Top Info (Address Only - Badge SPMB Dihapus) */}
+          {/* Top Info (Address Only) */}
           <div className="relative z-10 flex flex-col items-center gap-3">
             {address && (
-              <div className="flex items-center gap-2 text-[11px] md:text-xs font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800/50 px-5 py-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm animate-[fadeIn_0.5s_ease-out]">
+              <div className="flex items-center gap-2 text-[11px] md:text-xs font-medium text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-5 py-2 rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.5s_ease-out]">
                 <MapPin size={14} className="text-blue-500 shrink-0" />
                 <span>{address}</span>
               </div>
@@ -70,7 +80,7 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
             />
           </h1>
 
-          <p className="hero-subtitle relative z-10 text-center mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+          <p className="hero-subtitle relative z-10 text-center mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium drop-shadow-sm">
             {heroSubtitle}
           </p>
 

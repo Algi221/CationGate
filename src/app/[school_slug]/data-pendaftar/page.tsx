@@ -24,9 +24,9 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 export default function DataPendaftarPage() {
   const params = useParams();
-  const _schoolSlug = (params?.school_slug as string) || "smktarunabhakti";
+  const rawSlug = (params?.school_slug as string) || "smktarunabhakti";
   const { href } = useSchoolHref();
-  const schoolSlug = encodeURIComponent(_schoolSlug.replace(/[^a-zA-Z0-9_-]/g, ""));
+  const _schoolSlug = encodeURIComponent(rawSlug.replace(/[^a-zA-Z0-9_-]/g, ""));
 
   const { publicApplicants } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");

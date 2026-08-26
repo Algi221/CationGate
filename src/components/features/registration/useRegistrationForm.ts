@@ -13,7 +13,7 @@ export { createInitialFormData };
 export const useRegistrationForm = () => {
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "smk";
-  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, ppdbLogo, ppdbTitle } = usePPDB();
+  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, ppdbLogo, ppdbTitle, schoolStatus, isConfigLoaded } = usePPDB();
 
   const { formData, setFormData, wizardStep, setWizardStep, furthestStep, setFurthestStep } =
     useRegistrationDraft();
@@ -35,6 +35,10 @@ export const useRegistrationForm = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [kuotaData, setKuotaData] = useState<any[] | null>(null);
+
+  const [isSubscriptionActive, setIsSubscriptionActive] = useState<boolean>(() => {
+    return schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
+  });
 
   const [portalStatus, setPortalStatus] = useState(() => {
     if (typeof window !== "undefined") {
@@ -285,6 +289,29 @@ export const useRegistrationForm = () => {
         }
       } catch (err) {
         console.log("Failed to fetch live config on registration page, using local storage fallback:", err);
+      }
+
+      try {
+        const isDemo = schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
+        if (isDemo) {
+          setIsSubscriptionActive(true);
+        } else {
+          const sRes = await fetch(`/api/saas/school-by-slug/${schoolSlug}?t=${Date.now()}`);
+          const sData = await sRes.json();
+          if (sData.success && sData.data) {
+            const s = sData.data;
+            const subActive =
+              s.is_subscription_active === true ||
+              s.plan_type === "PRO" ||
+              s.plan_type === "ENTERPRISE" ||
+              (s.subscription_expires_at && new Date(s.subscription_expires_at).getTime() > Date.now());
+            setIsSubscriptionActive(!!subActive);
+          } else {
+            setIsSubscriptionActive(false);
+          }
+        }
+      } catch (_e) {
+        // fallback
       }
     };
     loadLiveConfig();
@@ -589,6 +616,9 @@ export const useRegistrationForm = () => {
     prevStep,
     goToStep,
     handlePaymentSuccess,
-    handleRegisterNew
+    handleRegisterNew,
+    schoolStatus,
+    isSubscriptionActive,
+    isConfigLoaded
   };
 };

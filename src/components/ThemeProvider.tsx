@@ -41,16 +41,17 @@ export function ThemeProvider({
     }
   }, []);
 
-  const isDemoOrSchoolPage =
+  const isSchoolRoute =
     isSubdomain ||
     pathname?.startsWith("/demo") ||
-    pathname?.startsWith("/jurusan");
+    pathname?.startsWith("/jurusan") ||
+    pathname?.includes("/daftar") ||
+    pathname?.includes("/dashboard");
 
   const isForcedLight =
-    !isDemoOrSchoolPage &&
+    !isSchoolRoute &&
     (pathname === "/" ||
       pathname === "/login" ||
-      pathname === "/daftar" ||
       pathname === "/register" ||
       pathname === "/masuk" ||
       pathname?.startsWith("/forgot-password") ||

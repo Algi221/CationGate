@@ -99,8 +99,10 @@ export default function SubscriptionManagementPage() {
   const currentPlanName = subscription?.plan || "FREE_TRIAL";
   const isPro = currentPlanName === "PRO_YEARLY" || currentPlanName === "PRO_750K" || currentPlanName === "PRO";
 
-  const activateSubscription = async (orderId?: string) => {
+  const activateSubscription = async (orderId?: string, planName?: string, amount?: number) => {
     const targetOrderId = orderId || generateFallbackOrderId();
+    const targetPlan = planName || "Pro Tahunan";
+    const targetAmount = typeof amount === "number" && amount > 0 ? amount : (targetPlan.toLowerCase().includes("enterprise") ? 35000000 : 15000000);
     const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
 
     try {
@@ -113,12 +115,15 @@ export default function SubscriptionManagementPage() {
         body: JSON.stringify({
           slug: schoolSlug,
           school_id: schoolId,
-          order_id: targetOrderId
+          order_id: targetOrderId,
+          plan_name: targetPlan,
+          amount: targetAmount,
+          payment_method: "Midtrans (Simulasi Sandbox)"
         })
       });
 
       setSubscription({
-        plan: "PRO_YEARLY",
+        plan: targetPlan.toUpperCase().replace(/\s+/g, '_'),
         status: "ACTIVE",
         daysLeft: 365,
         isExpired: false,
@@ -132,13 +137,14 @@ export default function SubscriptionManagementPage() {
             <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
               <p class="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Status: SETTLEMENT (LUNAS)</p>
               <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1">Order ID: <code class="font-mono font-bold bg-white/70 dark:bg-black/30 px-1.5 py-0.5 rounded">${targetOrderId}</code></p>
+              <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-0.5">Paket: <strong>${targetPlan}</strong> (Rp ${targetAmount.toLocaleString("id-ID")})</p>
             </div>
-            <p>Paket <strong>Pro Tahunan</strong> telah aktif untuk sekolah Anda selama 365 hari penuh. Seluruh fitur PPDB Unlimited kini dapat digunakan.</p>
+            <p>Paket <strong>${targetPlan}</strong> telah aktif untuk sekolah Anda selama 365 hari penuh. Transaksi pembayaran ini juga langsung tercatat di riwayat transaksi superadmin Gatekeeper.</p>
           </div>
         `,
         icon: "success",
         confirmButtonColor: "#2563EB",
-        confirmButtonText: "Mulai Gunakan Pro",
+        confirmButtonText: "Mulai Gunakan Fitur",
         customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
       });
     } catch (_err) {
@@ -148,6 +154,36 @@ export default function SubscriptionManagementPage() {
         icon: "error",
         confirmButtonColor: "#F43F5E"
       });
+    }
+  };
+
+  const handleSimulateSuccess = async (planName?: string, priceYearly?: number) => {
+    const selectedPlan = planName || "Pro Tahunan";
+    const selectedPrice = typeof priceYearly === "number" && priceYearly > 0 ? priceYearly : (selectedPlan.toLowerCase().includes("enterprise") ? 35000000 : 15000000);
+    const simOrderId = `SIM-MIDTRANS-${Date.now()}`;
+    const result = await Swal.fire({
+      title: "Simulasi Pembayaran Berhasil! 💳🎉",
+      html: `
+        <div class="space-y-3 text-left text-xs text-slate-600 dark:text-slate-300 py-2">
+          <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
+            <p class="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Status Transaksi: SETTLEMENT (SUKSES)</p>
+            <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1">Order ID: <code class="font-mono font-bold bg-white/70 dark:bg-black/30 px-1.5 py-0.5 rounded">${simOrderId}</code></p>
+            <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-0.5">Paket: <strong>${selectedPlan}</strong> (Rp ${selectedPrice.toLocaleString("id-ID")})</p>
+          </div>
+          <p>Simulasi transaksi Midtrans Sandbox sukses terverifikasi. Klik tombol <strong>Konfirmasi &amp; Selesaikan</strong> untuk mengaktifkan lisensi sekolah, membuka kunci pendaftaran publik (SPMB), dan mencatat transaksi ke database Gatekeeper.</p>
+        </div>
+      `,
+      icon: "success",
+      showCancelButton: true,
+      confirmButtonColor: "#10B981",
+      cancelButtonColor: "#64748B",
+      confirmButtonText: "Konfirmasi & Selesaikan",
+      cancelButtonText: "Batal",
+      customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+    });
+
+    if (result.isConfirmed) {
+      await activateSubscription(simOrderId, selectedPlan, selectedPrice);
     }
   };
 
@@ -514,24 +550,37 @@ export default function SubscriptionManagementPage() {
                       </div>
                     </div>
 
-                    <Button
-                      onClick={() => handleUpgradePlan(pkg.name)}
-                      disabled={isPaying || isCurrentlyActive}
-                      variant="outline"
-                      className="w-full h-12 rounded-2xl bg-[#FFD33B] hover:bg-[#F3C625] text-black font-black border-2 border-black transition-all duration-100 shadow-[4px_4px_rgb(255_210_48)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isCurrentlyActive ? (
-                        "Sedang Digunakan"
-                      ) : isPaying ? (
-                        <>
-                          <Clock className="w-4 h-4 mr-2 animate-spin" /> Memproses...
-                        </>
-                      ) : (
-                        <>
-                          <ShieldCheck className="w-4 h-4 mr-2" /> Upgrade ke Pro Sekarang <ArrowRight className="w-4 h-4 ml-1" />
-                        </>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={() => handleUpgradePlan(pkg.name)}
+                        disabled={isPaying || isCurrentlyActive}
+                        variant="outline"
+                        className="w-full h-12 rounded-2xl bg-[#FFD33B] hover:bg-[#F3C625] text-black font-black border-2 border-black transition-all duration-100 shadow-[4px_4px_rgb(255_210_48)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isCurrentlyActive ? (
+                          "Sedang Digunakan"
+                        ) : isPaying ? (
+                          <>
+                            <Clock className="w-4 h-4 mr-2 animate-spin" /> Memproses...
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck className="w-4 h-4 mr-2" /> Upgrade ke Pro Sekarang <ArrowRight className="w-4 h-4 ml-1" />
+                          </>
+                        )}
+                      </Button>
+
+                      {!isCurrentlyActive && (
+                        <button
+                          type="button"
+                          onClick={() => handleSimulateSuccess(pkg.name, pkg.price_yearly)}
+                          className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
+                        >
+                          <Sparkles size={14} className="text-emerald-400" />
+                          <span>Simulasi Pembayaran Berhasil (Sandbox)</span>
+                        </button>
                       )}
-                    </Button>
+                    </div>
                   </div>
                 );
               }
@@ -583,24 +632,37 @@ export default function SubscriptionManagementPage() {
                     </div>
                   </div>
 
-                  <Button
-                    onClick={() => handleUpgradePlan(pkg.name)}
-                    disabled={isPaying || isCurrentlyActive}
-                    variant="outline"
-                    className="w-full h-12 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black border-2 border-slate-900 dark:border-white transition-all duration-100 shadow-[4px_4px_rgb(15_23_42)] dark:shadow-[4px_4px_rgb(255_255_255/20%)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isCurrentlyActive ? (
-                      "Sedang Digunakan"
-                    ) : isPaying ? (
-                      <>
-                        <Clock className="w-4 h-4 mr-2 animate-spin" /> Memproses...
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheck className="w-4 h-4 mr-2" /> Upgrade Enterprise <ArrowRight className="w-4 h-4 ml-1" />
-                      </>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => handleUpgradePlan(pkg.name)}
+                      disabled={isPaying || isCurrentlyActive}
+                      variant="outline"
+                      className="w-full h-12 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black border-2 border-slate-900 dark:border-white transition-all duration-100 shadow-[4px_4px_rgb(15_23_42)] dark:shadow-[4px_4px_rgb(255_255_255/20%)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isCurrentlyActive ? (
+                        "Sedang Digunakan"
+                      ) : isPaying ? (
+                        <>
+                          <Clock className="w-4 h-4 mr-2 animate-spin" /> Memproses...
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="w-4 h-4 mr-2" /> Upgrade Enterprise <ArrowRight className="w-4 h-4 ml-1" />
+                        </>
+                      )}
+                    </Button>
+
+                    {!isCurrentlyActive && (
+                      <button
+                        type="button"
+                        onClick={() => handleSimulateSuccess(pkg.name, pkg.price_yearly)}
+                        className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
+                      >
+                        <Sparkles size={14} className="text-emerald-500" />
+                        <span>Simulasi Pembayaran Berhasil (Sandbox)</span>
+                      </button>
                     )}
-                  </Button>
+                  </div>
                 </div>
               );
             })}

@@ -13,6 +13,7 @@ import { SchoolMajors } from "@/components/features/school-landing/components/Sc
 import { SchoolKemitraan } from "@/components/features/school-landing/components/SchoolKemitraan";
 import { SchoolFaq } from "@/components/features/school-landing/components/SchoolFaq";
 import { SchoolContact } from "@/components/features/school-landing/components/SchoolContact";
+import { SchoolUnverifiedLandingView } from "@/components/features/school-landing/components/SchoolUnverifiedLandingView";
 
 export default function SchoolLandingPage() {
   const {
@@ -21,9 +22,13 @@ export default function SchoolLandingPage() {
     isSchoolNotFound,
     isLandingPageActive,
     isPlatformMaintenance,
+    schoolStatus,
+    isSchoolVerified,
+    isConfigLoaded,
     heroTitle,
     heroTitleSub,
     heroSubtitle,
+    heroBgImage,
     address,
     mapTitle,
     mapUrl,
@@ -87,6 +92,17 @@ export default function SchoolLandingPage() {
     );
   }
 
+  // Block landing page if school is unconfirmed / pending Gatekeeper verification
+  if (isConfigLoaded && !isSchoolVerified) {
+    return (
+      <SchoolUnverifiedLandingView
+        schoolSlug={schoolSlug}
+        schoolDisplayName={schoolDisplayName}
+        schoolStatus={schoolStatus}
+      />
+    );
+  }
+
   if (!isLandingPageActive) {
     return (
       <SchoolMaintenanceView
@@ -115,6 +131,7 @@ export default function SchoolLandingPage() {
           heroSubtitle={heroSubtitle}
           address={address}
           majors={majors}
+          heroBgImage={heroBgImage}
         />
 
         {/* 2. JADWAL GELOMBANG PENDAFTARAN */}

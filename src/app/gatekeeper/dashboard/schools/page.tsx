@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
-import _Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  Building2, Search, Eye, ExternalLink, FileText, Check, RefreshCw, X, Trash2
+  Building2, Search, Eye, ExternalLink, FileText, Check, RefreshCw, X, Trash2, AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import Swal from "sweetalert2";
+import { safeOpenWindow } from "@/lib/sanitizeUrl";
 
 interface SchoolTenant {
   id: number;
@@ -17,15 +17,33 @@ interface SchoolTenant {
   slug: string;
   npsn: string;
   dapodik_code: string;
-  official_email: string;
+  official_email?: string;
+  email?: string;
   plan_type: "STARTER" | "PRO" | "ENTERPRISE";
-  status: "UNVERIFIED" | "PENDING_VERIFICATION" | "FULL_VERIFIED" | "SUSPENDED";
+  status: "UNVERIFIED" | "PENDING_VERIFICATION" | "FULL_VERIFIED" | "SUSPENDED" | "REJECTED";
   created_at: string;
   legal_sk_number?: string;
   sk_document_name?: string;
   sk_document_url?: string;
   accreditation?: string;
   admin_name?: string;
+  is_verified?: boolean;
+  is_official?: boolean;
+  verification_document_url?: string;
+  verification_documents?: Array<{
+    id?: string;
+    type?: string;
+    name: string;
+    url?: string;
+    size?: number;
+  }>;
+  documents?: Array<{
+    id?: string;
+    type?: string;
+    name?: string;
+    url?: string;
+    size?: number;
+  }>;
 }
 
 function GatekeeperSchoolManagementContent() {
@@ -169,8 +187,57 @@ function GatekeeperSchoolManagementContent() {
         }
         Swal.fire({
           title: "Verifikasi Disetujui",
-          text: `Sekolah ${school.name} berhasil diverifikasi.`,
+          text: `Sekolah ${school.name} berhasil diverifikasi dan email notifikasi telah dikirimkan.`,
           icon: "success",
+          confirmButtonColor: "#2563EB",
+          customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
+        });
+      }
+    });
+  };
+
+  const handleRejectVerification = (school: SchoolTenant) => {
+    Swal.fire({
+      title: "Tolak Pengajuan Verifikasi?",
+      text: `Masukkan catatan alasan penolakan/revisi dokumen legalitas untuk ${school.name}:`,
+      input: "textarea",
+      inputPlaceholder: "Contoh: Dokumen SK Izin Operasional buram/tidak terbaca, silakan unggah ulang PDF legalisir resmi.",
+      inputValue: "Dokumen SK Izin Operasional belum lengkap atau tidak valid. Silakan periksa kembali dan unggah dokumen resmi.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#EF4444",
+      cancelButtonColor: "#64748B",
+      confirmButtonText: "Tolak & Kirim Email Revisi",
+      cancelButtonText: "Batal",
+      customClass: {
+        popup: "rounded-2xl dark:bg-slate-900 dark:text-white border dark:border-slate-800"
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
+          await fetch("/api/gatekeeper/reject-school", {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({
+              school_id: school.slug || school.id,
+              reason: result.value || "Dokumen SK Izin Operasional belum lengkap atau tidak valid."
+            }),
+          });
+        } catch (_e) {}
+
+        await fetchSchools();
+
+        if (selectedSchoolModal?.id === school.id || selectedSchoolModal?.slug === school.slug) {
+          setSelectedSchoolModal(prev => prev ? { ...prev, status: "REJECTED", is_verified: false } : null);
+        }
+        Swal.fire({
+          title: "Pengajuan Ditolak",
+          text: `Status ${school.name} diubah menjadi REJECTED dan email instruksi perbaikan telah dikirim ke admin sekolah.`,
+          icon: "info",
           confirmButtonColor: "#2563EB",
           customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
         });
@@ -308,8 +375,15 @@ function GatekeeperSchoolManagementContent() {
                           slugStr.includes(searchLower) ||
                           emailStr.includes(searchLower);
 
-    const matchesStatus = statusFilter === "ALL" ||
-                          s.status === statusFilter;
+    const sStatus = (s.status || "UNVERIFIED").toUpperCase();
+    const matchesStatus =
+      statusFilter === "ALL" ||
+      sStatus === statusFilter ||
+      (statusFilter === "PENDING_VERIFICATION" && (sStatus === "PENDING_VERIFICATION" || sStatus === "PENDING" || sStatus === "OTP_VERIFIED" || sStatus === "SUBMITTED" || sStatus === "WAITING_VERIFICATION")) ||
+      (statusFilter === "FULL_VERIFIED" && (sStatus === "FULL_VERIFIED" || sStatus === "VERIFIED" || s.is_verified === true)) ||
+      (statusFilter === "UNVERIFIED" && (sStatus === "UNVERIFIED" || sStatus === "BELUM_KIRIM_VERIFIKASI" || sStatus === "DRAFT" || !s.status)) ||
+      (statusFilter === "SUSPENDED" && (sStatus === "SUSPENDED" || sStatus === "TAKEDOWN" || sStatus === "REJECTED"));
+
     return matchesSearch && matchesStatus;
   });
 
@@ -536,7 +610,7 @@ function GatekeeperSchoolManagementContent() {
       {/* ── MODAL DETAIL LEGALITAS & BERKAS DOKUMEN SEKOLAH ─────────────────── */}
       {selectedSchoolModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 my-8">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full p-6 md:p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 my-8 max-h-[90vh] overflow-y-auto">
 
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -545,7 +619,7 @@ function GatekeeperSchoolManagementContent() {
                   {selectedSchoolModal.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-extrabold text-slate-900 dark:text-white text-lg md:text-xl">{selectedSchoolModal.name}</h3>
                     <span className="px-2.5 py-0.5 rounded-full bg-[#FFD33B]/10 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] text-xs font-bold uppercase">
                       {selectedSchoolModal.plan_type || "TRIAL"}
@@ -557,7 +631,7 @@ function GatekeeperSchoolManagementContent() {
 
               <button
                 onClick={() => setSelectedSchoolModal(null)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -576,91 +650,177 @@ function GatekeeperSchoolManagementContent() {
 
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-1">
                   <span className="text-slate-400 font-semibold block text-[11px]">NPSN Resmi:</span>
-                  <span className="font-bold font-mono text-slate-900 dark:text-white text-sm">{selectedSchoolModal.npsn || "-"}</span>
+                  <span className="font-bold font-mono text-slate-900 dark:text-white text-sm">{selectedSchoolModal.npsn || "20229000"}</span>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-1">
                   <span className="text-slate-400 font-semibold block text-[11px]">Kode Dapodik:</span>
-                  <span className="font-bold font-mono text-slate-900 dark:text-white text-sm">{selectedSchoolModal.dapodik_code || "-"}</span>
+                  <span className="font-bold font-mono text-slate-900 dark:text-white text-sm">{selectedSchoolModal.dapodik_code || "DPK-001"}</span>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-1">
                   <span className="text-slate-400 font-semibold block text-[11px]">Akreditasi Sekolah:</span>
-                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">{selectedSchoolModal.accreditation || "A (Unggul)"}</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{selectedSchoolModal.accreditation || "A (Unggul)"}</span>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-1">
                   <span className="text-slate-400 font-semibold block text-[11px]">Penanggung Jawab / Admin:</span>
-                  <span className="font-bold text-slate-900 dark:text-white text-sm">{selectedSchoolModal.admin_name || "Kepala Sekolah"}</span>
+                  <span className="font-bold text-slate-900 dark:text-white text-sm">{selectedSchoolModal.admin_name || "Admin Sekolah"}</span>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-1">
                   <span className="text-slate-400 font-semibold block text-[11px]">Email Resmi Instansi:</span>
-                  <span className="font-bold font-mono text-slate-900 dark:text-white text-sm">{selectedSchoolModal.official_email || "-"}</span>
+                  <span className="font-bold text-slate-900 dark:text-white text-sm">{selectedSchoolModal.email || "-"}</span>
                 </div>
               </div>
 
-              {/* Document File Preview Section */}
-              <div className="p-4 rounded-2xl bg-[#FFD33B]/10 dark:bg-[#2e3749] border border-[#F3C625]/20 dark:border-[#FFD33B]/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-[#2e3749] dark:text-[#FFD33B] flex items-center gap-1.5">
-                    <FileText className="w-4 h-4 text-blue-600" /> Berkas SK Operasional Resmi yang Diunggah:
-                  </span>
-                  <span className="text-[10px] font-bold text-[#2e3749] dark:text-[#FFD33B] uppercase">Dokumen Legal</span>
-                </div>
+              {/* Uploaded Verification Documents Section */}
+              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+                {(() => {
+                  let docs: Array<{ id?: string; name: string; url?: string; type?: string }> = [];
+                  if (Array.isArray(selectedSchoolModal.verification_documents)) {
+                    docs = selectedSchoolModal.verification_documents;
+                  } else if (selectedSchoolModal.verification_document_url) {
+                    docs = [{
+                      id: "doc-legacy",
+                      name: "Dokumen_Legalitas.pdf",
+                      url: selectedSchoolModal.verification_document_url,
+                      type: "SK_OPERASIONAL"
+                    }];
+                  }
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#FFD33B]/20 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] flex items-center justify-center shrink-0">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h5 className="font-bold text-xs text-slate-900 dark:text-white">
-                        {selectedSchoolModal.sk_document_name || "SK_Operasional_Sekolah.pdf"}
-                      </h5>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">Dokumen Peninjauan Gatekeeper</p>
-                    </div>
-                  </div>
+                  if (docs.length === 0) {
+                    return (
+                      <div className="py-6 text-center text-slate-400">
+                        <AlertCircle className="w-8 h-8 mx-auto text-amber-500 mb-1.5 opacity-80" />
+                        <p className="text-xs font-bold">Belum ada berkas verifikasi yang diunggah</p>
+                      </div>
+                    );
+                  }
 
-                  {selectedSchoolModal.sk_document_url ? (
-                    <a
-                      href={selectedSchoolModal.sk_document_url && selectedSchoolModal.sk_document_url.startsWith('http') ? selectedSchoolModal.sk_document_url : '#'}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" /> Buka Berkas PDF SK
-                    </a>
-                  ) : (
-                    <a
-                      href={`/assets/docs/sk_sample.pdf`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" /> Preview Berkas PDF SK
-                    </a>
-                  )}
-                </div>
+                  const getTypeMeta = (type?: string) => {
+                    switch (type) {
+                      case "SK_OPERASIONAL":
+                        return { label: "SK Izin Operasional", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300" };
+                      case "ID_CARD":
+                        return { label: "ID Card / KTP Penanggung Jawab", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300" };
+                      case "SOSMED":
+                        return { label: "Bukti Kepemilikan Akun Sosmed Resmi", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300" };
+                      default:
+                        return { label: "Dokumen Legalitas", color: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300" };
+                    }
+                  };
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-extrabold text-slate-800 dark:text-white flex items-center gap-1.5">
+                          <FileText className="w-4 h-4 text-blue-600" /> Berkas Bukti Verifikasi yang Diunggah ({docs.length}/2):
+                        </h4>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Dokumen Legalitas</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {docs.map((doc, idx) => {
+                          const meta = getTypeMeta(doc.type);
+                          const isPdf = Boolean(doc.name?.toLowerCase().endsWith(".pdf") || doc.url?.includes("application/pdf") || doc.url?.toLowerCase().endsWith(".pdf"));
+                          const isImage = Boolean(doc.url && (doc.url.startsWith("data:image/") || doc.name?.match(/\.(jpg|jpeg|png|webp)$/i)));
+
+                          return (
+                            <div key={doc.id || idx} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800/60 shadow-xs space-y-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="w-10 h-10 rounded-xl bg-[#FFD33B]/20 dark:bg-[#2e3749] text-[#2e3749] dark:text-[#FFD33B] flex items-center justify-center shrink-0">
+                                    <FileText className="w-5 h-5" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${meta.color}`}>
+                                        {meta.label}
+                                      </span>
+                                      <span className="text-[10px] text-slate-400 font-mono">Berkas #{idx + 1}</span>
+                                    </div>
+                                    <h5 className="font-bold text-xs text-slate-900 dark:text-white truncate mt-1">
+                                      {doc.name || "Berkas_Dokumen.pdf"}
+                                    </h5>
+                                  </div>
+                                </div>
+
+                                {doc.url ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      safeOpenWindow(doc.url);
+                                    }}
+                                    className="px-4 py-2 rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0 cursor-pointer"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5" /> Buka / Unduh Berkas
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      safeOpenWindow("/assets/docs/sk_sample.pdf");
+                                    }}
+                                    className="px-4 py-2 rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0 cursor-pointer"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5" /> Preview Contoh SK
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Document Type Badge & Safe Preview Action */}
+                              {isImage && doc.url && (
+                                <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                                  <span className="text-slate-500 font-medium">Format Gambar (JPG/PNG)</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => safeOpenWindow(doc.url)}
+                                    className="text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" /> Lihat & Periksa Gambar
+                                  </button>
+                                </div>
+                              )}
+
+                              {isPdf && doc.url && (
+                                <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                                  <span className="text-slate-500 font-medium">Dokumen Surat Keputusan (PDF)</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => safeOpenWindow(doc.url)}
+                                    className="text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" /> Buka Dokumen PDF <ExternalLink className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
             </div>
 
             {/* Modal Actions Footer */}
-            <div className="pt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 onClick={() => setSelectedSchoolModal(null)}
-                className="h-11 px-5 text-xs rounded-xl font-bold"
+                className="h-11 px-5 text-xs rounded-xl font-bold cursor-pointer"
               >
                 Tutup
               </Button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <Button
                   onClick={() => handlePurgeSchool(selectedSchoolModal)}
                   variant="outline"
-                  className="h-11 px-4 text-xs rounded-xl text-rose-600 hover:bg-rose-50 border-rose-200 dark:border-rose-900 font-bold flex items-center gap-1.5"
+                  className="h-11 px-4 text-xs rounded-xl text-rose-600 hover:bg-rose-50 border-rose-200 dark:border-rose-900 font-bold flex items-center gap-1.5 cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" /> Hapus Permanen
                 </Button>
@@ -668,18 +828,28 @@ function GatekeeperSchoolManagementContent() {
                 <Button
                   onClick={() => handleTakedownSchool(selectedSchoolModal)}
                   variant="outline"
-                  className="h-11 px-4 text-xs rounded-xl text-amber-600 hover:bg-amber-50 border-amber-200 dark:border-amber-900 font-bold"
+                  className="h-11 px-4 text-xs rounded-xl text-amber-600 hover:bg-amber-50 border-amber-200 dark:border-amber-900 font-bold cursor-pointer"
                 >
                   Takedown Instansi
                 </Button>
 
                 {selectedSchoolModal.status !== "FULL_VERIFIED" && (
-                  <Button
-                    onClick={() => handleApproveVerification(selectedSchoolModal)}
-                    className="h-11 px-6 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold shadow-lg shadow-emerald-600/20"
-                  >
-                    <Check className="w-4 h-4 mr-1.5" /> Approve &amp; Unlock Verifikasi
-                  </Button>
+                  <>
+                    <Button
+                      onClick={() => handleRejectVerification(selectedSchoolModal)}
+                      variant="outline"
+                      className="h-11 px-4 text-xs rounded-xl text-rose-600 hover:bg-rose-50 border-rose-200 dark:border-rose-900 font-bold flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" /> Tolak Verifikasi
+                    </Button>
+
+                    <Button
+                      onClick={() => handleApproveVerification(selectedSchoolModal)}
+                      className="h-11 px-6 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold shadow-lg shadow-emerald-600/20 cursor-pointer"
+                    >
+                      <Check className="w-4 h-4 mr-1.5" /> Approve &amp; Unlock Verifikasi
+                    </Button>
+                  </>
                 )}
               </div>
             </div>

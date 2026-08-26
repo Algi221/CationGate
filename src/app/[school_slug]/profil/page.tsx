@@ -40,14 +40,14 @@ export default function ProfilSekolahPublicPage() {
   }
 
   const identitas = profilSekolah?.identitas || {
-    nama: ppdbTitle || "Institusi Pendidikan Unggulan",
-    akreditasi: "A (Unggul)",
-    alamat: "Jl. Pendidikan No. 10, Kota Depok, Jawa Barat, Indonesia 16431",
-    npsn: "20229182",
-    nis: "100290",
-    nss: "302026501001",
-    tahun_berdiri: "1998",
-    email: "info@sekolah.sch.id"
+    nama: ppdbTitle || (schoolSlug === "smktarunabhakti" ? "SMK Taruna Bhakti" : "Institusi Pendidikan Unggulan"),
+    akreditasi: profilSekolah?.identitas?.akreditasi || (schoolSlug === "smktarunabhakti" ? "A (Unggul)" : "-"),
+    alamat: profilSekolah?.identitas?.alamat || (schoolSlug === "smktarunabhakti" ? "Jl. Pekapuran RT 02/06 Curug, Cimanggis, Kota Depok" : "-"),
+    npsn: profilSekolah?.identitas?.npsn || (schoolSlug === "smktarunabhakti" ? "20229182" : "-"),
+    nis: profilSekolah?.identitas?.nis || (schoolSlug === "smktarunabhakti" ? "100290" : "-"),
+    nss: profilSekolah?.identitas?.nss || (schoolSlug === "smktarunabhakti" ? "302026501001" : "-"),
+    tahun_berdiri: profilSekolah?.identitas?.tahun_berdiri || (schoolSlug === "smktarunabhakti" ? "1998" : "-"),
+    email: profilSekolah?.identitas?.email || (schoolSlug === "smktarunabhakti" ? "tarunabhakti.smk@gmail.com" : "admin@sekolah.sch.id")
   };
 
   const sejarah =

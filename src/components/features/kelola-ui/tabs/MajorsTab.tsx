@@ -383,6 +383,7 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                     <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Kode Jurusan (e.g. RPL, TJKT)</label>
                     <input
                       type="text"
+                      maxLength={10}
                       value={editingMajor.code}
                       disabled={!isNewMajor}
                       onChange={(e) => setEditingMajor({ ...editingMajor, code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") })}
@@ -392,9 +393,13 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Nama Program Studi</label>
+                    <div className="flex justify-between items-center">
+                      <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Nama Program Studi</label>
+                      <span className="text-[8px] text-slate-400 font-bold">{editingMajor.title.length}/80</span>
+                    </div>
                     <input
                       type="text"
+                      maxLength={80}
                       value={editingMajor.title}
                       onChange={(e) => setEditingMajor({ ...editingMajor, title: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
@@ -412,6 +417,7 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                       />
                       <input
                         type="text"
+                        maxLength={7}
                         value={editingMajor.color}
                         onChange={(e) => setEditingMajor({ ...editingMajor, color: e.target.value })}
                         className="flex-1 px-3.5 py-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-xs uppercase focus:outline-none"
@@ -421,8 +427,12 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Deskripsi Lengkap</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-[8px] uppercase font-black text-slate-400 tracking-wider">Deskripsi Lengkap</label>
+                    <span className="text-[8px] text-slate-400 font-bold">{editingMajor.desc.length}/400</span>
+                  </div>
                   <textarea
+                    maxLength={400}
                     value={editingMajor.desc}
                     onChange={(e) => setEditingMajor({ ...editingMajor, desc: e.target.value })}
                     rows={3}
@@ -488,6 +498,7 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
 
                         <input
                           type="text"
+                          maxLength={100}
                           value={galItem.caption}
                           onChange={(e) => {
                             const updatedGallery = [...(editingMajor.gallery || [])];
@@ -519,6 +530,7 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Karir Lulusan #{idx+1}</span>
                         <input
                           type="text"
+                          maxLength={60}
                           value={career.title}
                           onChange={(e) => {
                             const updated = [...(editingMajor.careers || [])];
@@ -530,6 +542,7 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                           className="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#020617] border border-slate-200 dark:border-white/5 rounded-lg text-slate-800 dark:text-white font-bold text-xs focus:outline-none"
                         />
                         <textarea
+                          maxLength={200}
                           value={career.desc}
                           onChange={(e) => {
                             const updated = [...(editingMajor.careers || [])];
@@ -558,6 +571,7 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                     <div key={fIdx} className="flex items-center gap-2">
                       <input
                         type="text"
+                        maxLength={80}
                         value={fac}
                         onChange={(e) => {
                           const updated = [...(editingMajor.facilities || [])];

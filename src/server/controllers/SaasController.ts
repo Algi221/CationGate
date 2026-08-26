@@ -65,11 +65,11 @@ export class SaasController {
   static async activate(c: Context) {
     try {
       const body = await c.req.json();
-      const { school_id, slug, order_id } = body;
+      const { school_id, slug, order_id, plan_name, amount, payment_method } = body;
       const targetSlug = slug || school_id;
       if (!targetSlug) return c.json({ success: false, message: 'school_id or slug is required' }, 400);
 
-      const result = await SaasService.activateSchool(targetSlug, order_id);
+      const result = await SaasService.activateSchool(targetSlug, order_id, plan_name, amount, payment_method);
       return c.json(result);
     } catch (err: unknown) {
       console.error('Activate error:', err);

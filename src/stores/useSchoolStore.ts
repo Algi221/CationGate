@@ -40,10 +40,9 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
   isDemoMode: false,
   isSchoolNotFound: false,
   isConfigLoaded: false,
-  ppdbLogo: "/assets/logo_sekolah/logo_smktb.png",
-  ppdbTitle: "SMK TB",
-  ppdbFooterDesc:
-    "Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.",
+  ppdbLogo: "",
+  ppdbTitle: "",
+  ppdbFooterDesc: "",
   schoolPeriod: "2026-2027",
   profilSekolah: null,
 
@@ -181,12 +180,25 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
         set({ isSchoolNotFound: true });
       } else if (data && data.success && data.data) {
         const schoolUuid = data.data.school_uuid || data.data.id;
+        const currentProfil = get().profilSekolah || {};
+        const currentIdentitas = currentProfil.identitas || {};
         set({
           isSchoolNotFound: false,
           schoolId: schoolUuid,
           schoolStatus: data.data.status || get().schoolStatus,
           ppdbLogo: data.data.logo_url || get().ppdbLogo,
           ppdbTitle: data.data.name || get().ppdbTitle,
+          profilSekolah: {
+            ...currentProfil,
+            identitas: {
+              ...currentIdentitas,
+              nama: data.data.name || currentIdentitas.nama || get().ppdbTitle,
+              npsn: data.data.npsn || currentIdentitas.npsn || "",
+              akreditasi: data.data.accreditation || currentIdentitas.akreditasi || "",
+              email: data.data.official_email || currentIdentitas.email || "",
+              telepon: data.data.phone || currentIdentitas.telepon || ""
+            }
+          }
         });
         if (schoolUuid) {
           get().setSchoolId(schoolUuid);

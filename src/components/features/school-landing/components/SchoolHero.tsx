@@ -27,6 +27,7 @@ interface SchoolHeroProps {
   heroSubtitle: string;
   address: string;
   majors: MajorItem[];
+  heroBgImage?: string;
 }
 
 export const SchoolHero: React.FC<SchoolHeroProps> = ({
@@ -36,7 +37,8 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
   heroTitleSub,
   heroSubtitle,
   address,
-  majors: _majors
+  majors: _majors,
+  heroBgImage
 }) => {
   const { href } = useSchoolHref(schoolSlug);
 
@@ -45,10 +47,11 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
       {/* BACKGROUND IMAGE DENGAN FADE OUT GRADIENT */}
       <div className="absolute inset-0 -z-10 overflow-hidden bg-slate-50 dark:bg-[#020617]">
         <Image
-          src="/assets/background/bg-seklah.jpeg"
+          src={heroBgImage || "/assets/background/bg-seklah.jpeg"}
           alt="Background Sekolah"
           fill
           priority
+          unoptimized={Boolean(heroBgImage)}
           className="object-cover object-top opacity-30 dark:opacity-15"
         />
         {/* Gradient overlay biar atasnya kelihatan, makin ke bawah makin menyatu halus dengan body */}

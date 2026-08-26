@@ -93,10 +93,12 @@ export default function DataPendaftarTable() {
     return () => clearTimeout(timer);
   }, [publicApplicants]);
 
-  const displayApplicants = publicApplicants.length > 0 ? activeRows : [
+  const isDemo = _schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
+
+  const displayApplicants = publicApplicants.length > 0 ? activeRows : isDemo ? [
     { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0012345678", sekolahAsal: "SMPN 1 Depok", status: "Approved", isNew: false, isFadingOut: false },
     { id: 2, nama: "Putri Ayu Lestari", nisn: "0012345679", sekolahAsal: "SMPN 2 Depok", status: "Pending", isNew: false, isFadingOut: false }
-  ];
+  ] : [];
 
   if (selectedStudent) {
     const _getGenderLabel = (g: string | null | undefined) => {

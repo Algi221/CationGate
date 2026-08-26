@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 import Swal from "sweetalert2";
 import { MajorItem, MajorConfigItem, ApplicantItem } from "../types";
 
 export function useDashboardOverviewState() {
   const { applicants, schoolId, adminToken, schoolStatus, isDemoMode } = usePPDB();
+  const { href } = useSchoolHref();
+  const router = useRouter();
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "demo";
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
@@ -197,25 +200,63 @@ export function useDashboardOverviewState() {
     return { labels: buckets.map((b) => b.label), counts };
   }, [applicants, trendView]);
 
-  const [isSpmbOpen, setIsSpmbOpen] = useState(true);
+  const isDemo = isDemoMode || schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
+  const [isSpmbOpen, setIsSpmbOpen] = useState(() => isDemo);
   const [isUpdatingSpmb, setIsUpdatingSpmb] = useState(false);
 
   useEffect(() => {
-    if (!schoolId) return;
-    fetch(`/api/config?school_id=${schoolId}`)
+    if (isDemo) {
+      setIsSpmbOpen(true);
+      return;
+    }
+    if (!schoolId && !schoolSlug) return;
+    const query = schoolId ? `school_id=${schoolId}` : `school_slug=${schoolSlug}`;
+    fetch(`/api/config?${query}`)
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data) {
           const status = json.data.ppdb_portal_status;
           if (status === "closed") setIsSpmbOpen(false);
           else if (status === "open") setIsSpmbOpen(true);
+        } else {
+          setIsSpmbOpen(false);
         }
       })
-      .catch(() => {});
-  }, [schoolId]);
+      .catch(() => {
+        setIsSpmbOpen(false);
+      });
+  }, [schoolId, schoolSlug, isDemo]);
 
   const handleToggleSpmbStatus = async () => {
     const nextStatus = !isSpmbOpen;
+
+    // Validate paid subscription before allowing to open public SPMB registration
+    let isSubscribed = isDemo;
+    if (!isSubscribed && typeof window !== "undefined") {
+      const savedSub = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || 'default'}`);
+      if (savedSub && (savedSub.includes("PRO") || savedSub.includes("ENTERPRISE") || savedSub.includes("ACTIVE"))) {
+        isSubscribed = true;
+      }
+    }
+
+    if (nextStatus && !isSubscribed) {
+      const result = await Swal.fire({
+        title: "Perlu Berlangganan Paket Pro 🔒",
+        text: "Fitur Pembukaan Pendaftaran Publik (SPMB Online) hanya dapat diaktifkan setelah instansi sekolah berlangganan paket Pro atau Enterprise.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#2563EB",
+        cancelButtonColor: "#64748B",
+        confirmButtonText: "Lihat Paket & Langganan Sekarang",
+        cancelButtonText: "Tutup",
+        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+      });
+      if (result.isConfirmed) {
+        router.push(href("/dashboard/subscription"));
+      }
+      return;
+    }
+
     const statusText = nextStatus ? "DIBUKA" : "DITUTUP";
     const statusDesc = nextStatus
       ? "Formulir pendaftaran publik akan kembali menerima calon peserta didik baru."

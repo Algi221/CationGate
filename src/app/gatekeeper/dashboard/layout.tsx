@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { GatekeeperSidebar } from "@/components/layout/gatekeeper/GatekeeperSidebar";
+import { BottomRightNotifier } from "@/components/common/BottomRightNotifier";
 
 function GatekeeperBreadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
@@ -358,6 +359,9 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Floating Bottom-Right Notifications */}
+      <BottomRightNotifier />
     </div>
   );
 }

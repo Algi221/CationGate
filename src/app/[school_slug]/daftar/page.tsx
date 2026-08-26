@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, Home, Clock } from "lucide-react";
+import { ArrowRight, ArrowLeft, Home, Clock, Lock } from "lucide-react";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
 import { useRegistrationForm } from "@/components/features/registration/useRegistrationForm";
@@ -23,6 +23,7 @@ import { Step11KegemaranMinat } from "@/components/features/registration/steps/S
 import { Step12BudiPekerti } from "@/components/features/registration/steps/Step12BudiPekerti";
 import { Step13ReviewData } from "@/components/features/registration/steps/Step13ReviewData";
 import { Step14BerkasKonfirmasi } from "@/components/features/registration/steps/Step14BerkasKonfirmasi";
+import { SchoolUnverifiedLandingView } from "@/components/features/school-landing/components/SchoolUnverifiedLandingView";
 
 export default function DaftarPage() {
   const {
@@ -35,6 +36,9 @@ export default function DaftarPage() {
     isSubmitting,
     kuotaData,
     portalStatus,
+    schoolStatus,
+    isSubscriptionActive,
+    isConfigLoaded,
     formData,
     setFormData,
     submittedCandidate,
@@ -59,6 +63,56 @@ export default function DaftarPage() {
   } = useRegistrationForm();
   const { href } = useSchoolHref();
 
+  const isSchoolVerified =
+    schoolStatus === "FULL_VERIFIED" ||
+    schoolStatus === "VERIFIED" ||
+    schoolStatus === "verified" ||
+    schoolSlug === "demo" ||
+    schoolSlug === "smktarunabhakti";
+
+  if (isConfigLoaded && !isSchoolVerified) {
+    return (
+      <SchoolUnverifiedLandingView
+        schoolSlug={schoolSlug}
+        schoolDisplayName={ppdbTitle || schoolSlug.toUpperCase()}
+        schoolStatus={schoolStatus}
+      />
+    );
+  }
+
+  if (isConfigLoaded && !isSubscriptionActive) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950 p-6 text-center">
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+          <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 mx-auto">
+            <Lock size={32} />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wider">Layanan Belum Aktif</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Portal SPMB online {ppdbTitle || schoolSlug.toUpperCase()} saat ini belum dapat menerima pendaftaran calon peserta didik baru karena instansi sekolah belum mengaktifkan paket langganan resmi.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col gap-2.5">
+            <Link
+              href={href("/")}
+              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
+            >
+              <Home size={14} />
+              <span>Kembali Ke Beranda</span>
+            </Link>
+            <Link
+              href={href("/dashboard/subscription")}
+              className="w-full inline-flex justify-center items-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-xs rounded-xl transition-all uppercase tracking-wider cursor-pointer"
+            >
+              <span>Aktivasi Langganan (Admin)</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (portalStatus === "closed") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950 p-6 text-center">
@@ -69,13 +123,13 @@ export default function DaftarPage() {
           <div className="space-y-2">
             <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wider">Pendaftaran Ditutup</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Mohon maaf, portal Penerimaan Peserta Didik Baru (PPDB) SMK Taruna Bhakti Depok saat ini sedang ditutup.
+              Mohon maaf, portal Penerimaan Peserta Didik Baru (PPDB) {ppdbTitle || schoolSlug.toUpperCase()} saat ini sedang ditutup atau belum membuka gelombang pendaftaran publik resmi.
             </p>
           </div>
           <div className="pt-2">
             <Link
               href={href("/")}
-              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-primary hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
+              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
             >
               <Home size={14} />
               <span>Kembali Ke Beranda</span>
@@ -137,7 +191,7 @@ export default function DaftarPage() {
       <div className="fixed top-6 left-6 z-50">
         <Link
           href={href("/")}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group cursor-pointer"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -148,20 +202,20 @@ export default function DaftarPage() {
         <ToggleTheme
           animationType="circle-spread"
           duration={1000}
-          className="w-10 h-10 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700"
+          className="w-10 h-10 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 cursor-pointer"
         />
       </div>
 
       <div className="mb-10 text-center mt-12 relative z-10 flex flex-col items-center">
-        <div className="mb-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/5 dark:bg-blue-950/60 border border-blue-100/50 dark:border-blue-900/50 text-primary dark:text-sky-400 text-xs font-bold shadow-sm shadow-blue-500/5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-sky-400 animate-pulse"></span>
+        <div className="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-sky-300 text-xs font-black shadow-sm tracking-wide">
+          <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-sky-400 animate-pulse"></span>
           Tahap {wizardStep} dari 14
         </div>
-        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mb-2 drop-shadow-sm">
+        <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-2 drop-shadow-sm">
           Formulir Pendaftaran PPDB
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-900/60 backdrop-blur-md inline-block px-4 py-1.5 rounded-full border border-white/60 dark:border-slate-800/60 shadow-sm mt-2">
-          SMK Taruna Bhakti Tahun Ajaran 2026/2027
+        <p className="text-slate-600 dark:text-slate-300 font-bold text-xs md:text-sm bg-white/80 dark:bg-slate-900/80 backdrop-blur-md inline-block px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm mt-2">
+          {ppdbTitle || schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} Tahun Ajaran {schoolPeriod}
         </p>
       </div>
 

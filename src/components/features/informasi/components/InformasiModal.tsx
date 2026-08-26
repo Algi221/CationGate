@@ -104,15 +104,19 @@ export const InformasiModal: React.FC<InformasiModalProps> = ({
           <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
             {/* Judul Input */}
             <div className="space-y-2">
-              <label className="text-slate-600 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">
-                Judul Pengumuman <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-slate-600 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">
+                  Judul Pengumuman <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[10px] text-slate-400 font-semibold">{judul.length}/150</span>
+              </div>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                   <FileText size={15} />
                 </span>
                 <input
                   type="text"
+                  maxLength={150}
                   value={judul}
                   onChange={(e) => setJudul(e.target.value)}
                   placeholder="Masukkan judul pengumuman informasi..."
@@ -143,10 +147,14 @@ export const InformasiModal: React.FC<InformasiModalProps> = ({
 
             {/* Konten Input */}
             <div className="space-y-2">
-              <label className="text-slate-600 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">
-                Isi Konten Informasi <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-slate-600 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">
+                  Isi Konten Informasi <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[10px] text-slate-400 font-semibold">{konten.length}/5000</span>
+              </div>
               <textarea
+                maxLength={5000}
                 value={konten}
                 onChange={(e) => setKonten(e.target.value)}
                 placeholder="Tuliskan detail pengumuman informasi secara rinci di sini..."

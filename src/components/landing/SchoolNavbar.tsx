@@ -52,16 +52,9 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
   const _pathname = usePathname();
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("ppdb-theme");
-    if (savedTheme === "dark" || (!savedTheme && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-
     const loadMajors = async () => {
       try {
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}`);
+        const res = await fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`);
         const data = await res.json();
 
         if (data.success && data.data && data.data.ppdb_majors_config) {
@@ -85,15 +78,23 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
             return;
           }
         }
+
+        if (schoolSlug === "demo" || schoolSlug === "smktarunabhakti") {
+          setMajors(DEFAULT_MAJORS);
+        } else {
+          setMajors([]);
+        }
       } catch (e) {
         console.error("Failed to load majors for navbar:", e);
       }
     };
 
-    if (schoolSlug && schoolSlug !== "sekolah" && schoolSlug !== "demo") {
+    if (schoolSlug && schoolSlug !== "sekolah") {
       loadMajors();
     }
   }, [schoolSlug]);
+
+  const displayTitle = ppdbTitle || (schoolSlug === "demo" ? "SMK Demo Indonesia" : schoolSlug === "smktarunabhakti" ? "SMK Taruna Bhakti" : (schoolSlug ? schoolSlug.toUpperCase() : "Portal PPDB"));
 
   return (
     <>
@@ -101,17 +102,31 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center shrink-0 min-w-0">
             <Link href={href("/")} className="flex items-center gap-3 overflow-visible group min-w-0">
-              <div className="relative h-10 w-10 shrink-0 overflow-visible">
-                <SafeImage
-                  src={ppdbLogo || "/assets/logo_sekolah/logo_smktb.png"}
-                  alt="Logo Sekolah"
-                  fill
-                  sizes="48px"
-                  className="object-contain"
-                />
+              <div className="relative h-10 w-10 shrink-0 overflow-visible flex items-center justify-center">
+                {ppdbLogo ? (
+                  <SafeImage
+                    src={ppdbLogo}
+                    alt="Logo Sekolah"
+                    fill
+                    sizes="48px"
+                    className="object-contain"
+                  />
+                ) : schoolSlug === "smktarunabhakti" || schoolSlug === "demo" ? (
+                  <SafeImage
+                    src="/assets/logo_sekolah/logo_smktb.png"
+                    alt="Logo Sekolah"
+                    fill
+                    sizes="48px"
+                    className="object-contain"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-sm">
+                    {(displayTitle || "S").substring(0, 2).toUpperCase()}
+                  </div>
+                )}
               </div>
               <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white truncate max-w-45 sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                {ppdbTitle || (schoolSlug === "demo" ? "SMK Demo Indonesia" : "SMK Taruna Bhakti")}
+                {displayTitle}
               </span>
             </Link>
           </div>
@@ -236,9 +251,17 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href={href("/")} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <SafeImage src={schoolSlug === 'demo' ? "/assets/logo_sekolah/logo_smktb.png" : (ppdbLogo || "/assets/logo_sekolah/logo_smktb.png")} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
+              {ppdbLogo ? (
+                <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
+              ) : schoolSlug === "smktarunabhakti" || schoolSlug === "demo" ? (
+                <SafeImage src="/assets/logo_sekolah/logo_smktb.png" alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
+              ) : (
+                <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md">
+                  {(displayTitle || "S").substring(0, 2).toUpperCase()}
+                </div>
+              )}
               <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                {schoolSlug === 'demo' ? "SMK TB" : (ppdbTitle || "SPMB SMK Taruna Bhakti")}
+                {displayTitle}
               </span>
             </Link>
 

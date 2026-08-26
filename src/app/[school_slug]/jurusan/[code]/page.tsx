@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, Palette } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import { useJurusanDetailState } from "@/components/features/jurusan-detail/hooks/useJurusanDetailState";
@@ -13,6 +13,7 @@ import { JurusanGallery } from "@/components/features/jurusan-detail/components/
 import { JurusanCareers } from "@/components/features/jurusan-detail/components/JurusanCareers";
 import { JurusanFacilities } from "@/components/features/jurusan-detail/components/JurusanFacilities";
 import { JurusanCta } from "@/components/features/jurusan-detail/components/JurusanCta";
+import { ErrorView } from "@/components/features/error";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 export default function JurusanDetailPage() {
@@ -34,20 +35,13 @@ export default function JurusanDetailPage() {
 
   if (!major) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 p-6 transition-colors duration-300">
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 p-10 rounded-4xl max-w-md w-full text-center shadow-2xl relative z-10">
-          <div className="w-20 h-20 bg-rose-500/10 dark:bg-rose-500/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Palette size={40} />
-          </div>
-          <h1 className="text-2xl font-black mb-3">Jurusan Tidak Ditemukan</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">
-            Program keahlian yang Anda cari tidak terdaftar atau telah diupdate. Silakan kembali ke beranda untuk melihat daftar jurusan lengkap.
-          </p>
-          <Link href={href("/")} className="btn-primary-pill w-full flex items-center justify-center gap-2">
-            <ArrowLeft size={16} /> Kembali ke Beranda
-          </Link>
-        </div>
-      </div>
+      <ErrorView
+        title="Jurusan Tidak Ditemukan"
+        description="Program keahlian yang Anda cari tidak terdaftar atau telah diperbarui. Silakan kembali ke beranda untuk melihat daftar program keahlian yang tersedia."
+        urlPath={schoolSlug ? `/${schoolSlug}/jurusan` : undefined}
+        ctaText="Kembali ke Beranda"
+        ctaHref={href("/")}
+      />
     );
   }
 

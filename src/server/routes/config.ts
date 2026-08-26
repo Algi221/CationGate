@@ -147,38 +147,58 @@ configRouter.get('/', async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     let schoolId = c.req.query('school_id') || null;
     const schoolSlug = c.req.query('school_slug');
+    const isBypassCache = Boolean(c.req.query('_t') || c.req.query('t'));
 
     const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
-    // If school_slug is provided or school_id is not a UUID, resolve it
-    if ((schoolSlug || (schoolId && !isUUID(schoolId)))) {
+    let resolvedUUID: string | null = null;
+    if (schoolSlug || (schoolId && !isUUID(schoolId))) {
       const { resolveSchoolUUID } = await import('../db/resolve-school');
       const { fontInMemSchools } = await import('./saas');
       const targetIdentifier = schoolSlug || schoolId!;
-      schoolId = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
+      resolvedUUID = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
+      if (resolvedUUID) {
+        schoolId = resolvedUUID;
+      }
     }
 
-    const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
+    const cacheKey = schoolId ? `config_${schoolId}` : (schoolSlug ? `config_${schoolSlug}` : 'config_default');
 
-    // 1. Try to get from Redis Cache first
-    const cachedData = await getCached<Record<string, unknown>>(cacheKey);
-    if (cachedData) {
-      return c.json({
-        success: true,
-        data: cachedData,
-        source: 'cache'
-      });
+    // 1. Try to get from Redis Cache first (if not cache-busting request)
+    if (!isBypassCache) {
+      const cachedData = await getCached<Record<string, unknown>>(cacheKey);
+      if (cachedData) {
+        return c.json({
+          success: true,
+          data: cachedData,
+          source: 'cache'
+        });
+      }
     }
 
     let configs: Array<{ config_key: string; config_value: unknown }> | null = null;
+    
+    // Collect all possible identifier strings
+    const matchIds: string[] = [];
+    if (schoolId) matchIds.push(String(schoolId));
+    if (schoolSlug && !matchIds.includes(schoolSlug)) matchIds.push(schoolSlug);
+    if (resolvedUUID && !matchIds.includes(resolvedUUID)) matchIds.push(resolvedUUID);
+
     let query = supabase.from('landing_page_config').select('*');
-    if (schoolId) {
-      const numericId = !isNaN(Number(schoolId)) ? Number(schoolId) : null;
+    if (matchIds.length === 1) {
+      const singleId = matchIds[0];
+      const numericId = !isNaN(Number(singleId)) ? Number(singleId) : null;
       if (numericId !== null) {
-        query = query.or(`school_id.eq.${schoolId},school_id.eq.${numericId}`);
+        query = query.or(`school_id.eq.${singleId},school_id.eq.${numericId}`);
       } else {
-        query = query.eq('school_id', schoolId);
+        query = query.eq('school_id', singleId);
       }
+    } else if (matchIds.length > 1) {
+      const orClauses = matchIds.flatMap((id) => {
+        const num = !isNaN(Number(id)) ? Number(id) : null;
+        return num !== null ? [`school_id.eq.${id}`, `school_id.eq.${num}`] : [`school_id.eq.${id}`];
+      });
+      query = query.or(Array.from(new Set(orClauses)).join(','));
     }
 
     const { data: sbConfigs, error } = await query;
@@ -187,12 +207,10 @@ configRouter.get('/', async (c) => {
     } else {
       // Direct pool query fallback
       try {
-        const isNum = !isNaN(Number(schoolId)) && Number(schoolId) > 0;
         const pgRes = await pool.query(
           `SELECT config_key, config_value FROM landing_page_config 
-           WHERE (CASE WHEN $1 = true THEN school_id = $2::integer ELSE school_id::text = $3 END)
-              OR school_id::text = $3`,
-          [isNum, isNum ? Number(schoolId) : 0, String(schoolId || '')]
+           WHERE school_id::text = ANY($1::text[])`,
+          [matchIds]
         );
         if (pgRes.rows && pgRes.rows.length > 0) {
           configs = pgRes.rows;
@@ -211,6 +229,7 @@ configRouter.get('/', async (c) => {
 
     // 3. Save to Redis Cache (expire in 1 hour)
     await setCached(cacheKey, configMap, 3600);
+    if (schoolSlug) await setCached(`config_${schoolSlug}`, configMap, 3600);
 
     return c.json({
       success: true,

@@ -131,26 +131,20 @@ function LoginForm() {
           window.dispatchEvent(new Event("storage"));
         }
 
-        const targetSlug =
+        const rawSlug =
           data.school_slug ||
           data.admin?.school_slug ||
           (data.admin?.school_id && !String(data.admin.school_id).includes("-")
             ? data.admin.school_id
             : null);
+        const targetSlug = rawSlug ? String(rawSlug).replace(/[^a-zA-Z0-9-]/g, "").toLowerCase().slice(0, 60) : "";
 
         if (targetSlug) {
           if (typeof window !== "undefined") {
-            const host = window.location.host.toLowerCase();
-            const isLocalhost = host.includes("localhost");
-            const port = window.location.port ? `:${window.location.port}` : "";
-            if (isLocalhost) {
-              window.location.href = `http://${targetSlug}.localhost${port}/dashboard?auth_token=${encodeURIComponent(data.token)}`;
-            } else if (host.endsWith("cationgate.site") || host === "cationgate.site") {
-              window.location.href = `https://${targetSlug}.cationgate.site/dashboard?auth_token=${encodeURIComponent(data.token)}`;
-            } else {
-              router.push(`/${targetSlug}/dashboard`);
-            }
+            localStorage.setItem("ppdb_admin_token", String(data.token || ""));
+            localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
           }
+          router.push(`/${targetSlug}/dashboard`);
         } else if (data.admin?.role === "gatekeeper") {
           router.push("/gatekeeper/login");
         } else {

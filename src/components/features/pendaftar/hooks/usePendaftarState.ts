@@ -4,12 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { usePPDB, DEMO_TRASHED_APPLICANTS_SEED } from "@/context/PPDBContext";
 import Swal from "sweetalert2";
-import { 
-  Applicant, 
-  EditFormState, 
-  BSTNode, 
-  PendaftarPageTab 
-} from "../types";
+import { Applicant, EditFormState, BSTNode, PendaftarPageTab } from "../types";
 import { exportApplicantsToExcel } from "../utils/exportExcel";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
 
@@ -20,7 +15,11 @@ function bstInsert(root: BSTNode | null, node: BSTNode): BSTNode {
   return root;
 }
 
-function bstSearch(root: BSTNode | null, query: string, results: number[]): void {
+function bstSearch(
+  root: BSTNode | null,
+  query: string,
+  results: number[],
+): void {
   if (!root) return;
   bstSearch(root.left, query, results);
   if (root.key.includes(query)) results.push(root.id);
@@ -35,16 +34,16 @@ function buildKey(a: Applicant): string {
 }
 
 export function usePendaftarState() {
-  const { 
-    applicants, 
-    setApplicants, 
-    verifyApplicant, 
-    rejectApplicant, 
-    deleteApplicant, 
-    updateApplicant, 
-    fetchAdminApplicants, 
-    addToast, 
-    isDemoMode 
+  const {
+    applicants,
+    setApplicants,
+    verifyApplicant,
+    rejectApplicant,
+    deleteApplicant,
+    updateApplicant,
+    fetchAdminApplicants,
+    addToast,
+    isDemoMode,
   } = usePPDB();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -53,10 +52,15 @@ export function usePendaftarState() {
   const [gelombangFilter, setGelombangFilter] = useState<string>("ALL");
   const [genderFilter, setGenderFilter] = useState<string>("ALL");
   const [paymentFilter, setPaymentFilter] = useState<string>("ALL");
-  const [receiptModalApplicant, setReceiptModalApplicant] = useState<Applicant | null>(null);
+  const [receiptModalApplicant, setReceiptModalApplicant] =
+    useState<Applicant | null>(null);
 
-  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
-  const [rejectingApplicantId, setRejectingApplicantId] = useState<number | null>(null);
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
+    null,
+  );
+  const [rejectingApplicantId, setRejectingApplicantId] = useState<
+    number | null
+  >(null);
   const [rejectionPreset, setRejectionPreset] = useState<string>("");
   const [rejectionNotes, setRejectionNotes] = useState<string>("");
 
@@ -81,12 +85,19 @@ export function usePendaftarState() {
   };
 
   const fetchTrashedApplicants = useCallback(async () => {
-    const isDemo = isDemoMode || schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.includes("/demo"));
+    const isDemo =
+      isDemoMode ||
+      schoolSlug === "demo" ||
+      (typeof window !== "undefined" &&
+        window.location.pathname.includes("/demo"));
     if (isDemo) {
       setTrashLoading(false);
       setTrashError("");
       try {
-        const local = typeof window !== "undefined" ? localStorage.getItem("demo_trashed_applicants") : null;
+        const local =
+          typeof window !== "undefined"
+            ? localStorage.getItem("demo_trashed_applicants")
+            : null;
         if (local) {
           const parsed = JSON.parse(local);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -96,7 +107,10 @@ export function usePendaftarState() {
         }
         setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);
         if (typeof window !== "undefined") {
-          localStorage.setItem("demo_trashed_applicants", JSON.stringify(DEMO_TRASHED_APPLICANTS_SEED));
+          localStorage.setItem(
+            "demo_trashed_applicants",
+            JSON.stringify(DEMO_TRASHED_APPLICANTS_SEED),
+          );
         }
       } catch (_e) {
         setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);
@@ -109,16 +123,20 @@ export function usePendaftarState() {
       setTrashError("");
       const token = localStorage.getItem("ppdb_admin_token");
       const res = await fetch(`/api/applicants/trashed`, {
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success) {
         setTrashedApplicants(data.data);
       } else {
-        setTrashError(data.message || "Gagal mengambil data pendaftar terhapus");
+        setTrashError(
+          data.message || "Gagal mengambil data pendaftar terhapus",
+        );
       }
     } catch (err: unknown) {
-      setTrashError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
+      setTrashError(
+        err instanceof Error ? err.message : "Terjadi kesalahan koneksi",
+      );
     } finally {
       setTrashLoading(false);
     }
@@ -128,13 +146,16 @@ export function usePendaftarState() {
     if (isDemoMode || schoolSlug === "demo") {
       try {
         setTrashLoading(true);
-        const itemToRestore = trashedApplicants.find(a => a.id === id);
-        const remaining = trashedApplicants.filter(a => a.id !== id);
+        const itemToRestore = trashedApplicants.find((a) => a.id === id);
+        const remaining = trashedApplicants.filter((a) => a.id !== id);
         setTrashedApplicants(remaining);
-        localStorage.setItem("demo_trashed_applicants", JSON.stringify(remaining));
+        localStorage.setItem(
+          "demo_trashed_applicants",
+          JSON.stringify(remaining),
+        );
 
         if (itemToRestore) {
-          setApplicants(prev => [itemToRestore, ...prev]);
+          setApplicants((prev) => [itemToRestore, ...prev]);
         }
         setTrashSuccess("Data calon siswa berhasil dipulihkan (Demo)!");
       } catch (_e) {
@@ -152,7 +173,7 @@ export function usePendaftarState() {
       const token = localStorage.getItem("ppdb_admin_token");
       const res = await fetch(`/api/applicants/${id}/restore`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success) {
@@ -163,7 +184,9 @@ export function usePendaftarState() {
         setTrashError(data.message || "Gagal memulihkan data");
       }
     } catch (err: unknown) {
-      setTrashError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
+      setTrashError(
+        err instanceof Error ? err.message : "Terjadi kesalahan koneksi",
+      );
     } finally {
       setTrashLoading(false);
     }
@@ -176,15 +199,20 @@ export function usePendaftarState() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Ya",
-      cancelButtonText: "Batal"
+      cancelButtonText: "Batal",
     });
     if (!result.isConfirmed) return;
 
     if (isDemoMode || schoolSlug === "demo") {
-      const remaining = trashedApplicants.filter(a => a.id !== id);
+      const remaining = trashedApplicants.filter((a) => a.id !== id);
       setTrashedApplicants(remaining);
-      localStorage.setItem("demo_trashed_applicants", JSON.stringify(remaining));
-      setTrashSuccess("Data calon siswa berhasil dihapus secara permanen (Demo).");
+      localStorage.setItem(
+        "demo_trashed_applicants",
+        JSON.stringify(remaining),
+      );
+      setTrashSuccess(
+        "Data calon siswa berhasil dihapus secara permanen (Demo).",
+      );
       return;
     }
 
@@ -195,7 +223,7 @@ export function usePendaftarState() {
       const token = localStorage.getItem("ppdb_admin_token");
       const res = await fetch(`/api/applicants/${id}?permanent=true`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success) {
@@ -205,7 +233,9 @@ export function usePendaftarState() {
         setTrashError(data.message || "Gagal menghapus data");
       }
     } catch (err: unknown) {
-      setTrashError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
+      setTrashError(
+        err instanceof Error ? err.message : "Terjadi kesalahan koneksi",
+      );
     } finally {
       setTrashLoading(false);
     }
@@ -222,7 +252,7 @@ export function usePendaftarState() {
     try {
       const token = localStorage.getItem("ppdb_admin_token");
       const res = await fetch(`/api/applicants/${applicant.id}`, {
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success && data.data) {
@@ -238,7 +268,10 @@ export function usePendaftarState() {
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [isSpreadsheetMode, setIsSpreadsheetMode] = useState<boolean>(false);
-  const [activeCell, setActiveCell] = useState<{ row: number; col: number } | null>(null);
+  const [activeCell, setActiveCell] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
 
   const openEdit = (a: Applicant) => {
     setEditApplicant(a);
@@ -295,20 +328,25 @@ export function usePendaftarState() {
     "Desain Komunikasi Visual",
     "Broadcasting & Perfilman",
     "Teknik Elektronika",
-    "Animasi"
+    "Animasi",
   ];
 
   const bstRoot = useMemo(() => {
     let root: BSTNode | null = null;
     applicants.forEach((a: Applicant) => {
-      root = bstInsert(root, { key: buildKey(a), id: a.id, left: null, right: null });
+      root = bstInsert(root, {
+        key: buildKey(a),
+        id: a.id,
+        left: null,
+        right: null,
+      });
     });
     return root;
   }, [applicants]);
 
   const bstMatchedIds = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return null; 
+    if (!q) return null;
     const ids: number[] = [];
     bstSearch(bstRoot, q, ids);
     return new Set(ids);
@@ -317,12 +355,14 @@ export function usePendaftarState() {
   const filteredApplicants = useMemo(() => {
     return applicants.filter((a: Applicant) => {
       const isTransfer = Boolean(
-        (a.diterima_kelas && (a.diterima_kelas.includes("XI") || a.diterima_kelas.includes("XII"))) ||
+        (a.diterima_kelas &&
+          (a.diterima_kelas.includes("XI") ||
+            a.diterima_kelas.includes("XII"))) ||
         a.is_pindahan ||
         a.tipe_pendaftar === "PINDAHAN" ||
         a.jalur_pendaftaran === "PINDAHAN" ||
         a.pindahan_dari ||
-        a.pindahanDari
+        a.pindahanDari,
       );
       if (activePageTab === "active" && isTransfer) return false;
       if (activePageTab === "transfer" && !isTransfer) return false;
@@ -345,18 +385,27 @@ export function usePendaftarState() {
 
       const matchesGender =
         genderFilter === "ALL" ||
-        (genderFilter === "L" && (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")) ||
-        (genderFilter === "P" && (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p"));
+        (genderFilter === "L" &&
+          (a.jenis_kelamin || a.jenisKelamin || "")
+            .toLowerCase()
+            .startsWith("l")) ||
+        (genderFilter === "P" &&
+          (a.jenis_kelamin || a.jenisKelamin || "")
+            .toLowerCase()
+            .startsWith("p"));
 
-      const isCashTU = 
+      const isCashTU =
         a.metode_pembayaran === "Bayar Tunai di TU (Cash)" ||
         a.metode_pembayaran === "Tunai di TU" ||
         a.metode_pembayaran === "tu";
-      const isBankTransfer = 
+      const isBankTransfer =
         a.metode_pembayaran === "Transfer Manual" ||
         a.metode_pembayaran === "transfer" ||
         (!isCashTU && !!a.bukti_bayar);
-      const isLunas = a.status_pembayaran === "LUNAS" || a.status_pembayaran === "PAID" || a.status === "Approved";
+      const isLunas =
+        a.status_pembayaran === "LUNAS" ||
+        a.status_pembayaran === "PAID" ||
+        a.status === "Approved";
 
       const matchesPayment =
         paymentFilter === "ALL" ||
@@ -365,18 +414,37 @@ export function usePendaftarState() {
         (paymentFilter === "LUNAS" && isLunas) ||
         (paymentFilter === "UNPAID" && !isLunas);
 
-      return matchesSearch && matchesStatus && matchesMajor && matchesGelombang && matchesGender && matchesPayment;
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesMajor &&
+        matchesGelombang &&
+        matchesGender &&
+        matchesPayment
+      );
     });
-  }, [applicants, activePageTab, bstMatchedIds, statusFilter, majorFilter, gelombangFilter, genderFilter, paymentFilter]);
+  }, [
+    applicants,
+    activePageTab,
+    bstMatchedIds,
+    statusFilter,
+    majorFilter,
+    gelombangFilter,
+    genderFilter,
+    paymentFilter,
+  ]);
 
   const [page, setPage] = useState<number>(1);
   const itemsPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(filteredApplicants.length / itemsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredApplicants.length / itemsPerPage),
+  );
   const currentPage = Math.min(page, totalPages);
   const paginatedApplicants = useMemo(() => {
     return filteredApplicants.slice(
       (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage
+      currentPage * itemsPerPage,
     );
   }, [filteredApplicants, currentPage, itemsPerPage]);
 
@@ -391,13 +459,13 @@ export function usePendaftarState() {
         status_pembayaran: "LUNAS",
         status: "Approved",
         verified_by: "Petugas Kasir TU",
-        bukti_bayar_verified: true
+        bukti_bayar_verified: true,
       });
       if (res?.success) {
         addToast(
           "Pembayaran Dikonfirmasi",
-          `Pembayaran formulir ${applicant?.nama || '#' + applicantId} telah diverifikasi Lunas.`,
-          "success"
+          `Pembayaran formulir ${applicant?.nama || "#" + applicantId} telah diverifikasi Lunas.`,
+          "success",
         );
       }
     } catch (err) {
@@ -413,9 +481,9 @@ export function usePendaftarState() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ verified: targetState })
+        body: JSON.stringify({ verified: targetState }),
       });
       const data = await res.json();
       if (data.success) {
@@ -426,15 +494,15 @@ export function usePendaftarState() {
                   ...app,
                   physical_doc_verified: targetState,
                   physical_doc_verified_by: "Admin TU",
-                  physical_doc_verified_at: new Date().toISOString()
+                  physical_doc_verified_at: new Date().toISOString(),
                 }
-              : app
-          )
+              : app,
+          ),
         );
         addToast(
           targetState ? "Berkas Diterima" : "Berkas Dibatalkan",
           `Status berkas fisik ${a.nama} berhasil diperbarui.`,
-          "success"
+          "success",
         );
       }
     } catch (err: unknown) {
@@ -443,47 +511,74 @@ export function usePendaftarState() {
       setApplicants((prev) =>
         prev.map((app) =>
           app.id === a.id
-            ? { ...app, physical_doc_verified: targetState, physical_doc_verified_by: "Admin TU" }
-            : app
-        )
+            ? {
+                ...app,
+                physical_doc_verified: targetState,
+                physical_doc_verified_by: "Admin TU",
+              }
+            : app,
+        ),
       );
       addToast(
         targetState ? "Berkas Diterima (Lokal)" : "Berkas Dibatalkan (Lokal)",
         `Status berkas fisik ${a.nama} diperbarui di sesi lokal.`,
-        "info"
+        "info",
       );
     }
   };
 
-  const handleChecklistChange = async (applicantId: number, newChecklist: Record<string, boolean>) => {
+  const handleChecklistChange = async (
+    applicantId: number,
+    newChecklist: Record<string, boolean>,
+  ) => {
     try {
-      const token = localStorage.getItem("ppdb_token") || localStorage.getItem("ppdb_admin_token");
-      setSelectedApplicant(prev => prev && prev.id === applicantId ? { ...prev, physical_docs_checklist: newChecklist } : prev);
+      const token =
+        localStorage.getItem("ppdb_token") ||
+        localStorage.getItem("ppdb_admin_token");
+      setSelectedApplicant((prev) =>
+        prev && prev.id === applicantId
+          ? { ...prev, physical_docs_checklist: newChecklist }
+          : prev,
+      );
       const allChecked = ["ijazah", "kk", "ktp_ortu", "akta", "foto"].every(
-        (k) => newChecklist[k] === true
+        (k) => newChecklist[k] === true,
       );
       const res = await fetch(`/api/applicants/${applicantId}/physical-doc`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ checklist: newChecklist, verified: allChecked })
+        body: JSON.stringify({ checklist: newChecklist, verified: allChecked }),
       });
       const data = await res.json();
       if (data.success) {
-        setSelectedApplicant(prev => prev && prev.id === applicantId ? {
-          ...prev,
-          physical_doc_verified: data.data?.physical_doc_verified ?? allChecked,
-          physical_doc_verified_by: data.data?.physical_doc_verified_by ?? "Admin TU",
-          physical_docs_checklist: newChecklist
-        } : prev);
-        setApplicants((prev: Applicant[]) => prev.map(item => item.id === applicantId ? {
-          ...item,
-          physical_doc_verified: data.data?.physical_doc_verified ?? allChecked,
-          physical_doc_verified_by: data.data?.physical_doc_verified_by ?? "Admin TU",
-          physical_docs_checklist: newChecklist
-        } : item));
+        setSelectedApplicant((prev) =>
+          prev && prev.id === applicantId
+            ? {
+                ...prev,
+                physical_doc_verified:
+                  data.data?.physical_doc_verified ?? allChecked,
+                physical_doc_verified_by:
+                  data.data?.physical_doc_verified_by ?? "Admin TU",
+                physical_docs_checklist: newChecklist,
+              }
+            : prev,
+        );
+        setApplicants((prev: Applicant[]) =>
+          prev.map((item) =>
+            item.id === applicantId
+              ? {
+                  ...item,
+                  physical_doc_verified:
+                    data.data?.physical_doc_verified ?? allChecked,
+                  physical_doc_verified_by:
+                    data.data?.physical_doc_verified_by ?? "Admin TU",
+                  physical_docs_checklist: newChecklist,
+                }
+              : item,
+          ),
+        );
       }
     } catch (err: unknown) {
       console.error("Gagal update checklist berkas fisik:", err);
@@ -547,6 +642,6 @@ export function usePendaftarState() {
     trashError,
     trashSuccess,
     handleRestoreApplicant,
-    handlePermanentDeleteApplicant
+    handlePermanentDeleteApplicant,
   };
 }

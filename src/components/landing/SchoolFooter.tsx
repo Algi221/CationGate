@@ -13,31 +13,72 @@ interface SchoolFooterProps {
 export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
   const { ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah } = usePPDB();
   const { href } = useSchoolHref(schoolSlug);
+  const [majors, setMajors] = React.useState<Array<{ code: string; title: string }>>([]);
+  const [schoolContact, setSchoolContact] = React.useState<{ address: string; phone: string; email: string }>({
+    address: "",
+    phone: "",
+    email: ""
+  });
+
+  const isDemo = schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
+  const schoolDisplayName = ppdbTitle || (isDemo ? "SMK Taruna Bhakti" : schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+
+  React.useEffect(() => {
+    fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          const c = data.data;
+          if (Array.isArray(c.ppdb_majors_config)) {
+            setMajors(c.ppdb_majors_config);
+          } else if (isDemo) {
+            setMajors([
+              { code: "RPL", title: "Rekayasa Perangkat Lunak" },
+              { code: "TJKT", title: "Teknik Jaringan Komputer" },
+              { code: "DKV", title: "Desain Komunikasi Visual" },
+              { code: "BC", title: "Broadcasting & Perfilman" }
+            ]);
+          }
+
+          setSchoolContact({
+            address: c.ppdb_address || (isDemo ? "Jl. Pekapuran RT 02 RW 06, Curug, Cimanggis, Kota Depok" : ""),
+            phone: c.ppdb_phone || (isDemo ? "(021) 8740756" : ""),
+            email: c.ppdb_email || (isDemo ? "info@smktarunabhakti.sch.id" : "")
+          });
+        }
+      })
+      .catch(() => {});
+  }, [schoolSlug, isDemo]);
 
   const identitas = profilSekolah?.identitas || {};
-  const address = identitas.alamat || "Jl. Raya Tapos No. 123, Depok";
-  const phone = "(021) 876-5432"; 
-  const email = identitas.email || "info@sekolah.sch.id";
-  const schoolPeriod = "2026-2027"; 
-  const schoolDisplayName = ppdbTitle || schoolSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const displayAddress = schoolContact.address || identitas.alamat || (isDemo ? "Jl. Pekapuran RT 02 RW 06, Curug, Cimanggis, Depok" : "");
+  const displayPhone = schoolContact.phone || (isDemo ? "(021) 8740756" : "");
+  const displayEmail = schoolContact.email || identitas.email || (isDemo ? "info@smktarunabhakti.sch.id" : "");
 
   return (
-    <footer className="bg-slate-50 text-slate-600 dark:bg-[#0a0a0a] dark:text-slate-500 py-16 sm:py-24 relative overflow-hidden border-t border-slate-200 dark:border-transparent">
-
+    <footer className="bg-slate-50 text-slate-600 dark:bg-[#0a0a0a] dark:text-slate-500 py-16 sm:py-24 relative overflow-hidden border-t border-slate-200 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          {}
+          {/* Col 1: Identity & Socials */}
           <div className="space-y-6">
             <Link href={href("/")} className="flex items-center gap-3 group">
-              <div className="relative h-12 w-12 shrink-0 bg-white/10 dark:bg-white/5 rounded-xl p-2 backdrop-blur-md border border-white/10">
-                <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
+              <div className="relative h-11 w-11 shrink-0 bg-white/10 dark:bg-white/5 rounded-xl p-1.5 backdrop-blur-md border border-slate-200 dark:border-white/10 flex items-center justify-center">
+                {ppdbLogo ? (
+                  <SafeImage src={ppdbLogo} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
+                ) : isDemo ? (
+                  <SafeImage src="/assets/logo_sekolah/logo_smktb.png" alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-sm">
+                    {(schoolDisplayName || "S").substring(0, 2).toUpperCase()}
+                  </div>
+                )}
               </div>
-              <span className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <span className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {schoolDisplayName}
               </span>
             </Link>
-            <p className="text-xs font-semibold leading-relaxed max-w-xs">
-              {ppdbFooterDesc || "Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global."}
+            <p className="text-xs font-semibold leading-relaxed max-w-xs text-slate-500 dark:text-slate-400">
+              {ppdbFooterDesc || "Platform penerimaan peserta didik baru dan sistem administrasi sekolah digital resmi."}
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a
@@ -91,47 +132,58 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
             </div>
           </div>
 
-          {/* Col 2 */}
+          {/* Col 2: Dynamic Program Keahlian */}
           <div className="space-y-4">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Program Keahlian</h4>
-            <ul className="space-y-2 text-xs font-semibold">
-              <li><Link href={href("/jurusan/rpl")} className="hover:text-blue-500 transition-colors">Rekayasa Perangkat Lunak</Link></li>
-              <li><Link href={href("/jurusan/tjkt")} className="hover:text-blue-500 transition-colors">Teknik Komputer Jaringan</Link></li>
-              <li><Link href={href("/jurusan/dkv")} className="hover:text-blue-500 transition-colors">Desain Komunikasi Visual</Link></li>
-              <li><Link href={href("/jurusan/bc")} className="hover:text-blue-500 transition-colors">Broadcasting</Link></li>
-            </ul>
+            {majors.length > 0 ? (
+              <ul className="space-y-2 text-xs font-semibold">
+                {majors.map((m, idx) => (
+                  <li key={idx}>
+                    <Link href={href(`/jurusan/${encodeURIComponent(m.code.toLowerCase())}`)} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                      {m.title || m.code}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-slate-400 font-medium">Belum ada jurusan yang ditambahkan.</p>
+            )}
           </div>
 
-          {/* Col 3 */}
+          {/* Col 3: Link Terkait */}
           <div className="space-y-4">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Link Terkait</h4>
             <ul className="space-y-2 text-xs font-semibold">
-              <li><Link href={href("/#alur")} className="hover:text-blue-500 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
-              <li><Link href={href("/#alur")} className="hover:text-blue-500 transition-colors">Syarat Pendaftaran</Link></li>
-              <li><Link href={href("/forum")} className="hover:text-blue-500 transition-colors">Forum Informasi</Link></li>
-              <li><Link href={href("/profil")} className="hover:text-blue-500 transition-colors">Company Profil Sekolah</Link></li>
+              <li><Link href={href("/#alur")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Alur &amp; Jadwal PPDB</Link></li>
+              <li><Link href={href("/#gelombang")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Gelombang Pendaftaran</Link></li>
+              <li><Link href={href("/forum")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Forum Informasi</Link></li>
+              <li><Link href={href("/profil")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Profil Sekolah</Link></li>
             </ul>
           </div>
 
-          {/* Col 4 */}
+          {/* Col 4: Dynamic Sekretariat PPDB */}
           <div className="space-y-4">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Sekretariat PPDB</h4>
-            <p className="text-xs leading-relaxed font-semibold text-slate-400">
-              {address}
-            </p>
-            <div className="text-xs font-bold space-y-1 text-slate-400">
-              <div>Telp: {phone}</div>
-              <div>Email: {email}</div>
+            {displayAddress ? (
+              <p className="text-xs leading-relaxed font-semibold text-slate-500 dark:text-slate-400">
+                {displayAddress}
+              </p>
+            ) : (
+              <p className="text-xs text-slate-400 font-medium italic">Alamat belum dikonfigurasikan.</p>
+            )}
+            <div className="text-xs font-bold space-y-1 text-slate-500 dark:text-slate-400">
+              {displayPhone && <div>Telp: {displayPhone}</div>}
+              {displayEmail && <div>Email: {displayEmail}</div>}
             </div>
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+        <div className="border-t border-slate-200 dark:border-slate-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
           <div>© {new Date().getFullYear()} {schoolDisplayName}. Hak Cipta Dilindungi.</div>
           <div className="flex gap-4">
-            <Link href="/" className="hover:text-slate-300 transition-colors">Kebijakan Privasi</Link>
+            <Link href="/" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Kebijakan Privasi</Link>
             <span>·</span>
-            <Link href="/" className="hover:text-slate-300 transition-colors">Syarat &amp; Ketentuan</Link>
+            <Link href="/" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Syarat &amp; Ketentuan</Link>
           </div>
         </div>
       </div>

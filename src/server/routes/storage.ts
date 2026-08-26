@@ -30,40 +30,86 @@ const ALLOWED_BUCKETS = new Set([
 // 1. Direct Server Multipart File Upload
 storageRouter.post('/upload', async (c) => {
   try {
-    const body = await c.req.parseBody();
-    const file = body['file'];
-    const prefix = typeof body['prefix'] === 'string' ? body['prefix'] : 'upload';
+    let file: File | null = null;
+    let prefix = 'upload';
 
-    if (!file || !(file instanceof File)) {
-      return c.json({ error: 'File tidak ditemukan dalam request multipart.' }, 400);
+    try {
+      const formData = await c.req.formData();
+      file = (formData.get('file') as File) || (formData.get('document') as File) || (formData.get('image') as File);
+      const formPrefix = formData.get('prefix');
+      if (typeof formPrefix === 'string') prefix = formPrefix;
+    } catch (_e) {
+      try {
+        const body = await c.req.parseBody();
+        file = (body['file'] as File) || (body['document'] as File) || (body['image'] as File);
+        if (typeof body['prefix'] === 'string') prefix = body['prefix'];
+      } catch (_e2) {}
     }
 
-    const contentType = file.type;
+    if (!file || !(file instanceof File)) {
+      return c.json({ success: false, error: 'File tidak ditemukan dalam request multipart.' }, 400);
+    }
+
+    const contentType = file.type || 'image/png';
     if (contentType && !ALLOWED_MIME_TYPES.has(contentType.toLowerCase())) {
       return c.json({ error: `Tipe file '${contentType}' tidak diizinkan untuk alasan keamanan.` }, 400);
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const dataBuffer = Buffer.from(arrayBuffer);
-    const targetDir = path.join(process.cwd(), 'public', 'assets', 'uploads');
-
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
-    }
-
     const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanPrefix = prefix.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
     const filename = `${cleanPrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
-    const targetPath = path.join(targetDir, filename);
 
-    fs.writeFileSync(targetPath, dataBuffer);
+    // Tier 1: Try Supabase Cloud Storage
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+    if (serviceRoleKey) {
+      try {
+        const supabase = getSupabaseClient(serviceRoleKey);
+        const bucketName = 'cationgate-media';
+        const { error: sbErr } = await supabase.storage.from(bucketName).upload(filename, dataBuffer, {
+          contentType,
+          upsert: true
+        });
 
-    const publicUrl = `/assets/uploads/${filename}`;
-    return c.json({
-      success: true,
-      publicUrl,
-      fileName: filename
-    });
+        if (!sbErr) {
+          const { data: publicUrlData } = supabase.storage.from(bucketName).getPublicUrl(filename);
+          if (publicUrlData?.publicUrl) {
+            return c.json({
+              success: true,
+              publicUrl: publicUrlData.publicUrl,
+              fileName: filename
+            });
+          }
+        }
+      } catch (cloudErr) {
+        console.warn('Supabase cloud storage direct upload notice:', cloudErr);
+      }
+    }
+
+    // Tier 2: Try Local Filesystem
+    try {
+      const targetDir = path.join(process.cwd(), 'public', 'assets', 'uploads');
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+      const targetPath = path.join(targetDir, filename);
+      fs.writeFileSync(targetPath, dataBuffer);
+
+      return c.json({
+        success: true,
+        publicUrl: `/assets/uploads/${filename}`,
+        fileName: filename
+      });
+    } catch (_fsErr) {
+      // Tier 3: Return Base64 data URL for read-only serverless environments
+      const base64Url = `data:${contentType};base64,${dataBuffer.toString('base64')}`;
+      return c.json({
+        success: true,
+        publicUrl: base64Url,
+        fileName: filename
+      });
+    }
   } catch (error: unknown) {
     console.error('Error uploading file directly to server:', error);
     return c.json({ error: error instanceof Error ? error.message : 'Gagal mengunggah file ke server.' }, 500);

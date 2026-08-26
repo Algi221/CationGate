@@ -10,6 +10,8 @@ import { authLimiter } from '../middleware/rate-limiter';
 import { redis } from '../../utils/redis';
 import { notifyGatekeeperLogin } from '../utils/telegram';
 import { systemLogger } from '../utils/systemLogger';
+import { EmailService } from '../services/EmailService';
+import { SaasService } from '../services/SaasService';
 
 const gatekeeperRouter = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -161,45 +163,96 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
   try {
     const supabase = getSupabaseClient();
 
-    // Fetch verified schools
+    // 1. Fetch verified schools
     const { data: dbSchools } = await supabase.from('schools').select('*').order('created_at', { ascending: false });
 
-    // Fetch candidate/prospective schools
+    // 2. Fetch candidate/prospective schools
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let prospectiveList: any[] = [];
     try {
       const { data: ps } = await supabase.from('prospective_schools').select('*').order('created_at', { ascending: false });
-      if (ps) prospectiveList = ps;
+      if (ps && ps.length > 0) prospectiveList = ps;
     } catch (_e) {}
 
     if (prospectiveList.length === 0) {
       try {
         const { data: cs } = await supabase.from('calon_sekolah').select('*').order('created_at', { ascending: false });
-        if (cs) prospectiveList = cs;
+        if (cs && cs.length > 0) prospectiveList = cs;
       } catch (_e) {}
     }
+
+    // 3. PostgreSQL query fallback
+    try {
+      const pgPs = await pool.query('SELECT * FROM prospective_schools ORDER BY created_at DESC');
+      if (pgPs.rows && pgPs.rows.length > 0) {
+        pgPs.rows.forEach(p => {
+          if (!prospectiveList.some(item => item.slug === p.slug)) {
+            prospectiveList.push(p);
+          } else {
+            const idx = prospectiveList.findIndex(item => item.slug === p.slug);
+            if (idx >= 0) {
+              prospectiveList[idx] = { ...p, ...prospectiveList[idx] };
+            }
+          }
+        });
+      }
+    } catch (_e) {}
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const combinedMap = new Map<string, any>();
 
     if (dbSchools && Array.isArray(dbSchools)) {
-      dbSchools.forEach(s => combinedMap.set(s.slug, { ...s, is_official: true }));
+      dbSchools.forEach(s => {
+        const k = s.slug || String(s.id);
+        combinedMap.set(k, { ...s, is_official: true });
+      });
     }
 
     if (prospectiveList && Array.isArray(prospectiveList)) {
       prospectiveList.forEach(s => {
-        if (combinedMap.has(s.slug)) {
-          const existing = combinedMap.get(s.slug);
-          combinedMap.set(s.slug, { ...s, ...existing, is_official: true });
+        const k = s.slug || String(s.id);
+        if (combinedMap.has(k)) {
+          const existing = combinedMap.get(k);
+          combinedMap.set(k, {
+            ...existing,
+            ...s,
+            status: s.status || existing.status,
+            legal_sk_number: s.legal_sk_number || existing.legal_sk_number,
+            sk_document_url: s.sk_document_url || existing.sk_document_url,
+            sk_document_name: s.sk_document_name || existing.sk_document_name,
+            npsn: s.npsn || existing.npsn,
+            dapodik_code: s.dapodik_code || existing.dapodik_code,
+            admin_name: s.admin_name || existing.admin_name,
+            official_email: s.official_email || existing.official_email,
+            accreditation: s.accreditation || existing.accreditation,
+            is_official: true
+          });
         } else {
-          combinedMap.set(s.slug, { ...s, is_official: false });
+          combinedMap.set(k, { ...s, is_official: false });
         }
       });
     }
 
-    fontInMemSchools.forEach((s, slug) => {
-      if (!combinedMap.has(slug)) {
-        combinedMap.set(slug, s);
+    fontInMemSchools.forEach((s, key) => {
+      const realSlug = s.slug || key;
+      if (!combinedMap.has(realSlug)) {
+        combinedMap.set(realSlug, { ...s, slug: realSlug });
+      } else {
+        const existing = combinedMap.get(realSlug);
+        combinedMap.set(realSlug, {
+          ...existing,
+          ...s,
+          slug: realSlug,
+          name: s.name || existing.name,
+          legal_sk_number: s.legal_sk_number || existing.legal_sk_number,
+          sk_document_url: s.sk_document_url || existing.sk_document_url,
+          sk_document_name: s.sk_document_name || existing.sk_document_name,
+          npsn: s.npsn || existing.npsn,
+          dapodik_code: s.dapodik_code || existing.dapodik_code,
+          admin_name: s.admin_name || existing.admin_name,
+          official_email: s.official_email || existing.official_email,
+          status: s.status || existing.status,
+        });
       }
     });
 
@@ -338,13 +391,97 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
       }
     }
 
+    // 5. Send automated approval email to school admin
+    if (sEmail && sEmail !== 'info@school.sch.id') {
+      try {
+        await EmailService.sendSchoolApprovedEmail(sEmail, sName, sSlug);
+      } catch (emailErr) {
+        console.warn('Failed to send school approval email:', emailErr);
+      }
+    }
+
     return c.json({
       success: true,
-      message: `Verifikasi sekolah '${sName}' telah disetujui.`
+      message: `Verifikasi sekolah '${sName}' telah disetujui dan email pemberitahuan telah dikirimkan.`
     });
   } catch (err: unknown) {
     console.error('Approve school error:', err);
     return c.json({ success: false, message: 'Gagal meng-approve sekolah: ' + (err instanceof Error ? err.message : String(err)) }, 500);
+  }
+});
+
+// 3.1 POST /api/gatekeeper/reject-school - Reject school verification and notify admin via email
+gatekeeperRouter.post('/reject-school', gatekeeperAuth, async (c) => {
+  try {
+    const body = await c.req.json();
+    const school_id = body.school_id || body.slug || body.id;
+    const reason = body.reason || "Dokumen SK Izin Operasional belum lengkap atau tidak valid.";
+
+    if (!school_id) {
+      return c.json({ success: false, message: 'ID atau Slug sekolah wajib diisi' }, 400);
+    }
+
+    const supabase = getSupabaseClient();
+    const idOrSlug = String(school_id);
+    const isNumericId = !isNaN(Number(idOrSlug)) && Number(idOrSlug) > 0;
+
+    // Find school details
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let targetSchool: any = null;
+    fontInMemSchools.forEach((s, keySlug) => {
+      if (String(s.id) === idOrSlug || String(s.slug) === idOrSlug || keySlug === idOrSlug) {
+        targetSchool = s;
+      }
+    });
+
+    if (!targetSchool) {
+      try {
+        let psQuery = supabase.from('prospective_schools').select('*');
+        psQuery = isNumericId ? psQuery.eq('id', Number(idOrSlug)) : psQuery.eq('slug', idOrSlug);
+        const { data: ps } = await psQuery.maybeSingle();
+        if (ps) targetSchool = ps;
+      } catch (_e) {}
+    }
+
+    const sName = targetSchool?.name || 'Instansi Sekolah';
+    const sSlug = targetSchool?.slug || idOrSlug;
+    const sEmail = targetSchool?.official_email || targetSchool?.email || 'info@school.sch.id';
+
+    // 1. Update prospective_schools & schools status to REJECTED
+    try {
+      let psUpdate = supabase.from('prospective_schools').update({ status: 'REJECTED', is_verified: false });
+      psUpdate = isNumericId ? psUpdate.eq('id', Number(idOrSlug)) : psUpdate.eq('slug', sSlug);
+      await psUpdate;
+
+      await supabase.from('schools').update({ status: 'REJECTED' }).eq('slug', sSlug);
+    } catch (err) {
+      console.warn('Supabase reject status update warning:', err);
+    }
+
+    // 2. Update memory state
+    fontInMemSchools.forEach((s, keySlug) => {
+      if (String(s.id) === idOrSlug || String(s.slug) === idOrSlug || keySlug === sSlug) {
+        s.status = 'REJECTED';
+        s.is_verified = false;
+      }
+    });
+
+    // 3. Send automated rejection / revision email
+    if (sEmail && sEmail !== 'info@school.sch.id') {
+      try {
+        await EmailService.sendSchoolRejectedEmail(sEmail, sName, sSlug, reason);
+      } catch (emailErr) {
+        console.warn('Failed to send school rejection email:', emailErr);
+      }
+    }
+
+    return c.json({
+      success: true,
+      message: `Verifikasi sekolah '${sName}' telah ditolak dan email instruksi perbaikan telah dikirimkan.`
+    });
+  } catch (err: unknown) {
+    console.error('Reject school error:', err);
+    return c.json({ success: false, message: 'Gagal menolak verifikasi sekolah: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
@@ -429,11 +566,15 @@ gatekeeperRouter.get('/plans', gatekeeperAuth, async (c) => {
       .select('*')
       .order('id', { ascending: true });
 
-    if (error) throw error;
-    return c.json({ success: true, data: data || [] });
+    if (error || !data || data.length === 0) {
+      const fallbackPlans = await SaasService.getPlans();
+      return c.json({ success: true, data: fallbackPlans });
+    }
+    return c.json({ success: true, data: data });
   } catch (err: unknown) {
     console.error('Get plans error:', err instanceof Error ? err.message : String(err));
-    return c.json({ success: false, message: 'Gagal mengambil data paket' }, 500);
+    const fallbackPlans = await SaasService.getPlans();
+    return c.json({ success: true, data: fallbackPlans });
   }
 });
 
@@ -513,6 +654,41 @@ gatekeeperRouter.delete('/plans/:id', gatekeeperAuth, async (c) => {
 });
 
 // ═══════════════════════════════════════════════════════════════
+// BILLING & TRANSACTIONS (GATEKEEPER)
+// ═══════════════════════════════════════════════════════════════
+
+// GET /api/gatekeeper/transactions - Get list of SaaS subscription transactions
+gatekeeperRouter.get('/transactions', gatekeeperAuth, async (c) => {
+  try {
+    const transactions = await SaasService.getTransactions();
+    const stats = await SaasService.getTransactionStats();
+    return c.json({
+      success: true,
+      data: transactions,
+      stats
+    });
+  } catch (err: unknown) {
+    console.error('Get transactions error:', err instanceof Error ? err.message : String(err));
+    return c.json({
+      success: false,
+      message: 'Gagal mengambil data transaksi billing: ' + (err instanceof Error ? err.message : String(err)),
+      data: [],
+      stats: { total_revenue: 0, total_transactions: 0, active_subscriptions: 0, avg_order_value: 0 }
+    }, 500);
+  }
+});
+
+// GET /api/gatekeeper/transactions/stats - Get summary stats
+gatekeeperRouter.get('/transactions/stats', gatekeeperAuth, async (c) => {
+  try {
+    const stats = await SaasService.getTransactionStats();
+    return c.json({ success: true, data: stats });
+  } catch (_err: unknown) {
+    return c.json({ success: false, message: 'Gagal menghitung statistik transaksi' }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
 // REALTIME SYSTEM & VERCEL-STYLE LOGS (GATEKEEPER)
 // ═══════════════════════════════════════════════════════════════
 
@@ -536,7 +712,7 @@ gatekeeperRouter.delete('/system-logs', gatekeeperAuth, async (c) => {
   try {
     systemLogger.clearLogs();
     return c.json({ success: true, message: 'Log sistem berhasil dibersihkan' });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return c.json({ success: false, message: 'Gagal membersihkan log' }, 500);
   }
 });
@@ -610,7 +786,7 @@ gatekeeperRouter.get('/infrastructure-status', gatekeeperAuth, async (c) => {
         }
       }
     });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return c.json({
       success: true,
       data: {
@@ -654,8 +830,8 @@ gatekeeperRouter.post('/purge-school', gatekeeperAuth, async (c) => {
     } catch (_e) {}
 
     return c.json({ success: true, message: 'Subdomain dan data akun instansi berhasil dihapus permanen.' });
-  } catch (err: unknown) {
-    return c.json({ success: false, message: 'Gagal menghapus instansi: ' + (err instanceof Error ? err.message : String(err)) }, 500);
+  } catch (_err: unknown) {
+    return c.json({ success: false, message: 'Gagal menghapus instansi: ' + (_err instanceof Error ? _err.message : String(_err)) }, 500);
   }
 });
 
@@ -694,7 +870,7 @@ gatekeeperRouter.post('/maintenance-mode', gatekeeperAuth, async (c) => {
         ? 'Mode Pemeliharaan (Maintenance) AKTIF. Seluruh landing page sekolah tenant kini menampilkan halaman pemeliharaan sistem.'
         : 'Mode Pemeliharaan (Maintenance) NONAKTIF. Platform kembali berjalan normal.'
     });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return c.json({ success: false, message: 'Gagal mengubah status pemeliharaan' }, 500);
   }
 });
@@ -734,7 +910,7 @@ gatekeeperRouter.post('/change-password', gatekeeperAuth, async (c) => {
     });
 
     return c.json({ success: true, message: 'Kata sandi Gatekeeper berhasil diperbarui.' });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return c.json({ success: false, message: 'Gagal memperbarui kata sandi' }, 500);
   }
 });

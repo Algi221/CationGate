@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   Palette, 
   Settings, 
@@ -12,6 +12,7 @@ import {
   RotateCcw,
   FileText,
   Eye,
+  ExternalLink,
   GraduationCap,
   Briefcase,
   Database
@@ -29,9 +30,11 @@ import { FaqTab } from "@/components/features/kelola-ui/tabs/FaqTab";
 import { PartnersTab } from "@/components/features/kelola-ui/tabs/PartnersTab";
 import { RevisionsTab } from "@/components/features/kelola-ui/tabs/RevisionsTab";
 import { ConfirmSaveModal } from "@/components/features/kelola-ui/components/ConfirmSaveModal";
+import { LivePreviewLandingModal } from "@/components/features/kelola-ui/components/LivePreviewLandingModal";
 import { KelolaUITab } from "@/components/features/kelola-ui/types";
 
 export default function KelolaUIPage() {
+  const [showLivePreviewModal, setShowLivePreviewModal] = useState(false);
   const {
     router,
     slug,
@@ -109,7 +112,10 @@ export default function KelolaUIPage() {
     setShowConfirmModal,
     changeDescription,
     setChangeDescription,
-    handleSaveAll
+    handleSaveAll,
+    heroBgImage,
+    setHeroBgImage,
+    handleHeroBgImageChange
   } = useKelolaUIState();
   const { href } = useSchoolHref();
 
@@ -197,14 +203,23 @@ export default function KelolaUIPage() {
             </button>
           )}
 
+          <button
+            type="button"
+            onClick={() => setShowLivePreviewModal(true)}
+            className="px-4 py-3 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+          >
+            <Eye size={15} />
+            <span>Pratinjau Draf (Live Preview)</span>
+          </button>
+
           <a
             href={href("/")}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-3 bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <Eye size={14} />
-            <span>Lihat Website</span>
+            <ExternalLink size={14} />
+            <span>Website Publik</span>
           </a>
 
           <button
@@ -291,6 +306,9 @@ export default function KelolaUIPage() {
                 setG1Error={setG1Error}
                 g2Error={g2Error}
                 setG2Error={setG2Error}
+                heroBgImage={heroBgImage}
+                setHeroBgImage={setHeroBgImage}
+                handleHeroBgImageChange={handleHeroBgImageChange}
               />
             )}
 
@@ -371,6 +389,31 @@ export default function KelolaUIPage() {
         onConfirm={handleSaveAll}
         changeDescription={changeDescription}
         onChangeDescription={setChangeDescription}
+      />
+
+      {/* Live Preview Modal */}
+      <LivePreviewLandingModal
+        isOpen={showLivePreviewModal}
+        onClose={() => setShowLivePreviewModal(false)}
+        onConfirmSave={() => setShowConfirmModal(true)}
+        schoolSlug={slug}
+        schoolDisplayName={schoolTitle}
+        heroTitle={heroTitle}
+        heroTitleSub={heroTitleSub}
+        heroSubtitle={heroSubtitle}
+        heroBgImage={heroBgImage}
+        address={address}
+        mapTitle={mapTitle}
+        mapUrl={mapUrl}
+        waAdmin={waAdmin}
+        schoolPeriod={schoolPeriod}
+        faqList={faqList}
+        faqTitle={faqTitle}
+        faqSubtitle={faqSubtitle}
+        alurList={alurList}
+        majorsList={majorsList}
+        partnersList={partnersList}
+        gelombangConfig={gelombangConfig}
       />
     </div>
   );

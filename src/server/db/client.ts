@@ -45,6 +45,11 @@ export async function initDb(): Promise<void> {
         ALTER TABLE student_applicants ADD COLUMN IF NOT EXISTS physical_docs_checklist JSONB;
         -- Status sekolah lama: VERIFIED → FULL_VERIFIED
         UPDATE schools SET status = 'FULL_VERIFIED' WHERE status = 'VERIFIED' OR status = 'verified';
+
+        -- Relax FK constraints to support prospective/new school tenants
+        ALTER TABLE landing_page_config DROP CONSTRAINT IF EXISTS landing_page_config_school_id_fkey;
+        ALTER TABLE ui_revisions DROP CONSTRAINT IF EXISTS ui_revisions_school_id_fkey;
+        ALTER TABLE informasi DROP CONSTRAINT IF EXISTS informasi_school_id_fkey;
       `);
 
       console.log('PostgreSQL Database tables verified/initialized successfully.');

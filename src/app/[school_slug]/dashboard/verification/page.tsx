@@ -8,8 +8,12 @@ import { Step1Legalitas } from "@/components/features/school-verification/compon
 import { Step2Kontak } from "@/components/features/school-verification/components/Step2Kontak";
 import { Step3UploadSK } from "@/components/features/school-verification/components/Step3UploadSK";
 import { Step4StatusView } from "@/components/features/school-verification/components/Step4StatusView";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
+import { useRouter } from "next/navigation";
 
 function SchoolVerificationContent() {
+  const { href } = useSchoolHref();
+  const router = useRouter();
   const {
     schoolSlug,
     schoolStatus,
@@ -20,8 +24,23 @@ function SchoolVerificationContent() {
     handleNext,
     handlePrev,
     handleFileUpload,
+    handleFileSelected,
+    handleAddDocument,
+    handleRemoveDocument,
     handleSubmit
   } = useSchoolVerificationState();
+
+  const isVerified =
+    schoolStatus === "FULL_VERIFIED" || schoolStatus === "VERIFIED" || schoolStatus === "verified";
+
+  React.useEffect(() => {
+    if (isVerified) {
+      const slug = schoolSlug || "default";
+      if (typeof window !== "undefined" && localStorage.getItem(`verification_dismissed_${slug}`) === "true") {
+        router.replace(href("/dashboard"));
+      }
+    }
+  }, [isVerified, schoolSlug, router, href]);
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-12">
@@ -67,6 +86,9 @@ function SchoolVerificationContent() {
             formData={formData}
             loading={loading}
             handleFileUpload={handleFileUpload}
+            handleFileSelected={handleFileSelected}
+            handleAddDocument={handleAddDocument}
+            handleRemoveDocument={handleRemoveDocument}
             handleSubmit={handleSubmit}
             handlePrev={handlePrev}
           />

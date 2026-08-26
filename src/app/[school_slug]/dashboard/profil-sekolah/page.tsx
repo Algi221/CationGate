@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
+import { useSchoolStore } from "@/stores/useSchoolStore";
 import { 
   Save, 
   School, 
@@ -19,6 +21,8 @@ import { uploadFileDirect, base64ToFile } from "@/utils/storage";
 import { compressImage } from "@/utils/mediaCompressor";
 
 export default function ProfilSekolahPage() {
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "";
   const { adminToken, profilSekolah, fetchConfigs, schoolId, isDemoMode, ppdbTitle, ppdbLogo } = usePPDB();
 
   const [loading, setLoading] = useState(false);
@@ -28,8 +32,8 @@ export default function ProfilSekolahPage() {
     akreditasi: "",
     alamat: "",
     npsn: "",
-    nis: "",
-    nss: "",
+    status: "Swasta",
+    kurikulum: "Kurikulum Merdeka",
     tahun_berdiri: "",
     email: "",
     telepon: ""
@@ -40,9 +44,9 @@ export default function ProfilSekolahPage() {
   const [heroImage, setHeroImage] = useState("");
   const [pimpinan, setPimpinan] = useState({
     nama: "",
-    jabatan: "",
-    foto: "",
-    sambutan: ""
+    jabatan: "Kepala Sekolah",
+    sambutan: "",
+    foto: ""
   });
   const [visi, setVisi] = useState("");
   const [misi, setMisi] = useState("");
@@ -78,12 +82,13 @@ export default function ProfilSekolahPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saveConfig = async (key: string, value: any) => {
     if (isDemoMode) return false;
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null);
     try {
-      const res = await fetch(`/api/config?school_id=${schoolId}`, {
+      const res = await fetch(`/api/config?school_id=${schoolId || schoolSlug}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${adminToken}`
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ key, value })
       });
@@ -130,7 +135,12 @@ export default function ProfilSekolahPage() {
         timer: 1500,
         showConfirmButton: false,
       });
-      await fetchConfigs(); // Refresh context
+      const targetSlug = schoolSlug || schoolId;
+      if (targetSlug) {
+        await useSchoolStore.getState().fetchConfigs(targetSlug);
+      } else {
+        await fetchConfigs(); // Refresh context
+      }
     } else {
       Swal.fire("Peringatan", "Beberapa pengaturan mungkin gagal disimpan. Coba lagi.", "warning");
     }

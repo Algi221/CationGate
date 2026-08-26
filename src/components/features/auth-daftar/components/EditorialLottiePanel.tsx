@@ -20,7 +20,7 @@ export const EditorialLottiePanel: React.FC<EditorialLottiePanelProps> = ({
   const firstLine = lines[0];
   const secondLine = lines.slice(1).join(" ");
 
-  const getStepBadgeText = (step: number) => {
+  const _getStepBadgeText = (step: number) => {
     switch (step) {
       case 1:
         return "Langkah 01 / 03 • Data Instansi";
@@ -60,9 +60,6 @@ export const EditorialLottiePanel: React.FC<EditorialLottiePanelProps> = ({
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
-              <span className="inline-block px-3.5 py-1 bg-white/25 backdrop-blur-md rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-4 border border-white/30 shadow-xs">
-                {getStepBadgeText(currentVisual.step)}
-              </span>
               <h2 className="text-4xl lg:text-6xl font-black text-white tracking-tight leading-[0.98] drop-shadow-md">
                 {firstLine} <br />
                 <span className={getSecondWordColor(currentVisual.step)}>{secondLine}</span>
@@ -108,9 +105,6 @@ export const EditorialLottiePanel: React.FC<EditorialLottiePanelProps> = ({
 
       {/* MOBILE VIEW (COMPACT HEADER) */}
       <div className="lg:hidden w-full z-10 mb-4 px-2 text-left">
-        <span className="inline-block px-3 py-1 bg-white/75 backdrop-blur-md rounded-full text-slate-900 text-[10px] font-black uppercase tracking-widest mb-1.5 border border-white/30 shadow-xs">
-          {getStepBadgeText(currentVisual.step)}
-        </span>
         <h2 className="text-2xl font-black text-white leading-tight drop-shadow-sm">
           {firstLine} <span className={getSecondWordColor(currentVisual.step)}>{secondLine}</span>
         </h2>

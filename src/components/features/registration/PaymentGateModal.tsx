@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { User, Check, CreditCard, School, Clock, CheckCircle2, Upload, AlertCircle, Copy, X, FileText, ArrowRight, Building } from "lucide-react";
 import Swal from "sweetalert2";
 import { uploadFileDirect } from "@/utils/storage";
-import { sanitizeUrl, getMajorDetails } from "./types";
+import { getMajorDetails } from "./types";
 import { usePPDB } from "@/context/PPDBContext";
 
 interface PaymentGateModalProps {
@@ -151,7 +151,7 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         <div className="bg-glow bg-glow-2"></div>
         <div className="bg-glow bg-glow-3"></div>
       </div>
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-2xl rounded-[2rem] p-5 md:p-6 lg:p-8 max-w-4xl w-full relative z-10 animate-in fade-in zoom-in duration-300">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-2xl rounded-4xl p-5 md:p-6 lg:p-8 max-w-4xl w-full relative z-10 animate-in fade-in zoom-in duration-300">
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 

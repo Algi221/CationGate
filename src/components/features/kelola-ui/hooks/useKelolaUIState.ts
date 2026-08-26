@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
+import { useSchoolStore } from "@/stores/useSchoolStore";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 import Swal from "sweetalert2";
 import { uploadFileDirect, base64ToFile } from "@/utils/storage";
 import { compressImage } from "@/utils/mediaCompressor";
@@ -29,7 +31,16 @@ export function useKelolaUIState() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams() as { school_slug?: string };
-  const slug = params?.school_slug;
+  const schoolSlug =
+    (params?.school_slug as string) ||
+    (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
+      ? window.location.hostname.split(".")[0]
+      : "") ||
+    "";
+  const slug = schoolSlug;
+
+  const { isDemoMode, adminToken, ppdbTitle } = usePPDB();
+  const isDemo = isDemoMode || slug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
 
   const tabParam = searchParams.get("tab") as KelolaUITab | null;
   const [activeTab, setActiveTab] = useState<KelolaUITab>(tabParam || "hero");
@@ -40,51 +51,53 @@ export function useKelolaUIState() {
     }
   }, [tabParam]);
 
-  const { isDemoMode, adminToken, ppdbTitle } = usePPDB();
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const draftKey = `ppdb_ui_editor_draft_${slug || 'global'}`;
+  const draftKey = `ppdb_ui_editor_draft_${slug || 'demo'}`;
 
   // Form Fields State
   const [schoolLogo, setSchoolLogo] = useState("");
   const [schoolTitle, setSchoolTitle] = useState("");
-  const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
-  const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB");
-  const [heroSubtitle, setHeroSubtitle] = useState("Platform pendaftaran peserta didik baru resmi.");
-  const [phone, setPhone] = useState("+62218740756");
-  const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
-  const [address, setAddress] = useState("Jl. Pekapuran RT 02 RW 06, Curug, Cimanggis, Kota Depok, Jawa Barat 16453");
-  const [footerDesc, setFooterDesc] = useState("Pionir pendidikan kejuruan teknologi informasi di Kota Depok dengan sertifikasi internasional dan industri.");
-  const [mapTitle, setMapTitle] = useState("Kunjungi Kampus SMK Taruna Bhakti");
-  const [mapUrl, setMapUrl] = useState("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid");
-  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
-  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
-  const [waAdmin, setWaAdmin] = useState("6281292244456");
-  const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
-  const [formFee, setFormFee] = useState("250000");
-  const [isLandingPageActive, setIsLandingPageActive] = useState(true);
+  const [heroTitle, setHeroTitle] = useState(() => isDemo ? "Penerimaan Siswa Baru" : "");
+  const [heroTitleSub, setHeroTitleSub] = useState(() => isDemo ? "Portal PPDB" : "");
+  const [heroSubtitle, setHeroSubtitle] = useState(() => isDemo ? "Platform pendaftaran peserta didik baru resmi." : "");
+  const [heroBgImage, setHeroBgImage] = useState<string>("");
+  const [phone, setPhone] = useState(() => isDemo ? "+62218740756" : "");
+  const [email, setEmail] = useState(() => isDemo ? "info@smktarunabhakti.sch.id" : "");
+  const [address, setAddress] = useState(() => isDemo ? "Jl. Pekapuran RT 02 RW 06, Curug, Cimanggis, Kota Depok, Jawa Barat 16453" : "");
+  const [footerDesc, setFooterDesc] = useState(() => isDemo ? "Pionir pendidikan kejuruan teknologi informasi di Kota Depok dengan sertifikasi internasional dan industri." : "");
+  const [mapTitle, setMapTitle] = useState(() => isDemo ? "Kunjungi Kampus SMK Taruna Bhakti" : "");
+  const [mapUrl, setMapUrl] = useState(() => isDemo ? "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid" : "");
+  const [schoolPeriod, setSchoolPeriod] = useState(() => isDemo ? "2026-2027" : "");
+  const [waGroupUrl, setWaGroupUrl] = useState(() => isDemo ? "https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS" : "");
+  const [waAdmin, setWaAdmin] = useState(() => isDemo ? "6281292244456" : "");
+  const [formGuideline, setFormGuideline] = useState(() => isDemo ? "Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB." : "");
+  const [formFee, setFormFee] = useState(() => isDemo ? "250000" : "0");
+  const [isLandingPageActive, setIsLandingPageActive] = useState(() => isDemo);
 
   // Collections State
-  const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
-  const [majorsList, setMajorsList] = useState<MajorItem[]>(DEFAULT_MAJORS);
-  const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
-  const [faqTitle, setFaqTitle] = useState("Pertanyaan yang Sering Diajukan");
-  const [faqSubtitle, setFaqSubtitle] = useState("Temukan jawaban cepat untuk kendala dan pertanyaan seputar proses pendaftaran.");
-  const [partnersList, setPartnersList] = useState<PartnerItem[]>(DEFAULT_PARTNERS);
-  const [bankConfigList, setBankConfigList] = useState<BankConfigItem[]>([
+  const [alurList, setAlurList] = useState<AlurItem[]>(() => isDemo ? DEFAULT_ALUR : []);
+  const [majorsList, setMajorsList] = useState<MajorItem[]>(() => isDemo ? DEFAULT_MAJORS : []);
+  const [faqList, setFaqList] = useState<FaqItem[]>(() => isDemo ? DEFAULT_FAQ : []);
+  const [faqTitle, setFaqTitle] = useState(() => isDemo ? "Pertanyaan yang Sering Diajukan" : "");
+  const [faqSubtitle, setFaqSubtitle] = useState(() => isDemo ? "Temukan jawaban cepat untuk kendala dan pertanyaan seputar proses pendaftaran." : "");
+  const [partnersList, setPartnersList] = useState<PartnerItem[]>(() => isDemo ? DEFAULT_PARTNERS : []);
+  const [bankConfigList, setBankConfigList] = useState<BankConfigItem[]>(() => isDemo ? [
     { bankName: "Bank BJB", accountNumber: "0010203040506", accountHolder: "SMK Taruna Bhakti" }
-  ]);
+  ] : []);
   const [fieldsConfigUI, setFieldsConfigUI] = useState<Record<string, FieldConfigItem>>(DEFAULT_FIELDS_CONFIG_UI);
   const [gelombangConfig, setGelombangConfig] = useState<{
     gelombang1: { start: string; end: string };
     gelombang2: { start: string; end: string };
-  }>({
+  }>(() => isDemo ? {
     gelombang1: { start: "2026-01-01", end: "2026-04-30" },
     gelombang2: { start: "2026-05-01", end: "2026-07-15" }
+  } : {
+    gelombang1: { start: "", end: "" },
+    gelombang2: { start: "", end: "" }
   });
 
   const [g1Error, setG1Error] = useState<string | null>(null);
@@ -114,6 +127,7 @@ export function useKelolaUIState() {
       ppdb_hero_title: heroTitle,
       ppdb_hero_title_sub: heroTitleSub,
       ppdb_hero_subtitle: heroSubtitle,
+      ppdb_hero_bg_image: heroBgImage,
       ppdb_phone: phone,
       ppdb_email: email,
       ppdb_address: address,
@@ -135,6 +149,7 @@ export function useKelolaUIState() {
       ppdb_logo_url: schoolLogo,
       ppdb_title: schoolTitle,
       ppdb_footer_desc: footerDesc,
+      ppdb_fields_config: fieldsConfigUI
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -173,6 +188,7 @@ export function useKelolaUIState() {
     heroTitle,
     heroTitleSub,
     heroSubtitle,
+    heroBgImage,
     phone,
     email,
     address,
@@ -194,6 +210,7 @@ export function useKelolaUIState() {
     schoolLogo,
     schoolTitle,
     footerDesc,
+    fieldsConfigUI,
     draftKey,
   ]);
 
@@ -229,6 +246,7 @@ export function useKelolaUIState() {
       else if (!draft) setHeroTitleSub(`Portal PPDB ${ppdbTitle || 'Online'}`);
 
       if (activeConfig.ppdb_hero_subtitle) setHeroSubtitle(activeConfig.ppdb_hero_subtitle);
+      if (activeConfig.ppdb_hero_bg_image) setHeroBgImage(activeConfig.ppdb_hero_bg_image);
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
       if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
@@ -244,22 +262,26 @@ export function useKelolaUIState() {
 
       if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
       if (activeConfig.ppdb_footer_desc) setFooterDesc(activeConfig.ppdb_footer_desc);
-      else if (!draft) setSchoolTitle(`PPDB ${ppdbTitle || 'Sekolah'}`);
+      else if (!draft && isDemo) setSchoolTitle(`PPDB ${ppdbTitle || 'Sekolah'}`);
 
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
         setAlurList(activeConfig.ppdb_alur_config);
+      } else if (!isDemo) {
+        setAlurList([]);
       }
       if (activeConfig.ppdb_faq_config && Array.isArray(activeConfig.ppdb_faq_config)) {
         setFaqList(activeConfig.ppdb_faq_config);
       } else {
-        setFaqList(DEFAULT_FAQ);
+        setFaqList(isDemo ? DEFAULT_FAQ : []);
       }
       if (activeConfig.ppdb_partners_config && Array.isArray(activeConfig.ppdb_partners_config)) {
         setPartnersList(activeConfig.ppdb_partners_config);
       } else {
-        setPartnersList(DEFAULT_PARTNERS);
+        setPartnersList(isDemo ? DEFAULT_PARTNERS : []);
       }
-      if (activeConfig.ppdb_majors_config && Array.isArray(activeConfig.ppdb_majors_config)) {
+      if (isDemo) {
+        setMajorsList(DEFAULT_MAJORS);
+      } else if (activeConfig.ppdb_majors_config && Array.isArray(activeConfig.ppdb_majors_config)) {
         const dbMajors = activeConfig.ppdb_majors_config;
         const mergedMajors: MajorItem[] = [];
 
@@ -280,9 +302,16 @@ export function useKelolaUIState() {
           });
         });
         setMajorsList(mergedMajors);
+      } else {
+        setMajorsList([]);
       }
       if (activeConfig.ppdb_gelombang_config) {
         setGelombangConfig(activeConfig.ppdb_gelombang_config);
+      } else if (!isDemo) {
+        setGelombangConfig({
+          gelombang1: { start: "", end: "" },
+          gelombang2: { start: "", end: "" }
+        });
       }
       if (activeConfig.ppdb_bank_config) {
         const bankData = activeConfig.ppdb_bank_config;
@@ -291,6 +320,8 @@ export function useKelolaUIState() {
         } else if (bankData && typeof bankData === "object") {
           setBankConfigList([bankData]);
         }
+      } else if (!isDemo) {
+        setBankConfigList([]);
       }
       if (activeConfig.ppdb_landing_active !== undefined) {
         setIsLandingPageActive(activeConfig.ppdb_landing_active === true || activeConfig.ppdb_landing_active === "true");
@@ -460,6 +491,7 @@ export function useKelolaUIState() {
         ppdb_logo_url: schoolLogo,
         ppdb_title: schoolTitle,
         ppdb_footer_desc: footerDesc,
+        ppdb_hero_bg_image: heroBgImage,
         ppdb_fields_config: fieldsConfigUI
       };
 
@@ -516,9 +548,14 @@ export function useKelolaUIState() {
           localStorage.setItem("ppdb_wa_admin", waAdmin);
           localStorage.setItem("ppdb_bank_config", JSON.stringify(bankConfigList));
           localStorage.setItem("ppdb_gelombang_config", JSON.stringify(gelombangConfig));
+          localStorage.setItem("ppdb_hero_bg_image", heroBgImage);
           localStorage.setItem("ppdb_fields_config", JSON.stringify(fieldsConfigUI));
         } catch (storageErr) {
           console.warn("Storage sync bypassed.", storageErr);
+        }
+
+        if (slug) {
+          useSchoolStore.getState().fetchConfigs(slug).catch(console.error);
         }
 
         await fetchRevisions();
@@ -546,6 +583,22 @@ export function useKelolaUIState() {
       showToastMsg(`✨ Logo berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
     } catch (_e) {
       showToastMsg("Gagal memproses logo.", "error");
+    }
+  };
+
+  const handleHeroBgImageChange = async (file: File) => {
+    try {
+      showToastMsg("Mengompresi foto background hero...");
+      const result = await compressImage(file, 1920, 1080, 0.85);
+
+      showToastMsg("Mengunggah background hero...", "info");
+      const compressedFile = base64ToFile(result.base64, file.name);
+      const publicUrl = await uploadFileDirect(compressedFile, 'hero_bg');
+
+      setHeroBgImage(publicUrl);
+      showToastMsg(`✨ Background hero berhasil diunggah! (Ukuran berkurang ${result.reductionPercentage}%)`, "success");
+    } catch (_e) {
+      showToastMsg("Gagal memproses foto background.", "error");
     }
   };
 
@@ -583,9 +636,39 @@ export function useKelolaUIState() {
     }
   };
 
+  const { href } = useSchoolHref();
+
   const handleToggleLandingPageStatus = async () => {
     const nextStatus = !isLandingPageActive;
     const statusText = nextStatus ? "DIBUKA (PUBLIK)" : "DITUTUP (DRAFT / MAINTENANCE)";
+
+    if (nextStatus === true && slug !== "demo" && slug !== "smktarunabhakti") {
+      try {
+        const subRes = await fetch(`/api/saas/school-by-slug/${slug}?t=${Date.now()}`);
+        const subData = await subRes.json();
+        const schoolObj = subData?.data;
+        const isPaid = schoolObj?.plan_type && schoolObj.plan_type !== 'FREE' && schoolObj.plan_type !== 'free_trial' && schoolObj.plan_type !== 'TRIAL';
+        const isVerified = schoolObj?.status === 'FULL_VERIFIED' || schoolObj?.status === 'VERIFIED';
+        
+        if (!isPaid || !isVerified) {
+          Swal.fire({
+            title: "Fitur Berlangganan Diperlukan 🚀",
+            text: "Sekolah Anda saat ini berada dalam masa Uji Coba (Free Trial). Selama masa uji coba, Anda bebas mengelola UI, profil, dan data jurusan, namun untuk membuka pendaftaran SPMB secara publik, silakan selesaikan proses verifikasi dan aktifkan paket langganan.",
+            icon: "warning",
+            confirmButtonColor: "#2563EB",
+            confirmButtonText: "Buka Menu Langganan",
+            showCancelButton: true,
+            cancelButtonText: "Batal",
+            customClass: { popup: "rounded-3xl" }
+          }).then((res) => {
+            if (res.isConfirmed) {
+              router.push(href("/dashboard/subscription"));
+            }
+          });
+          return;
+        }
+      } catch (_err) {}
+    }
 
     Swal.fire({
       title: `Ubah Status Landing Page ke ${nextStatus ? 'Buka' : 'Tutup'}?`,
@@ -731,6 +814,9 @@ export function useKelolaUIState() {
     setChangeDescription,
     handleSaveAll,
     handleToggleLandingPageStatus,
-    handleSchoolLogoChange
+    handleSchoolLogoChange,
+    heroBgImage,
+    setHeroBgImage,
+    handleHeroBgImageChange
   };
 }

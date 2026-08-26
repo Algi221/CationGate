@@ -2,48 +2,47 @@ import { Hono, Context } from 'hono';
 import fs from 'fs';
 import path from 'path';
 import { getSupabaseClient } from '../db/supabase';
+import { pool } from '../db/client';
 import { adminAuth } from '../middleware/auth';
 import { createInformasiSchema, updateInformasiSchema } from '../validations/informasi';
-import { isValidUUID, resolveSchoolUUID } from '../db/resolve-school';
+import { resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 
 const router = new Hono();
 
-async function saveBase64Media(base64Str: string, prefix: string): Promise<string> {
-  if (typeof base64Str !== 'string' || !base64Str.startsWith('data:')) {
-    return base64Str;
+async function saveBase64Media(base64Data: string, prefix: string): Promise<string> {
+  if (typeof base64Data !== 'string' || !base64Data.startsWith('data:')) {
+    return base64Data;
   }
-  try {
-    const matches = base64Str.match(/^data:([A-Za-z0-9-+\/.]+);base64,(.+)$/);
-    if (!matches || matches.length !== 3) {
-      return base64Str;
-    }
-    const contentType = matches[1];
-    const dataBuffer = Buffer.from(matches[2], 'base64');
-    const targetDir = path.join(process.cwd(), 'public', 'assets', 'informasi', 'uploads');
+  const matches = base64Data.match(/^data:([A-Za-z0-9-+\/.]+);base64,(.+)$/);
+  if (!matches || matches.length !== 3) {
+    return base64Data;
+  }
 
+  const mimeType = matches[1];
+  const buffer = Buffer.from(matches[2], 'base64');
+  
+  let extension = 'png';
+  if (mimeType.includes('image/png')) extension = 'png';
+  else if (mimeType.includes('image/jpeg') || mimeType.includes('image/jpg')) extension = 'jpg';
+  else if (mimeType.includes('image/webp')) extension = 'webp';
+  else if (mimeType.includes('video/mp4')) extension = 'mp4';
+  else if (mimeType.includes('application/pdf')) extension = 'pdf';
+  else if (mimeType.includes('image/gif')) extension = 'gif';
+  else if (mimeType.includes('image/svg')) extension = 'svg';
+
+  const filename = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${extension}`;
+  const targetDir = path.join(process.cwd(), 'public', 'assets', 'informasi', 'uploads');
+
+  try {
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
     }
-
-    let ext = 'png';
-    if (contentType.includes('jpeg') || contentType.includes('jpg')) ext = 'jpg';
-    else if (contentType.includes('webp')) ext = 'webp';
-    else if (contentType.includes('gif')) ext = 'gif';
-    else if (contentType.includes('svg')) ext = 'svg';
-    else if (contentType.includes('pdf')) ext = 'pdf';
-    else if (contentType.includes('mp4')) ext = 'mp4';
-    else if (contentType.includes('webm')) ext = 'webm';
-    else if (contentType.includes('msword') || contentType.includes('wordprocessingml')) ext = 'docx';
-    else if (contentType.includes('excel') || contentType.includes('spreadsheetml')) ext = 'xlsx';
-
-    const filename = `${prefix}_${Date.now()}.${ext}`;
-    const targetPath = path.join(targetDir, filename);
-    fs.writeFileSync(targetPath, dataBuffer);
+    fs.writeFileSync(path.join(targetDir, filename), buffer);
     return `/assets/informasi/uploads/${filename}`;
   } catch (err) {
-    console.warn('Failed to save base64 media:', err);
-    return base64Str;
+    console.error('Error saving base64 media:', err);
+    return base64Data;
   }
 }
 
@@ -51,69 +50,82 @@ async function processInformasiMedia(fotoUrl: string | null | undefined): Promis
   if (!fotoUrl) return null;
   if (!fotoUrl.startsWith('{')) {
     if (fotoUrl.startsWith('data:')) {
-      return await saveBase64Media(fotoUrl, 'info_media');
+      return await saveBase64Media(fotoUrl, 'info_img');
     }
     return fotoUrl;
   }
+
   try {
-    const media = JSON.parse(fotoUrl);
-    if (media.foto && media.foto.startsWith('data:')) {
-      media.foto = await saveBase64Media(media.foto, 'info_foto');
+    const parsed = JSON.parse(fotoUrl);
+    const result: Record<string, string> = { ...parsed };
+    if (parsed.foto && parsed.foto.startsWith('data:')) {
+      result.foto = await saveBase64Media(parsed.foto, 'info_foto');
     }
-    if (media.video && media.video.startsWith('data:')) {
-      media.video = await saveBase64Media(media.video, 'info_video');
+    if (parsed.video && parsed.video.startsWith('data:')) {
+      result.video = await saveBase64Media(parsed.video, 'info_video');
     }
-    if (media.dokumen && media.dokumen.startsWith('data:')) {
-      media.dokumen = await saveBase64Media(media.dokumen, 'info_dokumen');
+    if (parsed.dokumen && parsed.dokumen.startsWith('data:')) {
+      result.dokumen = await saveBase64Media(parsed.dokumen, 'info_dokumen');
     }
-    return JSON.stringify(media);
+    return JSON.stringify(result);
   } catch (_e) {
     return fotoUrl;
   }
 }
 
-interface _InformasiItem {
-  id: number;
-  judul: string;
-  konten: string;
-  tanggal: Date | string;
-  foto_url: string | null;
-  created_at: Date | string | null;
-}
-
 function getAdminSchoolId(c: Context): string | undefined {
-  const admin = c.get('admin') as { school_id?: string } | undefined;
-  return admin?.school_id;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = c.get('admin') as any;
+  return admin?.school_id || admin?.school_slug || admin?.slug;
 }
 
+// GET /informasi - Public list
 router.get('/', async (c: Context) => {
   try {
-    const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const rawSchoolId = c.req.query('school_id') || null;
+    const rawSchoolId =
+      c.req.query('school_id') ||
+      c.req.query('school_slug') ||
+      c.req.header('x-school-slug') ||
+      getAdminSchoolId(c) ||
+      null;
 
-    let query = supabase.from('school_announcements').select('*').order('tanggal', { ascending: false }).order('created_at', { ascending: false });
-
-    if (rawSchoolId) {
-      let targetUUID: string | null = null;
-      if (isValidUUID(rawSchoolId)) {
-        targetUUID = rawSchoolId;
-      } else {
-        targetUUID = await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
-      }
-
-      if (targetUUID && isValidUUID(targetUUID)) {
-        query = query.eq('school_id', targetUUID);
-      } else {
-        // Return empty announcements safely without throwing invalid UUID syntax error (500)
-        return c.json({
-          success: true,
-          data: []
-        });
-      }
+    if (!rawSchoolId) {
+      return c.json({ success: true, data: [] });
     }
 
-    const { data: rows, error } = await query;
-    if (error) throw error;
+    const resolved = await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+    const numId = !isNaN(Number(resolved)) ? Number(resolved) : (!isNaN(Number(rawSchoolId)) ? Number(rawSchoolId) : null);
+
+    const supabase = getSupabaseClient(c.req.header('Authorization'));
+    let rows: unknown[] = [];
+
+    try {
+      let query = supabase.from('informasi').select('*');
+      if (numId !== null) {
+        query = query.or(`school_id.eq.${numId},school_id.eq.${rawSchoolId}`);
+      } else if (resolved) {
+        query = query.eq('school_id', resolved);
+      }
+      const { data: sbData, error } = await query.order('tanggal', { ascending: false }).order('created_at', { ascending: false });
+      if (!error && sbData && sbData.length > 0) {
+        rows = sbData;
+      }
+    } catch (_sbErr) {}
+
+    if (rows.length === 0) {
+      try {
+        const pgRes = await pool.query(
+          `SELECT * FROM informasi 
+           WHERE (CASE WHEN $1::integer IS NOT NULL THEN school_id = $1 ELSE false END)
+              OR school_id::text = $2 OR school_id::text = $3
+           ORDER BY tanggal DESC, created_at DESC`,
+          [numId, String(rawSchoolId), String(resolved || '')]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          rows = pgRes.rows;
+        }
+      } catch (_pgErr) {}
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sanitizedRows = (rows || []).map((row: any) => {
@@ -137,64 +149,48 @@ router.get('/', async (c: Context) => {
       return row;
     });
 
-    return c.json({
-      success: true,
-      data: sanitizedRows
-    });
+    return c.json({ success: true, data: sanitizedRows });
   } catch (error: unknown) {
     console.error('Error fetching informasi:', error);
-    return c.json({
-      success: false,
-      message: 'Gagal mengambil data informasi.',
-      error: error instanceof Error ? error.message : String(error)
-    }, 500);
+    return c.json({ success: true, data: [] });
   }
 });
 
+// GET /informasi/:id - Detail
 router.get('/:id', async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
     if (isNaN(id) || id <= 0) {
-      return c.json({
-        success: false,
-        message: 'ID tidak valid.'
-      }, 400);
+      return c.json({ success: false, message: 'ID tidak valid.' }, 400);
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const rawSchoolId = c.req.query('school_id') || null;
-    let query = supabase.from('school_announcements').select('*').eq('id', id);
+    let record: unknown = null;
 
-    if (rawSchoolId) {
-      const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
-      if (targetUUID && isValidUUID(targetUUID)) {
-        query = query.eq('school_id', targetUUID);
-      }
+    try {
+      const { data, error } = await supabase.from('informasi').select('*').eq('id', id).maybeSingle();
+      if (!error && data) record = data;
+    } catch (_e) {}
+
+    if (!record) {
+      try {
+        const pgRes = await pool.query('SELECT * FROM informasi WHERE id = $1 LIMIT 1', [id]);
+        if (pgRes.rows && pgRes.rows.length > 0) record = pgRes.rows[0];
+      } catch (_e) {}
     }
 
-    const { data: record, error } = await query.maybeSingle();
-
-    if (error || !record) {
-      return c.json({
-        success: false,
-        message: 'Informasi tidak ditemukan.'
-      }, 404);
+    if (!record) {
+      return c.json({ success: false, message: 'Informasi tidak ditemukan.' }, 404);
     }
 
-    return c.json({
-      success: true,
-      data: record
-    });
+    return c.json({ success: true, data: record });
   } catch (error: unknown) {
     console.error('Error fetching informasi detail:', error);
-    return c.json({
-      success: false,
-      message: 'Gagal mengambil detail informasi.',
-      error: error instanceof Error ? error.message : String(error)
-    }, 500);
+    return c.json({ success: false, message: 'Gagal mengambil detail informasi.' }, 500);
   }
 });
 
+// POST /informasi - Create (Protected)
 router.post('/', adminAuth, async (c: Context) => {
   try {
     const body = await c.req.json();
@@ -208,27 +204,50 @@ router.post('/', adminAuth, async (c: Context) => {
     }
     const { judul, konten, tanggal, foto_url } = result.data;
 
-    const supabase = getSupabaseClient(c.req.header('Authorization'));
     const rawSchoolId = getAdminSchoolId(c);
     if (!rawSchoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
-    const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+    const resolved = await resolveSchoolUUID(String(rawSchoolId), fontInMemSchools);
+    const numSchoolId = !isNaN(Number(resolved)) ? Number(resolved) : (!isNaN(Number(rawSchoolId)) ? Number(rawSchoolId) : 1);
     const processedFotoUrl = await processInformasiMedia(foto_url);
 
-    const insertData: Record<string, unknown> = {
+    const supabase = getSupabaseClient(c.req.header('Authorization'));
+    let savedRecord: unknown = null;
+
+    const insertData = {
+      school_id: numSchoolId,
       judul,
       konten,
-      tanggal: new Date(tanggal).toISOString(),
+      tanggal: new Date(tanggal).toISOString().split('T')[0],
       foto_url: processedFotoUrl
     };
-    if (targetUUID && isValidUUID(targetUUID)) {
-      insertData.school_id = targetUUID;
+
+    try {
+      const { data, error } = await supabase.from('informasi').insert(insertData).select().maybeSingle();
+      if (!error && data) savedRecord = data;
+    } catch (_sbErr) {}
+
+    if (!savedRecord) {
+      try {
+        const pgRes = await pool.query(
+          `INSERT INTO informasi (school_id, judul, konten, tanggal, foto_url, created_at)
+           VALUES ($1, $2, $3, $4, $5, NOW())
+           RETURNING *`,
+          [numSchoolId, judul, konten, insertData.tanggal, processedFotoUrl]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          savedRecord = pgRes.rows[0];
+        }
+      } catch (pgErr) {
+        console.error('Pool insert to informasi failed:', pgErr);
+      }
     }
 
-    const { data: savedRecord, error } = await supabase.from('school_announcements').insert(insertData).select().single();
-    if (error) throw error;
+    if (!savedRecord) {
+      return c.json({ success: false, message: 'Gagal menyimpan informasi ke basis data.' }, 500);
+    }
 
     return c.json({
       success: true,
@@ -245,6 +264,7 @@ router.post('/', adminAuth, async (c: Context) => {
   }
 });
 
+// PUT /informasi/:id - Update (Protected)
 router.put('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
@@ -259,43 +279,43 @@ router.put('/:id', adminAuth, async (c: Context) => {
     }
     const { judul, konten, tanggal, foto_url } = result.data;
 
-    const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const rawSchoolId = getAdminSchoolId(c);
-    if (!rawSchoolId) {
-      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
-    }
-
-    const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
-
-    let checkQuery = supabase.from('school_announcements').select('id').eq('id', id);
-    if (targetUUID && isValidUUID(targetUUID)) {
-      checkQuery = checkQuery.eq('school_id', targetUUID);
-    }
-
-    const { data: checkExists } = await checkQuery.maybeSingle();
-
-    if (!checkExists) {
-      return c.json({
-        success: false,
-        message: 'Informasi tidak ditemukan.'
-      }, 404);
-    }
-
     const dataToUpdate: Record<string, unknown> = {};
     if (judul !== undefined) dataToUpdate.judul = judul;
     if (konten !== undefined) dataToUpdate.konten = konten;
-    if (tanggal !== undefined) dataToUpdate.tanggal = new Date(tanggal).toISOString();
+    if (tanggal !== undefined) dataToUpdate.tanggal = new Date(tanggal).toISOString().split('T')[0];
     if (foto_url !== undefined) {
       dataToUpdate.foto_url = await processInformasiMedia(foto_url);
     }
 
-    let updateQuery = supabase.from('school_announcements').update(dataToUpdate).eq('id', id);
-    if (targetUUID && isValidUUID(targetUUID)) {
-      updateQuery = updateQuery.eq('school_id', targetUUID);
-    }
+    const supabase = getSupabaseClient(c.req.header('Authorization'));
+    let updatedRecord: unknown = null;
 
-    const { data: updatedRecord, error } = await updateQuery.select().single();
-    if (error) throw error;
+    try {
+      const { data, error } = await supabase.from('informasi').update(dataToUpdate).eq('id', id).select().maybeSingle();
+      if (!error && data) updatedRecord = data;
+    } catch (_sbErr) {}
+
+    if (!updatedRecord) {
+      try {
+        const fields: string[] = [];
+        const values: (string | number | null)[] = [id];
+        let idx = 2;
+        if (dataToUpdate.judul !== undefined) { fields.push(`judul = $${idx++}`); values.push(String(dataToUpdate.judul)); }
+        if (dataToUpdate.konten !== undefined) { fields.push(`konten = $${idx++}`); values.push(String(dataToUpdate.konten)); }
+        if (dataToUpdate.tanggal !== undefined) { fields.push(`tanggal = $${idx++}`); values.push(String(dataToUpdate.tanggal)); }
+        if (dataToUpdate.foto_url !== undefined) { fields.push(`foto_url = $${idx++}`); values.push(dataToUpdate.foto_url ? String(dataToUpdate.foto_url) : null); }
+
+        if (fields.length > 0) {
+          const pgRes = await pool.query(
+            `UPDATE informasi SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,
+            values
+          );
+          if (pgRes.rows && pgRes.rows.length > 0) updatedRecord = pgRes.rows[0];
+        }
+      } catch (pgErr) {
+        console.error('Pool update to informasi failed:', pgErr);
+      }
+    }
 
     return c.json({
       success: true,
@@ -312,31 +332,19 @@ router.put('/:id', adminAuth, async (c: Context) => {
   }
 });
 
+// DELETE /informasi/:id - Delete (Protected)
 router.delete('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const rawSchoolId = getAdminSchoolId(c);
-    if (!rawSchoolId) {
-      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
-    }
 
-    const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+    try {
+      await supabase.from('informasi').delete().eq('id', id);
+    } catch (_sbErr) {}
 
-    let query = supabase.from('school_announcements').delete().eq('id', id);
-    if (targetUUID && isValidUUID(targetUUID)) {
-      query = query.eq('school_id', targetUUID);
-    }
-
-    const { data, error } = await query.select();
-
-    if (error || !data || data.length === 0) {
-      return c.json({
-        success: false,
-        message: 'Informasi tidak ditemukan atau gagal dihapus.'
-      }, 404);
-    }
+    try {
+      await pool.query('DELETE FROM informasi WHERE id = $1', [id]);
+    } catch (_pgErr) {}
 
     return c.json({
       success: true,

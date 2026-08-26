@@ -50,7 +50,15 @@ export function AdminSidebar({
   const schoolSlug = (params?.school_slug as string) || (pathname?.startsWith('/demo') ? 'demo' : '');
 
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("cationgate_sidebar_open_dropdowns");
+        if (saved) return JSON.parse(saved);
+      } catch (_e) {}
+    }
+    return {};
+  });
 
   const handleToggleCollapse = () => {
     const nextVal = !isCollapsed;
@@ -60,78 +68,84 @@ export function AdminSidebar({
 
   const isLegalVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || schoolSlug === 'demo' || schoolSlug === 'smktarunabhakti';
 
-  const menuStructure = [
-    ...(!isLegalVerified
-      ? [
-          {
-            category: "Status Legalitas",
-            items: [
-              { href: href("/dashboard/verification"), icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
-            ]
-          }
-        ]
-      : []),
-    {
-      category: "Manajemen Siswa",
-      items: [
-        { href: href("/dashboard"), icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
+  const menuStructure = !isLegalVerified
+    ? [
         {
-          href: href("/dashboard/pendaftar"),
-          icon: <Users size={18} />,
-          label: "Data Calon Siswa",
-          lockedIfUnverified: true,
-          subItems: [
-            { label: "Pendaftar Reguler", href: href("/dashboard/pendaftar?tab=active") },
-            { label: "Pendaftar Pindahan", href: href("/dashboard/pendaftar?tab=transfer") },
-            { label: "Kuota & Target", href: href("/dashboard/pendaftar?tab=kuota") },
-            { label: "Tempat Sampah", href: href("/dashboard/pendaftar?tab=trash") }
+          category: "Status Legalitas",
+          items: [
+            { href: href("/dashboard/verification"), icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
+          ]
+        }
+      ]
+    : [
+        {
+          category: "Manajemen Siswa",
+          items: [
+            { href: href("/dashboard"), icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
+            {
+              href: href("/dashboard/pendaftar"),
+              icon: <Users size={18} />,
+              label: "Data Calon Siswa",
+              lockedIfUnverified: true,
+              subItems: [
+                { label: "Pendaftar Reguler", href: href("/dashboard/pendaftar?tab=active") },
+                { label: "Pendaftar Pindahan", href: href("/dashboard/pendaftar?tab=transfer") },
+                { label: "Kuota & Target", href: href("/dashboard/pendaftar?tab=kuota") },
+                { label: "Tempat Sampah", href: href("/dashboard/pendaftar?tab=trash") }
+              ]
+            },
+            { href: href("/dashboard/pembagian-kelas"), icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
+            { href: href("/dashboard/siswa-aktif"), icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
           ]
         },
-        { href: href("/dashboard/pembagian-kelas"), icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
-        { href: href("/dashboard/siswa-aktif"), icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
-      ]
-    },
-    {
-      category: "Konten Portal",
-      items: [
-        { href: href("/dashboard/informasi"), icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
         {
-          href: href("/dashboard/kelola-ui"),
-          icon: <Palette size={18} />,
-          label: "Kelola UI/Data",
-          lockedIfUnverified: true,
-          subItems: [
-            { label: "Profil Sekolah", href: href("/dashboard/profil-sekolah") },
-            { label: "General / Umum", href: href("/dashboard/kelola-ui?tab=hero") },
-            { label: "Program Keahlian", href: href("/dashboard/kelola-ui?tab=majors") },
-            { label: "Alur Pendaftaran", href: href("/dashboard/kelola-ui?tab=alur") },
-            { label: "Form & Panduan", href: href("/dashboard/kelola-ui?tab=form") },
-            { label: "Bank Sekolah", href: href("/dashboard/kelola-ui?tab=bank") },
-            { label: "Mitra Industri", href: href("/dashboard/kelola-ui?tab=partners") },
-            { label: "FAQ", href: href("/dashboard/kelola-ui?tab=faq") },
-            { label: "Riwayat Perubahan", href: href("/dashboard/kelola-ui?tab=revisions") }
+          category: "Konten Portal",
+          items: [
+            { href: href("/dashboard/informasi"), icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
+            {
+              href: href("/dashboard/kelola-ui"),
+              icon: <Palette size={18} />,
+              label: "Kelola UI/Data",
+              lockedIfUnverified: true,
+              subItems: [
+                { label: "Profil Sekolah", href: href("/dashboard/profil-sekolah") },
+                { label: "General / Umum", href: href("/dashboard/kelola-ui?tab=hero") },
+                { label: "Program Keahlian", href: href("/dashboard/kelola-ui?tab=majors") },
+                { label: "Alur Pendaftaran", href: href("/dashboard/kelola-ui?tab=alur") },
+                { label: "Form & Panduan", href: href("/dashboard/kelola-ui?tab=form") },
+                { label: "Bank Sekolah", href: href("/dashboard/kelola-ui?tab=bank") },
+                { label: "Mitra Industri", href: href("/dashboard/kelola-ui?tab=partners") },
+                { label: "FAQ", href: href("/dashboard/kelola-ui?tab=faq") },
+                { label: "Riwayat Perubahan", href: href("/dashboard/kelola-ui?tab=revisions") }
+              ]
+            },
           ]
         },
-      ]
-    },
-    {
-      category: "Pengaturan Sistem",
-      items: [
-        { href: href("/dashboard/subscription"), icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
-        { href: href("/dashboard/admin"), icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
-        { href: href("/dashboard/settings"), icon: <Settings size={18} />, label: "Pengaturan Akun", lockedIfUnverified: true }
-      ]
-    }
-  ];
+        {
+          category: "Pengaturan Sistem",
+          items: [
+            { href: href("/dashboard/subscription"), icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
+            { href: href("/dashboard/admin"), icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
+            { href: href("/dashboard/settings"), icon: <Settings size={18} />, label: "Pengaturan Akun", lockedIfUnverified: true }
+          ]
+        }
+      ];
 
   const renderMenuItem = (item: MenuItem, delayIndex: number) => {
     const fullHref = item.href;
     const hasSub = !!item.subItems;
-    const isOpen = openDropdowns[item.href] ?? (pathname?.startsWith(item.href) ?? false);
+    const isAnySubActive = hasSub && item.subItems?.some((sub) => {
+      const [subPath] = sub.href.split("?");
+      return pathname === subPath || (subPath !== "/" && pathname?.startsWith(subPath));
+    });
+    const isParentActive = pathname === fullHref || pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href));
+    const isOpen = openDropdowns[item.href] !== undefined
+      ? openDropdowns[item.href]
+      : (isAnySubActive || isParentActive || false);
     const isLocked = (!isLegalVerified && item.lockedIfUnverified) || schoolStatus === 'TAKEDOWN' || schoolStatus === 'SUSPENDED';
     const isActive = item.exact
       ? pathname === fullHref || pathname === item.href
-      : pathname === fullHref || pathname === item.href || pathname?.startsWith(fullHref + "/");
+      : pathname === fullHref || pathname === item.href || (item.href !== "/" && pathname?.startsWith(fullHref + "/"));
 
     const currentTab = searchParams ? searchParams.get("tab") : null;
 
@@ -157,13 +171,18 @@ export function AdminSidebar({
 
       if (hasSub) {
         e.preventDefault();
+        const nextState = !isOpen;
         if (isCollapsed) {
           setIsCollapsed(false);
           localStorage.setItem("ppdb-sidebar-collapsed", "false");
-          setOpenDropdowns((prev) => ({ ...prev, [item.href]: true }));
-        } else {
-          setOpenDropdowns((prev) => ({ ...prev, [item.href]: !isOpen }));
         }
+        setOpenDropdowns((prev) => {
+          const updated = { ...prev, [item.href]: nextState };
+          try {
+            localStorage.setItem("cationgate_sidebar_open_dropdowns", JSON.stringify(updated));
+          } catch (_err) {}
+          return updated;
+        });
       } else {
         if (isMobileMenuOpen) {
           setIsMobileMenuOpen(false);

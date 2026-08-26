@@ -97,13 +97,24 @@ const DEFAULT_MAJORS: MajorItem[] = [
 ];
 
 export function useSchoolLandingState() {
-  const { ppdbTitle, isSchoolNotFound } = usePPDB();
+  const { ppdbTitle, isSchoolNotFound, schoolStatus, isConfigLoaded } = usePPDB();
   const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || "sekolah";
+  const schoolSlug =
+    (params?.school_slug as string) ||
+    (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
+      ? window.location.hostname.split(".")[0]
+      : "sekolah");
+  const isDemo = schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
 
   const schoolDisplayName =
     ppdbTitle ||
     schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const isSchoolVerified =
+    schoolStatus === "FULL_VERIFIED" ||
+    schoolStatus === "VERIFIED" ||
+    schoolStatus === "verified" ||
+    isDemo;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroTitle, setHeroTitle] = useState("Penerimaan Peserta Didik Baru");
@@ -111,6 +122,7 @@ export function useSchoolLandingState() {
   const [heroSubtitle, setHeroSubtitle] = useState(
     "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
   );
+  const [heroBgImage, setHeroBgImage] = useState<string>("");
 
   const [address, setAddress] = useState("");
   const [mapTitle, setMapTitle] = useState(`Kunjungi ${schoolDisplayName}`);
@@ -125,7 +137,7 @@ export function useSchoolLandingState() {
   );
 
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
-  const [majors, setMajors] = useState<MajorItem[]>(DEFAULT_MAJORS);
+  const [majors, setMajors] = useState<MajorItem[]>(isDemo ? DEFAULT_MAJORS : []);
   const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
   const [isPlatformMaintenance, setIsPlatformMaintenance] = useState<boolean>(false);
   const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>([]);
@@ -180,6 +192,8 @@ export function useSchoolLandingState() {
           }
           if (cfg.ppdb_hero_title) setHeroTitle(cfg.ppdb_hero_title);
           if (cfg.ppdb_hero_title_sub) setHeroTitleSub(cfg.ppdb_hero_title_sub);
+          if (cfg.ppdb_hero_subtitle) setHeroSubtitle(cfg.ppdb_hero_subtitle);
+          if (cfg.ppdb_hero_bg_image) setHeroBgImage(cfg.ppdb_hero_bg_image);
           if (cfg.ppdb_address || cfg.ppdb_alamat) setAddress(cfg.ppdb_address || cfg.ppdb_alamat);
           if (cfg.ppdb_map_url || cfg.ppdb_maps_embed) setMapUrl(cfg.ppdb_map_url || cfg.ppdb_maps_embed);
           if (cfg.ppdb_map_title) setMapTitle(cfg.ppdb_map_title);
@@ -195,8 +209,12 @@ export function useSchoolLandingState() {
           if (cfg.ppdb_alur_config && Array.isArray(cfg.ppdb_alur_config)) {
             setAlurList(cfg.ppdb_alur_config);
           }
-          if (cfg.ppdb_majors_config && Array.isArray(cfg.ppdb_majors_config)) {
+          if (isDemo) {
+            setMajors(DEFAULT_MAJORS);
+          } else if (cfg.ppdb_majors_config && Array.isArray(cfg.ppdb_majors_config)) {
             setMajors(cfg.ppdb_majors_config);
+          } else {
+            setMajors([]);
           }
           if (cfg.ppdb_partners_config && Array.isArray(cfg.ppdb_partners_config)) {
             setPartnersList(cfg.ppdb_partners_config);
@@ -210,7 +228,7 @@ export function useSchoolLandingState() {
       }
     };
     loadDynamicConfig();
-  }, [schoolSlug]);
+  }, [schoolSlug, isDemo]);
 
   return {
     schoolSlug,
@@ -223,6 +241,7 @@ export function useSchoolLandingState() {
     heroTitle,
     heroTitleSub,
     heroSubtitle,
+    heroBgImage,
     address,
     mapTitle,
     mapUrl,
@@ -235,6 +254,9 @@ export function useSchoolLandingState() {
     majors,
     partnersList,
     gelombangConfig,
-    formatDate
+    formatDate,
+    schoolStatus,
+    isSchoolVerified,
+    isConfigLoaded
   };
 }

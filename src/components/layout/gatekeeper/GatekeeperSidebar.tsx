@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Building2, Wallet, Activity, Settings, 
-  ChevronDown, PanelLeftClose
+  ChevronDown, PanelLeftClose, CheckCircle2
 } from "lucide-react";
 
 interface GatekeeperSidebarProps {
@@ -31,9 +31,7 @@ export function GatekeeperSidebar({
 
   useEffect(() => {
     if (pathname) {
-      if (pathname.startsWith("/gatekeeper/dashboard/schools")) {
-        setOpenDropdowns((prev) => ({ ...prev, "/gatekeeper/dashboard/schools": true }));
-      } else if (pathname.startsWith("/gatekeeper/dashboard/plans") || pathname.startsWith("/gatekeeper/dashboard/billing")) {
+      if (pathname.startsWith("/gatekeeper/dashboard/billing")) {
         setOpenDropdowns((prev) => ({ ...prev, "/gatekeeper/dashboard/billing": true }));
       } else if (pathname.startsWith("/gatekeeper/dashboard/services")) {
         setOpenDropdowns((prev) => ({ ...prev, "/gatekeeper/dashboard/services": true }));
@@ -63,12 +61,13 @@ export function GatekeeperSidebar({
           href: "/gatekeeper/dashboard/schools",
           icon: <Building2 size={18} />,
           label: "Manajemen Sekolah",
-          subItems: [
-            { label: "Semua Subdomain", href: "/gatekeeper/dashboard/schools" },
-            { label: "Verifikasi Berkas SK", href: "/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION" },
-            { label: "Belum Verifikasi", href: "/gatekeeper/dashboard/schools?filter=UNVERIFIED" },
-            { label: "Sekolah Aktif (Verified)", href: "/gatekeeper/dashboard/schools?filter=FULL_VERIFIED" },
-          ]
+          exact: true
+        },
+        {
+          href: "/gatekeeper/dashboard/schools/active",
+          icon: <CheckCircle2 size={18} />,
+          label: "Sekolah Aktif",
+          exact: true
         }
       ]
     },
@@ -90,19 +89,17 @@ export function GatekeeperSidebar({
       category: "LAYANAN PLATFORM",
       items: [
         {
-          href: "/gatekeeper/dashboard/services",
+          href: "/gatekeeper/dashboard/services/logs",
           icon: <Activity size={18} />,
-          label: "Layanan & Log",
-          subItems: [
-            { label: "Log Sistem & Vercel Realtime", href: "/gatekeeper/dashboard/services/logs" },
-          ]
+          label: "Log Sistem",
+          exact: true
         }
       ]
     },
     {
       category: "Pengaturan",
       items: [
-        { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan Sistem" }
+        { href: "/gatekeeper/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan", exact: true }
       ]
     }
   ];
@@ -112,11 +109,21 @@ export function GatekeeperSidebar({
     const fullHref = item.href;
     const hasSub = !!item.subItems;
     const isOpen = !!openDropdowns[item.href];
-    const isActive = item.exact
-      ? pathname === fullHref
-      : pathname === fullHref || pathname.startsWith(fullHref + "/");
 
+    const [baseHref, queryStr] = fullHref.split("?");
+    const itemFilter = queryStr ? new URLSearchParams(queryStr).get("filter") : null;
     const currentFilter = searchParams ? searchParams.get("filter") : null;
+
+    let isActive = false;
+    if (itemFilter) {
+      isActive = pathname === baseHref && currentFilter === itemFilter;
+    } else if (item.exact) {
+      isActive = pathname === baseHref && (!currentFilter || currentFilter === "ALL");
+    } else if (pathname === baseHref) {
+      isActive = !currentFilter || currentFilter === "ALL";
+    } else if (hasSub && pathname.startsWith(baseHref + "/")) {
+      isActive = true;
+    }
 
     const handleItemClick = (e: React.MouseEvent) => {
       if (isCollapsed) {

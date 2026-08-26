@@ -117,11 +117,11 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
           });
         };
 
-        element.addEventListener("mousemove", handleMouseMove as any);
+        element.addEventListener("mousemove", handleMouseMove as unknown as EventListener);
         element.addEventListener("mouseleave", handleMouseLeave);
 
         return () => {
-          element.removeEventListener("mousemove", handleMouseMove as any);
+          element.removeEventListener("mousemove", handleMouseMove as unknown as EventListener);
           element.removeEventListener("mouseleave", handleMouseLeave);
         };
       }, element);
@@ -131,10 +131,12 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
 
     return (
       <Component
-        ref={(node: HTMLElement) => {
-          (localRef as any).current = node;
+        ref={(node: HTMLElement | null) => {
+          if (localRef) {
+            (localRef as React.MutableRefObject<HTMLElement | null>).current = node;
+          }
           if (typeof forwardedRef === "function") forwardedRef(node);
-          else if (forwardedRef) (forwardedRef as any).current = node;
+          else if (forwardedRef) (forwardedRef as React.MutableRefObject<HTMLElement | null>).current = node;
         }}
         className={cn("cursor-pointer", className)}
         {...props}
@@ -318,44 +320,44 @@ export function CinematicFooter() {
                 </h3>
                 <ul className="space-y-2 text-xs text-zinc-600">
                   <li>
-                    <a
+                    <Link
                       href="/#hero"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Sistem Penerimaan Murid Baru (PPDB)
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/#capabilities"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Manajemen Siswa & Akademik
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/#capabilities"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Ujian & Asesmen CBT Pintar
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/#capabilities"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Dashboard Analitik Real-time
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/#capabilities"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Integrasi Data Dapodik
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -366,44 +368,44 @@ export function CinematicFooter() {
                 </h3>
                 <ul className="space-y-2 text-xs text-zinc-600">
                   <li>
-                    <a
+                    <Link
                       href="/"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Beranda
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/#fitur"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Fitur Unggulan
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/blog"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Blog
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/#pricing"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Paket Biaya
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       href="/#faq"
                       className="hover:text-zinc-900 transition-colors"
                     >
                       Pertanyaan Umum (FAQ)
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>

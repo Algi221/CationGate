@@ -181,7 +181,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                 {/* Informasi */}
                 <NavigationMenuItem>
                   <NavigationMenuLink
-                    render={<Link href={`/${schoolSlug}/dashboard/informasi`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                    render={<Link href={`/${schoolSlug}/forum`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
                   >
                     Informasi
                   </NavigationMenuLink>

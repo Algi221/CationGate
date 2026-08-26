@@ -47,9 +47,9 @@ const MASCOT_ASSETS = {
 
 export function CatBotWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isVideoVisible, setIsVideoVisible] = useState(true);
+  const [isVideoVisible, setIsVideoVisible] = useState(false);
   const [isVideoDockedBottomRight, setIsVideoDockedBottomRight] =
-    useState(true);
+    useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
 
@@ -368,7 +368,7 @@ export function CatBotWidget() {
               shadow-2xl sm:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] 
               border-0 sm:border sm:border-slate-800
               inset-0 w-full rounded-none
-              sm:inset-auto sm:right-6 sm:w-100 sm:h-170
+              sm:inset-auto sm:right-6 sm:w-100 sm:min-h-120 sm:max-h-170
               sm:rounded-3xl overflow-hidden bg-[#0a0a0a]
             `}
           >

@@ -95,23 +95,30 @@ export default function GatekeeperLoginPage() {
   return (
     <main className="min-h-screen lg:h-screen w-screen bg-white text-slate-950 overflow-x-hidden relative flex flex-col justify-between p-4 sm:p-6 lg:p-10 pb-10 selection:bg-[#FFD33B] selection:text-[#2e3749]">
       {/* BACKGROUND BUBBLE (Dark Navy Gatekeeper Palette dengan Animasi Masuk) */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0"
-      >
+      <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0">
         <svg
           viewBox={isMobile ? "0 0 414 200" : "0 0 600 700"}
           className="w-full h-full"
           preserveAspectRatio="none"
         >
-          <path
-            d={isMobile ? svgPathMobile : svgPathDesktop}
-            fill={gatekeeperThemeColor}
+          <motion.path
+            initial={{
+              d: isMobile ? svgPathMobileInitial : svgPathDesktopInitial,
+              fill: gatekeeperThemeColor,
+              opacity: 0,
+            }}
+            animate={{
+              d: isMobile ? svgPathMobile : svgPathDesktop,
+              fill: gatekeeperThemeColor,
+              opacity: 1,
+            }}
+            transition={{
+              duration: 0.9,
+              ease: [0.16, 1, 0.3, 1],
+            }}
           />
         </svg>
-      </motion.div>
+      </div>
 
       {/* HEADER / NAVBAR */}
       <div className="relative lg:absolute top-2 lg:top-8 left-2 lg:left-8 right-2 lg:right-8 flex items-center justify-between z-20 mb-4 lg:mb-0">

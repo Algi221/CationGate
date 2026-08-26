@@ -33,7 +33,7 @@ function sanitizeImageUrl(url: string): string {
 
 export default function EditInformasi() {
   const params = useParams();
-  const schoolSlug = params?.school_slug as string;
+  const _schoolSlug = params?.school_slug as string;
   const id = params?.id as string;
   const { href } = useSchoolHref();
   const { adminToken, addToast } = usePPDB();

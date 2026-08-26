@@ -57,33 +57,25 @@ export function useDaftarSaaSState() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const savedStep = sessionStorage.getItem("cationgate_daftar_step");
-        if (savedStep) {
-          const parsed = parseInt(savedStep, 10);
-          if (!isNaN(parsed) && parsed >= 1 && parsed <= 4) {
-            return parsed;
-          }
-        }
-      } catch (_e) {}
-    }
-    return 1;
-  });
+  const [step, setStep] = useState<number>(1);
+  const [maxReachedStep, setMaxReachedStep] = useState<number>(1);
 
-  const [maxReachedStep, setMaxReachedStep] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const savedMax = sessionStorage.getItem("cationgate_daftar_max_step");
-        if (savedMax) {
-          const parsed = parseInt(savedMax, 10);
-          if (!isNaN(parsed) && parsed >= 1) return parsed;
-        }
-      } catch (_e) {}
-    }
-    return 1;
-  });
+  // Restore step from sessionStorage after mount (avoids SSR hydration mismatch)
+  useEffect(() => {
+    try {
+      const savedStep = sessionStorage.getItem("cationgate_daftar_step");
+      if (savedStep) {
+        const parsed = parseInt(savedStep, 10);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= 4) setStep(parsed);
+      }
+      const savedMax = sessionStorage.getItem("cationgate_daftar_max_step");
+      if (savedMax) {
+        const parsed = parseInt(savedMax, 10);
+        if (!isNaN(parsed) && parsed >= 1) setMaxReachedStep(parsed);
+      }
+    } catch (_e) {}
+
+  }, []);
 
   const [errorMsg, setErrorMsg] = useState("");
 

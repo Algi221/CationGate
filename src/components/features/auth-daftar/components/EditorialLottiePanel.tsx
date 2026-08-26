@@ -77,7 +77,7 @@ export const EditorialLottiePanel: React.FC<EditorialLottiePanelProps> = ({
 
       {/* MOBILE VIEW (COMPACT HEADER) */}
       <div className="lg:hidden w-full z-10 mb-4 px-2 text-left">
-        <span className="inline-block px-3 py-1 bg-white/30 backdrop-blur-md rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-1.5 border border-white/20">
+        <span className="inline-block px-3 py-1 bg-white/60 backdrop-blur-md rounded-full text-slate-900 text-[10px] font-black uppercase tracking-widest mb-1.5 border border-white/20">
           Langkah 0{currentVisual.step} / 03
         </span>
         <h2 className="text-2xl font-black text-white leading-tight drop-shadow-sm">

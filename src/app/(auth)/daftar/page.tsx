@@ -126,14 +126,18 @@ export default function DaftarSaaS() {
           </div>
         </Link>
 
-        {/* Right Action: Login Link */}
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/5 hover:bg-slate-950/10 text-xs font-bold text-slate-700 transition-all"
-        >
-          <span className="hidden sm:inline">Sudah punya akun?</span>
-          <span className="underline decoration-slate-400 font-extrabold text-slate-900">Masuk</span>
-        </Link>
+        {/* Right Action: Login Link (Style Matching SS 2) */}
+        <div className="flex items-center gap-2.5 text-xs">
+          <span className="hidden text-slate-500 font-medium sm:block">
+            Sudah memiliki akun?
+          </span>
+          <Link
+            href="/login"
+            className="rounded-full border border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-1.5 font-bold text-slate-700 transition-all hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-sm active:scale-95 shadow-xs"
+          >
+            Masuk
+          </Link>
+        </div>
       </div>
 
       {/* MAIN CONTAINER */}

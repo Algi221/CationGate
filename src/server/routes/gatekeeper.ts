@@ -15,7 +15,6 @@ const GATEKEEPER_USERNAME = process.env.GATEKEEPER_USERNAME || 'uno';
 const GATEKEEPER_PASSWORD = process.env.GATEKEEPER_PASSWORD || '';
 const GATEKEEPER_DEFAULT_PASS = process.env.GATEKEEPER_DEFAULT_PASS || GATEKEEPER_PASSWORD;
 const DEFAULT_GATE_HASH = GATEKEEPER_DEFAULT_PASS ? bcrypt.hashSync(GATEKEEPER_DEFAULT_PASS, 10) : '';
-const UNO_GATE_HASH = GATEKEEPER_PASSWORD ? bcrypt.hashSync(GATEKEEPER_PASSWORD, 10) : '';
 
 const GATEKEEPER_ACCOUNTS = [
   { id: 1, username: 'algi', nama_lengkap: 'Algi (Superadmin)', email: 'algi@cationgate.id' },

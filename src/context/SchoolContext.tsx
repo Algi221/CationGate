@@ -13,6 +13,7 @@ interface SchoolContextType {
   ppdbLogo: string;
   ppdbTitle: string;
   ppdbFooterDesc: string;
+  schoolPeriod: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profilSekolah: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,6 +36,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   const [ppdbTitle, setPpdbTitle] = useState<string>("SMK TB");
   const [isConfigLoaded, setIsConfigLoaded] = useState<boolean>(false);
   const [ppdbFooterDesc, setPpdbFooterDesc] = useState<string>("Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global.");
+  const [schoolPeriod, setSchoolPeriod] = useState<string>("2026-2027");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [profilSekolah, setProfilSekolah] = useState<any>(null);
 
@@ -44,6 +46,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       setPpdbTitle("SMK Demo Indonesia");
       setPpdbLogo("/assets/logo_sekolah/logo_smktb.png");
       setPpdbFooterDesc("Portal simulasi dan demonstrasi interaktif sistem SPMB CationGate untuk sekolah kejuruan di Indonesia.");
+      setSchoolPeriod("2026-2027");
       setIsConfigLoaded(true);
       return;
     }
@@ -56,6 +59,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
         if (data.data.ppdb_title) setPpdbTitle(data.data.ppdb_title);
         if (data.data.ppdb_footer_desc) setPpdbFooterDesc(data.data.ppdb_footer_desc);
         if (data.data.ppdb_profil_sekolah) setProfilSekolah(data.data.ppdb_profil_sekolah);
+        if (data.data.ppdb_school_period) setSchoolPeriod(data.data.ppdb_school_period);
       }
       setIsConfigLoaded(true);
     } catch (err) {
@@ -167,6 +171,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
         ppdbLogo,
         ppdbTitle,
         ppdbFooterDesc,
+        schoolPeriod,
         profilSekolah,
         setProfilSekolah,
         fetchConfigs,

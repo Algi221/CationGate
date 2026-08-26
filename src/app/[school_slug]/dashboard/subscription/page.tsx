@@ -422,9 +422,15 @@ export default function SubscriptionManagementPage() {
 
                   {/* Price */}
                   <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-baseline flex-wrap gap-1.5">
-                      <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                        {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(pkg.price_yearly || 0)}
+                    <div className="flex items-baseline flex-wrap gap-1.5 overflow-hidden">
+                      <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight break-all">
+                        {(() => {
+                          const val = Number(pkg.price_yearly) || 0;
+                          if (val >= 1_000_000_000_000) return `Rp ${(val / 1_000_000_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} T`;
+                          if (val >= 1_000_000_000) return `Rp ${(val / 1_000_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} M`;
+                          if (val >= 100_000_000) return `Rp ${(val / 1_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} Jt`;
+                          return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(val);
+                        })()}
                       </span>
                       <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">
                         / Tahun
@@ -432,7 +438,13 @@ export default function SubscriptionManagementPage() {
                     </div>
                     {isProPlan && (
                       <p className="text-xs text-blue-600 dark:text-blue-400 font-bold mt-1.5">
-                        Setara {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format((pkg.price_yearly || 0) / 12)} / bulan
+                        Setara {(() => {
+                          const val = (Number(pkg.price_yearly) || 0) / 12;
+                          if (val >= 1_000_000_000_000) return `Rp ${(val / 1_000_000_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} T`;
+                          if (val >= 1_000_000_000) return `Rp ${(val / 1_000_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} M`;
+                          if (val >= 100_000_000) return `Rp ${(val / 1_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} Jt`;
+                          return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(val);
+                        })()} / bulan
                       </p>
                     )}
                   </div>

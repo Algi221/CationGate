@@ -8,14 +8,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Navbar } from "@/components/landing/Navbar";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import { ArrowRight } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const supabase =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -63,36 +55,8 @@ export default function AboutPage() {
   const section3Ref = useRef<HTMLDivElement>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [members, setMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchMembers() {
-      try {
-        setLoading(true);
-        if (!supabase) {
-          setMembers(defaultTeam);
-          setLoading(false);
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("team_members")
-          .select("id, name, role, photo_url");
-
-        if (error || !data || data.length === 0) {
-          setMembers(defaultTeam);
-        } else {
-          setMembers(data);
-        }
-      } catch (_error) {
-        setMembers(defaultTeam);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchMembers();
-  }, []);
+  const [members] = useState<any[]>(defaultTeam);
+  const [loading] = useState(false);
 
   useEffect(() => {
     const ctx = gsap.context(() => {

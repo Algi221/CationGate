@@ -23,9 +23,12 @@ export const adminAuth = createMiddleware(async (c, next) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const decoded = jwt.verify(token, getJwtSecret()) as any;
-      if (!decoded.school_id) {
-        return c.json({ success: false, message: 'Akses ditolak: Sesi Anda tidak valid untuk halaman ini.' }, 401);
+    if (!decoded.school_id) {
+      const fallbackSchool = c.req.query('school_id') || c.req.query('school_slug') || c.req.header('x-school-id') || decoded.school_slug || decoded.slug;
+      if (fallbackSchool) {
+        decoded.school_id = fallbackSchool;
       }
+    }
     c.set('admin', decoded);
     return await next();
   } catch (_error) {

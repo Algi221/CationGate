@@ -8,12 +8,12 @@ function getDemoKuotaData(
   customTargets?: Record<string, number>
 ): KuotaData {
   const majors = [
-    { key: "Rekayasa Perangkat Lunak", defaultTarget: 108, pendaftar: 86, siswaAktif: 312 },
-    { key: "Teknik Komputer dan Jaringan", defaultTarget: 108, pendaftar: 74, siswaAktif: 298 },
-    { key: "Desain Komunikasi Visual", defaultTarget: 72, pendaftar: 65, siswaAktif: 210 },
-    { key: "Broadcasting dan Perfilman", defaultTarget: 72, pendaftar: 52, siswaAktif: 195 },
-    { key: "Animasi", defaultTarget: 72, pendaftar: 48, siswaAktif: 188 },
-    { key: "Teknik Elektronika", defaultTarget: 72, pendaftar: 38, siswaAktif: 165 },
+    { key: "Rekayasa Perangkat Lunak", defaultTarget: 0, pendaftar: 86, siswaAktif: 312 },
+    { key: "Teknik Komputer dan Jaringan", defaultTarget: 0, pendaftar: 74, siswaAktif: 298 },
+    { key: "Desain Komunikasi Visual", defaultTarget: 0, pendaftar: 65, siswaAktif: 210 },
+    { key: "Broadcasting dan Perfilman", defaultTarget: 0, pendaftar: 52, siswaAktif: 195 },
+    { key: "Animasi", defaultTarget: 0, pendaftar: 48, siswaAktif: 188 },
+    { key: "Teknik Elektronika", defaultTarget: 0, pendaftar: 38, siswaAktif: 165 },
   ];
 
   let totalTarget = 0;

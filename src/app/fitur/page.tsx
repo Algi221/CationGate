@@ -24,7 +24,7 @@ export default function FeaturesPage() {
         </div>
 
         {/* BUNGKUS CAROUSEL: "hidden md:block" DIHAPUS agar muncul di mobile */}
-        <div className="w-full min-h-[500px] max-w-6xl mx-auto relative z-10 block">
+        <div className="w-full min-h-125 max-w-6xl mx-auto relative z-10 block">
           <FeatureCarousel
             title="Ekosistem Dashboard CationGate"
             description="Lihat ringkasan fitur inti yang paling sering dipakai sekolah"
@@ -33,22 +33,22 @@ export default function FeaturesPage() {
               alt: "Fitur dashboard CationGate",
 
               step1light1: "/assets/fitur/calon-siswa.png",
-              step1light2: "/assets/fitur/calon-siswa-mobile.png",
+              step1light2: "/assets/fitur/calon-siswa.png",
 
               step2light1: "/assets/fitur/siswa-aktif.png",
-              step2light2: "/assets/fitur/siswa-aktif-mobile.png",
+              step2light2: "/assets/fitur/siswa-aktif.png",
 
               step3light1: "/assets/fitur/pembagian-kelas.png",
-              step3light2: "/assets/fitur/pembagian-kelas-mobile.png",
+              step3light2: "/assets/fitur/pembagian-kelas.png",
 
               step4light1: "/assets/fitur/kelola-informasi.png",
-              step4light2: "/assets/fitur/kelola-informasi-mobile.png",
+              step4light2: "/assets/fitur/kelola-informasi.png",
 
               step5light1: "/assets/fitur/kelola-ui.png",
-              step5light2: "/assets/fitur/kelola-ui-mobile.png",
+              step5light2: "/assets/fitur/kelola-ui.png",
 
               step6light1: "/assets/fitur/imageLanding.png",
-              step6light2: "/assets/fitur/imageLanding-mobile.png",
+              step6light2: "/assets/fitur/imageLanding.png",
             }}
           />
         </div>

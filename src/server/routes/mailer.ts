@@ -276,7 +276,10 @@ mailerRouter.post('/verify-otp', async (c) => {
       school_slug: schoolSlug
     };
 
-    const jwtSecret = process.env.JWT_SECRET || 'secret';
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET is required.');
+    }
     const token = jwt.sign(adminPayload, jwtSecret, { expiresIn: '7d' });
 
     return c.json({

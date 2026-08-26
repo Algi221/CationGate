@@ -158,13 +158,9 @@ function LoginForm() {
     }
   };
 
-  const svgPathMobileInitial =
-    "M 0 0 L 414 0 L 414 70 C 260 100, 120 90, 0 110 Z";
   const svgPathMobile =
     "M 0 0 L 414 0 L 414 125 C 290 165, 150 155, 0 185 Z";
 
-  const svgPathDesktopInitial =
-    "M 0 0 L 420 0 C 480 220, 360 380, 200 520 C 90 600, 0 540, 0 540 Z";
   const svgPathDesktop =
     "M 0 0 L 540 0 C 620 300, 460 500, 280 670 C 130 740, 0 670, 0 670 Z";
   const solidColor = "#0077c8"; // Vibrant Azure Blue from design screenshot
@@ -388,7 +384,7 @@ function LoginForm() {
                   htmlFor="username"
                   className="text-[11px] font-bold text-slate-700"
                 >
-                  Username atau Email Resmi
+                  Email atau Username
                 </Label>
                 <div className="relative">
                   <Input

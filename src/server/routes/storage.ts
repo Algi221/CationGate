@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import fs from 'fs';
+import path from 'path';
 import crypto from 'crypto';
 import { getSupabaseClient } from '../db/supabase';
 
@@ -25,6 +27,50 @@ const ALLOWED_BUCKETS = new Set([
   'school-assets'
 ]);
 
+// 1. Direct Server Multipart File Upload
+storageRouter.post('/upload', async (c) => {
+  try {
+    const body = await c.req.parseBody();
+    const file = body['file'];
+    const prefix = typeof body['prefix'] === 'string' ? body['prefix'] : 'upload';
+
+    if (!file || !(file instanceof File)) {
+      return c.json({ error: 'File tidak ditemukan dalam request multipart.' }, 400);
+    }
+
+    const contentType = file.type;
+    if (contentType && !ALLOWED_MIME_TYPES.has(contentType.toLowerCase())) {
+      return c.json({ error: `Tipe file '${contentType}' tidak diizinkan untuk alasan keamanan.` }, 400);
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const dataBuffer = Buffer.from(arrayBuffer);
+    const targetDir = path.join(process.cwd(), 'public', 'assets', 'uploads');
+
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanPrefix = prefix.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+    const filename = `${cleanPrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+    const targetPath = path.join(targetDir, filename);
+
+    fs.writeFileSync(targetPath, dataBuffer);
+
+    const publicUrl = `/assets/uploads/${filename}`;
+    return c.json({
+      success: true,
+      publicUrl,
+      fileName: filename
+    });
+  } catch (error: unknown) {
+    console.error('Error uploading file directly to server:', error);
+    return c.json({ error: error instanceof Error ? error.message : 'Gagal mengunggah file ke server.' }, 500);
+  }
+});
+
+// 2. Pre-Signed URL for direct client-to-cloud upload (optional cloud fallback)
 storageRouter.post('/presigned-url', async (c) => {
   try {
     const body = await c.req.json();
@@ -42,13 +88,17 @@ storageRouter.post('/presigned-url', async (c) => {
       return c.json({ error: `Bucket penyimpanan '${bucketName}' tidak valid.` }, 400);
     }
 
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
     if (!serviceRoleKey) {
-      console.error("SUPABASE_SERVICE_ROLE_KEY is missing from environment variables.");
-      return c.json({ error: 'Konfigurasi server storage belum lengkap.' }, 500);
+      return c.json({ error: 'Konfigurasi Supabase storage belum disetel.', fallbackToDirectUpload: true }, 503);
     }
 
-    const supabase = getSupabaseClient(serviceRoleKey);
+    let supabase;
+    try {
+      supabase = getSupabaseClient(serviceRoleKey);
+    } catch (_e) {
+      return c.json({ error: 'Inisialisasi Supabase client gagal.', fallbackToDirectUpload: true }, 503);
+    }
 
     const ext = (fileName.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
@@ -60,7 +110,8 @@ storageRouter.post('/presigned-url', async (c) => {
     });
 
     if (error) {
-      throw error;
+      console.warn('Supabase storage createSignedUploadUrl:', error.message);
+      return c.json({ error: error.message, fallbackToDirectUpload: true }, 503);
     }
 
     // Return the final public URL
@@ -73,7 +124,7 @@ storageRouter.post('/presigned-url', async (c) => {
     });
   } catch (error: unknown) {
     console.error('Error generating pre-signed URL:', error);
-    return c.json({ error: error instanceof Error ? error.message : 'Gagal menghasilkan URL upload aman.' }, 500);
+    return c.json({ error: error instanceof Error ? error.message : 'Gagal menghasilkan URL upload aman.', fallbackToDirectUpload: true }, 500);
   }
 });
 

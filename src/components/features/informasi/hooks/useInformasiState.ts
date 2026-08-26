@@ -396,8 +396,17 @@ export function useInformasiState() {
         body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
-      if (data.success) {
+      let data;
+      try {
+        data = await res.json();
+      } catch (_jsonErr) {
+        if (res.status === 413) {
+          throw new Error("Ukuran berkas/lampiran melebihi batas upload server (maksimal 10MB). Harap kurangi ukuran media.");
+        }
+        throw new Error(`Server response error (${res.status})`);
+      }
+
+      if (data && data.success) {
         if (typeof addToast === "function") {
           addToast(
             isEditMode ? "Berhasil Diperbarui" : "Berhasil Ditambahkan",
@@ -409,13 +418,14 @@ export function useInformasiState() {
         fetchInformasi();
       } else {
         if (typeof addToast === "function") {
-          addToast("Error", data.message || "Gagal memproses data.", "danger");
+          addToast("Error", data?.message || "Gagal memproses data.", "danger");
         }
       }
     } catch (err) {
       console.error("API error:", err);
       if (typeof addToast === "function") {
-        addToast("Error Koneksi", "Gagal menyimpan informasi ke server.", "danger");
+        const errorMsg = err instanceof Error ? err.message : "Gagal menyimpan informasi ke server.";
+        addToast("Gagal Menyimpan", errorMsg, "danger");
       }
     } finally {
       setSubmitting(false);

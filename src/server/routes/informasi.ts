@@ -1,4 +1,6 @@
 import { Hono, Context } from 'hono';
+import fs from 'fs';
+import path from 'path';
 import { getSupabaseClient } from '../db/supabase';
 import { adminAuth } from '../middleware/auth';
 import { createInformasiSchema, updateInformasiSchema } from '../validations/informasi';
@@ -6,6 +8,69 @@ import { isValidUUID, resolveSchoolUUID } from '../db/resolve-school';
 import { fontInMemSchools } from './saas';
 
 const router = new Hono();
+
+async function saveBase64Media(base64Str: string, prefix: string): Promise<string> {
+  if (typeof base64Str !== 'string' || !base64Str.startsWith('data:')) {
+    return base64Str;
+  }
+  try {
+    const matches = base64Str.match(/^data:([A-Za-z0-9-+\/.]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return base64Str;
+    }
+    const contentType = matches[1];
+    const dataBuffer = Buffer.from(matches[2], 'base64');
+    const targetDir = path.join(process.cwd(), 'public', 'assets', 'informasi', 'uploads');
+
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    let ext = 'png';
+    if (contentType.includes('jpeg') || contentType.includes('jpg')) ext = 'jpg';
+    else if (contentType.includes('webp')) ext = 'webp';
+    else if (contentType.includes('gif')) ext = 'gif';
+    else if (contentType.includes('svg')) ext = 'svg';
+    else if (contentType.includes('pdf')) ext = 'pdf';
+    else if (contentType.includes('mp4')) ext = 'mp4';
+    else if (contentType.includes('webm')) ext = 'webm';
+    else if (contentType.includes('msword') || contentType.includes('wordprocessingml')) ext = 'docx';
+    else if (contentType.includes('excel') || contentType.includes('spreadsheetml')) ext = 'xlsx';
+
+    const filename = `${prefix}_${Date.now()}.${ext}`;
+    const targetPath = path.join(targetDir, filename);
+    fs.writeFileSync(targetPath, dataBuffer);
+    return `/assets/informasi/uploads/${filename}`;
+  } catch (err) {
+    console.warn('Failed to save base64 media:', err);
+    return base64Str;
+  }
+}
+
+async function processInformasiMedia(fotoUrl: string | null | undefined): Promise<string | null> {
+  if (!fotoUrl) return null;
+  if (!fotoUrl.startsWith('{')) {
+    if (fotoUrl.startsWith('data:')) {
+      return await saveBase64Media(fotoUrl, 'info_media');
+    }
+    return fotoUrl;
+  }
+  try {
+    const media = JSON.parse(fotoUrl);
+    if (media.foto && media.foto.startsWith('data:')) {
+      media.foto = await saveBase64Media(media.foto, 'info_foto');
+    }
+    if (media.video && media.video.startsWith('data:')) {
+      media.video = await saveBase64Media(media.video, 'info_video');
+    }
+    if (media.dokumen && media.dokumen.startsWith('data:')) {
+      media.dokumen = await saveBase64Media(media.dokumen, 'info_dokumen');
+    }
+    return JSON.stringify(media);
+  } catch (_e) {
+    return fotoUrl;
+  }
+}
 
 interface _InformasiItem {
   id: number;
@@ -150,12 +215,13 @@ router.post('/', adminAuth, async (c: Context) => {
     }
 
     const targetUUID = isValidUUID(rawSchoolId) ? rawSchoolId : await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+    const processedFotoUrl = await processInformasiMedia(foto_url);
 
     const insertData: Record<string, unknown> = {
       judul,
       konten,
       tanggal: new Date(tanggal).toISOString(),
-      foto_url: foto_url || null
+      foto_url: processedFotoUrl
     };
     if (targetUUID && isValidUUID(targetUUID)) {
       insertData.school_id = targetUUID;
@@ -219,7 +285,9 @@ router.put('/:id', adminAuth, async (c: Context) => {
     if (judul !== undefined) dataToUpdate.judul = judul;
     if (konten !== undefined) dataToUpdate.konten = konten;
     if (tanggal !== undefined) dataToUpdate.tanggal = new Date(tanggal).toISOString();
-    if (foto_url !== undefined) dataToUpdate.foto_url = foto_url || null;
+    if (foto_url !== undefined) {
+      dataToUpdate.foto_url = await processInformasiMedia(foto_url);
+    }
 
     let updateQuery = supabase.from('school_announcements').update(dataToUpdate).eq('id', id);
     if (targetUUID && isValidUUID(targetUUID)) {

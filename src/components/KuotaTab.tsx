@@ -19,7 +19,7 @@ import { KuotaDonutChart, KuotaOverallDonutChart } from "./features/kuota/compon
 export type { KuotaTabProps };
 
 export default function KuotaTab({ type = "pendaftar", variant = "default" }: KuotaTabProps) {
-  const { schoolId } = usePPDB();
+  const { schoolId, ppdbTitle, profilSekolah, schoolPeriod } = usePPDB();
   const {
     data,
     editMode,
@@ -36,11 +36,17 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
     saveTargets
   } = useKuotaData(schoolId);
 
+  const schoolName = (
+    profilSekolah?.identitas?.nama ||
+    (ppdbTitle ? ppdbTitle.replace(/^(ppdb\s+)/i, "") : "") ||
+    "SMK TARUNA BHAKTI DEPOK"
+  ).toUpperCase();
+
   const handleExport = async () => {
     if (!data) return;
     try {
       setIsExporting(true);
-      await exportKuotaToExcel(data, selectedPeriode);
+      await exportKuotaToExcel(data, selectedPeriode, schoolName, schoolPeriod);
     } catch (err) {
       console.error(err);
       alert("Gagal mengekspor data kuota ke Excel.");
@@ -151,6 +157,8 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
                       totalJumlah={data.totalPendaftar}
                       totalTarget={data.totalTarget}
                       selectedPeriode={selectedPeriode}
+                      schoolName={schoolName}
+                      schoolPeriod={schoolPeriod}
                       editMode={editMode}
                       editingTargets={editingTargets}
                       onTargetChange={handleTargetChange}
@@ -163,6 +171,8 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
                       totalJumlah={data.totalSiswaAktif}
                       totalTarget={data.totalTarget}
                       selectedPeriode={selectedPeriode}
+                      schoolName={schoolName}
+                      schoolPeriod={schoolPeriod}
                       editMode={editMode}
                       editingTargets={editingTargets}
                       onTargetChange={handleTargetChange}
@@ -177,6 +187,8 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
                   totalJumlah={data.totalSiswaAktif}
                   totalTarget={data.totalTarget}
                   selectedPeriode={selectedPeriode}
+                  schoolName={schoolName}
+                  schoolPeriod={schoolPeriod}
                   editMode={editMode}
                   editingTargets={editingTargets}
                   onTargetChange={handleTargetChange}

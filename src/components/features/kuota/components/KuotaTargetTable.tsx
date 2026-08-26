@@ -7,6 +7,8 @@ interface KuotaTargetTableProps {
   totalJumlah: number;
   totalTarget: number;
   selectedPeriode: string;
+  schoolName?: string;
+  schoolPeriod?: string;
   variant?: "default" | "minimal";
   editMode: boolean;
   editingTargets: Record<string, number>;
@@ -19,14 +21,18 @@ export const KuotaTargetTable: React.FC<KuotaTargetTableProps> = ({
   totalJumlah,
   totalTarget,
   selectedPeriode,
+  schoolName = "SMK TARUNA BHAKTI DEPOK",
+  schoolPeriod = "2026-2027",
   variant = "default",
   editMode,
   editingTargets,
   onTargetChange
 }) => {
-  const tahunAjaranDisplay = selectedPeriode
-    ? `TAHUN AJARAN ${selectedPeriode.replace("-", "/")}`
-    : "TAHUN AJARAN 2026/2027";
+  const periodeToUse = selectedPeriode && selectedPeriode !== "ALL"
+    ? selectedPeriode
+    : (schoolPeriod || "2026-2027");
+
+  const tahunAjaranDisplay = `TAHUN AJARAN ${periodeToUse.replace("-", "/")}`;
 
   const totalTargetEditing = Object.values(editingTargets).reduce((acc, val) => acc + (val || 0), 0);
 
@@ -34,8 +40,8 @@ export const KuotaTargetTable: React.FC<KuotaTargetTableProps> = ({
     <div className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm ${variant === "minimal" ? "p-4" : ""}`}>
       <div className={`text-center ${variant === "minimal" ? "pb-4" : "p-6 border-b border-slate-200 dark:border-white/10"}`}>
         <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">{title}</h3>
-        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">SMK TARUNA BHAKTI DEPOK</p>
-        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{tahunAjaranDisplay}</p>
+        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase">{schoolName}</p>
+        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">{tahunAjaranDisplay}</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs font-semibold">
@@ -68,9 +74,11 @@ export const KuotaTargetTable: React.FC<KuotaTargetTableProps> = ({
                   )}
                 </td>
                 <td className="p-4 text-center">
-                  {editMode && item.key !== "Belum Memilih" && editingTargets[item.key] > 0
-                    ? `${Math.round((item.jumlah / editingTargets[item.key]) * 100)}%`
-                    : item.presentase}
+                  {editMode && item.key !== "Belum Memilih"
+                    ? (editingTargets[item.key] > 0
+                        ? `${Math.round((item.jumlah / editingTargets[item.key]) * 100)}%`
+                        : "0%")
+                    : (item.target > 0 ? item.presentase : "0%")}
                 </td>
               </tr>
             ))}

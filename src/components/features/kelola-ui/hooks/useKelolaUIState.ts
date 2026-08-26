@@ -137,10 +137,34 @@ export function useKelolaUIState() {
       ppdb_footer_desc: footerDesc,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sanitizeForDraft = (obj: any): any => {
+      if (typeof obj === 'string') {
+        return obj.startsWith('data:') && obj.length > 500 ? '' : obj;
+      }
+      if (Array.isArray(obj)) {
+        return obj.map(sanitizeForDraft);
+      }
+      if (obj !== null && typeof obj === 'object') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res: any = {};
+        for (const k of Object.keys(obj)) {
+          res[k] = sanitizeForDraft(obj[k]);
+        }
+        return res;
+      }
+      return obj;
+    };
+
     try {
-      localStorage.setItem(draftKey, JSON.stringify(draft));
-    } catch (error) {
-      console.warn("Gagal menyimpan draft ke localStorage:", error);
+      const sanitizedDraft = sanitizeForDraft(draft);
+      localStorage.setItem(draftKey, JSON.stringify(sanitizedDraft));
+    } catch (error: unknown) {
+      if ((error as { name?: string })?.name === "QuotaExceededError") {
+        try {
+          localStorage.removeItem(draftKey);
+        } catch (_e) {}
+      }
     }
   }, [
     mounted,

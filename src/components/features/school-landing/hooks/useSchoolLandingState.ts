@@ -31,12 +31,12 @@ const DEFAULT_FAQ: FaqItem[] = [
 ];
 
 const DEFAULT_ALUR: AlurItem[] = [
-  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website resmi sekolah dan mengisi data diri lengkap." },
-  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran melalui metode yang tersedia." },
-  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Data pendaftaran akan diverifikasi oleh panitia PPDB sekolah." },
-  { id: 4, title: "Pemberkasan", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik." },
-  { id: 5, title: "Tes Seleksi", desc: "Mengikuti serangkaian tes seleksi yang ditentukan oleh sekolah." },
-  { id: 6, title: "Pengumuman Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru." }
+  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website resmi sekolah dan mengisi data diri lengkap.", icon: "FileText" },
+  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran melalui metode yang tersedia.", icon: "CreditCard" },
+  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Data pendaftaran akan diverifikasi oleh panitia PPDB sekolah.", icon: "Phone" },
+  { id: 4, title: "Pemberkasan", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik.", icon: "Users" },
+  { id: 5, title: "Tes Seleksi", desc: "Mengikuti serangkaian tes seleksi yang ditentukan oleh sekolah.", icon: "Award" },
+  { id: 6, title: "Pengumuman Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru.", icon: "ShieldCheck" }
 ];
 
 const DEFAULT_MAJORS: MajorItem[] = [
@@ -167,9 +167,8 @@ export function useSchoolLandingState() {
           }
           if (cfg.ppdb_hero_title) setHeroTitle(cfg.ppdb_hero_title);
           if (cfg.ppdb_hero_title_sub) setHeroTitleSub(cfg.ppdb_hero_title_sub);
-          if (cfg.ppdb_hero_subtitle) setHeroSubtitle(cfg.ppdb_hero_subtitle);
-          if (cfg.ppdb_alamat) setAddress(cfg.ppdb_alamat);
-          if (cfg.ppdb_maps_embed) setMapUrl(cfg.ppdb_maps_embed);
+          if (cfg.ppdb_address || cfg.ppdb_alamat) setAddress(cfg.ppdb_address || cfg.ppdb_alamat);
+          if (cfg.ppdb_map_url || cfg.ppdb_maps_embed) setMapUrl(cfg.ppdb_map_url || cfg.ppdb_maps_embed);
           if (cfg.ppdb_map_title) setMapTitle(cfg.ppdb_map_title);
           if (cfg.ppdb_wa_admin) setWaAdmin(cfg.ppdb_wa_admin);
           if (cfg.ppdb_school_period) setSchoolPeriod(cfg.ppdb_school_period);

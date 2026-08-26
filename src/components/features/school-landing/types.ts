@@ -4,6 +4,7 @@ export interface AlurItem {
   id: number;
   title: string;
   desc: string;
+  icon?: string;
 }
 
 export interface FaqItem {

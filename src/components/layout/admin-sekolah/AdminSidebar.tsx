@@ -50,16 +50,16 @@ export function AdminSidebar({
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
 
-  const isSchoolVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || schoolSlug === 'demo';
-
   const handleToggleCollapse = () => {
     const nextVal = !isCollapsed;
     setIsCollapsed(nextVal);
     localStorage.setItem("ppdb-sidebar-collapsed", String(nextVal));
   };
 
+  const isLegalVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || schoolSlug === 'demo' || schoolSlug === 'smktarunabhakti';
+
   const menuStructure = [
-    ...(!isSchoolVerified
+    ...(!isLegalVerified
       ? [
           {
             category: "Status Legalitas",
@@ -97,6 +97,7 @@ export function AdminSidebar({
           href: `/${schoolSlug}/dashboard/kelola-ui`,
           icon: <Palette size={18} />,
           label: "Kelola UI/Data",
+          lockedIfUnverified: true,
           subItems: [
             { label: "Profil Sekolah", href: `/${schoolSlug}/dashboard/profil-sekolah` },
             { label: "General / Umum", href: `/${schoolSlug}/dashboard/kelola-ui?tab=hero` },
@@ -109,7 +110,6 @@ export function AdminSidebar({
             { label: "Riwayat Perubahan", href: `/${schoolSlug}/dashboard/kelola-ui?tab=revisions` }
           ]
         },
-        /* { href: `/dashboard/settings/appearance`, icon: <Paintbrush size={18} />, label: "Tema & Tampilan", lockedIfUnverified: true } */
       ]
     },
     {
@@ -126,7 +126,7 @@ export function AdminSidebar({
     const fullHref = item.href;
     const hasSub = !!item.subItems;
     const isOpen = openDropdowns[item.href] ?? (pathname?.startsWith(item.href) ?? false);
-    const isLocked = !isSchoolVerified && item.href !== `/${schoolSlug}/dashboard/verification`;
+    const isLocked = (!isLegalVerified && item.lockedIfUnverified) || schoolStatus === 'TAKEDOWN' || schoolStatus === 'SUSPENDED';
     const isActive = item.exact
       ? pathname === fullHref || pathname === item.href
       : pathname === fullHref || pathname === item.href || pathname?.startsWith(fullHref + "/");

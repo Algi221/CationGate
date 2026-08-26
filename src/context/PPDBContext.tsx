@@ -47,6 +47,7 @@ interface PPDBContextType {
   ppdbLogo: string;
   ppdbTitle: string;
   ppdbFooterDesc: string;
+  schoolPeriod: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profilSekolah: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -428,7 +429,7 @@ const DEMO_ACTIVE_STUDENTS_SEED = generateDemoActiveStudents();
 // ─── Inner Provider (has access to sub-contexts) ──────────────────────────────
 function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const { adminToken, adminUser, setAdminUser, loginAdmin, loginGatekeeper, logoutAdmin, logoutGatekeeper, gatekeeperToken, gatekeeperUser } = useAuth();
-  const { schoolId, schoolStatus, isDemoMode, isSchoolNotFound, isConfigLoaded, ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah, setProfilSekolah, fetchConfigs } = useSchool();
+  const { schoolId, schoolStatus, isDemoMode, isSchoolNotFound, isConfigLoaded, ppdbLogo, ppdbTitle, ppdbFooterDesc, schoolPeriod, profilSekolah, setProfilSekolah, fetchConfigs } = useSchool();
   const { toasts, addToast } = useToast();
 
   const [isLoaded, setIsLoaded] = useState(() => {
@@ -661,10 +662,21 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
   const registerApplicant = useCallback(async (formData: any) => {
     try {
       if (isDemoMode) throw new Error("Demo Mode");
-      const res = await fetch(`${BACKEND_URL}/applicants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
+      const targetSlug = slug || formData.school_slug || 'smktarunabhakti';
+      const payload = { ...formData, school_slug: targetSlug };
+      const res = await fetch(`${BACKEND_URL}/applicants?school_slug=${encodeURIComponent(targetSlug)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
       const data = await res.json();
-      if (data.success) { await fetchPublicApplicants(); return { success: true, data: data.data }; }
-      else { return { success: false, message: data.message }; }
+      if (data.success) {
+        await fetchPublicApplicants();
+        await fetchAdminApplicants();
+        return { success: true, data: data.data };
+      } else {
+        return { success: false, message: data.message };
+      }
     } catch (err: unknown) {
       console.error("API registration error, adding to memory fallback:", err instanceof Error ? err.message : String(err));
       const mockSaved = { id: Date.now(), nama: formData.nama || "Pendaftar Baru", nisn: formData.nisn || "0000000000", sekolah_asal: formData.sekolahAsal || "SMP Asal", jurusan_1: formData.jurusan1 || "PPLG", status: "Pending", tgl_daftar: new Date().toISOString() };
@@ -673,7 +685,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
       addToast("Pendaftaran Baru (Offline)", `Nama: ${mockSaved.nama} - Jurusan: ${mockSaved.jurusan_1}`, "success");
       return { success: true, data: mockSaved };
     }
-  }, [fetchPublicApplicants, addToast, isDemoMode]);
+  }, [fetchPublicApplicants, fetchAdminApplicants, addToast, isDemoMode, slug]);
 
   const verifyApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -968,7 +980,7 @@ function PPDBInnerProvider({ children }: { children: React.ReactNode }) {
         gatekeeperToken, gatekeeperUser,
         fetchPublicApplicants, fetchAdminApplicants, fetchActiveStudents,
         simulateRegistration, addToast, checkPaymentStatus,
-        ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah, setProfilSekolah, fetchConfigs,
+        ppdbLogo, ppdbTitle, ppdbFooterDesc, schoolPeriod, profilSekolah, setProfilSekolah, fetchConfigs,
         schoolId, schoolStatus, isDemoMode, isSchoolNotFound, isConfigLoaded
       }}
     >

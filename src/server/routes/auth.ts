@@ -159,6 +159,9 @@ authRouter.post('/login', authLimiter, async (c) => {
       }, 403);
     }
 
+    const cleanPhone = cleanUsername.replace(/\D/g, '');
+    const isPhoneNumber = cleanPhone.length >= 8;
+
     // 1. Try Supabase query with case-insensitive search
     let query = supabase.from('admin_users').select('*').or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername}`);
     if (schoolId) query = query.eq('school_id', schoolId);
@@ -190,14 +193,20 @@ authRouter.post('/login', authLimiter, async (c) => {
       } catch (_pgErr) {}
     }
 
-    // 3. Fallback: Lookup in schools or prospective_schools by official email or slug
+    // 3. Fallback: Lookup in schools by official email, slug, or phone
     if (!adminUser) {
       try {
-        const { data: school } = await supabase
+        let schoolQuery = supabase
           .from('schools')
-          .select('id, slug, official_email')
-          .or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername}`)
-          .maybeSingle();
+          .select('id, slug, official_email');
+        
+        if (isPhoneNumber) {
+          schoolQuery = schoolQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},whatsapp_number.ilike.%${cleanPhone}%,phone_number.ilike.%${cleanPhone}%`);
+        } else {
+          schoolQuery = schoolQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername}`);
+        }
+
+        const { data: school } = await schoolQuery.maybeSingle();
 
         if (school) {
           const { data: linkedAdmin } = await supabase
@@ -210,13 +219,20 @@ authRouter.post('/login', authLimiter, async (c) => {
       } catch (_sErr) {}
     }
 
+    // 4. Fallback: Lookup in prospective_schools
     if (!adminUser) {
       try {
-        const { data: ps } = await supabase
+        let psQuery = supabase
           .from('prospective_schools')
-          .select('id, slug, official_email')
-          .or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername}`)
-          .maybeSingle();
+          .select('id, slug, official_email');
+        
+        if (isPhoneNumber) {
+          psQuery = psQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},contact_person_phone.ilike.%${cleanPhone}%`);
+        } else {
+          psQuery = psQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername}`);
+        }
+
+        const { data: ps } = await psQuery.maybeSingle();
 
         if (ps) {
           const { data: linkedAdmin } = await supabase

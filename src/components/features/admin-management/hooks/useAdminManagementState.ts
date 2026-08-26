@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import { AdminItem } from "../types";
 
 export function useAdminManagementState() {
-  const { adminUser, adminToken } = usePPDB();
+  const { adminUser, adminToken, schoolId, isDemoMode } = usePPDB();
   const router = useRouter();
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "";
@@ -34,14 +34,31 @@ export function useAdminManagementState() {
   const [trashedAdmins, setTrashedAdmins] = useState<AdminItem[]>([]);
   const [trashLoading, setTrashLoading] = useState(false);
 
-  const [currentPlan] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("ppdb_school_plan") || "FREE_PLAN";
-    }
-    return "FREE_PLAN";
-  });
+  const [isPro, setIsPro] = useState(true);
 
-  const isPro = currentPlan !== "FREE_PLAN";
+  useEffect(() => {
+    if (isDemoMode || schoolSlug === "demo") {
+      setIsPro(true);
+      return;
+    }
+    const checkSub = async () => {
+      try {
+        const query = schoolId ? `school_id=${schoolId}` : `slug=${schoolSlug}`;
+        const res = await fetch(`/api/saas/subscription-status?${query}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const plan = data.data.plan;
+          const isPaid = plan === "PRO_YEARLY" || plan === "PRO_750K" || plan === "PRO" || data.data.status === "ACTIVE" || !data.data.isExpired;
+          setIsPro(isPaid);
+        } else {
+          setIsPro(true);
+        }
+      } catch (_e) {
+        setIsPro(true);
+      }
+    };
+    checkSub();
+  }, [schoolId, schoolSlug, isDemoMode]);
 
   const handleTabChange = (tab: "admin" | "trash") => {
     setError("");
@@ -49,22 +66,17 @@ export function useAdminManagementState() {
     router.push(`/${schoolSlug}/dashboard/admin?tab=${tab}`);
   };
 
-  const getBackendUrl = () => {
-    if (process.env.NEXT_PUBLIC_BACKEND_URL) return process.env.NEXT_PUBLIC_BACKEND_URL;
-    if (typeof window !== "undefined") return `/api`;
-    return "/api";
-  };
-
   const fetchAdmins = useCallback(
     async (showSpinner = false) => {
-      if (!adminToken) return;
+      const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
+      if (!token) return;
       try {
         if (showSpinner) setLoading(true);
         setError("");
-        const backendUrl = getBackendUrl();
-        const res = await fetch(`${backendUrl}/api/admin/users`, {
+        const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+        const res = await fetch(`/api/admin/users${query}`, {
           headers: {
-            Authorization: `Bearer ${adminToken}`
+            Authorization: `Bearer ${token}`
           }
         });
         const data = await res.json();
@@ -79,18 +91,19 @@ export function useAdminManagementState() {
         setLoading(false);
       }
     },
-    [adminToken]
+    [adminToken, schoolSlug]
   );
 
   const fetchTrashedAdmins = useCallback(async () => {
-    if (!adminToken) return;
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
+    if (!token) return;
     try {
       setTrashLoading(true);
       setError("");
-      const backendUrl = getBackendUrl();
-      const res = await fetch(`${backendUrl}/api/admin/users/trashed`, {
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const res = await fetch(`/api/admin/users/trashed${query}`, {
         headers: {
-          Authorization: `Bearer ${adminToken}`
+          Authorization: `Bearer ${token}`
         }
       });
       const data = await res.json();
@@ -104,7 +117,7 @@ export function useAdminManagementState() {
     } finally {
       setTrashLoading(false);
     }
-  }, [adminToken]);
+  }, [adminToken, schoolSlug]);
 
   useEffect(() => {
     if (!adminUser) return;
@@ -123,18 +136,19 @@ export function useAdminManagementState() {
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adminToken) return;
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
+    if (!token) return;
 
     try {
       setFormLoading(true);
       setError("");
       setSuccessMsg("");
-      const backendUrl = getBackendUrl();
-      const res = await fetch(`${backendUrl}/api/admin/users`, {
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const res = await fetch(`/api/admin/users${query}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       });
@@ -173,13 +187,13 @@ export function useAdminManagementState() {
 
   const handleUpdateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adminToken || !editAdminId) return;
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
+    if (!token || !editAdminId) return;
 
     try {
       setFormLoading(true);
       setError("");
       setSuccessMsg("");
-      const backendUrl = getBackendUrl();
       const payload: Record<string, string> = {
         username: formData.username,
         nama_lengkap: formData.nama_lengkap,
@@ -189,11 +203,12 @@ export function useAdminManagementState() {
         payload.password = formData.password;
       }
 
-      const res = await fetch(`${backendUrl}/api/admin/users/${editAdminId}`, {
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const res = await fetch(`/api/admin/users/${editAdminId}${query}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -221,7 +236,8 @@ export function useAdminManagementState() {
   };
 
   const handleDeleteAdmin = async (id: number, nama: string) => {
-    if (!adminToken) return;
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
+    if (!token) return;
 
     Swal.fire({
       title: "Hapus Akun Admin?",
@@ -235,11 +251,11 @@ export function useAdminManagementState() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const backendUrl = getBackendUrl();
-          const res = await fetch(`${backendUrl}/api/admin/users/${id}`, {
+          const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+          const res = await fetch(`/api/admin/users/${id}${query}`, {
             method: "DELETE",
             headers: {
-              Authorization: `Bearer ${adminToken}`
+              Authorization: `Bearer ${token}`
             }
           });
           const data = await res.json();
@@ -258,14 +274,15 @@ export function useAdminManagementState() {
   };
 
   const handleRestoreAdmin = async (id: number) => {
-    if (!adminToken) return;
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
+    if (!token) return;
 
     try {
-      const backendUrl = getBackendUrl();
-      const res = await fetch(`${backendUrl}/api/admin/users/${id}/restore`, {
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const res = await fetch(`/api/admin/users/${id}/restore${query}`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${adminToken}`
+          Authorization: `Bearer ${token}`
         }
       });
       const data = await res.json();

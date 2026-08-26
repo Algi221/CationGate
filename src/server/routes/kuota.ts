@@ -4,15 +4,6 @@ import { adminAuth } from '../middleware/auth';
 
 const router = new Hono();
 
-const DEFAULT_TARGETS: Record<string, number> = {
-  "Desain Komunikasi Visual": 108,
-  "Teknik Komputer dan Jaringan": 144,
-  "Rekayasa Perangkat Lunak": 144,
-  "Broadcasting dan Perfilman": 108,
-  "Teknik Transmisi Telekomunikasi": 36,
-  "Belum Memilih": 0
-};
-
 const DISPLAY_NAMES: Record<string, string> = {
   "Desain Komunikasi Visual": "Desain Komunikasi Visual (DKV)",
   "Teknik Komputer dan Jaringan": "Teknik Komputer dan Jaringan (TKJ)",
@@ -32,8 +23,13 @@ const ORDER = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getTargets(supabase: any, schoolId: string | null): Promise<Record<string, number>> {
-  if (!schoolId) return DEFAULT_TARGETS;
+async function getTargets(supabase: any, schoolId: string | null, customOrder: string[] = ORDER): Promise<Record<string, number>> {
+  const baseTargets: Record<string, number> = {};
+  customOrder.forEach((k) => {
+    baseTargets[k] = 0;
+  });
+
+  if (!schoolId) return baseTargets;
   try {
     const { data } = await supabase
       .from('landing_page_config')
@@ -43,21 +39,64 @@ async function getTargets(supabase: any, schoolId: string | null): Promise<Recor
       .maybeSingle();
 
     if (data && data.config_value) {
-      return typeof data.config_value === 'string' ? JSON.parse(data.config_value) : data.config_value;
+      const parsed = typeof data.config_value === 'string' ? JSON.parse(data.config_value) : data.config_value;
+      return { ...baseTargets, ...parsed };
     }
   } catch (e) {
     console.warn('Gagal membaca kuota_targets dari DB, menggunakan default:', e);
   }
-  return DEFAULT_TARGETS;
+  return baseTargets;
 }
 
 router.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = c.req.query('school_id') || null;
+    let schoolId = c.req.query('school_id') || null;
+    const schoolSlug = c.req.query('school_slug') || null;
     const periodeParam = c.req.query('periode') || null;
 
-    const TARGETS = await getTargets(supabase, schoolId);
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    if (schoolSlug || (schoolId && !isUUID(schoolId))) {
+      try {
+        const { resolveSchoolUUID } = await import('../db/resolve-school');
+        const { fontInMemSchools } = await import('./saas');
+        const targetIdentifier = schoolSlug || schoolId!;
+        const resolved = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
+        if (resolved) schoolId = resolved;
+      } catch (_err) {}
+    }
+
+    let order = [...ORDER];
+    let displayNames = { ...DISPLAY_NAMES };
+
+    if (schoolId) {
+      try {
+        const { data: majorsData } = await supabase
+          .from('landing_page_config')
+          .select('config_value')
+          .eq('school_id', schoolId)
+          .eq('config_key', 'ppdb_majors_config')
+          .maybeSingle();
+
+        if (majorsData && majorsData.config_value) {
+          const majorsList = typeof majorsData.config_value === 'string'
+            ? JSON.parse(majorsData.config_value)
+            : majorsData.config_value;
+          if (Array.isArray(majorsList) && majorsList.length > 0) {
+            order = majorsList.map((m: { title?: string; code?: string }) => m.title || m.code || '');
+            displayNames = {};
+            majorsList.forEach((m: { title?: string; code?: string }) => {
+              const name = m.title || m.code || '';
+              displayNames[name] = m.code && m.title ? `${m.title} (${m.code})` : name;
+            });
+            order.push("Belum Memilih");
+            displayNames["Belum Memilih"] = "Belum Memilih Jurusan / Unassigned";
+          }
+        }
+      } catch (_e) {}
+    }
+
+    const TARGETS = await getTargets(supabase, schoolId, order);
 
     let pQuery = supabase.from('student_applicants').select('periode');
     let sQuery = supabase.from('active_students').select('periode');
@@ -108,34 +147,31 @@ router.get('/', async (c) => {
       const counts: Record<string, number> = {};
       groups.forEach(g => {
         let key = g[jurusanKey] || "Belum Memilih";
-        if (!DEFAULT_TARGETS.hasOwnProperty(key) && key !== "Belum Memilih") {
+        if (!order.includes(key) && key !== "Belum Memilih") {
           key = "Belum Memilih";
         }
         counts[key] = (counts[key] || 0) + g._count._all;
       });
 
-      return ORDER.map((key, index) => {
+      return order.map((key, index) => {
         const jumlah = counts[key] || 0;
         const target = TARGETS[key] || 0;
-        const presentase = target > 0 ? Math.round((jumlah / target) * 100) : (jumlah > 0 ? jumlah * 100 : 0);
+        const presentase = target > 0 ? Math.round((jumlah / target) * 100) : 0;
         return {
           no: index + 1,
           key: key,
-          konsentrasi_keahlian: DISPLAY_NAMES[key] || key,
+          konsentrasi_keahlian: displayNames[key] || key,
           jumlah,
           target,
-          presentase: target > 0 ? `${presentase}%` : presentase.toString()
+          presentase: `${presentase}%`
         };
       });
     };
 
-    const pendaftarGroups = groupRows(pendaftarRows || [], 'jurusan_1');
-    const siswaAktifGroups = groupRows(siswaAktifRows || [], 'jurusan');
+    const dataPendaftar = processGroups(groupRows(pendaftarRows || [], 'jurusan_1'), 'jurusan_1');
+    const dataSiswaAktif = processGroups(groupRows(siswaAktifRows || [], 'jurusan'), 'jurusan');
 
-    const dataPendaftar = processGroups(pendaftarGroups, 'jurusan_1');
-    const dataSiswaAktif = processGroups(siswaAktifGroups, 'jurusan');
-
-    const totalTarget = ORDER.reduce((acc, k) => acc + (TARGETS[k] || 0), 0);
+    const totalTarget = order.reduce((acc, k) => acc + (TARGETS[k] || 0), 0);
     const totalPendaftarJumlah = dataPendaftar.reduce((acc, item) => acc + item.jumlah, 0);
     const totalSiswaAktifJumlah = dataSiswaAktif.reduce((acc, item) => acc + item.jumlah, 0);
 

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { getSupabaseClient } from '../db/supabase';
+import { pool } from '../db/client';
 import { adminAuth, requireTenantId } from '../middleware/auth';
 import fs from 'fs';
 import path from 'path';
@@ -169,23 +170,43 @@ configRouter.get('/', async (c) => {
       });
     }
 
+    let configs: Array<{ config_key: string; config_value: unknown }> | null = null;
     let query = supabase.from('landing_page_config').select('*');
     if (schoolId) {
-      query = query.eq('school_id', schoolId);
+      const numericId = !isNaN(Number(schoolId)) ? Number(schoolId) : null;
+      if (numericId !== null) {
+        query = query.or(`school_id.eq.${schoolId},school_id.eq.${numericId}`);
+      } else {
+        query = query.eq('school_id', schoolId);
+      }
     }
 
-    const { data: configs, error } = await query;
-    if (error) {
-      console.warn('Fetch config DB warning (using default config):', error.message);
-      return c.json({
-        success: true,
-        data: {}
-      });
+    const { data: sbConfigs, error } = await query;
+    if (!error && sbConfigs && sbConfigs.length > 0) {
+      configs = sbConfigs;
+    } else {
+      // Direct pool query fallback
+      try {
+        const isNum = !isNaN(Number(schoolId)) && Number(schoolId) > 0;
+        const pgRes = await pool.query(
+          `SELECT config_key, config_value FROM landing_page_config 
+           WHERE (CASE WHEN $1 = true THEN school_id = $2::integer ELSE school_id::text = $3 END)
+              OR school_id::text = $3`,
+          [isNum, isNum ? Number(schoolId) : 0, String(schoolId || '')]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          configs = pgRes.rows;
+        }
+      } catch (_pgErr) {}
     }
 
     const configMap: Record<string, unknown> = {};
     (configs || []).forEach((row: { config_key: string; config_value: unknown }) => {
-      configMap[row.config_key] = row.config_value;
+      let val = row.config_value;
+      if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
+        try { val = JSON.parse(val); } catch (_e) {}
+      }
+      configMap[row.config_key] = val;
     });
 
     // 3. Save to Redis Cache (expire in 1 hour)
@@ -194,7 +215,7 @@ configRouter.get('/', async (c) => {
     return c.json({
       success: true,
       data: configMap,
-      source: 'db'
+      source: configs && configs.length > 0 ? 'db' : 'empty'
     });
   } catch (err: unknown) {
     console.warn('Fetch config DB exception (using default config):', err instanceof Error ? err.message : String(err));
@@ -236,34 +257,58 @@ configRouter.post('/', adminAuth, async (c) => {
         config_key: key,
         config_value: val,
         updated_at: new Date().toISOString(),
-        school_id: schoolId
+        school_id: !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId
       }));
 
       const { error } = await supabase
         .from('landing_page_config')
-        .upsert(upsertRows, { onConflict: 'config_key,school_id' });
+        .upsert(upsertRows, { onConflict: 'school_id,config_key' });
 
       if (error) {
-        console.warn('Upsert with compound key failed, attempting fallback to config_key:', error.message);
-        await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'config_key' });
+        console.warn('Supabase upsert with compound key failed, attempting direct pool query:', error.message);
+        for (const row of upsertRows) {
+          try {
+            await pool.query(
+              `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+               VALUES ($1, $2, $3, NOW())
+               ON CONFLICT (school_id, config_key)
+               DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+              [row.school_id, row.config_key, JSON.stringify(row.config_value)]
+            );
+          } catch (_poolErr) {
+            console.warn('Fallback pool query error:', _poolErr);
+          }
+        }
       }
 
       // Log UI Revision
-      const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string } | undefined;
+      const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string; school_slug?: string; slug?: string } | undefined;
       const adminName = admin?.nama || admin?.username || 'Administrator';
+      const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
 
       const revPayload: Record<string, unknown> = {
         config_values: processedConfigs,
         changed_by: adminName,
         description: description || 'Pembaruan Tampilan Sistem'
       };
-      if (schoolId) revPayload.school_id = schoolId;
+      if (schoolId) revPayload.school_id = numericSchoolId;
 
-      await supabase.from('ui_revisions').insert(revPayload);
+      const { error: revErr } = await supabase.from('ui_revisions').insert(revPayload);
+      if (revErr) {
+        try {
+          await pool.query(
+            `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
+             VALUES ($1, $2, $3, $4, NOW())`,
+            [numericSchoolId, JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
+          );
+        } catch (_revPoolErr) {}
+      }
 
       // Invalidate Redis cache
-      const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
-      await delCached(cacheKey);
+      if (schoolId) await delCached(`config_${schoolId}`);
+      if (admin?.school_slug) await delCached(`config_${admin.school_slug}`);
+      if (admin?.slug) await delCached(`config_${admin.slug}`);
+      await delCached('config_default');
 
       return c.json({
         success: true,
@@ -290,25 +335,39 @@ configRouter.post('/', adminAuth, async (c) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
+    const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
 
     const payload: Record<string, unknown> = {
       config_key: key,
       config_value: processedValue,
       updated_at: new Date().toISOString(),
-      school_id: schoolId
+      school_id: numericSchoolId
     };
 
     const { error } = await supabase
       .from('landing_page_config')
-      .upsert(payload, { onConflict: 'config_key,school_id' });
+      .upsert(payload, { onConflict: 'school_id,config_key' });
 
     if (error) {
-      await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
+      try {
+        await pool.query(
+          `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+           VALUES ($1, $2, $3, NOW())
+           ON CONFLICT (school_id, config_key)
+           DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+          [numericSchoolId, key, JSON.stringify(processedValue)]
+        );
+      } catch (_poolErr) {
+        console.warn('Fallback pool query for single config error:', _poolErr);
+      }
     }
 
     // Invalidate Redis cache
-    const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
-    await delCached(cacheKey);
+    if (schoolId) await delCached(`config_${schoolId}`);
+    const admin = (c.get as (k: string) => unknown)('admin') as { school_slug?: string; slug?: string } | undefined;
+    if (admin?.school_slug) await delCached(`config_${admin.school_slug}`);
+    if (admin?.slug) await delCached(`config_${admin.slug}`);
+    await delCached('config_default');
 
     return c.json({
       success: true,
@@ -328,14 +387,27 @@ configRouter.get('/revisions', adminAuth, async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
+    const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
 
     const query = supabase.from('ui_revisions')
       .select('id, changed_by, description, created_at')
       .order('created_at', { ascending: false })
-      .eq('school_id', schoolId);
+      .eq('school_id', numericSchoolId);
 
     const { data: revisions, error } = await query;
-    if (error) throw error;
+    if (error) {
+      try {
+        const pgRes = await pool.query(
+          `SELECT id, changed_by, description, created_at FROM ui_revisions
+           WHERE school_id = $1::integer OR school_id::text = $2
+           ORDER BY created_at DESC LIMIT 50`,
+          [!isNaN(Number(schoolId)) ? Number(schoolId) : 0, String(schoolId)]
+        );
+        return c.json({ success: true, data: pgRes.rows || [] });
+      } catch (_pgErr) {
+        throw error;
+      }
+    }
 
     return c.json({
       success: true,
@@ -369,6 +441,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     const { configs, description } = result.data;
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
+    const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
 
     const processedConfigs = { ...configs };
     if (processedConfigs.ppdb_majors_config) {
@@ -383,12 +456,24 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       const payload: any = {
         config_key: key,
         config_value: value,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        school_id: numericSchoolId
       };
-      payload.school_id = schoolId;
 
-      const { error } = await supabase.from('landing_page_config').upsert(payload, { onConflict: 'config_key' });
-      if (error) throw error;
+      const { error } = await supabase.from('landing_page_config').upsert(payload, { onConflict: 'school_id,config_key' });
+      if (error) {
+        try {
+          await pool.query(
+            `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (school_id, config_key)
+             DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+            [numericSchoolId, key, JSON.stringify(value)]
+          );
+        } catch (_poolErr) {
+          console.warn('Fallback pool query for landing_page_config error:', _poolErr);
+        }
+      }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -399,16 +484,28 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     const revPayload: any = {
       config_values: configs,
       changed_by: adminName,
-      description: description || 'Melakukan pembaruan massal UI'
+      description: description || 'Melakukan pembaruan massal UI',
+      school_id: numericSchoolId
     };
-    revPayload.school_id = schoolId;
 
     const { error: revError } = await supabase.from('ui_revisions').insert(revPayload);
-    if (revError) throw revError;
+    if (revError) {
+      try {
+        await pool.query(
+          `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
+           VALUES ($1, $2, $3, $4, NOW())`,
+          [numericSchoolId, JSON.stringify(configs), adminName, description || 'Melakukan pembaruan massal UI']
+        );
+      } catch (_revPoolErr) {
+        console.warn('Fallback pool query for ui_revisions error:', _revPoolErr);
+      }
+    }
 
     // Invalidate Redis cache
-    const cacheKey = schoolId ? `config_${schoolId}` : 'config_default';
-    await delCached(cacheKey);
+    if (schoolId) await delCached(`config_${schoolId}`);
+    if (admin?.school_slug) await delCached(`config_${admin.school_slug}`);
+    if (admin?.slug) await delCached(`config_${admin.slug}`);
+    await delCached('config_default');
 
     console.log('[SUCCESS] Configurations successfully saved to PostgreSQL database.');
     return c.json({

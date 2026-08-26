@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Search, X, CheckCircle, Clock, XCircle, User, MapPin, Phone, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
+import { useParams } from "next/navigation";
 import { 
   Select, 
   SelectContent, 
@@ -21,6 +22,10 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export default function DataPendaftarPage() {
+  const params = useParams();
+  const rawSlug = (params?.school_slug as string) || "sekolah";
+  const schoolSlug = encodeURIComponent(rawSlug.replace(/[^a-zA-Z0-9_-]/g, ""));
+
   const { publicApplicants } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
@@ -52,7 +57,7 @@ export default function DataPendaftarPage() {
 
       {}
       <nav className="sticky top-0 z-40 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center shadow-sm">
-        <Link href={`/${window.location.pathname.split('/')[1]}`} className="flex items-center gap-3 group">
+        <Link href={`/${schoolSlug}`} className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
             <ArrowLeft size={18} className="text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
           </div>

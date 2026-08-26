@@ -2,7 +2,12 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { KuotaData, KuotaItem } from "../types";
 
-export async function exportKuotaToExcel(data: KuotaData, selectedPeriode: string) {
+export async function exportKuotaToExcel(
+  data: KuotaData,
+  selectedPeriode: string,
+  schoolName: string = "SMK TARUNA BHAKTI DEPOK",
+  schoolPeriod: string = "2026-2027"
+) {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Data Kuota");
 
@@ -23,9 +28,11 @@ export async function exportKuotaToExcel(data: KuotaData, selectedPeriode: strin
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const alignCenter = { vertical: "middle" as any, horizontal: "center" as any };
 
-  const tahunAjaran = selectedPeriode
-    ? `TAHUN AJARAN ${selectedPeriode.replace("-", "/")}`
-    : "TAHUN AJARAN 2026/2027";
+  const periodeToUse = selectedPeriode && selectedPeriode !== "ALL"
+    ? selectedPeriode
+    : (schoolPeriod || "2026-2027");
+
+  const tahunAjaran = `TAHUN AJARAN ${periodeToUse.replace("-", "/")}`;
 
   const createTable = (startRow: number, title: string, items: KuotaItem[], totalJumlah: number) => {
     sheet.mergeCells(`A${startRow}:E${startRow}`);
@@ -36,7 +43,7 @@ export async function exportKuotaToExcel(data: KuotaData, selectedPeriode: strin
 
     sheet.mergeCells(`A${startRow + 1}:E${startRow + 1}`);
     const title2 = sheet.getCell(`A${startRow + 1}`);
-    title2.value = "SMK TARUNA BHAKTI DEPOK";
+    title2.value = schoolName.toUpperCase();
     title2.font = titleFont;
     title2.alignment = alignCenter;
 

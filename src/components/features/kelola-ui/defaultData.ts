@@ -57,12 +57,12 @@ export const formatPhoneNumber = (value: string) => {
 };
 
 export const DEFAULT_ALUR: AlurItem[] = [
-  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website sekolah dan mengisi data lengkap." },
-  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran via Transfer Bank atau Payment Gateway." },
-  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis via WhatsApp / Email." },
-  { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
-  { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
-  { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru." }
+  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website sekolah dan mengisi data lengkap.", icon: "FileText" },
+  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran via Transfer Bank atau Payment Gateway.", icon: "CreditCard" },
+  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis via WhatsApp / Email.", icon: "Phone" },
+  { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru.", icon: "Users" },
+  { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa.", icon: "Award" },
+  { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru.", icon: "ShieldCheck" }
 ];
 
 export const DEFAULT_FAQ: FaqItem[] = [

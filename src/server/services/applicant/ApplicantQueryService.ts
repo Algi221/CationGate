@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "../../db/supabase";
+import { pool } from "../../db/client";
 import { resolveSchoolUUID } from "../../db/resolve-school";
 import { fontInMemSchools } from "../../routes/saas";
 import { ApplicantSyncService } from "./ApplicantSyncService";
@@ -143,20 +144,43 @@ export class ApplicantQueryService {
     }
 
     const supabase = getSupabaseClient(authToken);
-    const { data, error } = await supabase
+    const numericId = !isNaN(Number(resolvedId)) ? Number(resolvedId) : null;
+
+    let query = supabase
       .from("student_applicants")
       .select("id, nama, nisn, status, tgl_daftar, jurusan_1, sekolah_asal, diterima_kelas, jenis_kelamin")
-      .eq("school_id", resolvedId)
       .in("status", ["Pending", "Approved", "Rejected", "Terverifikasi"])
       .is("deleted_at", null)
       .order("tgl_daftar", { ascending: false });
 
-    if (error) {
-      console.warn("Fetch public applicants Supabase query warning:", error.message);
-      return { success: true, data: [] };
+    if (numericId !== null) {
+      query = query.or(`school_id.eq.${resolvedId},school_id.eq.${numericId}`);
+    } else {
+      query = query.eq("school_id", resolvedId);
     }
 
-    if ((!data || data.length === 0) && (schoolIdOrSlug === 'demo' || resolvedId === 'demo')) {
+    const { data, error } = await query;
+    let finalRows = data;
+
+    if (error || !data || data.length === 0) {
+      try {
+        const isNum = numericId !== null;
+        const pgRes = await pool.query(
+          `SELECT id, nama, nisn, status, tgl_daftar, jurusan_1, sekolah_asal, diterima_kelas, jenis_kelamin
+           FROM student_applicants
+           WHERE deleted_at IS NULL
+             AND status IN ('Pending', 'Approved', 'Rejected', 'Terverifikasi')
+             AND ((CASE WHEN $1 = true THEN school_id = $2::integer ELSE false END) OR school_id::text = $3)
+           ORDER BY tgl_daftar DESC`,
+          [isNum, isNum ? numericId : 0, String(resolvedId)]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          finalRows = pgRes.rows;
+        }
+      } catch (_pgErr) {}
+    }
+
+    if ((!finalRows || finalRows.length === 0) && (schoolIdOrSlug === 'demo' || resolvedId === 'demo')) {
       const demoPublicSeed = [
         { id: 1, nama: "Budi Santoso", nisn: "******4567", status: "Approved", tgl_daftar: new Date().toISOString(), jurusan_1: "Rekayasa Perangkat Lunak", sekolah_asal: "SMPN 1 Depok", diterima_kelas: "X RPL 1", jenis_kelamin: "L" },
         { id: 2, nama: "Siti Rahma", nisn: "******1234", status: "Approved", tgl_daftar: new Date().toISOString(), jurusan_1: "Teknik Jaringan Komputer & Telekomunikasi", sekolah_asal: "SMPN 2 Depok", diterima_kelas: "X TJKT 1", jenis_kelamin: "P" },
@@ -168,7 +192,7 @@ export class ApplicantQueryService {
       return { success: true, data: demoPublicSeed };
     }
 
-    const sanitizedRows = (data || []).map((row) => ({
+    const sanitizedRows = (finalRows || []).map((row) => ({
       ...row,
       nisn: row.nisn ? "******" + row.nisn.slice(-4) : null
     }));
@@ -177,18 +201,39 @@ export class ApplicantQueryService {
   }
 
   static async getAdminApplicants(schoolId: string, authToken?: string) {
-    await ApplicantSyncService.checkAndDisqualifyExpiredApplicants();
+    // Run auto-disqualify in background without blocking applicant fetch
+    ApplicantSyncService.checkAndDisqualifyExpiredApplicants().catch(() => {});
     const supabase = getSupabaseClient(authToken);
+    const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : null;
 
-    const query = supabase
+    let query = supabase
       .from("student_applicants")
       .select(calonSiswaFields.join(","))
       .is("deleted_at", null)
-      .order("tgl_daftar", { ascending: false })
-      .eq("school_id", schoolId);
+      .order("tgl_daftar", { ascending: false });
+
+    if (numericSchoolId !== null) {
+      query = query.or(`school_id.eq.${schoolId},school_id.eq.${numericSchoolId}`);
+    } else {
+      query = query.eq("school_id", schoolId);
+    }
 
     const { data: rows, error } = await query;
-    if (error) throw error;
+    if (error) {
+      try {
+        const isNum = numericSchoolId !== null;
+        const pgRes = await pool.query(
+          `SELECT ${calonSiswaFields.join(", ")} FROM student_applicants 
+           WHERE deleted_at IS NULL 
+             AND ((CASE WHEN $1 = true THEN school_id = $2::integer ELSE false END) OR school_id::text = $3)
+           ORDER BY tgl_daftar DESC`,
+          [isNum, isNum ? numericSchoolId : 0, String(schoolId)]
+        );
+        return pgRes.rows || [];
+      } catch (_pgErr) {
+        throw error;
+      }
+    }
     return rows || [];
   }
 

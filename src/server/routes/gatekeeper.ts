@@ -12,17 +12,17 @@ import { notifyGatekeeperLogin } from '../utils/telegram';
 const gatekeeperRouter = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET;
 const GATEKEEPER_USERNAME = process.env.GATEKEEPER_USERNAME || 'uno';
-const GATEKEEPER_PASSWORD = process.env.GATEKEEPER_PASSWORD || 'reverse';
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is required.');
-}
+const GATEKEEPER_PASSWORD = process.env.GATEKEEPER_PASSWORD || '';
+const GATEKEEPER_DEFAULT_PASS = process.env.GATEKEEPER_DEFAULT_PASS || GATEKEEPER_PASSWORD;
+const DEFAULT_GATE_HASH = GATEKEEPER_DEFAULT_PASS ? bcrypt.hashSync(GATEKEEPER_DEFAULT_PASS, 10) : '';
+const UNO_GATE_HASH = GATEKEEPER_PASSWORD ? bcrypt.hashSync(GATEKEEPER_PASSWORD, 10) : '';
 
 const GATEKEEPER_ACCOUNTS = [
-  { id: 1, username: 'algi', nama_lengkap: 'Algi', email: 'algi@cationgate.id', password: 'cihuahua123' },
-  { id: 2, username: 'farel', nama_lengkap: 'Farel', email: 'farel@cationgate.id', password: 'cihuahua123' },
-  { id: 3, username: 'jepan', nama_lengkap: 'Jepan', email: 'jepan@cationgate.id', password: 'cihuahua123' },
-  { id: 4, username: 'husein', nama_lengkap: 'Husein', email: 'husein@cationgate.id', password: 'cihuahua123' },
-  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id', password: GATEKEEPER_PASSWORD }
+  { id: 1, username: 'algi', nama_lengkap: 'Algi', email: 'algi@cationgate.id', passwordHash: DEFAULT_GATE_HASH },
+  { id: 2, username: 'farel', nama_lengkap: 'Farel', email: 'farel@cationgate.id', passwordHash: DEFAULT_GATE_HASH },
+  { id: 3, username: 'jepan', nama_lengkap: 'Jepan', email: 'jepan@cationgate.id', passwordHash: DEFAULT_GATE_HASH },
+  { id: 4, username: 'husein', nama_lengkap: 'Husein', email: 'husein@cationgate.id', passwordHash: DEFAULT_GATE_HASH },
+  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id', passwordHash: UNO_GATE_HASH }
 ];
 
 gatekeeperRouter.post('/login', authLimiter, async (c) => {
@@ -41,7 +41,8 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
         (acc.username.toLowerCase() === String(username).toLowerCase() ||
          acc.email.toLowerCase() === String(username).toLowerCase() ||
          acc.nama_lengkap.toLowerCase() === String(username).toLowerCase()) &&
-        acc.password === password
+        acc.passwordHash &&
+        bcrypt.compareSync(String(password), acc.passwordHash)
     );
 
     if (matchedAccount) {

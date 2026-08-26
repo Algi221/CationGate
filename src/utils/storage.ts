@@ -1,7 +1,28 @@
 
 export async function uploadFileDirect(file: File, prefix: string = 'media'): Promise<string> {
+  // 1. Try direct server multipart upload first (fast, reliable, saves directly to server storage)
   try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('prefix', prefix);
 
+    const uploadRes = await fetch('/api/storage/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (uploadRes.ok) {
+      const data = await uploadRes.json();
+      if (data.success && data.publicUrl) {
+        return data.publicUrl;
+      }
+    }
+  } catch (_err) {
+    // Continue to next fallback
+  }
+
+  // 2. Try pre-signed URL upload to cloud bucket
+  try {
     const response = await fetch('/api/storage/presigned-url', {
       method: 'POST',
       headers: {
@@ -13,48 +34,33 @@ export async function uploadFileDirect(file: File, prefix: string = 'media'): Pr
       }),
     });
 
-    if (!response.ok) {
-      console.warn("Pre-signed storage endpoint unavailable, using direct Data URL fallback.");
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+    if (response.ok) {
+      const { signedUrl, publicUrl } = await response.json();
+      if (signedUrl && publicUrl) {
+        const uploadResponse = await fetch(signedUrl, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type,
+          },
+        });
+
+        if (uploadResponse.ok) {
+          return publicUrl;
+        }
+      }
     }
-
-    const { signedUrl, publicUrl } = await response.json();
-
-    // 2. Upload the raw File directly to Supabase Storage via PUT
-    const uploadResponse = await fetch(signedUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
-    });
-
-    if (!uploadResponse.ok) {
-      console.warn("S3 PUT upload failed, falling back to Data URL.");
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // 3. Return the final public URL
-    return publicUrl;
-  } catch (error) {
-    console.warn('Direct S3 upload error, fallback to Data URL:', error);
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  } catch (_error) {
+    // Continue to fallback
   }
+
+  // 3. Fallback to Data URL for offline / local preview
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 /**

@@ -57,20 +57,30 @@ export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
       <ScrollFloat containerClassName="w-full" textClassName="w-full" textMode={false}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {majors.map((major, index) => {
+            const majorAccent = major.color || "#2563eb";
             return (
               <Link
                 href={`/${schoolSlug}/jurusan/${encodeURIComponent(major.code.toLowerCase())}`}
                 key={major.code}
-                className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${
+                className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-500 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${
                   isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
                 }`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none z-0"
+                  style={{ backgroundColor: majorAccent }}
+                />
+                <div 
+                  className="absolute top-0 left-0 w-full h-1.5 opacity-90 group-hover:opacity-100 transition-all duration-300 z-10"
+                  style={{ backgroundColor: majorAccent }}
+                />
 
                 <div className="relative z-10">
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
+                  <div 
+                    className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-md group-hover:shadow-xl"
+                    style={{ borderColor: `${majorAccent}33` }}
+                  >
                     {major.logo ? (
                       <Image
                         src={major.logo}
@@ -81,7 +91,10 @@ export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
                         unoptimized
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white font-bold text-xs">
+                      <div 
+                        className="w-full h-full flex items-center justify-center text-white font-black text-xs uppercase"
+                        style={{ backgroundColor: majorAccent }}
+                      >
                         {major.code}
                       </div>
                     )}
@@ -93,7 +106,10 @@ export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
                     {major.desc ? `${major.desc.substring(0, 105)}...` : ""}
                   </p>
                 </div>
-                <span className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-bold group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors relative z-10">
+                <span 
+                  className="flex items-center gap-2 text-sm font-bold transition-all relative z-10"
+                  style={{ color: majorAccent }}
+                >
                   Lihat Selengkapnya{" "}
                   <ChevronRight
                     size={14}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ApplicantItem, MajorItem } from "../types";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface RecentApplicantsTableProps {
   schoolSlug: string;
@@ -13,10 +14,11 @@ interface RecentApplicantsTableProps {
 }
 
 export const RecentApplicantsTable: React.FC<RecentApplicantsTableProps> = ({
-  schoolSlug,
+  schoolSlug: _schoolSlug,
   applicants,
   majorsList
 }) => {
+  const { href } = useSchoolHref();
   return (
     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/60 rounded-2xl p-6 shadow-xs text-left">
       <div className="flex items-center justify-between mb-4">
@@ -29,7 +31,7 @@ export const RecentApplicantsTable: React.FC<RecentApplicantsTableProps> = ({
           </p>
         </div>
         <Link
-          href={`/${schoolSlug}/dashboard/pendaftar`}
+          href={href("/dashboard/pendaftar")}
           className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider cursor-pointer"
         >
           Lihat Semua <ArrowRight size={12} />

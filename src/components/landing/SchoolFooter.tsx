@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import SafeImage from "@/components/SafeImage";
 import { usePPDB } from "@/context/PPDBContext";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface SchoolFooterProps {
   schoolSlug: string;
@@ -11,6 +12,7 @@ interface SchoolFooterProps {
 
 export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
   const { ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah } = usePPDB();
+  const { href } = useSchoolHref();
 
   const identitas = profilSekolah?.identitas || {};
   const address = identitas.alamat || "Jl. Raya Tapos No. 123, Depok";
@@ -26,7 +28,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {}
           <div className="space-y-6">
-            <Link href={`/${schoolSlug}`} className="flex items-center gap-3 group">
+            <Link href={href("/")} className="flex items-center gap-3 group">
               <div className="relative h-12 w-12 shrink-0 bg-white/10 dark:bg-white/5 rounded-xl p-2 backdrop-blur-md border border-white/10">
                 <SafeImage src={ppdbLogo || undefined} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
               </div>
@@ -93,10 +95,10 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
           <div className="space-y-4">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Program Keahlian</h4>
             <ul className="space-y-2 text-xs font-semibold">
-              <li><Link href={`/${schoolSlug}/jurusan/rpl`} className="hover:text-blue-500 transition-colors">Rekayasa Perangkat Lunak</Link></li>
-              <li><Link href={`/${schoolSlug}/jurusan/tjkt`} className="hover:text-blue-500 transition-colors">Teknik Komputer Jaringan</Link></li>
-              <li><Link href={`/${schoolSlug}/jurusan/dkv`} className="hover:text-blue-500 transition-colors">Desain Komunikasi Visual</Link></li>
-              <li><Link href={`/${schoolSlug}/jurusan/bc`} className="hover:text-blue-500 transition-colors">Broadcasting</Link></li>
+              <li><Link href={href("/jurusan/rpl")} className="hover:text-blue-500 transition-colors">Rekayasa Perangkat Lunak</Link></li>
+              <li><Link href={href("/jurusan/tjkt")} className="hover:text-blue-500 transition-colors">Teknik Komputer Jaringan</Link></li>
+              <li><Link href={href("/jurusan/dkv")} className="hover:text-blue-500 transition-colors">Desain Komunikasi Visual</Link></li>
+              <li><Link href={href("/jurusan/bc")} className="hover:text-blue-500 transition-colors">Broadcasting</Link></li>
             </ul>
           </div>
 
@@ -104,10 +106,10 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
           <div className="space-y-4">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Link Terkait</h4>
             <ul className="space-y-2 text-xs font-semibold">
-              <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-500 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
-              <li><Link href={`/${schoolSlug}#alur`} className="hover:text-blue-500 transition-colors">Syarat Pendaftaran</Link></li>
-              <li><Link href={`/${schoolSlug}/forum`} className="hover:text-blue-500 transition-colors">Forum Informasi</Link></li>
-              <li><Link href={`/${schoolSlug}/profil`} className="hover:text-blue-500 transition-colors">Company Profil Sekolah</Link></li>
+              <li><Link href={href("/#alur")} className="hover:text-blue-500 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
+              <li><Link href={href("/#alur")} className="hover:text-blue-500 transition-colors">Syarat Pendaftaran</Link></li>
+              <li><Link href={href("/forum")} className="hover:text-blue-500 transition-colors">Forum Informasi</Link></li>
+              <li><Link href={href("/profil")} className="hover:text-blue-500 transition-colors">Company Profil Sekolah</Link></li>
             </ul>
           </div>
 

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { MajorDetail } from "../types";
 
+import { useSchoolHref } from "@/hooks/useSchoolHref";
+
 interface JurusanCtaProps {
   schoolSlug: string;
   major: MajorDetail;
@@ -13,11 +15,12 @@ interface JurusanCtaProps {
 }
 
 export const JurusanCta: React.FC<JurusanCtaProps> = ({
-  schoolSlug,
+  schoolSlug: _schoolSlug,
   major,
   nextMajor,
   nextCode
 }) => {
+  const { href } = useSchoolHref();
   return (
     <>
       {/* FINAL CALL TO ACTION BANNER */}
@@ -40,13 +43,13 @@ export const JurusanCta: React.FC<JurusanCtaProps> = ({
 
             <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
               <Link
-                href={`/${schoolSlug}/daftar`}
+                href={href("/daftar")}
                 className="bg-white text-slate-900 hover:bg-[#f8fafc] text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto cursor-pointer"
               >
                 Daftar Sekarang
               </Link>
               <Link
-                href={`/${schoolSlug}`}
+                href={href("/")}
                 className="border border-white/30 bg-white/10 hover:bg-white/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto cursor-pointer"
               >
                 Kembali Ke Beranda
@@ -80,7 +83,7 @@ export const JurusanCta: React.FC<JurusanCtaProps> = ({
 
           <div className="shrink-0 relative z-10 w-full md:w-auto">
             <Link
-              href={`/${schoolSlug}/jurusan/${nextCode}`}
+              href={href(`/jurusan/${nextCode}`)}
               className="flex items-center justify-center gap-2 next-gradient-bg hover:opacity-90 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-slate-950/5 hover:scale-[1.02] active:scale-[0.98] transition-all w-full md:w-auto group/btn cursor-pointer"
             >
               <span>Lihat Detail {nextMajor.alias}</span>

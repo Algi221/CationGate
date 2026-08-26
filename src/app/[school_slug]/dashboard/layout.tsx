@@ -16,6 +16,7 @@ import { ErrorView } from "@/components/features/error";
 import { AdminSidebar } from "@/components/layout/admin-sekolah/AdminSidebar";
 import TrialExpiredPopup from "@/components/TrialExpiredPopup";
 import { useAuthStore } from "@/stores";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 function Breadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
@@ -75,6 +76,7 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
 
 // ─── Main Layout ──────────────────────────────────────────────────────────────
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
+  const { href } = useSchoolHref();
   const { adminToken, adminUser, logoutAdmin, schoolStatus, isSchoolNotFound } = usePPDB();
   const isSchoolVerified = schoolStatus === "verified";
   const router = useRouter();
@@ -102,15 +104,15 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const searchRef = React.useRef<HTMLDivElement>(null);
 
   const searchableMenus = [
-    { title: "Beranda", desc: "Ringkasan & Metrik", href: `/${schoolSlug}/dashboard` },
-    { title: "Verifikasi Berkas", desc: "Periksa kelengkapan berkas fisik", href: `/${schoolSlug}/dashboard/verifikasi-berkas` },
-    { title: "Data Pendaftar", desc: "Daftar semua calon siswa", href: `/${schoolSlug}/dashboard/pendaftar` },
-    { title: "Jalur Pendaftaran", desc: "Kelola kuota & afirmasi", href: `/${schoolSlug}/dashboard/jalur-pendaftaran` },
-    { title: "Daftar Ulang", desc: "Kelola status daftar ulang", href: `/${schoolSlug}/dashboard/daftar-ulang` },
-    { title: "Kelola Informasi", desc: "Pengumuman & Berita", href: `/${schoolSlug}/dashboard/informasi` },
-    { title: "Kelola UI/Data", desc: "Tampilan Landing Page", href: `/${schoolSlug}/dashboard/kelola-ui` },
-    { title: "Kelola Subscription", desc: "Tagihan & Paket", href: `/${schoolSlug}/dashboard/subscription` },
-    { title: "Pengaturan", desc: "Keamanan, Tema, General", href: `/${schoolSlug}/dashboard/settings` },
+    { title: "Beranda", desc: "Ringkasan & Metrik", href: href("/dashboard") },
+    { title: "Verifikasi Berkas", desc: "Periksa kelengkapan berkas fisik", href: href("/dashboard/verifikasi-berkas") },
+    { title: "Data Pendaftar", desc: "Daftar semua calon siswa", href: href("/dashboard/pendaftar") },
+    { title: "Jalur Pendaftaran", desc: "Kelola kuota & afirmasi", href: href("/dashboard/jalur-pendaftaran") },
+    { title: "Daftar Ulang", desc: "Kelola status daftar ulang", href: href("/dashboard/daftar-ulang") },
+    { title: "Kelola Informasi", desc: "Pengumuman & Berita", href: href("/dashboard/informasi") },
+    { title: "Kelola UI/Data", desc: "Tampilan Landing Page", href: href("/dashboard/kelola-ui") },
+    { title: "Kelola Subscription", desc: "Tagihan & Paket", href: href("/dashboard/subscription") },
+    { title: "Pengaturan", desc: "Keamanan, Tema, General", href: href("/dashboard/settings") },
   ];
 
   const searchResults = searchableMenus.filter(
@@ -440,7 +442,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                   {/* Menu items */}
                   <div className="py-1">
                     <Link
-                      href={schoolSlug ? `/${schoolSlug}/dashboard/profile` : "/dashboard/profile"}
+                      href={href("/dashboard/profile")}
                       onClick={() => setShowUserDropdown(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-white transition-colors"
                     >
@@ -448,7 +450,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                       <span className="text-xs font-semibold">Profil Saya</span>
                     </Link>
                     <Link
-                      href={schoolSlug ? `/${schoolSlug}` : "/"}
+                      href={href("/")}
                       target="_blank"
                       onClick={() => setShowUserDropdown(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-white transition-colors"

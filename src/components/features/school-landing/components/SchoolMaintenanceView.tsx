@@ -3,39 +3,62 @@
 import React from "react";
 import Link from "next/link";
 import { Wrench, MessageCircle, ArrowLeft, ShieldAlert, Lock } from "lucide-react";
+import SafeImage from "@/components/SafeImage";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface SchoolMaintenanceViewProps {
   schoolSlug: string;
-  schoolDisplayName: string;
+  schoolDisplayName?: string;
   waAdmin?: string;
+  ppdbLogo?: string | null;
+  ppdbTitle?: string | null;
   schoolPeriod?: string;
   address?: string;
+  schoolContact?: {
+    telepon?: string;
+    email?: string;
+    alamat?: string;
+  };
 }
 
-export function SchoolMaintenanceView({
+export const SchoolMaintenanceView: React.FC<SchoolMaintenanceViewProps> = ({
   schoolSlug,
-  schoolDisplayName,
+  schoolDisplayName: directDisplayName,
   waAdmin,
+  ppdbLogo,
+  ppdbTitle,
   schoolPeriod,
-  address,
-}: SchoolMaintenanceViewProps) {
-  const cleanWaNumber = waAdmin?.replace(/[^\d]/g, "") || "";
-  const waLink = cleanWaNumber
-    ? `https://wa.me/${cleanWaNumber.startsWith("0") ? "62" + cleanWaNumber.slice(1) : cleanWaNumber}?text=${encodeURIComponent(
-        `Halo Panitia PPDB ${schoolDisplayName}, saya ingin menanyakan informasi pendaftaran.`
-      )}`
-    : null;
+  address: directAddress,
+  schoolContact
+}) => {
+  const { href } = useSchoolHref();
+  const schoolDisplayName = directDisplayName || ppdbTitle || (schoolSlug === 'demo' ? "SMK Demo Indonesia" : "SMK Taruna Bhakti");
+  const phone = waAdmin || schoolContact?.telepon || "";
+  const address = directAddress || schoolContact?.alamat || "";
+  
+  // Format WhatsApp Link
+  const cleanPhone = phone.replace(/\D/g, '');
+  const waNumber = cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone;
+  const waLink = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(
+    `Halo Panitia PPDB ${schoolDisplayName}, saya ingin menanyakan informasi pendaftaran.`
+  )}` : null;
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white font-sans selection:bg-blue-500 selection:text-white p-4 sm:p-6 lg:p-8">
-      {/* Top Navbar */}
-      <header className="max-w-5xl mx-auto w-full flex items-center justify-between py-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#06080F] text-slate-800 dark:text-slate-100 flex flex-col justify-between p-6 sm:p-10 font-sans selection:bg-blue-600 selection:text-white transition-colors duration-300">
+      {/* Top Bar / Mini Header */}
+      <header className="max-w-5xl mx-auto w-full flex items-center justify-between py-2">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black shadow-md shadow-blue-600/20 text-sm">
-            {schoolDisplayName.charAt(0)}
+          <div className="relative h-10 w-10 shrink-0">
+            <SafeImage
+              src={ppdbLogo || "/assets/logo_sekolah/logo_smktb.png"}
+              alt="Logo Sekolah"
+              fill
+              sizes="40px"
+              className="object-contain"
+            />
           </div>
           <div>
-            <h2 className="font-extrabold text-sm text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-sm font-black text-slate-900 dark:text-white tracking-tight">
               {schoolDisplayName}
             </h2>
             <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">
@@ -45,7 +68,7 @@ export function SchoolMaintenanceView({
         </div>
 
         <Link
-          href={`/${schoolSlug}/dashboard`}
+          href={href("/dashboard")}
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 shadow-xs transition"
         >
           <Lock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
@@ -101,7 +124,7 @@ export function SchoolMaintenanceView({
           )}
 
           <Link
-            href={`/${schoolSlug}/dashboard`}
+            href={href("/dashboard")}
             className="w-full sm:w-auto flex-1 py-3 px-5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2 transition shadow-xs active:scale-98"
           >
             <span>Masuk Dashboard Admin</span>

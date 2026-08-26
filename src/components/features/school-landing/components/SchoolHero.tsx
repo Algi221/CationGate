@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { ArrowRight, MapPin } from "lucide-react";
 import ShinyText from "@/components/ShinyText";
 import { MajorItem } from "../types";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 const DataPendaftarTable = dynamic(() => import("@/components/DataPendaftarTable"), {
   ssr: false,
@@ -37,6 +38,7 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
   address,
   majors
 }) => {
+  const { href } = useSchoolHref();
   return (
     <div className="relative w-full overflow-hidden">
       {/* Mesh Gradient Background */}
@@ -61,7 +63,7 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
               const routeCode = encodeURIComponent(
                 m.code.toLowerCase() === "anm" ? "an" : m.code.toLowerCase()
               );
-              const routeLink = `/${schoolSlug}/jurusan/${routeCode}`;
+              const routeLink = href(`/jurusan/${routeCode}`);
               const displayAlias =
                 m.code === "RPL"
                   ? "PPLG"
@@ -132,7 +134,7 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
           <p className="hero-subtitle relative z-10">{heroSubtitle}</p>
 
           <div className="hero-action">
-            <Link href={`/${schoolSlug}/daftar`} className="btn-hero-action">
+            <Link href={href("/daftar")} className="btn-hero-action">
               Daftar Sekarang <ArrowRight size={18} />
             </Link>
           </div>

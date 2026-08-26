@@ -6,10 +6,12 @@ import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import { Calendar, User, ChevronRight } from "lucide-react";
 import SafeImage from "@/components/SafeImage";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 export default function BlogPage({ params }: { params: Promise<{ school_slug: string }> }) {
   const resolvedParams = use(params);
   const schoolSlug = resolvedParams.school_slug;
+  const { href } = useSchoolHref();
 
   const dummyPosts = [
     {
@@ -102,7 +104,7 @@ export default function BlogPage({ params }: { params: Promise<{ school_slug: st
                   </p>
 
                   <Link 
-                    href={`/${schoolSlug}/blog/${post.id}`} 
+                    href={href(`/blog/${post.id}`)} 
                     className="inline-flex items-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mt-auto"
                   >
                     Baca Selengkapnya

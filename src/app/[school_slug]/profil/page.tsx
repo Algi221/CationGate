@@ -7,7 +7,6 @@ import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import { ProfileHero } from "@/components/features/school-profile/components/ProfileHero";
 import { ProfileSejarah } from "@/components/features/school-profile/components/ProfileSejarah";
-import { ProfileFaktaAngka } from "@/components/features/school-profile/components/ProfileFaktaAngka";
 import { ProfilePimpinan } from "@/components/features/school-profile/components/ProfilePimpinan";
 import { ProfileIdentitas } from "@/components/features/school-profile/components/ProfileIdentitas";
 import { ProfileVisiMisi } from "@/components/features/school-profile/components/ProfileVisiMisi";
@@ -83,7 +82,6 @@ export default function ProfilSekolahPublicPage() {
         videoUrl={profilSekolah?.video_profil_url}
         ppdbTitle={ppdbTitle}
       />
-      <ProfileFaktaAngka />
       <ProfilePimpinan ppdbTitle={ppdbTitle} pimpinan={profilSekolah?.pimpinan} />
       <ProfileIdentitas identitas={identitas} />
       <ProfileVisiMisi visi={visi} misi={misi} tujuan={tujuan} />

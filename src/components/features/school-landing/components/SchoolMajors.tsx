@@ -6,6 +6,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { ChevronRight } from "lucide-react";
 import { MajorItem } from "../types";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 const ScrollFloat = dynamic(() => import("@/components/ScrollFloat"), {
   ssr: false,
@@ -20,10 +21,11 @@ interface SchoolMajorsProps {
 }
 
 export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
-  schoolSlug,
+  schoolSlug: _schoolSlug,
   majors,
   isMajorsVisible = true
 }) => {
+  const { href } = useSchoolHref();
   return (
     <section id="majors" className="py-24 max-w-6xl mx-auto px-6 relative z-10 text-left">
       <div
@@ -60,7 +62,7 @@ export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
             const majorAccent = major.color || "#2563eb";
             return (
               <Link
-                href={`/${schoolSlug}/jurusan/${encodeURIComponent(major.code.toLowerCase())}`}
+                href={href(`/jurusan/${encodeURIComponent(major.code.toLowerCase())}`)}
                 key={major.code}
                 className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-500 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${
                   isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"

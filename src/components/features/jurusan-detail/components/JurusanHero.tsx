@@ -7,6 +7,8 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MajorDetail, KuotaItem } from "../types";
 import { sanitizeSrc } from "../defaultMajorsData";
 
+import { useSchoolHref } from "@/hooks/useSchoolHref";
+
 interface JurusanHeroProps {
   schoolSlug: string;
   major: MajorDetail;
@@ -14,10 +16,11 @@ interface JurusanHeroProps {
 }
 
 export const JurusanHero: React.FC<JurusanHeroProps> = ({
-  schoolSlug,
+  schoolSlug: _schoolSlug,
   major,
   kuotaData
 }) => {
+  const { href } = useSchoolHref();
   let isFull = false;
   if (kuotaData && major) {
     const k = kuotaData.find((item: KuotaItem) => item.key === major.title);
@@ -66,7 +69,7 @@ export const JurusanHero: React.FC<JurusanHeroProps> = ({
           <div className="flex flex-col w-full gap-5 mt-2">
             <div className="flex flex-wrap items-center gap-4">
               <Link
-                href={`/${schoolSlug}`}
+                href={href("/")}
                 className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 backdrop-blur-md cursor-pointer"
               >
                 <ArrowLeft size={16} /> Lihat Jurusan Lain
@@ -74,7 +77,7 @@ export const JurusanHero: React.FC<JurusanHeroProps> = ({
 
               <div className="relative group/btn">
                 <Link
-                  href={isFull ? "#" : `/${schoolSlug}/daftar`}
+                  href={isFull ? "#" : href("/daftar")}
                   className={`btn-primary-pill py-3.5 px-8 flex items-center gap-2 rounded-2xl ${
                     isFull ? "opacity-50 cursor-not-allowed pointer-events-none grayscale" : ""
                   }`}

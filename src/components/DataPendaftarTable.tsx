@@ -33,7 +33,7 @@ interface Student {
 
 export default function DataPendaftarTable() {
   const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || "smktarunabhakti";
+  const _schoolSlug = (params?.school_slug as string) || "smktarunabhakti";
   const { publicApplicants } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
@@ -176,8 +176,8 @@ export default function DataPendaftarTable() {
             <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border border-slate-200 dark:border-slate-700">
               {(() => {
                 const verifyUrl = typeof window !== 'undefined' 
-                  ? `${window.location.origin}/${schoolSlug}/verify/${selectedStudent.id}` 
-                  : `https://cationgate.site/${schoolSlug}/verify/${selectedStudent.id}`;
+                  ? `${window.location.origin}/verify/${selectedStudent.id}` 
+                  : `https://cationgate.site/verify/${selectedStudent.id}`;
                 return (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img 

@@ -16,6 +16,7 @@ import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 
 import SafeImage from "@/components/SafeImage";
 import { usePPDB } from "@/context/PPDBContext";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 import {
   NavigationMenu,
@@ -44,6 +45,7 @@ const DEFAULT_MAJORS = [
 
 export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
+  const { href } = useSchoolHref();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [majors, setMajors] = useState<any[]>(DEFAULT_MAJORS);
@@ -98,7 +100,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
       <header className="sticky top-0 z-50 w-full bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center shrink-0 min-w-0">
-            <Link href={`/${schoolSlug}`} className="flex items-center gap-3 overflow-visible group min-w-0">
+            <Link href={href("/")} className="flex items-center gap-3 overflow-visible group min-w-0">
               <div className="relative h-10 w-10 shrink-0 overflow-visible">
                 <SafeImage
                   src={ppdbLogo || "/assets/logo_sekolah/logo_smktb.png"}
@@ -120,7 +122,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                 {/* Beranda */}
                 <NavigationMenuItem>
                   <NavigationMenuLink
-                    render={<Link href={`/${schoolSlug}`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                    render={<Link href={href("/")} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
                   >
                     Beranda
                   </NavigationMenuLink>
@@ -134,10 +136,10 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                   <NavigationMenuContent>
                     <ul className="w-45 p-2 flex flex-col gap-1">
                       {[
-                        { title: "Sejarah", href: `/${schoolSlug}/profil?section=sejarah` },
-                        { title: "Identitas Sekolah", href: `/${schoolSlug}/profil?section=identitas` },
-                        { title: "Visi & Misi", href: `/${schoolSlug}/profil?section=visimisi` },
-                        { title: "Tujuan", href: `/${schoolSlug}/profil?section=tujuan` }
+                        { title: "Sejarah", href: href("/profil?section=sejarah") },
+                        { title: "Identitas Sekolah", href: href("/profil?section=identitas") },
+                        { title: "Visi & Misi", href: href("/profil?section=visimisi") },
+                        { title: "Tujuan", href: href("/profil?section=tujuan") }
                       ].map((sub) => (
                         <li key={sub.title}>
                           <NavigationMenuLink
@@ -162,7 +164,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                         majors.map((major, idx) => (
                           <li key={idx}>
                             <NavigationMenuLink
-                              render={<Link href={`/${schoolSlug}/jurusan/${encodeURIComponent(major.code.toLowerCase())}`} className="flex flex-col gap-1 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group/sub" />}
+                              render={<Link href={href(`/jurusan/${encodeURIComponent(major.code.toLowerCase())}`)} className="flex flex-col gap-1 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group/sub" />}
                             >
                               <span className="text-sm font-bold text-slate-900 dark:text-white group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400 transition-colors">{major.title || major.code}</span>
                               <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{major.desc || "Program keahlian unggulan"}</span>
@@ -181,7 +183,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                 {/* Informasi */}
                 <NavigationMenuItem>
                   <NavigationMenuLink
-                    render={<Link href={`/${schoolSlug}/forum`} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                    render={<Link href={href("/forum")} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
                   >
                     Informasi
                   </NavigationMenuLink>
@@ -200,7 +202,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
               duration={1000}
               className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-0 bg-transparent dark:bg-transparent"
             />
-            <Link href={schoolSlug === 'demo' ? "/demo/dashboard" : `/${schoolSlug}/daftar`} className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
+            <Link href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")} className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
               {schoolSlug === 'demo' ? "Dashboard Demo" : "Daftar"}
             </Link>
 
@@ -233,7 +235,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
-            <Link href={`/${schoolSlug}`} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
+            <Link href={href("/")} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
               <SafeImage src={schoolSlug === 'demo' ? "/assets/logo_sekolah/logo_smktb.png" : (ppdbLogo || "/assets/logo_sekolah/logo_smktb.png")} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
               <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
                 {schoolSlug === 'demo' ? "SMK TB" : (ppdbTitle || "SPMB SMK Taruna Bhakti")}
@@ -242,28 +244,28 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
 
             <div className="flex flex-col w-full gap-2">
               <Link
-                href={`/${schoolSlug}`}
+                href={href("/")}
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
               >
                 Beranda
               </Link>
               <Link
-                href={`/${schoolSlug}/profil`}
+                href={href("/profil")}
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
               >
                 Profil Sekolah
               </Link>
               <Link
-                href={`/${schoolSlug}/forum`}
+                href={href("/forum")}
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
               >
                 Forum Informasi
               </Link>
               <Link
-                href={`/${schoolSlug}/blog`}
+                href={href("/blog")}
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
               >
@@ -273,7 +275,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
 
             <div className="mt-8 w-full flex flex-col gap-3">
               <Link
-                href={schoolSlug === 'demo' ? "/demo/dashboard" : `/${schoolSlug}/daftar`}
+                href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-95"
               >

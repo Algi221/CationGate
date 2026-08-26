@@ -12,7 +12,10 @@ import { RegistrationAreaChart } from "@/components/features/dashboard-overview/
 import { DistributionBarChart } from "@/components/features/dashboard-overview/components/DistributionBarChart";
 import { RecentApplicantsTable } from "@/components/features/dashboard-overview/components/RecentApplicantsTable";
 
+import { useSchoolHref } from "@/hooks/useSchoolHref";
+
 export default function DashboardOverview() {
+  const { href } = useSchoolHref();
   const {
     schoolSlug,
     applicants,
@@ -81,7 +84,7 @@ export default function DashboardOverview() {
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Data Keseluruhan</h3>
               <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Status kuota seluruh jurusan</p>
             </div>
-            <Link href={`/${schoolSlug}/dashboard/pendaftar?tab=kuota`} className="p-2 bg-[#FFD33B]/15 hover:bg-[#FFD33B]/25 dark:bg-[#2e3749] dark:hover:bg-[#2e3749]/90 text-[#2e3749] dark:text-yellow border border-blue-200 dark:border-blue-900/40 rounded-xl transition-all cursor-pointer" title="Edit Target Kuota">
+            <Link href={href("/dashboard/pendaftar?tab=kuota")} className="p-2 bg-[#FFD33B]/15 hover:bg-[#FFD33B]/25 dark:bg-[#2e3749] dark:hover:bg-[#2e3749]/90 text-[#2e3749] dark:text-yellow border border-blue-200 dark:border-blue-900/40 rounded-xl transition-all cursor-pointer" title="Edit Target Kuota">
               <Pencil size={13} />
             </Link>
           </div>

@@ -11,6 +11,7 @@ import {
   Palette, Layers, Shield, ChevronDown, ShieldCheck, CreditCard
 } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface SubMenuItem {
   href: string;
@@ -41,6 +42,7 @@ export function AdminSidebar({
   setIsCollapsed
 }: AdminSidebarProps) {
   const { adminUser, schoolStatus, ppdbLogo, ppdbTitle } = usePPDB();
+  const { href } = useSchoolHref();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -64,7 +66,7 @@ export function AdminSidebar({
           {
             category: "Status Legalitas",
             items: [
-              { href: `/${schoolSlug}/dashboard/verification`, icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
+              { href: href("/dashboard/verification"), icon: <ShieldCheck size={18} />, label: "Verifikasi Sekolah", exact: true }
             ]
           }
         ]
@@ -72,42 +74,42 @@ export function AdminSidebar({
     {
       category: "Manajemen Siswa",
       items: [
-        { href: `/${schoolSlug}/dashboard`, icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
+        { href: href("/dashboard"), icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true, lockedIfUnverified: true },
         {
-          href: `/${schoolSlug}/dashboard/pendaftar`,
+          href: href("/dashboard/pendaftar"),
           icon: <Users size={18} />,
           label: "Data Calon Siswa",
           lockedIfUnverified: true,
           subItems: [
-            { label: "Pendaftar Reguler", href: `/${schoolSlug}/dashboard/pendaftar?tab=active` },
-            { label: "Pendaftar Pindahan", href: `/${schoolSlug}/dashboard/pendaftar?tab=transfer` },
-            { label: "Kuota & Target", href: `/${schoolSlug}/dashboard/pendaftar?tab=kuota` },
-            { label: "Tempat Sampah", href: `/${schoolSlug}/dashboard/pendaftar?tab=trash` }
+            { label: "Pendaftar Reguler", href: href("/dashboard/pendaftar?tab=active") },
+            { label: "Pendaftar Pindahan", href: href("/dashboard/pendaftar?tab=transfer") },
+            { label: "Kuota & Target", href: href("/dashboard/pendaftar?tab=kuota") },
+            { label: "Tempat Sampah", href: href("/dashboard/pendaftar?tab=trash") }
           ]
         },
-        { href: `/${schoolSlug}/dashboard/pembagian-kelas`, icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
-        { href: `/${schoolSlug}/dashboard/siswa-aktif`, icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
+        { href: href("/dashboard/pembagian-kelas"), icon: <Layers size={18} />, label: "Pembagian Kelas", lockedIfUnverified: true },
+        { href: href("/dashboard/siswa-aktif"), icon: <GraduationCap size={18} />, label: "Siswa Aktif", lockedIfUnverified: true }
       ]
     },
     {
       category: "Konten Portal",
       items: [
-        { href: `/${schoolSlug}/dashboard/informasi`, icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
+        { href: href("/dashboard/informasi"), icon: <Megaphone size={18} />, label: "Kelola Informasi", lockedIfUnverified: true },
         {
-          href: `/${schoolSlug}/dashboard/kelola-ui`,
+          href: href("/dashboard/kelola-ui"),
           icon: <Palette size={18} />,
           label: "Kelola UI/Data",
           lockedIfUnverified: true,
           subItems: [
-            { label: "Profil Sekolah", href: `/${schoolSlug}/dashboard/profil-sekolah` },
-            { label: "General / Umum", href: `/${schoolSlug}/dashboard/kelola-ui?tab=hero` },
-            { label: "Program Keahlian", href: `/${schoolSlug}/dashboard/kelola-ui?tab=majors` },
-            { label: "Alur Pendaftaran", href: `/${schoolSlug}/dashboard/kelola-ui?tab=alur` },
-            { label: "Form & Panduan", href: `/${schoolSlug}/dashboard/kelola-ui?tab=form` },
-            { label: "Bank Sekolah", href: `/${schoolSlug}/dashboard/kelola-ui?tab=bank` },
-            { label: "Mitra Industri", href: `/${schoolSlug}/dashboard/kelola-ui?tab=partners` },
-            { label: "FAQ", href: `/${schoolSlug}/dashboard/kelola-ui?tab=faq` },
-            { label: "Riwayat Perubahan", href: `/${schoolSlug}/dashboard/kelola-ui?tab=revisions` }
+            { label: "Profil Sekolah", href: href("/dashboard/profil-sekolah") },
+            { label: "General / Umum", href: href("/dashboard/kelola-ui?tab=hero") },
+            { label: "Program Keahlian", href: href("/dashboard/kelola-ui?tab=majors") },
+            { label: "Alur Pendaftaran", href: href("/dashboard/kelola-ui?tab=alur") },
+            { label: "Form & Panduan", href: href("/dashboard/kelola-ui?tab=form") },
+            { label: "Bank Sekolah", href: href("/dashboard/kelola-ui?tab=bank") },
+            { label: "Mitra Industri", href: href("/dashboard/kelola-ui?tab=partners") },
+            { label: "FAQ", href: href("/dashboard/kelola-ui?tab=faq") },
+            { label: "Riwayat Perubahan", href: href("/dashboard/kelola-ui?tab=revisions") }
           ]
         },
       ]
@@ -115,9 +117,9 @@ export function AdminSidebar({
     {
       category: "Pengaturan Sistem",
       items: [
-        { href: `/${schoolSlug}/dashboard/subscription`, icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
-        { href: `/${schoolSlug}/dashboard/admin`, icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
-        { href: `/${schoolSlug}/dashboard/settings`, icon: <Settings size={18} />, label: "Pengaturan Akun", lockedIfUnverified: true }
+        { href: href("/dashboard/subscription"), icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
+        { href: href("/dashboard/admin"), icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
+        { href: href("/dashboard/settings"), icon: <Settings size={18} />, label: "Pengaturan Akun", lockedIfUnverified: true }
       ]
     }
   ];
@@ -147,7 +149,7 @@ export function AdminSidebar({
           customClass: { popup: "rounded-2xl dark:bg-slate-900 dark:text-white" }
         }).then((res) => {
           if (res.isConfirmed) {
-            router.push(`/${schoolSlug}/dashboard/verification`);
+            router.push(href("/dashboard/verification"));
           }
         });
         return;
@@ -321,7 +323,7 @@ export function AdminSidebar({
         <div className={`py-4 flex items-center border-b border-slate-300 dark:border-slate-700 min-h-18.25 transition-all duration-300 ${
           isCollapsed ? "justify-center px-0" : "px-5"
         }`}>
-          <Link href={schoolSlug ? `/${schoolSlug}/dashboard` : "/dashboard"} className="flex items-center group">
+          <Link href={href("/dashboard")} className="flex items-center group">
             {ppdbLogo && (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img

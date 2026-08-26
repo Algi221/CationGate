@@ -162,8 +162,11 @@ authRouter.post('/login', authLimiter, async (c) => {
     const cleanPhone = cleanUsername.replace(/\D/g, '');
     const isPhoneNumber = cleanPhone.length >= 8;
 
-    // 1. Try Supabase query with case-insensitive search
-    let query = supabase.from('admin_users').select('*').or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername}`);
+    // 1. Try Supabase query with case-insensitive search across username, email, and nama_lengkap
+    let query = supabase
+      .from('admin_users')
+      .select('*')
+      .or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername},nama_lengkap.ilike.${cleanUsername}`);
     if (schoolId) query = query.eq('school_id', schoolId);
     let { data: adminUser } = await query.maybeSingle();
 
@@ -172,7 +175,7 @@ authRouter.post('/login', authLimiter, async (c) => {
       const { data: userWithoutSchool } = await supabase
         .from('admin_users')
         .select('*')
-        .or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername}`)
+        .or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername},nama_lengkap.ilike.${cleanUsername}`)
         .maybeSingle();
       if (userWithoutSchool) adminUser = userWithoutSchool;
     }
@@ -183,7 +186,7 @@ authRouter.post('/login', authLimiter, async (c) => {
         const pgRes = await pool.query(
           `SELECT id, username, email, password_hash, nama_lengkap, role, school_id
            FROM admin_users
-           WHERE (LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($1))
+           WHERE (LOWER(username) = LOWER($1) OR LOWER(COALESCE(email, '')) = LOWER($1) OR LOWER(COALESCE(nama_lengkap, '')) = LOWER($1))
            LIMIT 1`,
           [cleanUsername]
         );
@@ -193,17 +196,17 @@ authRouter.post('/login', authLimiter, async (c) => {
       } catch (_pgErr) {}
     }
 
-    // 3. Fallback: Lookup in schools by official email, slug, or phone
+    // 3. Fallback: Lookup in schools by official email, slug, admin_name, or phone
     if (!adminUser) {
       try {
         let schoolQuery = supabase
           .from('schools')
-          .select('id, slug, official_email');
+          .select('id, slug, official_email, admin_name');
         
         if (isPhoneNumber) {
-          schoolQuery = schoolQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},whatsapp_number.ilike.%${cleanPhone}%,phone_number.ilike.%${cleanPhone}%`);
+          schoolQuery = schoolQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},admin_name.ilike.${cleanUsername},whatsapp_number.ilike.%${cleanPhone}%,phone_number.ilike.%${cleanPhone}%`);
         } else {
-          schoolQuery = schoolQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername}`);
+          schoolQuery = schoolQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},admin_name.ilike.${cleanUsername}`);
         }
 
         const { data: school } = await schoolQuery.maybeSingle();
@@ -212,7 +215,7 @@ authRouter.post('/login', authLimiter, async (c) => {
           const { data: linkedAdmin } = await supabase
             .from('admin_users')
             .select('*')
-            .or(`school_id.eq.${school.id},school_id.eq.${school.slug}`)
+            .or(`school_id.eq.${school.id},school_id.eq.${school.slug},email.ilike.${school.official_email},username.ilike.${school.official_email}`)
             .maybeSingle();
           if (linkedAdmin) adminUser = linkedAdmin;
         }
@@ -224,12 +227,12 @@ authRouter.post('/login', authLimiter, async (c) => {
       try {
         let psQuery = supabase
           .from('prospective_schools')
-          .select('id, slug, official_email');
+          .select('id, slug, official_email, admin_name');
         
         if (isPhoneNumber) {
-          psQuery = psQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},contact_person_phone.ilike.%${cleanPhone}%`);
+          psQuery = psQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},admin_name.ilike.${cleanUsername},contact_person_phone.ilike.%${cleanPhone}%`);
         } else {
-          psQuery = psQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername}`);
+          psQuery = psQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},admin_name.ilike.${cleanUsername}`);
         }
 
         const { data: ps } = await psQuery.maybeSingle();
@@ -238,11 +241,33 @@ authRouter.post('/login', authLimiter, async (c) => {
           const { data: linkedAdmin } = await supabase
             .from('admin_users')
             .select('*')
-            .or(`school_id.eq.${ps.id},school_id.eq.${ps.slug}`)
+            .or(`school_id.eq.${ps.id},school_id.eq.${ps.slug},email.ilike.${ps.official_email},username.ilike.${ps.official_email}`)
             .maybeSingle();
           if (linkedAdmin) adminUser = linkedAdmin;
         }
       } catch (_psErr) {}
+    }
+
+    // 5. Fallback: Lookup in in-memory fontInMemSchools map
+    if (!adminUser) {
+      for (const [, school] of fontInMemSchools) {
+        if (
+          school.official_email?.toLowerCase() === cleanUsername.toLowerCase() ||
+          school.admin_username?.toLowerCase() === cleanUsername.toLowerCase() ||
+          school.admin_name?.toLowerCase() === cleanUsername.toLowerCase() ||
+          school.slug?.toLowerCase() === cleanUsername.toLowerCase()
+        ) {
+          const { data: linkedAdmin } = await supabase
+            .from('admin_users')
+            .select('*')
+            .or(`school_id.eq.${school.id},school_id.eq.${school.school_uuid || ''},email.ilike.${school.official_email},username.ilike.${school.official_email}`)
+            .maybeSingle();
+          if (linkedAdmin) {
+            adminUser = linkedAdmin;
+            break;
+          }
+        }
+      }
     }
 
     if (!adminUser) {
@@ -350,12 +375,26 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
     }
     const { currentPassword, newPassword } = result.data;
 
-    const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = await requireTenantId(c);
+    const supabase = getSupabaseClient();
+    
+    // Find admin user by ID or username
+    let adminUser = null;
+    if (admin.id) {
+      const { data } = await supabase.from('admin_users').select('*').eq('id', admin.id).maybeSingle();
+      if (data) adminUser = data;
+    }
+    if (!adminUser && admin.username) {
+      const { data } = await supabase.from('admin_users').select('*').eq('username', admin.username).maybeSingle();
+      if (data) adminUser = data;
+    }
 
-    const query = supabase.from('admin_users').select('*').eq('id', admin.id)
-      .eq('school_id', schoolId);
-    const { data: adminUser } = await query.single();
+    // Direct PG query fallback
+    if (!adminUser && admin.id) {
+      try {
+        const pgRes = await pool.query('SELECT * FROM admin_users WHERE id = $1 LIMIT 1', [admin.id]);
+        if (pgRes.rows && pgRes.rows.length > 0) adminUser = pgRes.rows[0];
+      } catch (_e) {}
+    }
 
     if (!adminUser) {
       return c.json({
@@ -364,7 +403,19 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
       }, 404);
     }
 
-    const passwordMatch = bcrypt.compareSync(currentPassword, adminUser.password_hash);
+    let passwordMatch = false;
+    try {
+      if (adminUser.password_hash) {
+        passwordMatch = bcrypt.compareSync(currentPassword, adminUser.password_hash);
+      }
+    } catch (_e) {
+      passwordMatch = false;
+    }
+    // Also support plain-text comparison
+    if (!passwordMatch && adminUser.password_hash === currentPassword) {
+      passwordMatch = true;
+    }
+
     if (!passwordMatch) {
       return c.json({
         success: false,
@@ -373,10 +424,25 @@ authRouter.patch('/change-password', adminAuth, async (c) => {
     }
 
     const newHash = bcrypt.hashSync(newPassword, 10);
-    const updateQuery = supabase.from('admin_users').update({ password_hash: newHash }).eq('id', admin.id)
-      .eq('school_id', schoolId);
+    
+    // Update in Supabase
+    await supabase.from('admin_users').update({ 
+      password_hash: newHash,
+      updated_at: new Date().toISOString()
+    }).eq('id', adminUser.id);
 
-    await updateQuery;
+    // Update in PostgreSQL pool
+    try {
+      await pool.query('UPDATE admin_users SET password_hash = $1 WHERE id = $2', [newHash, adminUser.id]);
+    } catch (_pgUpdateErr) {}
+
+    // Update in fontInMemSchools if applicable
+    for (const [, school] of fontInMemSchools) {
+      if (school.admin_username === adminUser.username || school.official_email === adminUser.email) {
+        school.admin_password_hash = newHash;
+        school.admin_password = newPassword;
+      }
+    }
 
     return c.json({
       success: true,

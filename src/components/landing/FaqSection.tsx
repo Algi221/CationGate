@@ -17,6 +17,20 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 export function FaqSection() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [lottieData, setLottieData] = useState<any>(null);
+  const [demoLandingHref, setDemoLandingHref] = useState("https://demo.cationgate.site");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      const port = window.location.port ? `:${window.location.port}` : "";
+      const protocol = window.location.protocol;
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        setDemoLandingHref(`${protocol}//demo.localhost${port}`);
+      } else if (hostname.endsWith(".vercel.app")) {
+        setDemoLandingHref(`${protocol}//demo.${hostname}`);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/assets/lottie_animation/question.json")
@@ -45,76 +59,75 @@ export function FaqSection() {
     },
     {
       id: "faq-4",
-      q: "Perangkat apa saja yang dibutuhkan oleh guru dan siswa?",
-      a: "CationGate berbasis cloud 100% dan sepenuhnya responsif. Dapat diakses dengan lancar di komputer, laptop, tablet, maupun smartphone tanpa perlu menginstal aplikasi berat.",
-    },
-    {
-      id: "faq-5",
-      q: "Apakah ada pelatihan untuk staf sekolah sebelum implementasi?",
-      a: "Tentu. Kami menyediakan sesi on-boarding khusus, modul panduan lengkap, dan dukungan teknis proaktif selama masa transisi untuk memastikan seluruh staf sekolah nyaman menggunakan sistem.",
+      q: "Berapa lama proses implementasi untuk satu sekolah?",
+      a: "Sekolah Anda dapat langsung siap beroperasi dalam hitungan menit setelah aktivasi domain dan pengaturan data dasar jurusan serta gelombang pendaftaran.",
     },
   ];
 
   return (
-    <section
-      id="faq"
-      className="py-24 bg-[#FAFAFA] text-zinc-900 border-t border-[#FAFAFA]"
-    >
-      <div className="max-w-7xl mx-auto px-6 sm:px-8">
-        {}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-          {}
-          <div className="space-y-10">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-200/50 text-zinc-700 text-xs font-bold uppercase tracking-widest mb-6">
-                <HelpCircle className="w-4 h-4" />
-                Pusat Bantuan
-              </div>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 mb-6">
-                Pertanyaan Umum
-              </h2>
-              <p className="text-lg text-zinc-500 leading-relaxed max-w-xl">
-                Temukan jawaban cepat dan komprehensif mengenai keamanan,
-                implementasi, dan fitur operasional CationGate di sekolah Anda.
-              </p>
+    <section className="py-24 bg-white text-zinc-900 border-t border-zinc-200">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          <div className="lg:col-span-5 flex flex-col gap-6 text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-semibold uppercase tracking-wider w-fit">
+              <HelpCircle className="w-4 h-4 text-zinc-500" />
+              Frequently Asked Questions
             </div>
 
-            {}
-            <Accordion type="single" collapsible className="w-full">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight text-zinc-900 leading-tight">
+              Pertanyaan yang Sering Diajukan
+            </h2>
+
+            <p className="text-zinc-500 text-base leading-relaxed">
+              Temukan jawaban untuk berbagai pertanyaan umum seputar implementasi, fitur sistem, dan keamanan platform CationGate.
+            </p>
+
+            <div className="hidden lg:flex justify-center items-center p-6 bg-zinc-50 rounded-3xl border border-zinc-100 max-w-sm">
+              {lottieData && (
+                <Lottie
+                  animationData={lottieData}
+                  loop={true}
+                  className="w-48 h-48"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="lg:col-span-7 flex flex-col gap-8 text-left">
+            <Accordion type="single" collapsible className="w-full space-y-4">
               {faqs.map((faq) => (
                 <AccordionItem
                   key={faq.id}
                   value={faq.id}
-                  className="border-b border-zinc-200/80 py-2"
+                  className="border border-zinc-200 rounded-2xl px-6 bg-zinc-50/50 hover:bg-zinc-50 transition-colors shadow-2xs"
                 >
-                  <AccordionTrigger className="text-left text-lg font-bold text-zinc-800 hover:text-zinc-600 hover:no-underline transition-colors data-[state=open]:text-zinc-900">
+                  <AccordionTrigger className="text-left font-bold text-zinc-900 text-base py-5 hover:no-underline">
                     {faq.q}
                   </AccordionTrigger>
-                  <AccordionContent className="text-base text-zinc-600 leading-relaxed pt-2 pb-6">
+                  <AccordionContent className="text-zinc-600 text-sm leading-relaxed pb-5">
                     {faq.a}
                   </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
-          </div>
 
-          {}
-          <div className="relative w-full">
-            <div className="sticky top-32 flex flex-col gap-6 w-full max-w-125 mx-auto lg:mx-0 lg:ml-auto">
-              {}
-              <div className="w-full flex items-center justify-center relative group">
-                {lottieData ? (
-                  <Lottie
-                    animationData={lottieData}
-                    loop={true}
-                    className="w-full max-w-100 h-auto object-contain relative z-10 transition-transform duration-700 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-10 h-10 border-4 border-zinc-300 border-t-zinc-600 rounded-full animate-spin relative z-10 my-20"></div>
-                )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-8 rounded-3xl bg-zinc-50 border border-zinc-200 flex flex-col justify-between gap-5">
+                <div>
+                  <h3 className="font-bold text-xl mb-2 text-zinc-900">
+                    Masih Memiliki Pertanyaan?
+                  </h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">
+                    Tim konsultan kami siap membantu memberikan solusi terbaik sesuai kebutuhan instansi Anda.
+                  </p>
+                </div>
+                <Link href="/kontak" className="mt-1 w-full">
+                  <Button className="w-full bg-[#172A35] hover:bg-zinc-800 text-white font-bold h-12 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
+                    Hubungi Tim Kami <ArrowUpRight className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
 
-              {}
               <div className="p-8 rounded-3xl bg-zinc-900 text-white shadow-xl flex flex-col gap-5">
                 <div>
                   <h3 className="font-bold text-xl mb-2 text-white">
@@ -125,11 +138,11 @@ export function FaqSection() {
                   </p>
                 </div>
 
-                <Link href="/demo" className="mt-1 w-full">
-                  <Button className="w-full bg-white text-zinc-900 hover:bg-zinc-200 font-bold h-12 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
+                <a href={demoLandingHref} className="mt-1 w-full">
+                  <Button className="w-full bg-white text-zinc-900 hover:bg-zinc-200 font-bold h-12 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer">
                     Buka Demo Interaktif <ArrowUpRight className="w-4 h-4" />
                   </Button>
-                </Link>
+                </a>
               </div>
             </div>
           </div>

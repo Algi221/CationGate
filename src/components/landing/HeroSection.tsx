@@ -4,13 +4,29 @@ import { motion, AnimatePresence } from "framer-motion";
 import Lottie from "lottie-react";
 import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 const keywords = ["SPMB", "PPDB"];
 
 export default function HeroSPMB() {
   const [animationData, setAnimationData] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [demoDashboardHref, setDemoDashboardHref] = useState("https://demo.cationgate.site/dashboard");
+  const [demoLandingHref, setDemoLandingHref] = useState("https://demo.cationgate.site");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      const port = window.location.port ? `:${window.location.port}` : "";
+      const protocol = window.location.protocol;
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        setDemoDashboardHref(`${protocol}//demo.localhost${port}/dashboard`);
+        setDemoLandingHref(`${protocol}//demo.localhost${port}`);
+      } else if (hostname.endsWith(".vercel.app")) {
+        setDemoDashboardHref(`${protocol}//demo.${hostname}/dashboard`);
+        setDemoLandingHref(`${protocol}//demo.${hostname}`);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/assets/lottie_animation/Dunia.json")
@@ -35,7 +51,7 @@ export default function HeroSPMB() {
             BIKIN WEBSITE <br />
             {/* Baris ini menggunakan flex agar SEKOLAH aman dan tidak ikut goyang */}
             <span className="inline-flex items-center flex-wrap justify-center lg:justify-start gap-x-3 text-amber-500">
-              <span className="inline-block min-w-[110px] sm:min-w-[130px] text-center lg:text-left overflow-hidden py-1">
+              <span className="inline-block min-w-27.5 sm:min-w-32.5 text-center lg:text-left overflow-hidden py-1">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={keywords[currentIndex]}
@@ -109,18 +125,18 @@ export default function HeroSPMB() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-              <Link
-                href="/demo/dashboard"
-                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-[#172A35] text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-[#172A35]/20 flex items-center justify-center gap-2 hover:bg-black hover:scale-105 active:scale-95 transition-all"
+              <a
+                href={demoDashboardHref}
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-[#172A35] text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-[#172A35]/20 flex items-center justify-center gap-2 hover:bg-black hover:scale-105 active:scale-95 transition-all cursor-pointer"
               >
                 Dashboard Demo <ArrowRight size={15} />
-              </Link>
-              <Link
-                href="/demo"
-                className="w-full sm:w-auto px-7 py-4 rounded-2xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:border-gray-900 hover:scale-105 active:scale-95 transition-all shadow-sm"
+              </a>
+              <a
+                href={demoLandingHref}
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:border-gray-900 hover:scale-105 active:scale-95 transition-all shadow-sm cursor-pointer"
               >
                 <Play size={14} className="fill-gray-900" /> Landingpage Demo
-              </Link>
+              </a>
             </div>
           </div>
         </div>

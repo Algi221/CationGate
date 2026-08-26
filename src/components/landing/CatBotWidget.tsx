@@ -64,7 +64,7 @@ export function CatBotWidget() {
     {
       id: "welcome-1",
       sender: "bot",
-      text: "Halo! Saya Catpeer, asisten cerdas resmi dari CationGate.\n\nAda yang bisa saya bantu terkait pendaftaran sekolah SMK, alur SPMB mandiri, atau sistem pembayaran formulir? miaw",
+      text: "Ada yang bisa saya bantu terkait pendaftaran sekolah SMK, alur SPMB mandiri, atau sistem pembayaran formulir? miaw",
       time: "09:00",
     },
   ]);

@@ -14,8 +14,7 @@ import {
   Eye,
   GraduationCap,
   Briefcase,
-  Database,
-  Power
+  Database
 } from "lucide-react";
 import Swal from 'sweetalert2';
 
@@ -41,7 +40,6 @@ export default function KelolaUIPage() {
     loading,
     saving,
     toast,
-    isLandingPageActive,
     schoolLogo,
     schoolTitle,
     setSchoolTitle,
@@ -111,9 +109,7 @@ export default function KelolaUIPage() {
     setShowConfirmModal,
     changeDescription,
     setChangeDescription,
-    handleSaveAll,
-    handleToggleLandingPageStatus,
-    handleSchoolLogoChange
+    handleSaveAll
   } = useKelolaUIState();
   const { href } = useSchoolHref();
 
@@ -201,59 +197,22 @@ export default function KelolaUIPage() {
             </button>
           )}
 
+          <a
+            href={href("/")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-3 bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+          >
+            <Eye size={14} />
+            <span>Lihat Website</span>
+          </a>
+
           <button
             onClick={() => setShowConfirmModal(true)}
             className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-blue-500/20"
           >
             <Check size={14} />
             <span>Simpan Perubahan</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Website Preview Link & Toggle Banner */}
-      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-linear-to-r from-blue-50/60 to-indigo-50/60 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-100/80 dark:border-blue-900/40 rounded-3xl p-5 shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full shrink-0 ${isLandingPageActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Status Landing Page:</h3>
-              <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
-                isLandingPageActive 
-                  ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800" 
-                  : "bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
-              }`}>
-                {isLandingPageActive ? "Aktif & Dapat Diakses Publik" : "Nonaktif (Under Maintenance)"}
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-              {isLandingPageActive 
-                ? "Calon peserta didik dapat melihat landing page dan mengisi formulir pendaftaran."
-                : "Akses pendaftaran ditutup sementara. Pengunjung akan melihat halaman pemeliharaan sistem."}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <a
-            href={href("/")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 md:flex-none px-4 py-2.5 rounded-xl font-bold text-xs bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Lihat Website</span>
-          </a>
-          <button
-            onClick={handleToggleLandingPageStatus}
-            className={`flex-1 md:flex-none px-5 py-2.5 rounded-xl font-bold text-xs text-white transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
-              isLandingPageActive
-                ? "bg-rose-600 hover:bg-rose-700 shadow-rose-600/15"
-                : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/15"
-            }`}
-          >
-            <Power className="w-3.5 h-3.5" />
-            <span>{isLandingPageActive ? "Tutup Landing Page" : "Buka Landing Page"}</span>
           </button>
         </div>
       </div>
@@ -300,9 +259,6 @@ export default function KelolaUIPage() {
             {activeTab === "hero" && (
               <HeroTab
                 schoolLogo={schoolLogo}
-                handleSchoolLogoChange={handleSchoolLogoChange}
-                dragActiveStates={dragActiveStates}
-                handleDragState={handleDragState}
                 schoolTitle={schoolTitle}
                 setSchoolTitle={setSchoolTitle}
                 heroTitle={heroTitle}

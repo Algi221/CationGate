@@ -136,7 +136,7 @@ export const Step3Konfirmasi: React.FC<Step3KonfirmasiProps> = ({
           <div className="grid grid-cols-[100px_1fr] gap-4 py-3">
             <span className="font-bold text-slate-400">Subdomain</span>
             <p className="font-medium text-slate-700">
-              cationgate.site/<span className="font-bold text-[#EAB844]">{formData.slug}</span>
+              <span className="font-bold text-[#EAB844]">{formData.slug}</span>.cationgate.site
             </p>
           </div>
           <div className="grid grid-cols-[100px_1fr] gap-4 py-3">

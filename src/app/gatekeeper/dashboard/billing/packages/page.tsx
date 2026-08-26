@@ -93,9 +93,14 @@ export default function GatekeeperPackagesPage() {
   };
 
   const handleSave = async () => {
-    if (!formName || formPriceYearly <= 0) {
-        alert("Mohon lengkapi nama paket dan harga tahunan");
-        return;
+    if (!formName.trim() || formPriceYearly <= 0) {
+      alert("Mohon lengkapi nama paket dan harga tahunan");
+      return;
+    }
+
+    if (formPriceYearly < 10_000_000) {
+      alert("Harga tahunan paket dibatasi minimal Rp 10.000.000 (puluhan juta)");
+      return;
     }
 
     try {
@@ -205,7 +210,7 @@ export default function GatekeeperPackagesPage() {
           <p className="text-slate-400 dark:text-slate-500 animate-pulse">Memuat data paket...</p>
         </div>
       ) : plans.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 text-center min-h-[300px] flex flex-col items-center justify-center gap-3">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 text-center min-h-75 flex flex-col items-center justify-center gap-3">
           <Package className="w-12 h-12 text-slate-300 dark:text-slate-600" />
           <p className="text-slate-400 dark:text-slate-500 font-bold">Belum ada paket langganan</p>
           <button
@@ -297,7 +302,7 @@ export default function GatekeeperPackagesPage() {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-800">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur z-10">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -331,11 +336,21 @@ export default function GatekeeperPackagesPage() {
                         inputMode="numeric"
                         value={priceYearlyDisplay}
                         onChange={(e) => handlePriceChange(e.target.value)}
-                        placeholder="750.000"
-                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B] outline-none text-sm font-semibold tracking-wide transition-all"
+                        placeholder="15.000.000 (Min. Rp 10.000.000)"
+                        className={`w-full pl-12 pr-4 py-2.5 rounded-xl border bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none text-sm font-semibold tracking-wide transition-all ${
+                          formPriceYearly > 0 && formPriceYearly < 10_000_000
+                            ? "border-rose-400 focus:ring-2 focus:ring-rose-400/20"
+                            : "border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B]"
+                        }`}
                     />
                 </div>
-                {formPriceYearly > 0 && (
+                {formPriceYearly > 0 && formPriceYearly < 10_000_000 && (
+                  <p className="mt-1.5 text-xs font-semibold text-rose-500 flex items-center gap-1">
+                    <AlertTriangle size={12} />
+                    <span>Harga tahunan paket minimal Rp 10.000.000 (puluhan juta)</span>
+                  </p>
+                )}
+                {formPriceYearly >= 10_000_000 && (
                   <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
                     ≈ {formatRupiahDisplay(Math.round(formPriceYearly / 12))} / bulan
                   </p>
@@ -375,7 +390,7 @@ export default function GatekeeperPackagesPage() {
 
       {/* Delete Confirmation */}
       {deleteConfirm !== null && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-2xl p-6 border border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-full">

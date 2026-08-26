@@ -406,7 +406,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
                                 : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:border-amber-800 dark:text-amber-300"
                             }`}>
                               <Banknote size={11} />
-                              <span>{cashTime.isExpired ? "⌛ Expired (24j)" : `🏢 ${cashTime.text}`}</span>
+                              <span>{cashTime.isExpired ? "kadaluarsa 24 jam" : `🏢 ${cashTime.text}`}</span>
                             </span>
                             <button
                               onClick={(e) => {

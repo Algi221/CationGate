@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft, Home, Clock } from "lucide-react";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 import { useRegistrationForm } from "@/components/features/registration/useRegistrationForm";
 import { SuccessInvoiceView } from "@/components/features/registration/SuccessInvoiceView";
 import { PaymentGateModal } from "@/components/features/registration/PaymentGateModal";
@@ -56,6 +57,7 @@ export default function DaftarPage() {
     handlePaymentSuccess,
     handleRegisterNew
   } = useRegistrationForm();
+  const { href } = useSchoolHref();
 
   if (portalStatus === "closed") {
     return (
@@ -72,7 +74,7 @@ export default function DaftarPage() {
           </div>
           <div className="pt-2">
             <Link
-              href={`/${schoolSlug || ""}`}
+              href={href("/")}
               className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-primary hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
             >
               <Home size={14} />
@@ -134,7 +136,7 @@ export default function DaftarPage() {
       {/* Floating Action Buttons */}
       <div className="fixed top-6 left-6 z-50">
         <Link
-          href={`/${schoolSlug || ""}`}
+          href={href("/")}
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-background dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />

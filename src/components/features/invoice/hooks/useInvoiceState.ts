@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useParams } from "next/navigation";
 import { InvoiceCandidateData } from "../types";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 export function useInvoiceState() {
   const searchParams = useSearchParams();
@@ -57,14 +58,14 @@ export function useInvoiceState() {
     return `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
   };
 
+  const { href } = useSchoolHref();
+
   const handleSendWhatsApp = () => {
     const url = getWaSendUrl();
     if (url) {
       window.open(url, "_blank");
       setTimeout(() => {
-        window.location.href = schoolSlug
-          ? `/${schoolSlug}/dashboard/pendaftar`
-          : "/dashboard/pendaftar";
+        window.location.href = href("/dashboard/pendaftar");
       }, 1000);
     }
   };

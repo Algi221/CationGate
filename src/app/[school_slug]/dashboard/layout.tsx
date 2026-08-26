@@ -204,7 +204,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       if (!isVerified && schoolSlug) {
         const isVerifyingPath = pathname.includes('/dashboard/verification') || pathname.includes('/verify-account');
         if (!isVerifyingPath) {
-          router.push(`/${schoolSlug}/dashboard/verification`);
+          router.push(href("/dashboard/verification"));
         }
       }
     }
@@ -260,7 +260,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             ? `Portal instansi '/${schoolSlug || ""}' telah ditangguhkan oleh Gatekeeper CationGate karena belum melengkapi verifikasi legalitas & SK operasional.`
             : `Maaf, halaman instansi '${schoolSlug || ""}' tidak dapat ditemukan atau belum terdaftar di platform CationGate.`
         }
-        urlPath={schoolSlug ? `/${schoolSlug}` : undefined}
+        urlPath={href("/")}
         ctaText="Kembali ke Beranda CationGate"
         ctaHref="/"
       />

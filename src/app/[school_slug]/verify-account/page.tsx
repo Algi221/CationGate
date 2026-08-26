@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, ArrowRight, CheckCircle2, ShieldCheck, Mail, Building2, Send, AlertCircle } from "lucide-react";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 type VerifyStep = 'form' | 'otp' | 'pending' | 'done';
 
@@ -13,6 +14,7 @@ export default function VerifyAccountPage() {
   const params = useParams();
   const router = useRouter();
   const schoolSlug = params.school_slug as string;
+  const { href } = useSchoolHref();
 
   const [step, setStep] = useState<VerifyStep>('form');
   const [loading, setLoading] = useState(false);
@@ -357,7 +359,7 @@ export default function VerifyAccountPage() {
             <p className="text-sm text-zinc-500 leading-relaxed max-w-sm mx-auto mb-8">
               Selamat! Instansi Anda telah terverifikasi sepenuhnya. Anda dapat mengakses semua fitur di dashboard.
             </p>
-            <Button onClick={() => router.push(`/${schoolSlug}/dashboard`)} className="rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white h-12 px-8 font-medium transition-all">
+            <Button onClick={() => router.push(href("/dashboard"))} className="rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white h-12 px-8 font-medium transition-all">
               Buka Dashboard <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>

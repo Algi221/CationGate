@@ -6,6 +6,7 @@ import { useInvoiceState } from "@/components/features/invoice/hooks/useInvoiceS
 import { InvoicePrintStyles } from "@/components/features/invoice/components/InvoicePrintStyles";
 import { InvoiceDocumentSheet } from "@/components/features/invoice/components/InvoiceDocumentSheet";
 import { InvoiceActionPanel } from "@/components/features/invoice/components/InvoiceActionPanel";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 function InvoiceContent() {
   const {
@@ -19,6 +20,7 @@ function InvoiceContent() {
     handleSendWhatsApp,
     handlePrint
   } = useInvoiceState();
+  const { href } = useSchoolHref();
 
   if (loading) {
     return (
@@ -35,7 +37,7 @@ function InvoiceContent() {
           <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Oops!</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6">{error || "Data tidak ditemukan."}</p>
           <Link
-            href={schoolSlug ? `/${schoolSlug}` : "/"}
+            href={href("/")}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Kembali ke Beranda

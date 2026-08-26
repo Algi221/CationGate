@@ -3,14 +3,17 @@
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+import { useSchoolHref } from "@/hooks/useSchoolHref";
+
 export default function RootVerifyRedirect() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
+  const { href, isSubdomain } = useSchoolHref();
 
   useEffect(() => {
     if (!id) {
-      router.replace("/");
+      router.replace(href("/"));
       return;
     }
 
@@ -20,15 +23,23 @@ export default function RootVerifyRedirect() {
         const json = await res.json();
         if (json.success && json.data) {
           const schoolSlug = json.data.school_slug || json.data.schools?.slug || "smktarunabhakti";
-          router.replace(`/${schoolSlug}/verify/${id}`);
+          if (isSubdomain) {
+            router.replace(`/verify/${id}`);
+          } else {
+            router.replace(`/${schoolSlug}/verify/${id}`);
+          }
           return;
         }
       } catch (_) {}
-      router.replace(`/smktarunabhakti/verify/${id}`);
+      if (isSubdomain) {
+        router.replace(`/verify/${id}`);
+      } else {
+        router.replace(`/smktarunabhakti/verify/${id}`);
+      }
     };
 
     redirectWithSchool();
-  }, [id, router]);
+  }, [id, router, href, isSubdomain]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center font-sans">

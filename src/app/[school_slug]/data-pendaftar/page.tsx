@@ -13,6 +13,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { usePPDB } from "@/context/PPDBContext";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 const StatusBadge = ({ status }: { status: string }) => {
   if (status === "Terverifikasi" || status === "Approved") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"><CheckCircle size={12}/> Terverifikasi</span>;
@@ -23,8 +24,9 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 export default function DataPendaftarPage() {
   const params = useParams();
-  const rawSlug = (params?.school_slug as string) || "sekolah";
-  const schoolSlug = encodeURIComponent(rawSlug.replace(/[^a-zA-Z0-9_-]/g, ""));
+  const _schoolSlug = (params?.school_slug as string) || "smktarunabhakti";
+  const { href } = useSchoolHref();
+  const schoolSlug = encodeURIComponent(_schoolSlug.replace(/[^a-zA-Z0-9_-]/g, ""));
 
   const { publicApplicants } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,7 +59,7 @@ export default function DataPendaftarPage() {
 
       {}
       <nav className="sticky top-0 z-40 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center shadow-sm">
-        <Link href={`/${schoolSlug}`} className="flex items-center gap-3 group">
+        <Link href={href("/")} className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
             <ArrowLeft size={18} className="text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
           </div>

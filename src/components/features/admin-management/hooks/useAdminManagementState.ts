@@ -5,12 +5,14 @@ import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { AdminItem } from "../types";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 export function useAdminManagementState() {
   const { adminUser, adminToken, schoolId, isDemoMode } = usePPDB();
   const router = useRouter();
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "";
+  const { href } = useSchoolHref();
   const searchParams = useSearchParams();
   const activeTabParam = searchParams.get("tab") || "admin";
   const activeTab = activeTabParam as "admin" | "trash";
@@ -63,7 +65,7 @@ export function useAdminManagementState() {
   const handleTabChange = (tab: "admin" | "trash") => {
     setError("");
     setSuccessMsg("");
-    router.push(`/${schoolSlug}/dashboard/admin?tab=${tab}`);
+    router.push(href(`/dashboard/admin?tab=${tab}`));
   };
 
   const fetchAdmins = useCallback(
@@ -122,11 +124,11 @@ export function useAdminManagementState() {
   useEffect(() => {
     if (!adminUser) return;
     if (adminUser.role !== "superadmin") {
-      router.push(`/${schoolSlug}/dashboard`);
+      router.push(href("/dashboard"));
       return;
     }
     fetchAdmins();
-  }, [adminUser, router, schoolSlug, fetchAdmins]);
+  }, [adminUser, router, href, fetchAdmins]);
 
   useEffect(() => {
     if (activeTab === "trash") {

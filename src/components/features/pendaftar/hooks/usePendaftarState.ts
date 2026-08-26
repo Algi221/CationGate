@@ -11,6 +11,7 @@ import {
   PendaftarPageTab 
 } from "../types";
 import { exportApplicantsToExcel } from "../utils/exportExcel";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 function bstInsert(root: BSTNode | null, node: BSTNode): BSTNode {
   if (!root) return node;
@@ -71,11 +72,12 @@ export function usePendaftarState() {
 
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "";
+  const { href } = useSchoolHref();
 
   const handleTabChange = (tab: PendaftarPageTab) => {
     setTrashError("");
     setTrashSuccess("");
-    router.push(`/${schoolSlug}/dashboard/pendaftar?tab=${tab}`);
+    router.push(href(`/dashboard/pendaftar?tab=${tab}`));
   };
 
   const fetchTrashedApplicants = useCallback(async () => {

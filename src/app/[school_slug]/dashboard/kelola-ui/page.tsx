@@ -20,6 +20,7 @@ import {
 import Swal from 'sweetalert2';
 
 import { useKelolaUIState } from "@/components/features/kelola-ui/hooks/useKelolaUIState";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 import { HeroTab } from "@/components/features/kelola-ui/tabs/HeroTab";
 import { MajorsTab } from "@/components/features/kelola-ui/tabs/MajorsTab";
 import { AlurTab } from "@/components/features/kelola-ui/tabs/AlurTab";
@@ -114,6 +115,7 @@ export default function KelolaUIPage() {
     handleToggleLandingPageStatus,
     handleSchoolLogoChange
   } = useKelolaUIState();
+  const { href } = useSchoolHref();
 
   const draftKey = `ppdb_ui_editor_draft_${slug || 'global'}`;
   const hasLocalDraft = typeof window !== "undefined" && Boolean(localStorage.getItem(draftKey));
@@ -234,7 +236,7 @@ export default function KelolaUIPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           <a
-            href={`/${slug || ''}`}
+            href={href("/")}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 md:flex-none px-4 py-2.5 rounded-xl font-bold text-xs bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"

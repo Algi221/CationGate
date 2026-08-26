@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Printer, ArrowLeft, Phone } from "lucide-react";
 import { InvoiceCandidateData } from "../types";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface InvoiceActionPanelProps {
   data: InvoiceCandidateData & { payment_status?: string };
@@ -27,11 +28,12 @@ const sanitizeUrl = (url: string | undefined | null): string => {
 export const InvoiceActionPanel: React.FC<InvoiceActionPanelProps> = ({
   data,
   isAdmin,
-  schoolSlug,
+  schoolSlug: _schoolSlug,
   waGroupUrl,
   handlePrint,
   handleSendWhatsApp
 }) => {
+  const { href } = useSchoolHref();
   return (
     <div className="action-panel no-print" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {/* Himbauan Pengiriman Struk untuk Siswa */}
@@ -111,12 +113,8 @@ export const InvoiceActionPanel: React.FC<InvoiceActionPanelProps> = ({
         <Link
           href={
             isAdmin
-              ? schoolSlug
-                ? `/${schoolSlug}/dashboard/pendaftar`
-                : "/dashboard/pendaftar"
-              : schoolSlug
-              ? `/${schoolSlug}`
-              : "/"
+              ? href("/dashboard/pendaftar")
+              : href("/")
           }
           className="bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300"
           style={{

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, MapPin, User, ArrowLeft, Clock, MessageCircle } from "lucide-react";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface VerificationData {
   id: number;
@@ -47,6 +48,7 @@ export default function VerificationPage() {
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "smk-taruna-bhakti";
   const id = params?.id;
+  const { href } = useSchoolHref();
 
   const [inputNik, setInputNik] = useState("");
   const [loading, setLoading] = useState(false);
@@ -131,7 +133,7 @@ export default function VerificationPage() {
 
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
             <Link
-              href={`/${schoolSlug}`}
+              href={href("/")}
               className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
             >
               <ArrowLeft size={14} />
@@ -291,7 +293,7 @@ export default function VerificationPage() {
         {/* Footer links */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link 
-            href={`/${schoolSlug}`}
+            href={href("/")}
             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 hover:border-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
           >
             <ArrowLeft size={14} />

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, use } from "react";
 import { Printer, ArrowLeft, AlertCircle, FileText } from "lucide-react";
 import Link from "next/link";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface ApplicantCardData {
   id: number;
@@ -28,8 +29,9 @@ export default function KartuPendaftaranPage({
 }) {
   const resolvedParams = use(params);
   const resolvedSearchParams = use(searchParams);
-  const { school_slug } = resolvedParams;
+  const school_slug = resolvedParams.school_slug;
   const nisn = resolvedSearchParams.nisn;
+  const { href } = useSchoolHref();
 
   const [applicant, setApplicant] = useState<ApplicantCardData | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -96,7 +98,7 @@ export default function KartuPendaftaranPage({
           <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Gagal Memuat Kartu</h2>
           <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">{error || "Data pendaftar tidak ditemukan."}</p>
           <Link
-            href={`/${school_slug}/daftar`}
+            href={href("/daftar")}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl text-sm transition-all"
           >
             <ArrowLeft className="w-4 h-4" /> Kembali ke Form Pendaftaran
@@ -114,7 +116,7 @@ export default function KartuPendaftaranPage({
       {/* Top Action Bar (Hidden during print) */}
       <div className="max-w-4xl mx-auto mb-6 flex items-center justify-between no-print">
         <Link
-          href={`/${school_slug}/daftar`}
+          href={href("/daftar")}
           className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-semibold border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
         >
           <ArrowLeft className="w-4 h-4" /> Kembali

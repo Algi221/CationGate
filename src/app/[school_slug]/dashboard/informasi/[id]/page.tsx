@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Loader2, Check, ArrowRight } from "lucide-react";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface Informasi {
   id: number;
@@ -31,9 +32,10 @@ function sanitizeImageUrl(url: string): string {
 }
 
 export default function EditInformasi() {
-  const routeParams = useParams();
-  const id = (routeParams?.id as string) || "";
-  const schoolSlug = (routeParams?.school_slug as string) || "";
+  const params = useParams();
+  const schoolSlug = params?.school_slug as string;
+  const id = params?.id as string;
+  const { href } = useSchoolHref();
   const { adminToken, addToast } = usePPDB();
   const [informasi, setInformasi] = useState<Informasi | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -222,7 +224,7 @@ export default function EditInformasi() {
               </>
             )}
           </button>
-          <Link href={`/${schoolSlug || ''}/dashboard/informasi`} className="px-6 py-2 bg-slate-200 text-slate-800 dark:text-white rounded hover:bg-slate-300 flex items-center gap-2">
+          <Link href={href("/dashboard/informasi")} className="px-6 py-2 bg-slate-200 text-slate-800 dark:text-white rounded hover:bg-slate-300 flex items-center gap-2">
             <ArrowRight size={16} />
             <span>Kembali ke Daftar</span>
           </Link>

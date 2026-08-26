@@ -13,6 +13,7 @@ import { JurusanGallery } from "@/components/features/jurusan-detail/components/
 import { JurusanCareers } from "@/components/features/jurusan-detail/components/JurusanCareers";
 import { JurusanFacilities } from "@/components/features/jurusan-detail/components/JurusanFacilities";
 import { JurusanCta } from "@/components/features/jurusan-detail/components/JurusanCta";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 export default function JurusanDetailPage() {
   const {
@@ -29,6 +30,7 @@ export default function JurusanDetailPage() {
     nextAccentRgb,
     nextDarkerColor
   } = useJurusanDetailState();
+  const { href } = useSchoolHref();
 
   if (!major) {
     return (
@@ -41,7 +43,7 @@ export default function JurusanDetailPage() {
           <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">
             Program keahlian yang Anda cari tidak terdaftar atau telah diupdate. Silakan kembali ke beranda untuk melihat daftar jurusan lengkap.
           </p>
-          <Link href={`/${schoolSlug}`} className="btn-primary-pill w-full flex items-center justify-center gap-2">
+          <Link href={href("/")} className="btn-primary-pill w-full flex items-center justify-center gap-2">
             <ArrowLeft size={16} /> Kembali ke Beranda
           </Link>
         </div>
@@ -104,7 +106,7 @@ export default function JurusanDetailPage() {
       {/* Floating Action Buttons */}
       <div className="fixed top-6 left-6 z-50">
         <Link
-          href={`/${schoolSlug}`}
+          href={href("/")}
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all group cursor-pointer"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />

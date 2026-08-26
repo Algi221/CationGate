@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Check, CheckCircle2, AlertCircle, Phone, Printer, Home } from "lucide-react";
 import { sanitizeUrl } from "./types";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface SuccessInvoiceViewProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,9 +25,10 @@ export const SuccessInvoiceView: React.FC<SuccessInvoiceViewProps> = ({
   waGroupUrl,
   ppdbLogo,
   ppdbTitle,
-  schoolSlug,
+  schoolSlug: _schoolSlug,
   onRegisterNew
 }) => {
+  const { href } = useSchoolHref();
   const tglDaftarFormatted = new Date(successData.tgl_daftar).toLocaleDateString("id-ID", {
     year: "numeric",
     month: "long",
@@ -248,10 +250,12 @@ export const SuccessInvoiceView: React.FC<SuccessInvoiceViewProps> = ({
         )}
 
         <div className="flex flex-col gap-3">
-          <Link href={`/invoice?nisn=${successData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]">
-            Lihat &amp; Cetak Invoice
+          <Link href={href(`/invoice?nisn=${successData.nisn}`)} target="_blank" className="w-full flex justify-center items-center py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]">
+            <Printer className="w-4 h-4 mr-2" />
+            Cetak Invoice PDF
           </Link>
-          <Link href={`/${schoolSlug || ''}`} className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
+          <Link href={href("/")} className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
+            <Home className="w-4 h-4 mr-2" />
             Kembali ke Beranda
           </Link>
           <button
@@ -334,8 +338,8 @@ export const SuccessInvoiceView: React.FC<SuccessInvoiceViewProps> = ({
               Cetak Invoice Resmi (PDF)
             </button>
 
-            <Link href={`/${schoolSlug || ''}`} className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
-              <Home size={13} />
+            <Link href={href("/")} className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
+              <Home className="w-4 h-4 mr-1" />
               Kembali ke Beranda
             </Link>
 

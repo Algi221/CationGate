@@ -2,14 +2,6 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { 
-  FileText, 
-  CreditCard, 
-  Phone, 
-  Users, 
-  Award, 
-  ShieldCheck 
-} from "lucide-react";
 import { AlurItem } from "../types";
 import { getAlurIconComponent } from "@/utils/alurIcons";
 

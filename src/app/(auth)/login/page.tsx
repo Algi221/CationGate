@@ -282,19 +282,20 @@ function LoginForm() {
       {/* KONTEN UTAMA GRID 50:50 */}
       <div className="w-full max-w-350 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto z-10 relative lg:pt-8">
         {/* SISI KIRI: DESKTOP ONLY */}
-        <div className="hidden lg:flex lg:col-span-6 items-center justify-between relative pl-8 lg:pl-16 pr-4">
+        <div className="hidden lg:flex lg:col-span-6 items-center justify-between relative pl-2 lg:pl-4 pr-2">
           {/* TEKS UTAMA DENGAN ENTRANCE ANIMATION */}
-          <div className="z-10 w-1/2 pr-2">
+          <div className="z-10 w-[54%] pr-2 text-left">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
-              <h2 className="text-5xl lg:text-7xl font-black text-white tracking-tight leading-[0.98] whitespace-pre-line drop-shadow-md">
-                {"Portal\nAdmin"}
+              <h2 className="text-5xl lg:text-7xl font-black text-white tracking-tight leading-[0.98] drop-shadow-md">
+                Portal <br />
+                <span className="text-[#FFE27A] drop-shadow-sm">Admin</span>
               </h2>
-              <p className="text-xs lg:text-sm text-white/90 mt-5 font-medium leading-relaxed max-w-55">
-                Masuk untuk mengelola sistem PPDB & operasional sekolah Anda.
+              <p className="text-xs lg:text-sm text-white/95 mt-5 font-medium leading-relaxed max-w-55">
+                Masuk untuk mengelola sistem <strong className="text-white font-bold">PPDB</strong> &amp; operasional sekolah Anda.
               </p>
             </motion.div>
           </div>

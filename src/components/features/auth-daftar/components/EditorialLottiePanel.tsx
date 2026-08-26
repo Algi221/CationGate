@@ -16,12 +16,42 @@ export const EditorialLottiePanel: React.FC<EditorialLottiePanelProps> = ({
   currentVisual,
   animationsData
 }) => {
+  const lines = currentVisual.title.split("\n");
+  const firstLine = lines[0];
+  const secondLine = lines.slice(1).join(" ");
+
+  const getStepBadgeText = (step: number) => {
+    switch (step) {
+      case 1:
+        return "Langkah 01 / 03 • Data Instansi";
+      case 2:
+        return "Langkah 02 / 03 • Hak Akses Admin";
+      case 3:
+        return "Langkah 03 / 03 • Konfirmasi & Aktivasi";
+      default:
+        return `Langkah 0${step} / 03`;
+    }
+  };
+
+  const getSecondWordColor = (step: number) => {
+    switch (step) {
+      case 1:
+        return "text-[#78350F] drop-shadow-none"; // High-contrast amber brown on bright yellow
+      case 2:
+        return "text-[#FDE047] drop-shadow-sm"; // Bright yellow-gold on sky blue
+      case 3:
+        return "text-[#FED7AA] drop-shadow-sm"; // Warm gold-peach on amber brown
+      default:
+        return "text-white";
+    }
+  };
+
   return (
     <>
       {/* DESKTOP VIEW (LEFT 50% OF THE GRID) */}
-      <div className="hidden lg:flex lg:col-span-6 items-center justify-between relative pl-6 lg:pl-12 pr-4 z-10">
+      <div className="hidden lg:flex lg:col-span-6 items-center justify-between relative pl-2 lg:pl-4 pr-2 z-10">
         {/* TEXT TITLE & STEP BADGE */}
-        <div className="z-10 w-1/2 pr-4 text-left">
+        <div className="z-10 w-[54%] pr-2 text-left">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentVisual.step}
@@ -30,13 +60,14 @@ export const EditorialLottiePanel: React.FC<EditorialLottiePanelProps> = ({
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
-              <span className="inline-block px-3.5 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-4 border border-white/25 shadow-xs">
-                Langkah 0{currentVisual.step} / 03
+              <span className="inline-block px-3.5 py-1 bg-white/25 backdrop-blur-md rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-4 border border-white/30 shadow-xs">
+                {getStepBadgeText(currentVisual.step)}
               </span>
-              <h2 className="text-4xl lg:text-6xl font-black text-white tracking-tight leading-[0.98] whitespace-pre-line drop-shadow-md">
-                {currentVisual.title}
+              <h2 className="text-4xl lg:text-6xl font-black text-white tracking-tight leading-[0.98] drop-shadow-md">
+                {firstLine} <br />
+                <span className={getSecondWordColor(currentVisual.step)}>{secondLine}</span>
               </h2>
-              <p className="text-xs lg:text-sm text-white/90 mt-4 font-medium leading-relaxed max-w-xs">
+              <p className="text-xs lg:text-sm text-white/95 mt-4 font-medium leading-relaxed max-w-xs">
                 {currentVisual.desc}
               </p>
             </motion.div>
@@ -77,11 +108,11 @@ export const EditorialLottiePanel: React.FC<EditorialLottiePanelProps> = ({
 
       {/* MOBILE VIEW (COMPACT HEADER) */}
       <div className="lg:hidden w-full z-10 mb-4 px-2 text-left">
-        <span className="inline-block px-3 py-1 bg-white/60 backdrop-blur-md rounded-full text-slate-900 text-[10px] font-black uppercase tracking-widest mb-1.5 border border-white/20">
-          Langkah 0{currentVisual.step} / 03
+        <span className="inline-block px-3 py-1 bg-white/75 backdrop-blur-md rounded-full text-slate-900 text-[10px] font-black uppercase tracking-widest mb-1.5 border border-white/30 shadow-xs">
+          {getStepBadgeText(currentVisual.step)}
         </span>
         <h2 className="text-2xl font-black text-white leading-tight drop-shadow-sm">
-          {currentVisual.title.replace("\n", " ")}
+          {firstLine} <span className={getSecondWordColor(currentVisual.step)}>{secondLine}</span>
         </h2>
       </div>
     </>

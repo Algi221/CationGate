@@ -13,6 +13,11 @@ interface Step1InstansiProps {
   emailChecking: boolean;
   emailSuccessState: boolean;
   emailErrorState: string;
+  slugChecking?: boolean;
+  slugSuccessState?: boolean;
+  slugErrorState?: string;
+  setSlugErrorState?: (val: string) => void;
+  setSlugSuccessState?: (val: boolean) => void;
   handleEmailCheck: (e: React.FocusEvent<HTMLInputElement>) => void;
   setEmailErrorState: (val: string) => void;
   setEmailSuccessState: (val: boolean) => void;
@@ -24,6 +29,11 @@ export const Step1Instansi: React.FC<Step1InstansiProps> = ({
   emailChecking,
   emailSuccessState,
   emailErrorState,
+  slugChecking = false,
+  slugSuccessState = false,
+  slugErrorState = "",
+  setSlugErrorState,
+  setSlugSuccessState,
   handleEmailCheck,
   setEmailErrorState,
   setEmailSuccessState
@@ -48,11 +58,14 @@ export const Step1Instansi: React.FC<Step1InstansiProps> = ({
             value={formData.school_name}
             onChange={(e) => {
               const val = e.target.value;
+              const autoSlug = val.toLowerCase().replace(/[^a-z0-9-]/g, "");
               setFormData((prev) => ({
                 ...prev,
                 school_name: val,
-                slug: val.toLowerCase().replace(/[^a-z0-9-]/g, "")
+                slug: autoSlug
               }));
+              if (setSlugErrorState) setSlugErrorState("");
+              if (setSlugSuccessState) setSlugSuccessState(false);
             }}
             placeholder="Contoh: SMA Negeri 1 Jakarta"
             className="h-10 sm:h-11 rounded-xl border-slate-200 bg-white text-xs shadow-none focus:border-slate-900 focus:ring-0"
@@ -60,26 +73,52 @@ export const Step1Instansi: React.FC<Step1InstansiProps> = ({
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="slug" className="text-[11px] font-bold text-slate-700">
-            Subdomain Portal Sekolah
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="slug" className="text-[11px] font-bold text-slate-700">
+              Subdomain Portal Sekolah
+            </Label>
+            {slugChecking && (
+              <span className="flex items-center gap-1 text-[10px] font-medium text-amber-600">
+                <Loader2 className="h-3 w-3 animate-spin" /> Memeriksa...
+              </span>
+            )}
+            {slugSuccessState && (
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+                <Check className="h-3 w-3" /> Tersedia
+              </span>
+            )}
+            {slugErrorState && (
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-rose-600">
+                <AlertCircle className="h-3 w-3 shrink-0" /> {slugErrorState.toLowerCase().includes("sudah digunakan") ? "Sudah Digunakan" : slugErrorState}
+              </span>
+            )}
+          </div>
           <div className="flex">
-            <div className="flex h-10 sm:h-11 items-center rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-[10px] font-medium text-slate-400">
-              cationgate.site/
-            </div>
             <Input
               id="slug"
               required
               value={formData.slug}
-              onChange={(e) =>
+              onChange={(e) => {
+                const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
                 setFormData((prev) => ({
                   ...prev,
-                  slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")
-                }))
-              }
+                  slug: val
+                }));
+                if (setSlugErrorState) setSlugErrorState("");
+                if (setSlugSuccessState) setSlugSuccessState(false);
+              }}
               placeholder="sman1jakarta"
-              className="h-10 sm:h-11 rounded-l-none rounded-r-xl border-slate-200 bg-white font-mono text-xs shadow-none focus:border-slate-900 focus:ring-0"
+              className={`h-10 sm:h-11 rounded-l-xl rounded-r-none bg-white font-mono text-xs shadow-none transition-colors ${
+                slugErrorState
+                  ? "border-rose-400 bg-rose-50/20 text-rose-950 focus:border-rose-500 focus:ring-0"
+                  : slugSuccessState
+                  ? "border-emerald-400 bg-emerald-50/20 text-slate-900 focus:border-emerald-500 focus:ring-0"
+                  : "border-slate-200 focus:border-slate-900 focus:ring-0"
+              }`}
             />
+            <div className="flex h-10 sm:h-11 items-center rounded-r-xl border border-l-0 border-slate-200 bg-slate-50 px-3 text-[10px] font-medium text-slate-400 select-none">
+              .cationgate.site
+            </div>
           </div>
         </div>
 

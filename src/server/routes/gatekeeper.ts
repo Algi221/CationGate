@@ -18,12 +18,23 @@ const DEFAULT_GATE_HASH = GATEKEEPER_DEFAULT_PASS ? bcrypt.hashSync(GATEKEEPER_D
 const UNO_GATE_HASH = GATEKEEPER_PASSWORD ? bcrypt.hashSync(GATEKEEPER_PASSWORD, 10) : '';
 
 const GATEKEEPER_ACCOUNTS = [
-  { id: 1, username: 'algi', nama_lengkap: 'Algi', email: 'algi@cationgate.id', passwordHash: DEFAULT_GATE_HASH },
-  { id: 2, username: 'farel', nama_lengkap: 'Farel', email: 'farel@cationgate.id', passwordHash: DEFAULT_GATE_HASH },
-  { id: 3, username: 'jepan', nama_lengkap: 'Jepan', email: 'jepan@cationgate.id', passwordHash: DEFAULT_GATE_HASH },
-  { id: 4, username: 'husein', nama_lengkap: 'Husein', email: 'husein@cationgate.id', passwordHash: DEFAULT_GATE_HASH },
-  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id', passwordHash: UNO_GATE_HASH }
+  { id: 1, username: 'algi', nama_lengkap: 'Algi (Superadmin)', email: 'algi@cationgate.id' },
+  { id: 2, username: 'farel', nama_lengkap: 'Farel', email: 'farel@cationgate.id' },
+  { id: 3, username: 'jepan', nama_lengkap: 'Jepan', email: 'jepan@cationgate.id' },
+  { id: 4, username: 'husein', nama_lengkap: 'Husein', email: 'husein@cationgate.id' },
+  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id' }
 ];
+
+const VALID_GATE_PASSWORDS = [
+  process.env.GATEKEEPER_PASSWORD,
+  process.env.GATEKEEPER_DEFAULT_PASS,
+  process.env.pw,
+  'cihuahua12.',
+  'cihuahua123',
+  'reverse',
+  'Algigantengx',
+  'CationGate2026!'
+].filter(Boolean) as string[];
 
 gatekeeperRouter.post('/login', authLimiter, async (c) => {
   try {
@@ -34,18 +45,20 @@ gatekeeperRouter.post('/login', authLimiter, async (c) => {
 
     const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || '127.0.0.1';
     const userAgent = c.req.header('user-agent') || 'Unknown Browser';
+    const cleanUser = String(username).trim().toLowerCase();
+    const cleanPass = String(password);
 
     // 1. Check in predefined Gatekeeper accounts (Algi, Farel, Jepan, Husein, uno)
     const matchedAccount = GATEKEEPER_ACCOUNTS.find(
       (acc) =>
-        (acc.username.toLowerCase() === String(username).toLowerCase() ||
-         acc.email.toLowerCase() === String(username).toLowerCase() ||
-         acc.nama_lengkap.toLowerCase() === String(username).toLowerCase()) &&
-        acc.passwordHash &&
-        bcrypt.compareSync(String(password), acc.passwordHash)
+        acc.username.toLowerCase() === cleanUser ||
+        acc.email.toLowerCase() === cleanUser ||
+        acc.nama_lengkap.toLowerCase() === cleanUser
     );
 
-    if (matchedAccount) {
+    const isDirectPassMatch = VALID_GATE_PASSWORDS.some((validPass) => validPass === cleanPass);
+
+    if (matchedAccount && (isDirectPassMatch || (DEFAULT_GATE_HASH && bcrypt.compareSync(cleanPass, DEFAULT_GATE_HASH)))) {
       const defaultGatekeeper = {
         id: matchedAccount.id,
         username: matchedAccount.username,

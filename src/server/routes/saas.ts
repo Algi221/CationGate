@@ -11,8 +11,9 @@ const saasRouter = new Hono();
 // 1. PUBLIC: Fetch school profile & status by slug
 saasRouter.get('/school-by-slug/:slug', SaasController.getSchoolBySlug);
 
-// 2. PUBLIC: Check if email already exists
+// 2. PUBLIC: Check if email or slug already exists
 saasRouter.post('/check-email', SaasController.checkEmail);
+saasRouter.post('/check-slug', SaasController.checkSlug);
 
 // 3. PUBLIC: Register new school from Landing Page
 saasRouter.post('/register', registerLimiter, SaasController.register);

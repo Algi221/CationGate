@@ -191,6 +191,77 @@ export class SaasService {
     return { available: !isTaken, exists: isTaken };
   }
 
+  static async checkSlugAvailability(slug: string) {
+    const cleanSlug = String(slug || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '');
+
+    if (!cleanSlug || cleanSlug.length < 3) {
+      return { available: false, exists: false, message: 'Subdomain minimal 3 karakter alfanumerik.' };
+    }
+
+    const reservedSlugs = [
+      'admin', 'api', 'app', 'auth', 'dashboard', 'demo', 'gatekeeper',
+      'login', 'register', 'root', 'superadmin', 'system', 'www', 'mail',
+      'static', 'assets', 'cationgate'
+    ];
+    if (reservedSlugs.includes(cleanSlug)) {
+      return { available: false, exists: true, message: 'Subdomain ini dicadangkan oleh sistem.' };
+    }
+
+    let isTaken = false;
+
+    // 1. PostgreSQL direct check
+    try {
+      const pgRes = await pool.query(
+        `SELECT id FROM schools WHERE LOWER(slug) = $1
+         UNION
+         SELECT id FROM prospective_schools WHERE LOWER(slug) = $1
+         LIMIT 1`,
+        [cleanSlug]
+      );
+      if (pgRes.rows && pgRes.rows.length > 0) {
+        isTaken = true;
+      }
+    } catch (_pgErr) {}
+
+    // 2. Supabase checks
+    if (!isTaken) {
+      try {
+        const supabase = getSupabaseClient();
+        const { data: schoolMatch } = await supabase
+          .from('schools')
+          .select('id')
+          .eq('slug', cleanSlug)
+          .maybeSingle();
+
+        const { data: candidateMatch } = await supabase
+          .from('prospective_schools')
+          .select('id')
+          .eq('slug', cleanSlug)
+          .maybeSingle();
+
+        if (schoolMatch || candidateMatch) {
+          isTaken = true;
+        }
+      } catch (_sbErr) {}
+    }
+
+    // 3. In-memory map check
+    if (!isTaken) {
+      if (fontInMemSchools.has(cleanSlug)) {
+        isTaken = true;
+      }
+    }
+
+    return {
+      available: !isTaken,
+      exists: isTaken,
+      message: isTaken ? 'Subdomain sudah digunakan sekolah lain.' : 'Subdomain tersedia.'
+    };
+  }
+
   static async registerSchool(data: {
     school_name: string;
     slug: string;

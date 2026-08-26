@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-  username: z
+  email: z
     .string()
-    .min(1, 'Username atau Email tidak boleh kosong.')
-    .max(100, 'Username atau Email maksimal 100 karakter.')
-    .trim(),
+    .min(1, 'Harap masukkan alamat email akun Anda.')
+    .email('Format alamat email tidak valid.')
+    .max(100, 'Alamat email maksimal 100 karakter.')
+    .trim()
+    .toLowerCase(),
   password: z
     .string()
     .min(1, 'Kata sandi tidak boleh kosong.')

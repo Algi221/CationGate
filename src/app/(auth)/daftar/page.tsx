@@ -25,6 +25,11 @@ export default function DaftarSaaS() {
     emailChecking,
     emailSuccessState,
     emailErrorState,
+    slugChecking,
+    slugSuccessState,
+    slugErrorState,
+    setSlugErrorState,
+    setSlugSuccessState,
     showPassword,
     setShowPassword,
     animationsData,
@@ -115,37 +120,38 @@ export default function DaftarSaaS() {
           />
           <div className="text-xl sm:text-2xl font-black tracking-tight font-sans select-none flex items-center">
             <span className="text-slate-950">Cation</span>
-            <span style={{ color: currentVisual.solidColor }} className="drop-shadow-none transition-colors duration-500">Gate</span>
+            <span style={{ color: currentVisual.solidColor }} className="drop-shadow-none transition-colors duration-500">
+              Gate
+            </span>
           </div>
         </Link>
 
-        {/* Right: Sudah Memiliki Akun? Masuk */}
-        <div className="flex items-center gap-2 text-xs">
-          <span className="hidden text-slate-500 font-medium sm:block">Sudah memiliki akun?</span>
-          <Link
-            href="/login"
-            className="rounded-full border border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-1.5 font-bold text-slate-700 transition-all hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-sm active:scale-95 shadow-xs"
-          >
-            Masuk
-          </Link>
-        </div>
+        {/* Right Action: Login Link */}
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/5 hover:bg-slate-950/10 text-xs font-bold text-slate-700 transition-all"
+        >
+          <span className="hidden sm:inline">Sudah punya akun?</span>
+          <span className="underline decoration-slate-400 font-extrabold text-slate-900">Masuk</span>
+        </Link>
       </div>
 
-      {/* MAIN CONTAINER 50:50 SPLIT */}
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center my-auto z-10 relative pt-2 lg:pt-6">
-        {/* SISI KIRI: EDITORIAL LOTTIE PANEL */}
+      {/* MAIN CONTAINER */}
+      <div className="w-full max-w-350 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center my-auto z-10 relative pt-2 lg:pt-4">
+        {/* LEFT COLUMN: EDITORIAL VISUAL / LOTTIE */}
         <EditorialLottiePanel
           currentVisual={currentVisual}
           isMobile={isMobile}
           animationsData={animationsData}
         />
 
-        {/* SISI KANAN: FORM INPUT */}
-        <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-8 z-10">
-          <div className="w-full max-w-lg mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
-            <div className="mb-5 text-left">
-              <h1 className="text-2xl sm:text-3xl lg:text-[2.15rem] font-extrabold tracking-tight text-slate-950 leading-tight">
-                Buat akun sekolah
+        {/* RIGHT COLUMN: INTERACTIVE WIZARD FORM */}
+        <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-12 z-10">
+          <div className="w-full max-w-115 mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
+            {/* Form Header */}
+            <div className="mb-4 sm:mb-6 text-left">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                Mulai Digitalisasi Sekolah
               </h1>
               <p className="mt-1.5 text-xs sm:text-sm text-slate-500 font-medium">
                 Daftarkan instansi kamu dan mulai kelola sistem PPDB dengan CationGate.
@@ -183,6 +189,11 @@ export default function DaftarSaaS() {
                       emailChecking={emailChecking}
                       emailSuccessState={emailSuccessState}
                       emailErrorState={emailErrorState}
+                      slugChecking={slugChecking}
+                      slugSuccessState={slugSuccessState}
+                      slugErrorState={slugErrorState}
+                      setSlugErrorState={setSlugErrorState}
+                      setSlugSuccessState={setSlugSuccessState}
                       handleEmailCheck={handleEmailCheck}
                       setEmailErrorState={setEmailErrorState}
                       setEmailSuccessState={setEmailSuccessState}

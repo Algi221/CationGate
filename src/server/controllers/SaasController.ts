@@ -37,6 +37,17 @@ export class SaasController {
     }
   }
 
+  static async checkSlug(c: Context) {
+    try {
+      const { slug } = await c.req.json();
+      const result = await SaasService.checkSlugAvailability(slug);
+      return c.json(result);
+    } catch (err) {
+      console.error('Error checking slug:', err);
+      return c.json({ available: false, exists: false, message: 'Gagal memeriksa subdomain' }, 500);
+    }
+  }
+
   static async register(c: Context) {
     try {
       const body = await c.req.json();

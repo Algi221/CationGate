@@ -29,7 +29,8 @@ authRouter.post('/login', authLimiter, async (c) => {
         errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
-    const { username, password, rememberMe } = result.data;
+    const { email, password, rememberMe } = result.data;
+    const cleanEmail = email.trim().toLowerCase();
     const rawSchoolId = c.req.query('school_id') || null;
 
     let schoolId: string | null = rawSchoolId;
@@ -68,7 +69,7 @@ authRouter.post('/login', authLimiter, async (c) => {
           body: JSON.stringify({
             version: 'v1',
             apps_name: 'PPDB SMK Taruna Bhakti',
-            username,
+            username: cleanEmail,
             password
           })
         });
@@ -89,9 +90,9 @@ authRouter.post('/login', authLimiter, async (c) => {
 
     if (ysboAuthenticated && ysboUser) {
       const mappedRole = Number(ysboUser.level_akses) === 4 ? 'superadmin' : 'admin';
-      const name = ysboUser.full_name || ysboUser.text || ysboUser.username || ysboUser.id || username;
+      const name = ysboUser.full_name || ysboUser.text || ysboUser.username || ysboUser.id || cleanEmail;
       const hashedPassword = bcrypt.hashSync(password, 10);
-      const usernameKey = ysboUser.username || ysboUser.id || username;
+      const usernameKey = ysboUser.username || ysboUser.id || cleanEmail;
 
       let checkQuery = supabase.from('admin_users').select('*').eq('username', usernameKey);
       if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
@@ -148,25 +149,19 @@ authRouter.post('/login', authLimiter, async (c) => {
       });
     }
 
-    const cleanUsername = String(username).trim();
-
-    // Check if this is a Gatekeeper platform account
-    const gatekeeperUsers = ['algi', 'farel', 'jepan', 'husein', 'uno'];
-    if (gatekeeperUsers.includes(cleanUsername.toLowerCase()) || cleanUsername.toLowerCase().endsWith('@cationgate.id')) {
+    // Check if this is a Gatekeeper platform account trying to login on school portal
+    if (cleanEmail.endsWith('@cationgate.id')) {
       return c.json({
         success: false,
         message: 'Akun Gatekeeper (Platform Superadmin) silakan login di /gatekeeper/login.'
       }, 403);
     }
 
-    const cleanPhone = cleanUsername.replace(/\D/g, '');
-    const isPhoneNumber = cleanPhone.length >= 8;
-
-    // 1. Try Supabase query with case-insensitive search across username, email, and nama_lengkap
+    // 1. Try Supabase query matching email (case-insensitive)
     let query = supabase
       .from('admin_users')
       .select('*')
-      .or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername},nama_lengkap.ilike.${cleanUsername}`);
+      .ilike('email', cleanEmail);
     if (schoolId) query = query.eq('school_id', schoolId);
     let { data: adminUser } = await query.maybeSingle();
 
@@ -175,7 +170,7 @@ authRouter.post('/login', authLimiter, async (c) => {
       const { data: userWithoutSchool } = await supabase
         .from('admin_users')
         .select('*')
-        .or(`username.ilike.${cleanUsername},email.ilike.${cleanUsername},nama_lengkap.ilike.${cleanUsername}`)
+        .ilike('email', cleanEmail)
         .maybeSingle();
       if (userWithoutSchool) adminUser = userWithoutSchool;
     }
@@ -186,9 +181,9 @@ authRouter.post('/login', authLimiter, async (c) => {
         const pgRes = await pool.query(
           `SELECT id, username, email, password_hash, nama_lengkap, role, school_id
            FROM admin_users
-           WHERE (LOWER(username) = LOWER($1) OR LOWER(COALESCE(email, '')) = LOWER($1) OR LOWER(COALESCE(nama_lengkap, '')) = LOWER($1))
+           WHERE LOWER(COALESCE(email, '')) = LOWER($1)
            LIMIT 1`,
-          [cleanUsername]
+          [cleanEmail]
         );
         if (pgRes.rows && pgRes.rows.length > 0) {
           adminUser = pgRes.rows[0];
@@ -196,26 +191,20 @@ authRouter.post('/login', authLimiter, async (c) => {
       } catch (_pgErr) {}
     }
 
-    // 3. Fallback: Lookup in schools by official email, slug, admin_name, or phone
+    // 3. Fallback: Lookup in schools by official email
     if (!adminUser) {
       try {
-        let schoolQuery = supabase
+        const { data: school } = await supabase
           .from('schools')
-          .select('id, slug, official_email, admin_name');
-        
-        if (isPhoneNumber) {
-          schoolQuery = schoolQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},admin_name.ilike.${cleanUsername},whatsapp_number.ilike.%${cleanPhone}%,phone_number.ilike.%${cleanPhone}%`);
-        } else {
-          schoolQuery = schoolQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},admin_name.ilike.${cleanUsername}`);
-        }
-
-        const { data: school } = await schoolQuery.maybeSingle();
+          .select('id, slug, official_email, admin_name')
+          .ilike('official_email', cleanEmail)
+          .maybeSingle();
 
         if (school) {
           const { data: linkedAdmin } = await supabase
             .from('admin_users')
             .select('*')
-            .or(`school_id.eq.${school.id},school_id.eq.${school.slug},email.ilike.${school.official_email},username.ilike.${school.official_email}`)
+            .or(`school_id.eq.${school.id},school_id.eq.${school.slug},email.ilike.${school.official_email}`)
             .maybeSingle();
           if (linkedAdmin) adminUser = linkedAdmin;
         }
@@ -225,23 +214,17 @@ authRouter.post('/login', authLimiter, async (c) => {
     // 4. Fallback: Lookup in prospective_schools
     if (!adminUser) {
       try {
-        let psQuery = supabase
+        const { data: ps } = await supabase
           .from('prospective_schools')
-          .select('id, slug, official_email, admin_name');
-        
-        if (isPhoneNumber) {
-          psQuery = psQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},admin_name.ilike.${cleanUsername},contact_person_phone.ilike.%${cleanPhone}%`);
-        } else {
-          psQuery = psQuery.or(`official_email.ilike.${cleanUsername},slug.ilike.${cleanUsername},admin_name.ilike.${cleanUsername}`);
-        }
-
-        const { data: ps } = await psQuery.maybeSingle();
+          .select('id, slug, official_email, admin_name')
+          .ilike('official_email', cleanEmail)
+          .maybeSingle();
 
         if (ps) {
           const { data: linkedAdmin } = await supabase
             .from('admin_users')
             .select('*')
-            .or(`school_id.eq.${ps.id},school_id.eq.${ps.slug},email.ilike.${ps.official_email},username.ilike.${ps.official_email}`)
+            .or(`school_id.eq.${ps.id},school_id.eq.${ps.slug},email.ilike.${ps.official_email}`)
             .maybeSingle();
           if (linkedAdmin) adminUser = linkedAdmin;
         }
@@ -251,16 +234,11 @@ authRouter.post('/login', authLimiter, async (c) => {
     // 5. Fallback: Lookup in in-memory fontInMemSchools map
     if (!adminUser) {
       for (const [, school] of fontInMemSchools) {
-        if (
-          school.official_email?.toLowerCase() === cleanUsername.toLowerCase() ||
-          school.admin_username?.toLowerCase() === cleanUsername.toLowerCase() ||
-          school.admin_name?.toLowerCase() === cleanUsername.toLowerCase() ||
-          school.slug?.toLowerCase() === cleanUsername.toLowerCase()
-        ) {
+        if (school.official_email?.toLowerCase() === cleanEmail) {
           const { data: linkedAdmin } = await supabase
             .from('admin_users')
             .select('*')
-            .or(`school_id.eq.${school.id},school_id.eq.${school.school_uuid || ''},email.ilike.${school.official_email},username.ilike.${school.official_email}`)
+            .or(`school_id.eq.${school.id},school_id.eq.${school.school_uuid || ''},email.ilike.${school.official_email}`)
             .maybeSingle();
           if (linkedAdmin) {
             adminUser = linkedAdmin;
@@ -271,7 +249,7 @@ authRouter.post('/login', authLimiter, async (c) => {
     }
 
     if (!adminUser) {
-      return c.json({ success: false, message: 'Username / Email atau Password salah' }, 401);
+      return c.json({ success: false, message: 'Alamat Email atau kata sandi tidak sesuai.' }, 401);
     }
 
     // Direct Gatekeeper role check

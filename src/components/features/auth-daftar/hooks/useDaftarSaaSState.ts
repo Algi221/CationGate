@@ -91,6 +91,10 @@ export function useDaftarSaaSState() {
   const [emailErrorState, setEmailErrorState] = useState("");
   const [emailSuccessState, setEmailSuccessState] = useState(false);
 
+  const [slugChecking, setSlugChecking] = useState(false);
+  const [slugErrorState, setSlugErrorState] = useState("");
+  const [slugSuccessState, setSlugSuccessState] = useState(false);
+
   const [_otpSent, setOtpSent] = useState(false);
   const [_otpVerified, setOtpVerified] = useState(false);
   const [_otpLoading, setOtpLoading] = useState(false);
@@ -214,6 +218,55 @@ export function useDaftarSaaSState() {
     return () => clearTimeout(timer);
   }, [formData.email]);
 
+  useEffect(() => {
+    const slug = formData.slug.trim().toLowerCase();
+    if (!slug) {
+      const id = setTimeout(() => {
+        setSlugErrorState("");
+        setSlugSuccessState(false);
+        setSlugChecking(false);
+      }, 0);
+      return () => clearTimeout(id);
+    }
+
+    if (slug.length < 3) {
+      const id = setTimeout(() => {
+        setSlugErrorState("Subdomain minimal 3 karakter.");
+        setSlugSuccessState(false);
+        setSlugChecking(false);
+      }, 0);
+      return () => clearTimeout(id);
+    }
+
+    const timer = setTimeout(async () => {
+      setSlugChecking(true);
+      setSlugErrorState("");
+      setSlugSuccessState(false);
+
+      try {
+        const res = await fetch("/api/saas/check-slug", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug })
+        });
+        const data = await res.json();
+        if (data.exists || !data.available) {
+          setSlugErrorState(data.message || "Subdomain sudah digunakan sekolah lain.");
+          setSlugSuccessState(false);
+        } else {
+          setSlugErrorState("");
+          setSlugSuccessState(true);
+        }
+      } catch {
+        setSlugErrorState("");
+      } finally {
+        setSlugChecking(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.slug]);
+
   const handleSendOTP = async () => {
     if (!formData.email) {
       setErrorMsg("Harap isi Email Resmi instansi terlebih dahulu.");
@@ -336,6 +389,41 @@ export function useDaftarSaaSState() {
         return;
       }
 
+      if (slugChecking) {
+        setErrorMsg("Mohon tunggu, sedang memverifikasi ketersediaan subdomain...");
+        return;
+      }
+
+      if (slugErrorState) {
+        setErrorMsg(slugErrorState);
+        return;
+      }
+
+      if (!slugSuccessState) {
+        setSlugChecking(true);
+        try {
+          const res = await fetch("/api/saas/check-slug", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ slug: formData.slug.trim().toLowerCase() })
+          });
+          const data = await res.json();
+          if (data.exists || !data.available) {
+            setSlugErrorState(data.message || "Subdomain sudah digunakan sekolah lain.");
+            setErrorMsg(data.message || "Subdomain sudah digunakan sekolah lain.");
+            setSlugSuccessState(false);
+            setSlugChecking(false);
+            return;
+          } else {
+            setSlugErrorState("");
+            setSlugSuccessState(true);
+          }
+        } catch (_err) {
+        } finally {
+          setSlugChecking(false);
+        }
+      }
+
       if (emailChecking) {
         setErrorMsg("Mohon tunggu, sedang memverifikasi ketersediaan email...");
         return;
@@ -434,6 +522,11 @@ export function useDaftarSaaSState() {
     emailChecking,
     emailSuccessState,
     emailErrorState,
+    slugChecking,
+    slugSuccessState,
+    slugErrorState,
+    setSlugErrorState,
+    setSlugSuccessState,
     showPassword,
     setShowPassword,
     animationsData,

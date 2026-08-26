@@ -14,7 +14,7 @@ import {
   EyeOff,
   Loader2,
   Lock,
-  User,
+  Mail,
   ShieldAlert,
   CheckCircle2,
 } from "lucide-react";
@@ -23,9 +23,10 @@ import { Label } from "@/components/ui/label";
 import { z } from "zod";
 
 const loginFormSchema = z.object({
-  username: z
+  email: z
     .string()
-    .min(1, "Harap masukkan username atau email resmi Anda.")
+    .min(1, "Harap masukkan alamat email akun Anda.")
+    .email("Format alamat email tidak valid.")
     .trim(),
   password: z.string().min(1, "Harap masukkan kata sandi akun Anda."),
 });
@@ -34,7 +35,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get("registered") === "true";
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -52,15 +53,15 @@ function LoginForm() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // System Flow: Load remembered username if 'Ingat Saya' was checked
+  // System Flow: Load remembered email if 'Ingat Saya' was checked
   useEffect(() => {
     try {
       const savedRemember = localStorage.getItem("cationgate_remember_me");
-      const savedUsername = localStorage.getItem(
-        "cationgate_remembered_username"
-      );
-      if (savedRemember === "true" && savedUsername) {
-        setUsername(savedUsername);
+      const savedEmail =
+        localStorage.getItem("cationgate_remembered_email") ||
+        localStorage.getItem("cationgate_remembered_username");
+      if (savedRemember === "true" && savedEmail) {
+        setEmail(savedEmail);
         setRememberMe(true);
       }
     } catch (_e) {}
@@ -79,7 +80,7 @@ function LoginForm() {
     setIsRateLimited(false);
 
     // Zod Client Validation
-    const validation = loginFormSchema.safeParse({ username, password });
+    const validation = loginFormSchema.safeParse({ email, password });
     if (!validation.success) {
       setErrorMsg(validation.error.issues[0].message);
       return;
@@ -91,7 +92,7 @@ function LoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, rememberMe }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password, rememberMe }),
       });
 
       const data = await res.json();
@@ -114,10 +115,10 @@ function LoginForm() {
         // System Flow: Remember Me Logic on successful login
         if (rememberMe) {
           localStorage.setItem("cationgate_remember_me", "true");
-          localStorage.setItem("cationgate_remembered_username", username);
+          localStorage.setItem("cationgate_remembered_email", email.trim());
         } else {
           localStorage.removeItem("cationgate_remember_me");
-          localStorage.removeItem("cationgate_remembered_username");
+          localStorage.removeItem("cationgate_remembered_email");
         }
 
         localStorage.setItem("ppdb_admin_token", data.token);
@@ -157,7 +158,7 @@ function LoginForm() {
         }
       } else {
         setErrorMsg(
-          data.message || "Username / Email atau kata sandi tidak sesuai."
+          data.message || "Email atau kata sandi tidak sesuai."
         );
       }
     } catch (_err) {
@@ -403,22 +404,22 @@ function LoginForm() {
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-1">
                 <Label
-                  htmlFor="username"
+                  htmlFor="email"
                   className="text-[11px] font-bold text-slate-700"
                 >
-                  Email atau Username
+                  Alamat Email
                 </Label>
                 <div className="relative">
                   <Input
-                    id="username"
-                    type="text"
+                    id="email"
+                    type="email"
                     required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="admin@sekolah.sch.id atau username"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@sekolah.sch.id"
                     className="h-10 sm:h-11 pl-9 rounded-xl border-slate-200 bg-white text-xs shadow-none focus:border-[#0077c8] focus:ring-2 focus:ring-[#0077c8]/10"
                   />
-                  <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
               </div>
 

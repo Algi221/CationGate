@@ -35,6 +35,7 @@ import Swal from "sweetalert2";
 interface SchoolNavbarProps {
   schoolSlug: string;
   isPreview?: boolean;
+  forceMobile?: boolean;
 }
 
 const DEFAULT_MAJORS = [
@@ -46,7 +47,7 @@ const DEFAULT_MAJORS = [
   { code: "TE", title: "Teknik Elektronika", desc: "IoT, robotics & microcontroller", icon: Cpu }
 ];
 
-export function SchoolNavbar({ schoolSlug, isPreview = false }: SchoolNavbarProps) {
+export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = false }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
   const { href } = useSchoolHref(schoolSlug);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -155,13 +156,13 @@ export function SchoolNavbar({ schoolSlug, isPreview = false }: SchoolNavbarProp
                   </div>
                 )}
               </div>
-              <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white truncate max-w-45 sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
+              <span className={`font-black text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 ${forceMobile ? "max-w-28 text-sm" : "max-w-45 sm:max-w-xs lg:max-w-none text-lg sm:text-xl"}`}>
                 {displayTitle}
               </span>
             </Link>
           </div>
 
-          <div className="hidden lg:flex items-center gap-1 shrink-0 z-50">
+          <div className={forceMobile ? "hidden" : "hidden lg:flex items-center gap-1 shrink-0 z-50"}>
             <NavigationMenu>
               <NavigationMenuList>
                 {/* Beranda */}
@@ -255,7 +256,7 @@ export function SchoolNavbar({ schoolSlug, isPreview = false }: SchoolNavbarProp
             </NavigationMenu>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ToggleTheme
               animationType="circle-spread"
               duration={1000}
@@ -264,15 +265,15 @@ export function SchoolNavbar({ schoolSlug, isPreview = false }: SchoolNavbarProp
             <Link
               href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
               onClick={(e) => handleLinkClick(e, schoolSlug === 'demo' ? href("/dashboard") : href("/daftar"))}
-              className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap"
+              className={`${forceMobile ? "hidden" : "hidden md:inline-flex"} items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap`}
             >
               {schoolSlug === 'demo' ? "Dashboard Demo" : "Daftar"}
             </Link>
 
-            {/* Hamburger Button visible only on mobile/tablet */}
+            {/* Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex lg:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-101"
+              className={`${forceMobile ? "flex" : "flex lg:hidden"} items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-101 cursor-pointer`}
               aria-label="Toggle Mobile Menu"
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -281,9 +282,9 @@ export function SchoolNavbar({ schoolSlug, isPreview = false }: SchoolNavbarProp
         </nav>
       </header>
 
-      {/* Fullscreen Mobile Navigation Menu Overlay */}
+      {/* Fullscreen/Container Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 lg:hidden">
+        <div className={`${isPreview ? "absolute inset-0 min-h-full" : "fixed inset-0"} z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 ${forceMobile ? "flex" : "lg:hidden"}`}>
           {/* Close Button X in top right */}
           <button
             onClick={() => setMobileMenuOpen(false)}

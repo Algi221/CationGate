@@ -280,3 +280,29 @@ html.dark .badge-info span {
     padding-top: 40px;
   }
 }
+
+/* ==========================================================================
+   LIVE PREVIEW MODAL MOBILE SIMULATION (390px Viewport Simulation)
+   ========================================================================== */
+.preview-mobile-frame .hero {
+  padding-top: 32px !important;
+  padding-bottom: 24px !important;
+}
+
+.preview-mobile-frame .hero-title {
+  font-size: 26px !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 12px !important;
+  padding: 0 8px !important;
+}
+
+.preview-mobile-frame .hero-subtitle {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.preview-mobile-frame .floating-badge {
+  display: none !important;
+}
+

@@ -227,6 +227,16 @@ configRouter.get('/', async (c) => {
       configMap[row.config_key] = val;
     });
 
+    // Merge from in-memory store if available
+    const { fontInMemSchools } = await import('./saas');
+    const lookupSlug = schoolSlug || (typeof schoolId === 'string' ? schoolId : '');
+    if (lookupSlug && fontInMemSchools.has(lookupSlug)) {
+      const inMem = fontInMemSchools.get(lookupSlug);
+      if (inMem?.configs) {
+        Object.assign(configMap, { ...inMem.configs, ...configMap });
+      }
+    }
+
     // 3. Save to Redis Cache (expire in 1 hour)
     await setCached(cacheKey, configMap, 3600);
     if (schoolSlug) await setCached(`config_${schoolSlug}`, configMap, 3600);
@@ -234,7 +244,7 @@ configRouter.get('/', async (c) => {
     return c.json({
       success: true,
       data: configMap,
-      source: configs && configs.length > 0 ? 'db' : 'empty'
+      source: configs && configs.length > 0 ? 'db' : (Object.keys(configMap).length > 0 ? 'mem' : 'empty')
     });
   } catch (err: unknown) {
     console.warn('Fetch config DB exception (using default config):', err instanceof Error ? err.message : String(err));
@@ -520,10 +530,21 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       }
     }
 
+    // Update in-memory store
+    const { fontInMemSchools } = await import('./saas');
+    const targetSlug = admin?.school_slug || admin?.slug || (typeof schoolId === 'string' && isNaN(Number(schoolId)) ? schoolId : null);
+    if (targetSlug && fontInMemSchools.has(targetSlug)) {
+      const inMem = fontInMemSchools.get(targetSlug);
+      if (inMem) {
+        inMem.configs = { ...(inMem.configs || {}), ...processedConfigs };
+      }
+    }
+
     // Invalidate Redis cache
     if (schoolId) await delCached(`config_${schoolId}`);
     if (admin?.school_slug) await delCached(`config_${admin.school_slug}`);
     if (admin?.slug) await delCached(`config_${admin.slug}`);
+    if (targetSlug) await delCached(`config_${targetSlug}`);
     await delCached('config_default');
 
     console.log('[SUCCESS] Configurations successfully saved to PostgreSQL database.');

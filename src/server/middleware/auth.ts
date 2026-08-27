@@ -82,18 +82,16 @@ export const gatekeeperAuth = createMiddleware(async (c, next) => {
 export const requireTenantId = async (c: any): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = c.get('admin') as any;
-  if (!admin?.school_id) {
+  const identifier = admin?.school_id || admin?.school_slug || admin?.slug;
+  if (!identifier) {
     throw new TenantError();
   }
 
   const { resolveSchoolUUID } = await import('../db/resolve-school');
   const { fontInMemSchools } = await import('../routes/saas');
-  const resolved = await resolveSchoolUUID(String(admin.school_id), fontInMemSchools);
+  const resolved = await resolveSchoolUUID(String(identifier), fontInMemSchools);
 
-  if (!resolved) {
-    throw new TenantError();
-  }
-  return resolved;
+  return resolved || String(identifier);
 };
 export class TenantError extends Error {
   constructor() {

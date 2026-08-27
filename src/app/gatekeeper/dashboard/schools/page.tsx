@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  Building2, Search, Eye, ExternalLink, FileText, Check, RefreshCw, X, Trash2, AlertCircle
+  Building2, Search, Eye, ExternalLink, FileText, Check, RefreshCw, X, Trash2, AlertCircle, Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -504,8 +504,15 @@ function GatekeeperSchoolManagementContent() {
                       </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{sc.name}</h4>
-                        <a href={`/${encodeURIComponent(sc.slug)}`} target="_blank" rel="noreferrer" className="text-xs text-[#2e3749] dark:text-[#FFD33B] font-mono hover:underline">
-                          /{sc.slug}
+                        <a
+                          href={`/${encodeURIComponent(sc.slug)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-blue-600 dark:text-[#FFD33B] font-mono font-bold hover:underline mt-0.5"
+                          title={`Kunjungi ${sc.slug}.cationgate.site`}
+                        >
+                          <Globe className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span>{sc.slug}.cationgate.site</span>
                         </a>
                       </div>
                     </div>
@@ -670,20 +677,42 @@ function GatekeeperSchoolManagementContent() {
 
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 space-y-1">
                   <span className="text-slate-400 font-semibold block text-[11px]">Email Resmi Instansi:</span>
-                  <span className="font-bold text-slate-900 dark:text-white text-sm">{selectedSchoolModal.email || "-"}</span>
+                  <span className="font-bold text-slate-900 dark:text-white text-sm font-mono">{selectedSchoolModal.official_email || selectedSchoolModal.email || "-"}</span>
                 </div>
               </div>
 
               {/* Uploaded Verification Documents Section */}
               <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
                 {(() => {
-                  let docs: Array<{ id?: string; name: string; url?: string; type?: string }> = [];
-                  if (Array.isArray(selectedSchoolModal.verification_documents)) {
-                    docs = selectedSchoolModal.verification_documents;
+                  let docs: Array<{ id?: string; name: string; url?: string; type?: string; size?: number }> = [];
+
+                  if (Array.isArray(selectedSchoolModal.documents) && selectedSchoolModal.documents.length > 0) {
+                    docs = selectedSchoolModal.documents.map((d, i) => ({
+                      id: d.id || `doc-${i}`,
+                      name: d.name || `Berkas_Verifikasi_${i + 1}.pdf`,
+                      url: d.url || "",
+                      type: d.type || "SK_OPERASIONAL",
+                      size: d.size
+                    }));
+                  } else if (Array.isArray(selectedSchoolModal.verification_documents) && selectedSchoolModal.verification_documents.length > 0) {
+                    docs = selectedSchoolModal.verification_documents.map((d, i) => ({
+                      id: d.id || `doc-${i}`,
+                      name: d.name || `Berkas_Verifikasi_${i + 1}.pdf`,
+                      url: d.url || "",
+                      type: d.type || "SK_OPERASIONAL",
+                      size: d.size
+                    }));
+                  } else if (selectedSchoolModal.sk_document_url || selectedSchoolModal.sk_document_name) {
+                    docs = [{
+                      id: "doc-sk",
+                      name: selectedSchoolModal.sk_document_name || "Surat_Keputusan_Operasional.pdf",
+                      url: selectedSchoolModal.sk_document_url || "",
+                      type: "SK_OPERASIONAL"
+                    }];
                   } else if (selectedSchoolModal.verification_document_url) {
                     docs = [{
                       id: "doc-legacy",
-                      name: "Dokumen_Legalitas.pdf",
+                      name: "Surat_Keputusan_Operasional.pdf",
                       url: selectedSchoolModal.verification_document_url,
                       type: "SK_OPERASIONAL"
                     }];

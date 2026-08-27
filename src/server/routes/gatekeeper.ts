@@ -220,23 +220,40 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
             legal_sk_number: s.legal_sk_number || existing.legal_sk_number,
             sk_document_url: s.sk_document_url || existing.sk_document_url,
             sk_document_name: s.sk_document_name || existing.sk_document_name,
+            documents: s.documents || existing.documents,
+            verification_documents: s.verification_documents || s.documents || existing.verification_documents || existing.documents,
             npsn: s.npsn || existing.npsn,
             dapodik_code: s.dapodik_code || existing.dapodik_code,
             admin_name: s.admin_name || existing.admin_name,
-            official_email: s.official_email || existing.official_email,
+            official_email: s.official_email || s.email || existing.official_email || existing.email,
+            email: s.official_email || s.email || existing.official_email || existing.email,
             accreditation: s.accreditation || existing.accreditation,
             is_official: true
           });
         } else {
-          combinedMap.set(k, { ...s, is_official: false });
+          combinedMap.set(k, {
+            ...s,
+            email: s.official_email || s.email,
+            official_email: s.official_email || s.email,
+            documents: s.documents || (s.sk_document_url ? [{ id: 'doc-1', type: 'SK_OPERASIONAL', name: s.sk_document_name || 'SK_Operasional.pdf', url: s.sk_document_url }] : []),
+            is_official: false
+          });
         }
       });
     }
 
     fontInMemSchools.forEach((s, key) => {
       const realSlug = s.slug || key;
+      const memDocs = s.documents || (s.sk_document_url ? [{ id: 'doc-1', type: 'SK_OPERASIONAL', name: s.sk_document_name || 'SK_Operasional.pdf', url: s.sk_document_url }] : []);
       if (!combinedMap.has(realSlug)) {
-        combinedMap.set(realSlug, { ...s, slug: realSlug });
+        combinedMap.set(realSlug, {
+          ...s,
+          slug: realSlug,
+          email: s.official_email || s.email,
+          official_email: s.official_email || s.email,
+          documents: memDocs,
+          verification_documents: memDocs
+        });
       } else {
         const existing = combinedMap.get(realSlug);
         combinedMap.set(realSlug, {
@@ -247,10 +264,13 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
           legal_sk_number: s.legal_sk_number || existing.legal_sk_number,
           sk_document_url: s.sk_document_url || existing.sk_document_url,
           sk_document_name: s.sk_document_name || existing.sk_document_name,
+          documents: s.documents || existing.documents || memDocs,
+          verification_documents: s.documents || existing.verification_documents || existing.documents || memDocs,
           npsn: s.npsn || existing.npsn,
           dapodik_code: s.dapodik_code || existing.dapodik_code,
           admin_name: s.admin_name || existing.admin_name,
-          official_email: s.official_email || existing.official_email,
+          official_email: s.official_email || s.email || existing.official_email || existing.email,
+          email: s.official_email || s.email || existing.official_email || existing.email,
           status: s.status || existing.status,
         });
       }

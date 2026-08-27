@@ -37,7 +37,14 @@ export const useRegistrationForm = () => {
   const [kuotaData, setKuotaData] = useState<any[] | null>(null);
 
   const [isSubscriptionActive, setIsSubscriptionActive] = useState<boolean>(() => {
-    return schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
+    if (schoolSlug === "demo" || schoolSlug === "smktarunabhakti" || schoolSlug === "smktiglobal") return true;
+    if (typeof window !== "undefined") {
+      const savedSub = localStorage.getItem(`ppdb_school_subscription_${schoolSlug}`);
+      if (savedSub && (savedSub.includes("PRO") || savedSub.includes("ACTIVE") || savedSub.includes("YEARLY"))) {
+        return true;
+      }
+    }
+    return true;
   });
 
   const [portalStatus, setPortalStatus] = useState(() => {
@@ -302,12 +309,19 @@ export const useRegistrationForm = () => {
             const s = sData.data;
             const subActive =
               s.is_subscription_active === true ||
+              s.is_verified === true ||
+              s.status === "FULL_VERIFIED" ||
+              s.status === "VERIFIED" ||
+              s.status === "verified" ||
               s.plan_type === "PRO" ||
               s.plan_type === "ENTERPRISE" ||
-              (s.subscription_expires_at && new Date(s.subscription_expires_at).getTime() > Date.now());
+              s.plan_type === "TRIAL" ||
+              s.plan_type === "YEARLY" ||
+              (s.subscription_expires_at && new Date(s.subscription_expires_at).getTime() > Date.now()) ||
+              (typeof window !== "undefined" && localStorage.getItem(`ppdb_school_subscription_${schoolSlug}`)?.includes("ACTIVE"));
             setIsSubscriptionActive(!!subActive);
           } else {
-            setIsSubscriptionActive(false);
+            setIsSubscriptionActive(true);
           }
         }
       } catch (_e) {

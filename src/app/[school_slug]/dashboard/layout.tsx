@@ -294,18 +294,22 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // ── Unverified School Redirection ──────────────────────────────────
+      // ── Verification Redirection & Route Lockdown ──────────────────────
+      const isVerificationPage = pathname?.includes("/dashboard/verification");
+
+      if (isSchoolVerified && isVerificationPage) {
+        // If already verified, close the verification route and send straight to dashboard
+        router.replace(href("/dashboard"));
+        return;
+      }
+
       if (schoolSlug !== "smktarunabhakti" && schoolSlug !== "smktiglobal" && !isSchoolVerified) {
         const isUnverified =
-          schoolStatus === "PENDING_VERIFICATION" ||
           schoolStatus === "UNVERIFIED" ||
-          schoolStatus === "REJECTED" ||
-          (!schoolStatus || (schoolStatus !== "FULL_VERIFIED" && schoolStatus !== "VERIFIED" && schoolStatus !== "verified"));
-
-        const isVerificationPage = pathname?.includes("/dashboard/verification");
+          schoolStatus === "REJECTED";
 
         if (isUnverified && !isVerificationPage) {
-          router.push(`/${schoolSlug}/dashboard/verification`);
+          router.push(href("/dashboard/verification"));
         }
       }
     }

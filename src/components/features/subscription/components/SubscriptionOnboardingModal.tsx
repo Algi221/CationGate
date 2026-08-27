@@ -78,7 +78,7 @@ export const SubscriptionOnboardingModal: React.FC<SubscriptionOnboardingModalPr
             </button>
 
             {/* Glowing Icon Header */}
-            <div className="relative mx-auto mb-5 w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 p-0.5 shadow-lg shadow-yellow-400/20 flex items-center justify-center">
+            <div className="relative mx-auto mb-5 w-16 h-16 rounded-3xl bg-linear-to-tr from-amber-400 to-yellow-300 p-0.5 shadow-lg shadow-yellow-400/20 flex items-center justify-center">
               <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[22px] flex items-center justify-center">
                 <Sparkles className="w-8 h-8 text-amber-500 animate-pulse" />
               </div>

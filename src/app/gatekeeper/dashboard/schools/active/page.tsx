@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { 
   CheckCircle2, Search, X, ExternalLink, 
-  RefreshCw, FileText, Eye, Globe, Trash2
+  RefreshCw, FileText, Eye, Globe, Trash2, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Swal from "sweetalert2";
-import { sanitizeSlug, safeOpenWindow } from "@/lib/sanitizeUrl";
+import { sanitizeSlug, safeOpenWindow, downloadDocFile } from "@/lib/sanitizeUrl";
+import { GatekeeperDocPreviewModal } from "../components/GatekeeperDocPreviewModal";
 
 interface SchoolTenant {
   id: number;
@@ -41,6 +42,7 @@ function GatekeeperActiveSchoolsContent() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSchoolModal, setSelectedSchoolModal] = useState<SchoolTenant | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<{ url: string; name: string; type?: string } | null>(null);
 
   const fetchActiveSchools = useCallback(async () => {
     try {
@@ -423,15 +425,27 @@ function GatekeeperActiveSchoolsContent() {
                               </div>
 
                               {doc.url && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    safeOpenWindow(doc.url);
-                                  }}
-                                  className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all shrink-0 cursor-pointer"
-                                >
-                                  <ExternalLink className="w-3.5 h-3.5" /> Buka Dokumen
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setPreviewDoc({ url: doc.url!, name: doc.name || "Berkas_Verifikasi.pdf", type: doc.type });
+                                    }}
+                                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all shrink-0 cursor-pointer"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" /> Buka Dokumen
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      downloadDocFile(doc.url, doc.name || "Berkas_Verifikasi.pdf");
+                                    }}
+                                    title="Unduh Berkas Langsung"
+                                    className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </button>
+                                </div>
                               )}
                             </div>
 
@@ -440,7 +454,7 @@ function GatekeeperActiveSchoolsContent() {
                                 <span className="text-slate-500 font-medium">Format Gambar (JPG/PNG)</span>
                                 <button
                                   type="button"
-                                  onClick={() => safeOpenWindow(doc.url)}
+                                  onClick={() => setPreviewDoc({ url: doc.url!, name: doc.name || "Foto_ID_Card.jpg", type: doc.type })}
                                   className="text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
                                 >
                                   <Eye className="w-3 h-3" /> Lihat Gambar
@@ -488,6 +502,12 @@ function GatekeeperActiveSchoolsContent() {
           </div>
         </div>
       )}
+
+      {/* ── MODAL EMBEDDED DOCUMENT PREVIEW (PDF / IMAGE) ── */}
+      <GatekeeperDocPreviewModal
+        previewDoc={previewDoc}
+        onClose={() => setPreviewDoc(null)}
+      />
     </div>
   );
 }

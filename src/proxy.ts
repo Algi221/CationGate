@@ -11,7 +11,7 @@ const BLOCKED_AUDIT_AGENTS = [
 ];
 
 // Reserved system/marketing subdomains that should NOT be treated as school slugs
-const SYSTEM_SUBDOMAINS = ["www", "api", "admin", "app", "dashboard", "portal", "auth", "mail", "cname", "static", "assets"];
+const SYSTEM_SUBDOMAINS = ["www", "api", "admin", "app", "dashboard", "portal", "auth", "mail", "cname", "static", "assets", "daftar", "register", "masuk"];
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -56,13 +56,18 @@ export default function proxy(request: NextRequest) {
     }
   }
 
-  // If subdomain is in system reserved keywords (e.g. dashboard.cationgate.site, admin.cationgate.site)
+  // If subdomain is in system reserved keywords (e.g. dashboard.cationgate.site, admin.cationgate.site, daftar.cationgate.site)
   if (subdomain && SYSTEM_SUBDOMAINS.includes(subdomain)) {
-    if (["dashboard", "admin", "app", "portal", "auth"].includes(subdomain)) {
-      const port = request.nextUrl.port ? `:${request.nextUrl.port}` : "";
-      const isLocalhost = hostname.includes("localhost");
-      const targetHost = isLocalhost ? `localhost${port}` : "cationgate.site";
-      const protocol = isLocalhost ? "http" : "https";
+    const port = request.nextUrl.port ? `:${request.nextUrl.port}` : "";
+    const isLocalhost = hostname.includes("localhost");
+    const targetHost = isLocalhost ? `localhost${port}` : "cationgate.site";
+    const protocol = isLocalhost ? "http" : "https";
+
+    if (["daftar", "register"].includes(subdomain)) {
+      return NextResponse.redirect(new URL(`${protocol}://${targetHost}/daftar`, request.url), 307);
+    }
+
+    if (["dashboard", "admin", "app", "portal", "auth", "masuk"].includes(subdomain)) {
       return NextResponse.redirect(new URL(`${protocol}://${targetHost}/login`, request.url), 307);
     }
     subdomain = null;
@@ -108,13 +113,18 @@ export default function proxy(request: NextRequest) {
     "",
     "login",
     "auth",
+    "daftar",
     "register",
+    "masuk",
     "daftar-sekolah",
     "forgot-password",
     "fitur",
     "harga",
     "blog",
     "tentang",
+    "kontak",
+    "health",
+    "verify",
     "syarat-ketentuan",
     "kebijakan-privasi",
     "gatekeeper",

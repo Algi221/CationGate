@@ -256,6 +256,12 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
         });
       } else {
         const existing = combinedMap.get(realSlug);
+        const latestDocs = (Array.isArray(s.documents) && s.documents.length > 0)
+          ? s.documents
+          : (Array.isArray(existing.documents) && existing.documents.length > 0)
+            ? existing.documents
+            : memDocs;
+
         combinedMap.set(realSlug, {
           ...existing,
           ...s,
@@ -264,8 +270,8 @@ gatekeeperRouter.get('/schools', gatekeeperAuth, async (c) => {
           legal_sk_number: s.legal_sk_number || existing.legal_sk_number,
           sk_document_url: s.sk_document_url || existing.sk_document_url,
           sk_document_name: s.sk_document_name || existing.sk_document_name,
-          documents: s.documents || existing.documents || memDocs,
-          verification_documents: s.documents || existing.verification_documents || existing.documents || memDocs,
+          documents: latestDocs,
+          verification_documents: latestDocs,
           npsn: s.npsn || existing.npsn,
           dapodik_code: s.dapodik_code || existing.dapodik_code,
           admin_name: s.admin_name || existing.admin_name,

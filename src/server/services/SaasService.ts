@@ -676,12 +676,20 @@ export class SaasService {
         amount: txAmount,
         payment_method: txMethod,
         status: 'SETTLEMENT',
-        customer_name: adminName,
-        customer_email: officialEmail,
         created_at: now.toISOString(),
         settlement_time: now.toISOString()
       });
     }
+
+    // Invalidate Redis cache
+    try {
+      if (schoolSlug) await redis.del(`school:${schoolSlug}`);
+      if (idOrSlug) await redis.del(`school:${idOrSlug}`);
+      if (resolvedUUID) await redis.del(`school:${resolvedUUID}`);
+      await redis.del(`config_${schoolSlug}`);
+      await redis.del(`config_${idOrSlug}`);
+      await redis.del('config_default');
+    } catch (_redisErr) {}
 
     return {
       success: true,
@@ -918,11 +926,13 @@ export class SaasService {
     const supabase = getSupabaseClient();
     const resolvedId = await resolveSchoolUUID(slug, fontInMemSchools);
 
+    const firstDoc = (payload.documents && payload.documents.length > 0) ? payload.documents[0] : null;
+
     const updates: Record<string, unknown> = {
       status: 'PENDING_VERIFICATION',
       legal_sk_number: payload.legal_sk_number || 'SK-PENDING',
-      sk_document_url: payload.sk_document_url,
-      sk_document_name: payload.sk_document_name || 'SK_Operasional.pdf',
+      sk_document_url: payload.sk_document_url || firstDoc?.url || '',
+      sk_document_name: payload.sk_document_name || firstDoc?.name || 'SK_Operasional.pdf',
       accreditation: payload.accreditation || 'A (Unggul)',
       documents: payload.documents || (payload.sk_document_name ? [{
         id: 'doc-1',
@@ -930,6 +940,7 @@ export class SaasService {
         name: payload.sk_document_name,
         url: payload.sk_document_url
       }] : []),
+      verification_documents: payload.documents,
       updated_at: new Date().toISOString()
     };
 
@@ -943,6 +954,9 @@ export class SaasService {
         await supabase.from('schools').update(updates).eq('id', resolvedId);
       } catch (_e) {}
     }
+    try {
+      await supabase.from('schools').update(updates).eq('slug', slug);
+    } catch (_e) {}
 
     // 1. Guaranteed in-memory cache upsert
     let matchedMem = false;
@@ -954,7 +968,10 @@ export class SaasService {
         s.sk_document_url = (updates.sk_document_url as string) || s.sk_document_url;
         s.sk_document_name = (updates.sk_document_name as string) || s.sk_document_name;
         s.accreditation = (updates.accreditation as string) || s.accreditation;
-        s.documents = updates.documents;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        s.documents = updates.documents as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        s.verification_documents = updates.documents as any;
         if (payload.npsn) s.npsn = payload.npsn;
         if (payload.dapodik_code) s.dapodik_code = payload.dapodik_code;
         if (payload.admin_name) s.admin_name = payload.admin_name;
@@ -973,6 +990,7 @@ export class SaasService {
         sk_document_name: updates.sk_document_name,
         accreditation: updates.accreditation,
         documents: updates.documents,
+        verification_documents: updates.documents,
         npsn: payload.npsn || '',
         dapodik_code: payload.dapodik_code || '',
         admin_name: payload.admin_name || '',
@@ -980,6 +998,16 @@ export class SaasService {
         created_at: new Date().toISOString()
       });
     }
+
+    // Invalidate Redis caches
+    try {
+      const redis = getRedis();
+      if (redis) {
+        await redis.del(`school:${slug}`);
+        await redis.del(`config_${slug}`);
+        await redis.del('gatekeeper_schools_list');
+      }
+    } catch (_e) {}
 
     // 2. Supabase UPSERT into prospective_schools
     try {

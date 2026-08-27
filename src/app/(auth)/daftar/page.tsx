@@ -12,6 +12,7 @@ import { EditorialLottiePanel } from "@/components/features/auth-daftar/componen
 import { Step1Instansi } from "@/components/features/auth-daftar/components/Step1Instansi";
 import { Step2AkunAdmin } from "@/components/features/auth-daftar/components/Step2AkunAdmin";
 import { Step3Konfirmasi } from "@/components/features/auth-daftar/components/Step3Konfirmasi";
+import { safeRedirect } from "@/lib/sanitizeUrl";
 
 export default function DaftarSaaS() {
   const {
@@ -44,6 +45,18 @@ export default function DaftarSaaS() {
     handleNext,
     handleSubmit
   } = useDaftarSaaSState();
+
+  const handleGoToHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("cationgate_skip_splash", "true");
+      const host = window.location.host.toLowerCase();
+      const isLocalhost = host.includes("localhost");
+      const port = window.location.port ? `:${window.location.port}` : "";
+      const homeUrl = isLocalhost ? `http://localhost${port}/` : "https://cationgate.site/";
+      safeRedirect(homeUrl, "/");
+    }
+  };
 
   return (
     <main className="min-h-screen lg:h-screen w-screen bg-white text-slate-950 overflow-x-hidden relative flex flex-col justify-between p-4 sm:p-6 lg:p-8 pb-4 font-sans">
@@ -88,13 +101,9 @@ export default function DaftarSaaS() {
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                sessionStorage.setItem("cationgate_skip_splash", "true");
-              }
-            }}
-            className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-all group drop-shadow-sm"
-            title="Kembali ke Beranda"
+            onClick={handleGoToHome}
+            className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-all group drop-shadow-sm cursor-pointer"
+            title="Kembali ke Beranda CationGate"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <span>Beranda</span>
@@ -104,12 +113,8 @@ export default function DaftarSaaS() {
         {/* Center Brand Logo */}
         <Link 
           href="/"
-          onClick={() => {
-            if (typeof window !== "undefined") {
-              sessionStorage.setItem("cationgate_skip_splash", "true");
-            }
-          }}
-          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102"
+          onClick={handleGoToHome}
+          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102 cursor-pointer"
         >
           <Image
             src="/assets/logo_cationgate/CationGate_Logo.png"

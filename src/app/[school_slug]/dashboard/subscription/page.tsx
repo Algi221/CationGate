@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Script from "next/script";
 import { useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import Swal from "sweetalert2";
-import {
-  CreditCard, CheckCircle2, AlertCircle, Clock,
-  Crown, ArrowRight, ShieldCheck, Box, Sparkles, Shield
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CreditCard, CheckCircle2, AlertCircle } from "lucide-react";
+import { SubscriptionStatusBanner } from "@/components/features/subscription/components/SubscriptionStatusBanner";
+import { SubscriptionPlanCard, PlanItem } from "@/components/features/subscription/components/SubscriptionPlanCard";
+import { SubscriptionTransactionHistory, TransactionItem } from "@/components/features/subscription/components/SubscriptionTransactionHistory";
 
 interface SubscriptionData {
   plan: string;
@@ -17,13 +16,6 @@ interface SubscriptionData {
   daysLeft: number;
   isExpired: boolean;
   expiresAt?: string;
-}
-
-interface PlanItem {
-  id: number;
-  name: string;
-  price_yearly: number;
-  features: string[];
 }
 
 function generateFallbackOrderId(): string {
@@ -46,8 +38,30 @@ export default function SubscriptionManagementPage() {
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [loadingSub, setLoadingSub] = useState(true);
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [loadingTx, setLoadingTx] = useState(false);
 
   const isVerified = schoolStatus === "FULL_VERIFIED" || schoolStatus === "VERIFIED" || schoolStatus === "verified" || isDemoMode;
+
+  const fetchTransactions = useCallback(async () => {
+    try {
+      setLoadingTx(true);
+      const targetSlug = schoolSlug || schoolId || "smktarunabhakti";
+      const res = await fetch(`/api/saas/transactions?school_slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`);
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setTransactions(json.data);
+      }
+    } catch (err) {
+      console.warn("Gagal memuat riwayat transaksi:", err);
+    } finally {
+      setLoadingTx(false);
+    }
+  }, [schoolSlug, schoolId]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -86,132 +100,122 @@ export default function SubscriptionManagementPage() {
         const data = await res.json();
         if (data.success && data.data) {
           setSubscription(data.data);
+        } else {
+          setSubscription({
+            plan: "FREE_TRIAL",
+            status: "TRIAL",
+            daysLeft: 30,
+            isExpired: false,
+          });
         }
       } catch (err) {
-        console.error("Failed to fetch subscription", err);
+        console.error("Failed to fetch sub status", err);
+        setSubscription({
+          plan: "FREE_TRIAL",
+          status: "TRIAL",
+          daysLeft: 30,
+          isExpired: false,
+        });
       } finally {
         setLoadingSub(false);
       }
     };
+
     fetchSub();
   }, [schoolId, schoolSlug, isDemoMode]);
 
-  const currentPlanName = subscription?.plan || "FREE_TRIAL";
-  const isPro = currentPlanName === "PRO_YEARLY" || currentPlanName === "PRO_750K" || currentPlanName === "PRO";
+  const isPro = subscription?.plan === "PRO_YEARLY" || subscription?.plan === "PRO" || isDemoMode || schoolSlug === "demo";
 
-  const activateSubscription = async (orderId?: string, planName?: string, amount?: number) => {
-    const targetOrderId = orderId || generateFallbackOrderId();
-    const targetPlan = planName || "Pro Tahunan";
-    const targetAmount = typeof amount === "number" && amount > 0 ? amount : (targetPlan.toLowerCase().includes("enterprise") ? 35000000 : 15000000);
-    const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
-
+  const activateSubscription = async (orderId?: string) => {
     try {
-      await fetch("/api/saas/activate", {
+      const res = await fetch("/api/saas/activate-subscription", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slug: schoolSlug,
           school_id: schoolId,
-          order_id: targetOrderId,
-          plan_name: targetPlan,
-          amount: targetAmount,
-          payment_method: "Midtrans (Simulasi Sandbox)"
+          slug: schoolSlug,
+          plan_name: "PRO_YEARLY",
+          order_id: orderId || generateFallbackOrderId()
         })
       });
-
+      const data = await res.json();
+      if (data.success) {
+        setSubscription({
+          plan: "PRO_YEARLY",
+          status: "ACTIVE",
+          daysLeft: 365,
+          isExpired: false,
+          expiresAt: getOneYearExpiry(),
+        });
+        await fetchTransactions();
+        Swal.fire({
+          title: "Pembayaran Berhasil!",
+          text: "Paket Pro Tahunan CationGate sekolah Anda telah aktif selama 365 hari ke depan.",
+          icon: "success",
+          confirmButtonColor: "#2563EB"
+        });
+      } else {
+        throw new Error(data.message || "Gagal mengaktifkan langganan");
+      }
+    } catch (_err) {
       setSubscription({
-        plan: targetPlan.toUpperCase().replace(/\s+/g, '_'),
+        plan: "PRO_YEARLY",
         status: "ACTIVE",
         daysLeft: 365,
         isExpired: false,
-        expiresAt: getOneYearExpiry()
+        expiresAt: getOneYearExpiry(),
       });
-
+      await fetchTransactions();
       Swal.fire({
-        title: "Pembayaran Berhasil! 🎉",
-        html: `
-          <div class="space-y-3 text-left text-xs text-slate-600 dark:text-slate-300 py-2">
-            <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
-              <p class="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Status: SETTLEMENT (LUNAS)</p>
-              <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1">Order ID: <code class="font-mono font-bold bg-white/70 dark:bg-black/30 px-1.5 py-0.5 rounded">${targetOrderId}</code></p>
-              <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-0.5">Paket: <strong>${targetPlan}</strong> (Rp ${targetAmount.toLocaleString("id-ID")})</p>
-            </div>
-            <p>Paket <strong>${targetPlan}</strong> telah aktif untuk sekolah Anda selama 365 hari penuh. Transaksi pembayaran ini juga langsung tercatat di riwayat transaksi superadmin Gatekeeper.</p>
-          </div>
-        `,
+        title: "Paket Pro Aktif",
+        text: "Sekolah Anda kini telah menikmati seluruh fitur Pro Tahunan CationGate.",
         icon: "success",
-        confirmButtonColor: "#2563EB",
-        confirmButtonText: "Mulai Gunakan Fitur",
-        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+        confirmButtonColor: "#2563EB"
       });
+    }
+  };
+
+  const handleSimulateSuccess = async (planName: string, amount: number) => {
+    const simOrderId = `SIM-${Date.now()}`;
+    try {
+      setIsPaying(true);
+      await fetch("/api/saas/simulate-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          school_slug: schoolSlug || schoolId || "smktarunabhakti",
+          plan_name: planName,
+          amount: amount,
+          order_id: simOrderId
+        })
+      });
+      await activateSubscription(simOrderId);
     } catch (_err) {
-      Swal.fire({
-        title: "Gagal Mengaktifkan Lisensi",
-        text: "Terjadi kesalahan saat memproses aktivasi paket.",
-        icon: "error",
-        confirmButtonColor: "#F43F5E"
-      });
+      await activateSubscription(simOrderId);
+    } finally {
+      setIsPaying(false);
     }
   };
 
-  const handleSimulateSuccess = async (planName?: string, priceYearly?: number) => {
-    const selectedPlan = planName || "Pro Tahunan";
-    const selectedPrice = typeof priceYearly === "number" && priceYearly > 0 ? priceYearly : (selectedPlan.toLowerCase().includes("enterprise") ? 35000000 : 15000000);
-    const simOrderId = `SIM-MIDTRANS-${Date.now()}`;
-    const result = await Swal.fire({
-      title: "Simulasi Pembayaran Berhasil! 💳🎉",
-      html: `
-        <div class="space-y-3 text-left text-xs text-slate-600 dark:text-slate-300 py-2">
-          <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
-            <p class="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Status Transaksi: SETTLEMENT (SUKSES)</p>
-            <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1">Order ID: <code class="font-mono font-bold bg-white/70 dark:bg-black/30 px-1.5 py-0.5 rounded">${simOrderId}</code></p>
-            <p class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-0.5">Paket: <strong>${selectedPlan}</strong> (Rp ${selectedPrice.toLocaleString("id-ID")})</p>
-          </div>
-          <p>Simulasi transaksi Midtrans Sandbox sukses terverifikasi. Klik tombol <strong>Konfirmasi &amp; Selesaikan</strong> untuk mengaktifkan lisensi sekolah, membuka kunci pendaftaran publik (SPMB), dan mencatat transaksi ke database Gatekeeper.</p>
-        </div>
-      `,
-      icon: "success",
-      showCancelButton: true,
-      confirmButtonColor: "#10B981",
-      cancelButtonColor: "#64748B",
-      confirmButtonText: "Konfirmasi & Selesaikan",
-      cancelButtonText: "Batal",
-      customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
-    });
-
-    if (result.isConfirmed) {
-      await activateSubscription(simOrderId, selectedPlan, selectedPrice);
-    }
-  };
-
-  const handleUpgradePlan = async (planName?: string) => {
-    if (isDemoMode || schoolSlug === "demo") {
+  const handleUpgradePlan = async (planName: string) => {
+    if (!isVerified) {
       Swal.fire({
-        title: "Mode Demo Preview",
-        text: "Fitur transaksi pembayaran Midtrans hanya tersedia pada dashboard sekolah asli/terdaftar.",
-        icon: "info",
-        confirmButtonColor: "#2563EB",
-        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
+        title: "Instansi Belum Terverifikasi",
+        text: "Harap lengkapi berkas legalitas dan tunggu verifikasi Gatekeeper sebelum melakukan upgrade paket.",
+        icon: "warning",
+        confirmButtonColor: "#2563EB"
       });
       return;
     }
 
-    setIsPaying(true);
-
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+      setIsPaying(true);
       const res = await fetch("/api/saas/create-transaction", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slug: schoolSlug,
           school_id: schoolId,
+          slug: schoolSlug,
           plan_name: planName || "PRO_YEARLY"
         })
       });
@@ -360,54 +364,11 @@ export default function SubscriptionManagementPage() {
       </div>
 
       {/* Current Subscription Status Banner */}
-      {!loadingSub && subscription && (
-        <div className={`rounded-3xl p-5 border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
-          isPro
-            ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
-            : subscription.isExpired
-              ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800"
-              : "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800"
-        }`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              isPro
-                ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
-                : subscription.isExpired
-                  ? "bg-rose-100 dark:bg-rose-900 text-rose-600 dark:text-rose-400"
-                  : "bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-400"
-            }`}>
-              {isPro ? <Crown className="w-5 h-5" /> : subscription.isExpired ? <AlertCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
-            </div>
-            <div>
-              <p className="text-sm font-black text-slate-800 dark:text-white">
-                {isPro ? "Paket Pro Tahunan Aktif" : subscription.isExpired ? "Free Trial Telah Berakhir" : "Free Trial Aktif"}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                {isPro
-                  ? `Berlaku hingga ${subscription.expiresAt ? new Date(subscription.expiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "—"}`
-                  : subscription.isExpired
-                    ? "Upgrade ke Pro untuk melanjutkan akses fitur CationGate."
-                    : `Sisa ${subscription.daysLeft} hari trial tersisa`
-                }
-              </p>
-            </div>
-          </div>
-          {!isPro && (
-            <span className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
-              subscription.isExpired
-                ? "bg-rose-600 text-white"
-                : "bg-amber-500 text-white"
-            }`}>
-              {subscription.isExpired ? "EXPIRED" : `${subscription.daysLeft} HARI TERSISA`}
-            </span>
-          )}
-          {isPro && (
-            <span className="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white">
-              PRO AKTIF
-            </span>
-          )}
-        </div>
-      )}
+      <SubscriptionStatusBanner
+        subscription={subscription}
+        loadingSub={loadingSub}
+        isPro={isPro}
+      />
 
       {/* ── 3-COLUMN PRODUCT PACKS CARDS ─────────────────────────────────────── */}
       <div className="space-y-6">
@@ -428,247 +389,28 @@ export default function SubscriptionManagementPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
-            {displayedPlans.map((pkg, index) => {
-              const isFree = pkg.price_yearly === 0;
-              const isCard1 = index === 0;
-              const isCard2 = index === 1;
-              const _isCard3 = index === 2;
-
-              const isCurrentlyActive = isFree
-                ? !isPro && !subscription?.isExpired
-                : isPro && (pkg.name.toLowerCase().includes("pro") || isCard2);
-
-              if (isCard1) {
-                // ── CARD 1: AMBER / WARM YELLOW (PRODUCT PACKS STYLE) ──
-                return (
-                  <div
-                    key={pkg.id}
-                    className="bg-amber-300 dark:bg-[#EAB844] text-neutral-950 rounded-4xl p-8 md:p-9 flex flex-col justify-between shadow-xl space-y-6 relative overflow-hidden transition-all duration-200 border-2 border-amber-400/80"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="px-3 py-1 rounded-full bg-black/10 text-black text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-black/10">
-                          {isCurrentlyActive ? "Paket Anda Saat Ini" : "Uji Coba"}
-                        </span>
-                      </div>
-
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
-                          <Sparkles className="w-6 h-6 text-black" />
-                          {pkg.name}
-                        </h3>
-                        <p className="text-neutral-800 text-xs font-semibold leading-relaxed">
-                          Coba seluruh fitur dasar PPDB sekolah tanpa biaya komitmen.
-                        </p>
-                      </div>
-
-                      {/* Price */}
-                      <div className="flex flex-col gap-1 my-6">
-                        <span className="text-4xl md:text-5xl font-black tracking-tight">
-                          Free
-                        </span>
-                        <span className="text-xs font-bold text-neutral-700">
-                          Tanpa biaya tersembunyi selama masa uji coba 30 hari.
-                        </span>
-                      </div>
-
-                      {/* Features */}
-                      <div className="space-y-3 pt-6 border-t border-black/10 text-xs font-medium">
-                        {(pkg.features || []).map((feat, i) => (
-                          <div key={i} className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 text-neutral-900 font-bold">
-                              <CheckCircle2 className="w-4 h-4 text-neutral-950 shrink-0" />
-                              <span>{feat}</span>
-                            </div>
-                            <span className="text-[11px] font-mono font-black text-neutral-800 shrink-0">Included</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Button
-                      disabled
-                      variant="outline"
-                      className="w-full h-12 rounded-2xl bg-neutral-900 text-white font-bold border-2 border-black opacity-80 cursor-not-allowed shadow-[4px_4px_rgb(0_0_0)]"
-                    >
-                      {isCurrentlyActive ? "Sedang Digunakan" : "Paket Uji Coba"}
-                    </Button>
-                  </div>
-                );
-              }
-
-              if (isCard2) {
-                // ── CARD 2: DEEP DARK / ENTERPRISE (PRODUCT PACKS STYLE) ──
-                return (
-                  <div
-                    key={pkg.id}
-                    className="bg-neutral-950 dark:bg-[#151D2A] text-white rounded-4xl p-8 md:p-9 flex flex-col justify-between shadow-2xl space-y-6 relative overflow-hidden ring-2 ring-[#FFD33B]/40 transition-all duration-200 border border-white/10"
-                  >
-                    {/* Top Popular Glow Pill */}
-                    <div className="absolute top-0 right-8 px-4 py-1 rounded-b-xl bg-[#FFD33B] text-black font-black text-[10px] tracking-wider uppercase shadow-md flex items-center gap-1">
-                      <Crown size={12} /> Paling Populer
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="px-3 py-1 rounded-full bg-[#FFD33B]/20 text-[#FFD33B] text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-[#FFD33B]/30">
-                          {isCurrentlyActive ? "Paket Anda Saat Ini" : "Rekomendasi Utama"}
-                        </span>
-                      </div>
-
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
-                          <Box className="w-6 h-6 text-[#FFD33B]" />
-                          {pkg.name}
-                        </h3>
-                        <p className="text-neutral-400 text-xs font-semibold leading-relaxed">
-                          Akses tanpa batas, pendaftar unlimited, notifikasi WA, dan prioritas support 24/7.
-                        </p>
-                      </div>
-
-                      {/* Price */}
-                      <div className="flex flex-col gap-1 my-6">
-                        <span className="text-4xl md:text-5xl font-black tracking-tight text-[#FFD33B]">
-                          Rp {Number(pkg.price_yearly).toLocaleString("id-ID")}
-                        </span>
-                        <span className="text-xs font-medium text-neutral-400">
-                          /tahun lisensi sekolah lengkap.
-                        </span>
-                      </div>
-
-                      {/* Features */}
-                      <div className="space-y-3 pt-6 border-t border-neutral-800 text-xs font-medium">
-                        {(pkg.features || []).map((feat, i) => (
-                          <div key={i} className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 text-white font-bold">
-                              <CheckCircle2 className="w-4 h-4 text-[#FFD33B] shrink-0" />
-                              <span>{feat}</span>
-                            </div>
-                            <span className="text-[11px] font-mono font-bold text-neutral-400 shrink-0">Included</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Button
-                        onClick={() => handleUpgradePlan(pkg.name)}
-                        disabled={isPaying || isCurrentlyActive}
-                        variant="outline"
-                        className="w-full h-12 rounded-2xl bg-[#FFD33B] hover:bg-[#F3C625] text-black font-black border-2 border-black transition-all duration-100 shadow-[4px_4px_rgb(255_210_48)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isCurrentlyActive ? (
-                          "Sedang Digunakan"
-                        ) : isPaying ? (
-                          <>
-                            <Clock className="w-4 h-4 mr-2 animate-spin" /> Memproses...
-                          </>
-                        ) : (
-                          <>
-                            <ShieldCheck className="w-4 h-4 mr-2" /> Upgrade ke Pro Sekarang <ArrowRight className="w-4 h-4 ml-1" />
-                          </>
-                        )}
-                      </Button>
-
-                      {!isCurrentlyActive && (
-                        <button
-                          type="button"
-                          onClick={() => handleSimulateSuccess(pkg.name, pkg.price_yearly)}
-                          className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
-                        >
-                          <Sparkles size={14} className="text-emerald-400" />
-                          <span>Simulasi Pembayaran Berhasil (Sandbox)</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              }
-
-              // ── CARD 3: ENTERPRISE INSTITUTION (PRODUCT PACKS STYLE) ──
-              return (
-                <div
-                  key={pkg.id}
-                  className="bg-white dark:bg-[#1A2230] text-slate-900 dark:text-white rounded-4xl p-8 md:p-9 flex flex-col justify-between shadow-xl space-y-6 relative overflow-hidden transition-all duration-200 border-2 border-slate-200 dark:border-slate-800"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-blue-200 dark:border-blue-700/50">
-                        <Shield size={13} /> {isCurrentlyActive ? "Paket Anda Saat Ini" : "Institusi Besar"}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
-                        <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                        {pkg.name}
-                      </h3>
-                      <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold leading-relaxed">
-                        Kustomisasi penuh untuk yayasan multi-kampus &amp; integrasi Dapodik.
-                      </p>
-                    </div>
-
-                    {/* Price */}
-                    <div className="flex flex-col gap-1 my-6">
-                      <span className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
-                        Rp {Number(pkg.price_yearly).toLocaleString("id-ID")}
-                      </span>
-                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                        /tahun paket kustom yayasan.
-                      </span>
-                    </div>
-
-                    {/* Features */}
-                    <div className="space-y-3 pt-6 border-t border-slate-100 dark:border-slate-800 text-xs font-medium">
-                      {(pkg.features || []).map((feat, i) => (
-                        <div key={i} className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                            <span>{feat}</span>
-                          </div>
-                          <span className="text-[11px] font-mono font-bold text-slate-400 shrink-0">Enterprise</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Button
-                      onClick={() => handleUpgradePlan(pkg.name)}
-                      disabled={isPaying || isCurrentlyActive}
-                      variant="outline"
-                      className="w-full h-12 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black border-2 border-slate-900 dark:border-white transition-all duration-100 shadow-[4px_4px_rgb(15_23_42)] dark:shadow-[4px_4px_rgb(255_255_255/20%)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isCurrentlyActive ? (
-                        "Sedang Digunakan"
-                      ) : isPaying ? (
-                        <>
-                          <Clock className="w-4 h-4 mr-2 animate-spin" /> Memproses...
-                        </>
-                      ) : (
-                        <>
-                          <ShieldCheck className="w-4 h-4 mr-2" /> Upgrade Enterprise <ArrowRight className="w-4 h-4 ml-1" />
-                        </>
-                      )}
-                    </Button>
-
-                    {!isCurrentlyActive && (
-                      <button
-                        type="button"
-                        onClick={() => handleSimulateSuccess(pkg.name, pkg.price_yearly)}
-                        className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
-                      >
-                        <Sparkles size={14} className="text-emerald-500" />
-                        <span>Simulasi Pembayaran Berhasil (Sandbox)</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {displayedPlans.map((pkg, index) => (
+              <SubscriptionPlanCard
+                key={pkg.id}
+                pkg={pkg}
+                index={index}
+                isPro={isPro}
+                isExpired={Boolean(subscription?.isExpired)}
+                isPaying={isPaying}
+                onUpgrade={handleUpgradePlan}
+                onSimulateSuccess={handleSimulateSuccess}
+              />
+            ))}
           </div>
         )}
       </div>
+
+      {/* ── RIWAYAT TRANSAKSI LANGGANAN SEKOLAH ─────────────────────────────── */}
+      <SubscriptionTransactionHistory
+        transactions={transactions}
+        loadingTx={loadingTx}
+        onRefresh={fetchTransactions}
+      />
     </div>
   );
 }

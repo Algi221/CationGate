@@ -11,11 +11,7 @@ export function useJurusanDetailState() {
   const rawCode = (params?.code as string) || "";
   const code = rawCode.toLowerCase();
 
-  const majorKeys = ["rpl", "tjkt", "dkv", "bc", "animasi", "te"];
-  const currentIndex = majorKeys.indexOf(code);
-  const nextIndex = currentIndex !== -1 ? (currentIndex + 1) % majorKeys.length : 0;
-  const nextCode = majorKeys[nextIndex];
-
+  const [nextCode, setNextCode] = useState<string>("");
   const [major, setMajor] = useState<MajorDetail | null>(null);
   const [nextMajor, setNextMajor] = useState<MajorDetail | null>(null);
   const [kuotaData, setKuotaData] = useState<KuotaItem[] | null>(null);
@@ -26,16 +22,26 @@ export function useJurusanDetailState() {
     setIsDark(isDarkStored || document.documentElement.classList.contains("dark"));
   }, []);
 
+  const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
+
   useEffect(() => {
-    if (code && majorsData[code]) {
+    if (isDemo && code && majorsData[code]) {
       setMajor({ ...majorsData[code] });
+      const demoKeys = ["rpl", "tjkt", "dkv", "bc", "animasi", "te"];
+      const currentIndex = demoKeys.indexOf(code);
+      const nIdx = currentIndex !== -1 ? (currentIndex + 1) % demoKeys.length : 0;
+      const nCode = demoKeys[nIdx];
+      setNextCode(nCode);
+      if (majorsData[nCode]) {
+        setNextMajor({ ...majorsData[nCode] });
+      }
     } else if (code) {
       setMajor({
         code: code.toUpperCase(),
         title: code.toUpperCase(),
         alias: code.toUpperCase(),
-        subtitle: "Program Keahlian Baru",
-        tagline: "Coding the Future, Building Creative Solutions.",
+        subtitle: "Program Keahlian",
+        tagline: "Mendidik talenta unggul dan kompeten berstandar industri.",
         desc: "",
         color: "from-blue-600 to-indigo-600",
         accentColor: "#0066ff",
@@ -44,18 +50,16 @@ export function useJurusanDetailState() {
         glowColor: "rgba(0,102,255,0.15)",
         logo: "/icon.png",
         banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
-        syllabus: [{ subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi baru." }],
+        syllabus: [{ subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi." }],
         careers: [{ title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }],
-        facilities: ["Laboratorium Praktikum Baru"],
+        facilities: ["Laboratorium Praktikum"],
         gallery: [],
         partners: "Mitra Industri Sekolah"
       });
+      setNextMajor(null);
+      setNextCode("");
     }
-
-    if (nextCode && majorsData[nextCode]) {
-      setNextMajor({ ...majorsData[nextCode] });
-    }
-  }, [code, nextCode]);
+  }, [code, isDemo]);
 
   useEffect(() => {
     const loadDynamicConfig = async () => {
@@ -65,17 +69,20 @@ export function useJurusanDetailState() {
         if (json.success && json.data) {
           const config = json.data;
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-            const found = config.ppdb_majors_config.find(
+            const majorsList = config.ppdb_majors_config;
+            const currentIdx = majorsList.findIndex(
               (m: Record<string, unknown>) =>
-                (m.code as string).toLowerCase() === code ||
-                ((m.code as string).toLowerCase() === "anm" && code === "an")
+                ((m.code as string) || "").toLowerCase() === code ||
+                (((m.code as string) || "").toLowerCase() === "anm" && code === "an")
             );
-            if (found) {
+
+            if (currentIdx !== -1) {
+              const found = majorsList[currentIdx];
               setMajor((prev: MajorDetail | null) => {
                 const base: MajorDetail = prev || {
-                  code: found.code as string,
+                  code: (found.code as string) || code.toUpperCase(),
                   title: (found.title as string) || (found.code as string),
-                  alias: found.code as string,
+                  alias: (found.code as string) || code.toUpperCase(),
                   subtitle: (found.title as string) || (found.code as string),
                   tagline: "Coding the Future, Building Creative Solutions.",
                   desc: (found.desc as string) || "",
@@ -97,7 +104,7 @@ export function useJurusanDetailState() {
                     : [{ title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }],
                   facilities: Array.isArray(found.facilities)
                     ? (found.facilities as string[])
-                    : ["Laboratorium Praktikum Baru"],
+                    : ["Laboratorium Praktikum"],
                   gallery: Array.isArray(found.gallery) ? (found.gallery as GalleryItem[]) : [],
                   partners: "Mitra Industri Sekolah"
                 };
@@ -114,24 +121,43 @@ export function useJurusanDetailState() {
                   gallery: Array.isArray(found.gallery) ? (found.gallery as GalleryItem[]) : base.gallery
                 };
               });
-            }
 
-            const foundNext = config.ppdb_majors_config.find(
-              (m: Record<string, unknown>) =>
-                (m.code as string).toLowerCase() === nextCode ||
-                ((m.code as string).toLowerCase() === "anm" && nextCode === "an")
-            );
-            if (foundNext) {
-              setNextMajor((prev: MajorDetail | null) => {
-                if (!prev) return null;
-                return {
-                  ...prev,
-                  title: foundNext.title || prev.title,
-                  desc: foundNext.desc || prev.desc,
-                  accentColor: foundNext.color || prev.accentColor,
-                  logo: foundNext.logo || prev.logo
-                };
-              });
+              // Compute next major ONLY from school's actual majors list
+              if (majorsList.length > 1) {
+                const nextIdx = (currentIdx + 1) % majorsList.length;
+                const foundNext = majorsList[nextIdx];
+                if (foundNext && ((foundNext.code as string) || "").toLowerCase() !== code) {
+                  const nCode = ((foundNext.code as string) || "").toLowerCase();
+                  setNextCode(nCode);
+                  const nextDefault = majorsData[nCode];
+                  setNextMajor({
+                    code: (foundNext.code as string) || nCode.toUpperCase(),
+                    title: (foundNext.title as string) || (foundNext.code as string) || nCode.toUpperCase(),
+                    alias: (foundNext.code as string) || nCode.toUpperCase(),
+                    subtitle: (foundNext.title as string) || (foundNext.code as string),
+                    tagline: nextDefault?.tagline || "Mendidik talenta unggul dan kompeten.",
+                    desc: (foundNext.desc as string) || nextDefault?.desc || "Pelajari kurikulum dan prospek keahlian ini.",
+                    color: nextDefault?.color || "from-blue-600 to-indigo-600",
+                    accentColor: (foundNext.color as string) || nextDefault?.accentColor || "#0066ff",
+                    bgAccent: nextDefault?.bgAccent || "bg-blue-500/10 dark:bg-blue-500/20",
+                    textAccent: nextDefault?.textAccent || "text-blue-600 dark:text-blue-400",
+                    glowColor: nextDefault?.glowColor || "rgba(0,102,255,0.15)",
+                    logo: (foundNext.logo as string) || nextDefault?.logo || "/icon.png",
+                    banner: (foundNext.banner as string) || nextDefault?.banner || "",
+                    syllabus: nextDefault?.syllabus || [],
+                    careers: Array.isArray(foundNext.careers) ? (foundNext.careers as CareerItem[]) : (nextDefault?.careers || []),
+                    facilities: Array.isArray(foundNext.facilities) ? (foundNext.facilities as string[]) : (nextDefault?.facilities || []),
+                    gallery: Array.isArray(foundNext.gallery) ? (foundNext.gallery as GalleryItem[]) : [],
+                    partners: "Mitra Industri Sekolah"
+                  });
+                } else {
+                  setNextMajor(null);
+                  setNextCode("");
+                }
+              } else {
+                setNextMajor(null);
+                setNextCode("");
+              }
             }
           }
         }
@@ -142,7 +168,7 @@ export function useJurusanDetailState() {
     if (code) {
       loadDynamicConfig();
     }
-  }, [code, nextCode, schoolSlug]);
+  }, [code, schoolSlug]);
 
   useEffect(() => {
     if (schoolSlug === "demo") {

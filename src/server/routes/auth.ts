@@ -314,11 +314,55 @@ authRouter.post('/login', authLimiter, async (c) => {
       { expiresIn: rememberMe ? '30d' : '7d' }
     );
 
+    let isVerifiedSchool = false;
+    let schoolStatus = 'PENDING_VERIFICATION';
+
+    if (resolvedSlug) {
+      if (resolvedSlug === 'smktarunabhakti' || resolvedSlug === 'smktiglobal' || resolvedSlug === 'demo') {
+        isVerifiedSchool = true;
+        schoolStatus = 'FULL_VERIFIED';
+      } else {
+        try {
+          const { data: sData } = await supabase
+            .from('schools')
+            .select('status, is_verified')
+            .eq('slug', resolvedSlug)
+            .maybeSingle();
+
+          if (sData) {
+            schoolStatus = sData.status || 'PENDING_VERIFICATION';
+            isVerifiedSchool = sData.status === 'FULL_VERIFIED' || sData.status === 'VERIFIED' || !!sData.is_verified;
+          } else {
+            const { data: psData } = await supabase
+              .from('prospective_schools')
+              .select('status, is_verified')
+              .eq('slug', resolvedSlug)
+              .maybeSingle();
+
+            if (psData) {
+              schoolStatus = psData.status || 'PENDING_VERIFICATION';
+              isVerifiedSchool = psData.status === 'FULL_VERIFIED' || psData.status === 'VERIFIED' || !!psData.is_verified;
+            }
+          }
+        } catch (_e) {}
+
+        const inMem = fontInMemSchools.get(resolvedSlug);
+        if (inMem) {
+          if (inMem.status === 'FULL_VERIFIED' || inMem.status === 'VERIFIED' || inMem.is_verified) {
+            isVerifiedSchool = true;
+            schoolStatus = inMem.status;
+          }
+        }
+      }
+    }
+
     return c.json({
       success: true,
       message: 'Asyik! Kamu berhasil login. Selamat datang!',
       token,
       school_slug: resolvedSlug,
+      is_verified: isVerifiedSchool,
+      school_status: schoolStatus,
       admin: {
         id: adminUser.id,
         username: adminUser.username,

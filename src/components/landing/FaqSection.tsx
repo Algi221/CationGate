@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
@@ -58,14 +59,18 @@ export function FaqSection() {
   return (
     <section
       id="faq"
-      className="py-24 bg-[#FAFAFA] text-zinc-900 border-t border-[#FAFAFA]"
+      className="py-24 bg-[#FAFAFA] text-zinc-900 border-t border-[#FAFAFA] overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
-        {}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-          {}
+          {/* BAGIAN KIRI: Judul & FAQ */}
           <div className="space-y-10">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-200/50 text-zinc-700 text-xs font-bold uppercase tracking-widest mb-6">
                 <HelpCircle className="w-4 h-4" />
                 Pusat Bantuan
@@ -77,51 +82,73 @@ export function FaqSection() {
                 Temukan jawaban cepat dan komprehensif mengenai keamanan,
                 implementasi, dan fitur operasional CationGate di sekolah Anda.
               </p>
-            </div>
+            </motion.div>
 
-            {}
             <Accordion type="single" collapsible className="w-full">
-              {faqs.map((faq) => (
-                <AccordionItem
+              {faqs.map((faq, index) => (
+                <motion.div
                   key={faq.id}
-                  value={faq.id}
-                  className="border-b border-zinc-200/80 py-2"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  // Animasi bertahap (stagger) berdasarkan urutan index
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.1 * index,
+                    ease: "easeOut",
+                  }}
                 >
-                  <AccordionTrigger className="text-left text-lg font-bold text-zinc-800 hover:text-zinc-600 hover:no-underline transition-colors data-[state=open]:text-zinc-900">
-                    {faq.q}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-base text-zinc-600 leading-relaxed pt-2 pb-6">
-                    {faq.a}
-                  </AccordionContent>
-                </AccordionItem>
+                  <AccordionItem
+                    value={faq.id}
+                    className="border-b border-zinc-200/80 py-2"
+                  >
+                    <AccordionTrigger className="text-left text-lg font-bold text-zinc-800 hover:text-zinc-600 hover:no-underline transition-colors data-[state=open]:text-zinc-900">
+                      {faq.q}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-base text-zinc-600 leading-relaxed pt-2 pb-6">
+                      {faq.a}
+                    </AccordionContent>
+                  </AccordionItem>
+                </motion.div>
               ))}
             </Accordion>
           </div>
 
-          {}
+          {/* BAGIAN KANAN: Lottie & Call to Action */}
           <div className="relative w-full">
-            <div className="sticky top-32 flex flex-col gap-6 w-full max-w-125 mx-auto lg:mx-0 lg:ml-auto">
-              {}
-              <div className="w-full flex items-center justify-center relative group">
+            <div className="sticky top-32 flex flex-col gap-6 w-full max-w-[31.25rem] mx-auto lg:mx-0 lg:ml-auto">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                className="w-full flex items-center justify-center relative group"
+              >
                 {lottieData ? (
                   <Lottie
                     animationData={lottieData}
                     loop={true}
-                    className="w-full max-w-100 h-auto object-contain relative z-10 transition-transform duration-700 group-hover:scale-105"
+                    className="w-full max-w-[25rem] h-auto object-contain relative z-10 transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
                   <div className="w-10 h-10 border-4 border-zinc-300 border-t-zinc-600 rounded-full animate-spin relative z-10 my-20"></div>
                 )}
-              </div>
+              </motion.div>
 
-              {}
-              <div className="p-8 rounded-3xl bg-zinc-900 text-white shadow-xl flex flex-col gap-5">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+                className="p-8 rounded-3xl bg-zinc-900 text-white shadow-xl flex flex-col gap-5"
+              >
                 <div>
                   <h3 className="font-bold text-xl mb-2 text-white">
                     Ingin Coba Langsung?
                   </h3>
                   <p className="text-sm text-zinc-400 leading-relaxed">
-                    Uji coba alur pendaftaran siswa dan jelajahi dashboard admin simulasi kami secara instan tanpa perlu mendaftar.
+                    Uji coba alur pendaftaran siswa dan jelajahi dashboard admin
+                    simulasi kami secara instan tanpa perlu mendaftar.
                   </p>
                 </div>
 
@@ -130,7 +157,7 @@ export function FaqSection() {
                     Buka Demo Interaktif <ArrowUpRight className="w-4 h-4" />
                   </Button>
                 </Link>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

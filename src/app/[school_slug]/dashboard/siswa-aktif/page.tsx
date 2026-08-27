@@ -34,6 +34,7 @@ function ActiveStudentsDirectoryContent() {
     setSearchTerm,
     majorFilter,
     setMajorFilter,
+    majorsList,
     classFilter,
     setClassFilter,
     genderFilter,
@@ -172,12 +173,11 @@ function ActiveStudentsDirectoryContent() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">Semua Jurusan</SelectItem>
-                <SelectItem value="Rekayasa Perangkat Lunak">RPL / PPLG</SelectItem>
-                <SelectItem value="Teknik Jaringan Komputer & Telekomunikasi">TJKT / TKJ</SelectItem>
-                <SelectItem value="Desain Komunikasi Visual">DKV</SelectItem>
-                <SelectItem value="Animasi">Animasi</SelectItem>
-                <SelectItem value="Broadcasting & Perfilman">Broadcasting / BCF</SelectItem>
-                <SelectItem value="Teknik Elektronika">Teknik Elektronika / TE</SelectItem>
+                {(majorsList || []).map((m, idx) => (
+                  <SelectItem key={idx} value={m}>
+                    {m}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

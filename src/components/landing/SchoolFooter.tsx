@@ -20,8 +20,8 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
     email: ""
   });
 
-  const isDemo = schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
-  const schoolDisplayName = ppdbTitle || (isDemo ? "SMK Taruna Bhakti" : schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+  const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
+  const schoolDisplayName = ppdbTitle || (isDemo ? "SMK Demo Indonesia" : schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
 
   React.useEffect(() => {
     fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`)
@@ -38,12 +38,14 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
               { code: "DKV", title: "Desain Komunikasi Visual" },
               { code: "BC", title: "Broadcasting & Perfilman" }
             ]);
+          } else {
+            setMajors([]);
           }
 
           setSchoolContact({
-            address: c.ppdb_address || (isDemo ? "Jl. Pekapuran RT 02 RW 06, Curug, Cimanggis, Kota Depok" : ""),
-            phone: c.ppdb_phone || (isDemo ? "(021) 8740756" : ""),
-            email: c.ppdb_email || (isDemo ? "info@smktarunabhakti.sch.id" : "")
+            address: c.ppdb_address || (isDemo ? "Jl. Pendidikan No. 1, Jakarta" : ""),
+            phone: c.ppdb_phone || (isDemo ? "(021) 1234567" : ""),
+            email: c.ppdb_email || (isDemo ? "info@demo.cationgate.site" : "")
           });
         }
       })
@@ -51,9 +53,9 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
   }, [schoolSlug, isDemo]);
 
   const identitas = profilSekolah?.identitas || {};
-  const displayAddress = schoolContact.address || identitas.alamat || (isDemo ? "Jl. Pekapuran RT 02 RW 06, Curug, Cimanggis, Depok" : "");
-  const displayPhone = schoolContact.phone || (isDemo ? "(021) 8740756" : "");
-  const displayEmail = schoolContact.email || identitas.email || (isDemo ? "info@smktarunabhakti.sch.id" : "");
+  const displayAddress = schoolContact.address || identitas.alamat || (isDemo ? "Jl. Pendidikan No. 1, Jakarta" : "");
+  const displayPhone = schoolContact.phone || identitas.telepon || (isDemo ? "(021) 1234567" : "");
+  const displayEmail = schoolContact.email || identitas.email || (isDemo ? "info@demo.cationgate.site" : "");
 
   return (
     <footer className="bg-slate-50 text-slate-600 dark:bg-[#0a0a0a] dark:text-slate-500 py-16 sm:py-24 relative overflow-hidden border-t border-slate-200 dark:border-slate-800">

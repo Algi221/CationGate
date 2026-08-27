@@ -322,14 +322,54 @@ export function usePendaftarState() {
     }
   };
 
-  const majorsList = [
-    "Rekayasa Perangkat Lunak",
-    "Teknik Jaringan Komputer & Telekomunikasi",
-    "Desain Komunikasi Visual",
-    "Broadcasting & Perfilman",
-    "Teknik Elektronika",
-    "Animasi",
-  ];
+  const isDemo = isDemoMode || schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
+  const [majorsList, setMajorsList] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ppdb_majors_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map((m: { title?: string; name?: string }) => m.title || m.name || "").filter(Boolean);
+          }
+        } catch (_) {}
+      }
+    }
+    return isDemo ? [
+      "Rekayasa Perangkat Lunak",
+      "Teknik Jaringan Komputer & Telekomunikasi",
+      "Desain Komunikasi Visual",
+      "Broadcasting & Perfilman",
+      "Teknik Elektronika",
+      "Animasi",
+    ] : [];
+  });
+
+  useEffect(() => {
+    const isDemoEnv = isDemo;
+    const fetchConfig = async () => {
+      try {
+        const token = localStorage.getItem("ppdb_admin_token");
+        const url = schoolSlug
+          ? `/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`
+          : `/api/config?_t=${Date.now()}`;
+        const res = await fetch(url, {
+          cache: "no-store",
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (json.success && json.data?.ppdb_majors_config && Array.isArray(json.data.ppdb_majors_config)) {
+          const list = json.data.ppdb_majors_config
+            .map((m: { title?: string; name?: string }) => m.title || m.name || "")
+            .filter(Boolean);
+          setMajorsList(list);
+        } else if (!isDemoEnv) {
+          setMajorsList([]);
+        }
+      } catch (_e) {}
+    };
+    fetchConfig();
+  }, [schoolSlug, isDemoMode]);
 
   const bstRoot = useMemo(() => {
     let root: BSTNode | null = null;

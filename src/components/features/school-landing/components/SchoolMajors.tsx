@@ -26,6 +26,10 @@ export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
   isMajorsVisible = true
 }) => {
   const { href } = useSchoolHref();
+  if (!majors || majors.length === 0) {
+    return null;
+  }
+
   return (
     <section id="majors" className="py-24 max-w-6xl mx-auto px-6 relative z-10 text-left">
       <div

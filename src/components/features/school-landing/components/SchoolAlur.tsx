@@ -17,6 +17,10 @@ interface SchoolAlurProps {
 }
 
 export const SchoolAlur: React.FC<SchoolAlurProps> = ({ schoolPeriod, alurList }) => {
+  if (!alurList || alurList.length === 0) {
+    return null;
+  }
+
   const styles = [
     { color: "blue", bg: "bg-blue-600", text: "text-blue-700 dark:text-blue-300", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20" },
     { color: "amber", bg: "bg-amber-500", text: "text-amber-800 dark:text-amber-300", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20" },

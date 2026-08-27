@@ -72,12 +72,13 @@ export const JurusanCta: React.FC<JurusanCtaProps> = ({
             <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white">
               Tertarik Melihat Jurusan{" "}
               <span className="next-text-clip">
-                {nextMajor.title} ({nextMajor.alias})
+                {nextMajor.title}
+                {nextMajor.alias && nextMajor.alias.toUpperCase() !== nextMajor.title.toUpperCase() ? ` (${nextMajor.alias})` : ""}
               </span>
               ?
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-              {nextMajor.desc.length > 180 ? nextMajor.desc.slice(0, 180) + "..." : nextMajor.desc}
+              {nextMajor.desc ? (nextMajor.desc.length > 180 ? nextMajor.desc.slice(0, 180) + "..." : nextMajor.desc) : "Pelajari kurikulum, prospek karir, dan fasilitas unggulan program keahlian ini."}
             </p>
           </div>
 
@@ -86,7 +87,7 @@ export const JurusanCta: React.FC<JurusanCtaProps> = ({
               href={href(`/jurusan/${nextCode}`)}
               className="flex items-center justify-center gap-2 next-gradient-bg hover:opacity-90 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-slate-950/5 hover:scale-[1.02] active:scale-[0.98] transition-all w-full md:w-auto group/btn cursor-pointer"
             >
-              <span>Lihat Detail {nextMajor.alias}</span>
+              <span>Lihat Detail {nextMajor.alias || nextMajor.title}</span>
               <ArrowRight size={16} className="transform group-hover/btn:translate-x-1 transition-transform" />
             </Link>
           </div>

@@ -52,6 +52,13 @@ export const SchoolGelombang: React.FC<SchoolGelombangProps> = ({
     }
   };
 
+  const hasGelombang1 = Boolean(gelombangConfig?.gelombang1?.start && gelombangConfig?.gelombang1?.end);
+  const hasGelombang2 = Boolean(gelombangConfig?.gelombang2?.start && gelombangConfig?.gelombang2?.end);
+
+  if (!hasGelombang1 && !hasGelombang2) {
+    return null;
+  }
+
   const status1 = getGelombangStatus(gelombangConfig.gelombang1.start, gelombangConfig.gelombang1.end);
   const status2 = getGelombangStatus(gelombangConfig.gelombang2.start, gelombangConfig.gelombang2.end);
 

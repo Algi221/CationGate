@@ -37,10 +37,16 @@ const DEMO_INFORMASI_SEED: Informasi[] = [
 ];
 
 export function useInformasiState() {
-  const { adminToken, addToast, isDemoMode } = usePPDB();
+  const { adminToken: ctxToken, addToast, isDemoMode } = usePPDB();
   const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || "";
+  const schoolSlug =
+    (params?.school_slug as string) ||
+    (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
+      ? window.location.hostname.split(".")[0]
+      : "") ||
+    "";
   const isDemo = isDemoMode || schoolSlug === "demo";
+  const getAuthToken = () => ctxToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null);
 
   const [informasiList, setInformasiList] = useState<Informasi[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -74,8 +80,9 @@ export function useInformasiState() {
 
     try {
       setLoadingDetailId(id);
+      const token = getAuthToken();
       const res = await fetch(`${BACKEND_URL}/informasi/${id}?school_id=${schoolSlug}`, {
-        headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       const data = await res.json();
       if (data.success && data.data) {
@@ -132,9 +139,10 @@ export function useInformasiState() {
       }
 
       try {
-        const queryParams = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+        const token = getAuthToken();
+        const queryParams = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
         const res = await fetch(`${BACKEND_URL}/informasi${queryParams}`, {
-          headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         const data = await res.json();
         if (data.success) {
@@ -150,7 +158,8 @@ export function useInformasiState() {
         setLoading(false);
       }
     },
-    [addToast, adminToken, isDemo, schoolSlug]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [addToast, isDemo, schoolSlug]
   );
 
   useEffect(() => {
@@ -384,14 +393,16 @@ export function useInformasiState() {
     }
 
     try {
-      const url = isEditMode ? `${BACKEND_URL}/informasi/${selectedId}` : `${BACKEND_URL}/informasi`;
+      const token = getAuthToken();
+      const slugQuery = schoolSlug ? `?school_slug=${encodeURIComponent(schoolSlug)}&school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const url = isEditMode ? `${BACKEND_URL}/informasi/${selectedId}${slugQuery}` : `${BACKEND_URL}/informasi${slugQuery}`;
       const method = isEditMode ? "PUT" : "POST";
 
       const res = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(payload)
       });
@@ -455,10 +466,12 @@ export function useInformasiState() {
     }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/informasi/${deleteConfirmId}`, {
+      const token = getAuthToken();
+      const slugQuery = schoolSlug ? `?school_slug=${encodeURIComponent(schoolSlug)}&school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const res = await fetch(`${BACKEND_URL}/informasi/${deleteConfirmId}${slugQuery}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${adminToken}`
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         }
       });
       const data = await res.json();

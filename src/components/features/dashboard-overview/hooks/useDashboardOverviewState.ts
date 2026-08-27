@@ -17,11 +17,20 @@ export function useDashboardOverviewState() {
   const counterTrigger = (applicants?.length || 0) > 0;
 
   const isVerified =
-    !schoolStatus ||
     schoolStatus === "FULL_VERIFIED" ||
     schoolStatus === "VERIFIED" ||
     schoolStatus === "verified" ||
+    schoolSlug === "smktarunabhakti" ||
+    schoolSlug === "smktiglobal" ||
     isDemoMode;
+
+  useEffect(() => {
+    if (schoolSlug && !isVerified) {
+      router.push(`/${schoolSlug}/dashboard/verification`);
+    }
+  }, [schoolSlug, isVerified, router]);
+
+  const isDemo = isDemoMode || schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
 
   const [majorsList, setMajorsList] = useState<MajorItem[]>(() => {
     if (typeof window !== "undefined") {
@@ -48,46 +57,51 @@ export function useDashboardOverviewState() {
         }
       }
     }
-    return [
+    return isDemo ? [
       { name: "PPLG", dbName: "Rekayasa Perangkat Lunak", color: "#2E7CF6" },
       { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0BB0CE" },
       { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#7957F5" },
       { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#F7A325" },
       { name: "Elektronika", dbName: "Teknik Elektronika", color: "#16C172" },
       { name: "Animasi", dbName: "Animasi", color: "#EC4E9E" }
-    ];
+    ] : [];
   });
 
   useEffect(() => {
-    fetch("/api/config")
+    const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+    const url = schoolSlug
+      ? `/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`
+      : `/api/config?_t=${Date.now()}`;
+
+    fetch(url, {
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data?.ppdb_majors_config) {
           const dbMajors = json.data.ppdb_majors_config;
           if (Array.isArray(dbMajors) && dbMajors.length > 0) {
-            const hasLocalMajors = !!localStorage.getItem("ppdb_majors_config");
-            const slugPath = window.location.pathname.split("/")[1] || "";
-            if (slugPath === "demo" || !hasLocalMajors) {
-              const mapped = dbMajors.map((m: MajorConfigItem) => ({
-                name:
-                  m.code === "RPL"
-                    ? "PPLG"
-                    : m.code === "ANM"
-                    ? "Animasi"
-                    : m.code === "BC"
-                    ? "Broadcasting"
-                    : m.code || m.name || "",
-                dbName: m.title || m.name || "",
-                color: m.color || "#2E7CF6"
-              }));
-              setMajorsList(mapped);
-              localStorage.setItem("ppdb_majors_config", JSON.stringify(dbMajors));
-            }
+            const mapped = dbMajors.map((m: MajorConfigItem) => ({
+              name:
+                m.code === "RPL"
+                  ? "PPLG"
+                  : m.code === "ANM"
+                  ? "Animasi"
+                  : m.code === "BC"
+                  ? "Broadcasting"
+                  : m.code || m.name || "",
+              dbName: m.title || m.name || "",
+              color: m.color || "#2E7CF6"
+            }));
+            setMajorsList(mapped);
+          } else if (!isDemo) {
+            setMajorsList([]);
           }
         }
       })
       .catch(() => {});
-  }, []);
+  }, [schoolSlug, isDemo]);
 
   const computedStats = useMemo(() => {
     const list: ApplicantItem[] = applicants || [];
@@ -200,7 +214,6 @@ export function useDashboardOverviewState() {
     return { labels: buckets.map((b) => b.label), counts };
   }, [applicants, trendView]);
 
-  const isDemo = isDemoMode || schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
   const [isSpmbOpen, setIsSpmbOpen] = useState(() => isDemo);
   const [isUpdatingSpmb, setIsUpdatingSpmb] = useState(false);
 

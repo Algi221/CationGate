@@ -45,6 +45,31 @@ async function getTargets(supabase: any, schoolId: string | null, customOrder: s
   } catch (e) {
     console.warn('Gagal membaca kuota_targets dari DB, menggunakan default:', e);
   }
+
+  try {
+    const { pool } = await import('../db/client');
+    const pgRes = await pool.query(
+      `SELECT config_value FROM landing_page_config WHERE school_id::text = $1::text AND config_key = 'kuota_targets'`,
+      [String(schoolId)]
+    );
+    if (pgRes.rows && pgRes.rows.length > 0) {
+      const rawVal = pgRes.rows[0].config_value;
+      const parsed = typeof rawVal === 'string' ? JSON.parse(rawVal) : rawVal;
+      return { ...baseTargets, ...parsed };
+    }
+  } catch (_pgErr) {}
+
+  try {
+    const { fontInMemSchools } = await import('./saas');
+    if (fontInMemSchools.has(String(schoolId))) {
+      const inMem = fontInMemSchools.get(String(schoolId));
+      if (inMem?.configs?.kuota_targets) {
+        const parsed = typeof inMem.configs.kuota_targets === 'string' ? JSON.parse(inMem.configs.kuota_targets) : inMem.configs.kuota_targets;
+        return { ...baseTargets, ...parsed };
+      }
+    }
+  } catch (_memErr) {}
+
   return baseTargets;
 }
 
@@ -209,9 +234,9 @@ router.post('/targets', adminAuth, async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
 
-    const admin = (c.get as (k: string) => unknown)('admin') as { school_id?: string } | undefined;
-    const schoolId = admin?.school_id;
-    if (!schoolId) {
+    const admin = (c.get as (k: string) => unknown)('admin') as { school_id?: string; school_slug?: string; slug?: string } | undefined;
+    const rawSchoolId = admin?.school_id || admin?.school_slug || admin?.slug || c.req.query('school_id') || c.req.query('school_slug');
+    if (!rawSchoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
     const body = await c.req.json();
@@ -221,15 +246,42 @@ router.post('/targets', adminAuth, async (c) => {
       return c.json({ success: false, message: 'Data targets tidak valid' }, 400);
     }
 
-    if (schoolId) {
+    const { resolveSchoolUUID } = await import('../db/resolve-school');
+    const { fontInMemSchools } = await import('./saas');
+    const resolved = await resolveSchoolUUID(String(rawSchoolId), fontInMemSchools);
+    const targetSchoolId = resolved || String(rawSchoolId);
+
+    try {
       await supabase
         .from('landing_page_config')
         .upsert({
-          school_id: schoolId,
+          school_id: targetSchoolId,
           config_key: 'kuota_targets',
           config_value: JSON.stringify(targets),
           updated_at: new Date().toISOString()
         }, { onConflict: 'school_id,config_key' });
+    } catch (_sbErr) {}
+
+    try {
+      const { pool } = await import('../db/client');
+      await pool.query(
+        `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+         VALUES ($1::text, 'kuota_targets', $2, NOW())
+         ON CONFLICT (school_id, config_key)
+         DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+        [String(targetSchoolId), JSON.stringify(targets)]
+      );
+    } catch (_pgErr) {
+      console.warn('Fallback pool query for kuota_targets error:', _pgErr);
+    }
+
+    const targetSlug = admin?.school_slug || admin?.slug || (typeof rawSchoolId === 'string' && isNaN(Number(rawSchoolId)) ? rawSchoolId : null);
+    if (targetSlug && fontInMemSchools.has(targetSlug)) {
+      const inMem = fontInMemSchools.get(targetSlug);
+      if (inMem) {
+        if (!inMem.configs) inMem.configs = {};
+        inMem.configs.kuota_targets = targets;
+      }
     }
 
     return c.json({

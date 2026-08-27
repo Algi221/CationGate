@@ -24,6 +24,10 @@ export const SchoolFaq: React.FC<SchoolFaqProps> = ({
 }) => {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
+  if (!faqList || faqList.length === 0) {
+    return null;
+  }
+
   const toggleFaq = (idx: number) => {
     setActiveFaq(activeFaq === idx ? null : idx);
   };

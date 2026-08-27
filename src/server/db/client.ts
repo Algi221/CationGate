@@ -50,6 +50,22 @@ export async function initDb(): Promise<void> {
         ALTER TABLE landing_page_config DROP CONSTRAINT IF EXISTS landing_page_config_school_id_fkey;
         ALTER TABLE ui_revisions DROP CONSTRAINT IF EXISTS ui_revisions_school_id_fkey;
         ALTER TABLE informasi DROP CONSTRAINT IF EXISTS informasi_school_id_fkey;
+
+        -- Convert school_id columns to TEXT to seamlessly support UUID, numeric, and slug tenants
+        DO $$ BEGIN
+          ALTER TABLE landing_page_config ALTER COLUMN school_id TYPE TEXT USING school_id::text;
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE ui_revisions ALTER COLUMN school_id TYPE TEXT USING school_id::text;
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE informasi ALTER COLUMN school_id TYPE TEXT USING school_id::text;
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END $$;
       `);
 
       console.log('PostgreSQL Database tables verified/initialized successfully.');

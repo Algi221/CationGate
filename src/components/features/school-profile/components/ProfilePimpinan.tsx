@@ -24,9 +24,9 @@ const fadeInVariant: Variants = {
 };
 
 export const ProfilePimpinan: React.FC<ProfilePimpinanProps> = ({ ppdbTitle, pimpinan }) => {
-  const leaderName = pimpinan?.nama || "Dr. H. Ahmad Fauzi, M.Pd.";
+  const leaderName = pimpinan?.nama || "Pimpinan Sekolah";
   const leaderRole = pimpinan?.jabatan || "Kepala Sekolah";
-  const leaderPhoto = pimpinan?.foto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop";
+  const leaderPhoto = pimpinan?.foto || "";
   const leaderSpeech =
     pimpinan?.sambutan ||
     `${leaderName}, sebagai ${leaderRole} yang memimpin arah kebijakan akademik, pengembangan teknologi, serta pengabdian masyarakat guna membawa ${ppdbTitle} unggul di tingkat nasional maupun global.`;
@@ -49,15 +49,24 @@ export const ProfilePimpinan: React.FC<ProfilePimpinanProps> = ({ ppdbTitle, pim
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
           <div className="md:col-span-4 flex justify-center">
-            <div className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-blue-900 dark:border-blue-500 shadow-md">
-              <Image
-                src={leaderPhoto}
-                alt={leaderName}
-                fill
-                sizes="(max-width: 640px) 224px, 256px"
-                className="object-cover object-top"
-                unoptimized={leaderPhoto.startsWith("http") || leaderPhoto.startsWith("/assets")}
-              />
+            <div className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-blue-900 dark:border-blue-500 shadow-md flex items-center justify-center">
+              {leaderPhoto ? (
+                <Image
+                  src={leaderPhoto}
+                  alt={leaderName}
+                  fill
+                  sizes="(max-width: 640px) 224px, 256px"
+                  className="object-cover object-top"
+                  unoptimized={leaderPhoto.startsWith("http") || leaderPhoto.startsWith("/assets")}
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400">
+                  <span className="text-4xl font-black text-blue-600 dark:text-blue-400">
+                    {(leaderName || "P").substring(0, 2).toUpperCase()}
+                  </span>
+                  <span className="text-xs font-semibold mt-1 opacity-75">{leaderRole}</span>
+                </div>
+              )}
             </div>
           </div>
           <div className="md:col-span-8 space-y-3 text-center md:text-left">

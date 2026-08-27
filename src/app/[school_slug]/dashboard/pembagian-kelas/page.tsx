@@ -24,10 +24,13 @@ import { usePembagianKelasState } from "@/components/features/pembagian-kelas/ho
 import { AddClassModal } from "@/components/features/pembagian-kelas/components/AddClassModal";
 import { ClassDetailModal } from "@/components/features/pembagian-kelas/components/ClassDetailModal";
 import { getMajorLogoUrl } from "@/components/features/pembagian-kelas/utils/classDistribution";
+import Link from "next/link";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 import { GradeLevel } from "@/components/features/pembagian-kelas/types";
 
 function ClassDivisionManagementContent() {
   const { ppdbTitle } = usePPDB();
+  const { href } = useSchoolHref();
   const {
     selectedMajor,
     setSelectedMajor,
@@ -140,59 +143,79 @@ function ClassDivisionManagementContent() {
         </div>
       </div>
 
-      {/* Row 2: 6 Major Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        {activeMajors.map((major) => {
-          const isSelected = selectedMajor === major.code;
-          return (
-            <button
-              key={major.code}
-              onClick={() => setSelectedMajor(major.code)}
-              className={`rounded-3xl p-5 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer ${
-                isSelected
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25 scale-[1.02]"
-                  : "bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 shadow-xs hover:scale-[1.01]"
-              }`}
-            >
-              <div
-                className={`w-14 h-14 rounded-full p-2 mb-3 shadow-xs flex items-center justify-center overflow-hidden shrink-0 ${
-                  isSelected ? "bg-white" : "bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
+      {/* Row 2: Major Cards Grid or Empty State */}
+      {activeMajors.length === 0 ? (
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 sm:p-10 text-center space-y-4 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-100 dark:border-blue-900/50">
+            <Layers className="w-7 h-7" />
+          </div>
+          <div className="space-y-1 max-w-md mx-auto">
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Belum Ada Program Keahlian (Jurusan)</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Sekolah Anda belum memiliki daftar program keahlian. Silakan tambahkan jurusan melalui menu Kelola UI/Data untuk mulai melakukan pembagian kelas.
+            </p>
+          </div>
+          <Link
+            href={href("/dashboard/kelola-ui?tab=majors")}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Kelola Program Keahlian (Jurusan)
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {activeMajors.map((major) => {
+            const isSelected = selectedMajor === major.code;
+            return (
+              <button
+                key={major.code}
+                onClick={() => setSelectedMajor(major.code)}
+                className={`rounded-3xl p-5 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer ${
+                  isSelected
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25 scale-[1.02]"
+                    : "bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 shadow-xs hover:scale-[1.01]"
                 }`}
               >
-                <Image
-                  src={major.logo || getMajorLogoUrl(major.code)}
-                  alt={major.name || major.code}
-                  width={44}
-                  height={44}
-                  className="w-10 h-10 object-contain"
-                  unoptimized
-                  onError={(e) => {
-                    const target = e.currentTarget as HTMLImageElement;
-                    const fallback = getMajorLogoUrl(major.code);
-                    if (target.src !== fallback) {
-                      target.src = fallback;
-                    }
-                  }}
-                />
-              </div>
-              <h4
-                className={`text-[11px] font-black uppercase tracking-tight leading-tight line-clamp-2 ${
-                  isSelected ? "text-white" : "text-slate-800 dark:text-white"
-                }`}
-              >
-                {major.name || major.code}
-              </h4>
-              <span
-                className={`text-[10px] font-bold uppercase mt-1 ${
-                  isSelected ? "text-blue-100" : "text-slate-400"
-                }`}
-              >
-                ({major.code})
-              </span>
-            </button>
-          );
-        })}
-      </div>
+                <div
+                  className={`w-14 h-14 rounded-full p-2 mb-3 shadow-xs flex items-center justify-center overflow-hidden shrink-0 ${
+                    isSelected ? "bg-white" : "bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
+                  }`}
+                >
+                  <Image
+                    src={major.logo || getMajorLogoUrl(major.code)}
+                    alt={major.name || major.code}
+                    width={44}
+                    height={44}
+                    className="w-10 h-10 object-contain"
+                    unoptimized
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      const fallback = getMajorLogoUrl(major.code);
+                      if (target.src !== fallback) {
+                        target.src = fallback;
+                      }
+                    }}
+                  />
+                </div>
+                <h4
+                  className={`text-[11px] font-black uppercase tracking-tight leading-tight line-clamp-2 ${
+                    isSelected ? "text-white" : "text-slate-800 dark:text-white"
+                  }`}
+                >
+                  {major.name || major.code}
+                </h4>
+                <span
+                  className={`text-[10px] font-bold uppercase mt-1 ${
+                    isSelected ? "text-blue-100" : "text-slate-400"
+                  }`}
+                >
+                  ({major.code})
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Row 3: Grade Level Pills */}
       <div className="bg-white dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 shadow-xs flex items-center gap-2 w-fit">

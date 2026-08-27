@@ -111,10 +111,19 @@ export function useKuotaData(schoolId: string | number | undefined) {
           return;
         }
 
+        const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+        const effectiveId =
+          schoolId ||
+          (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
+            ? window.location.hostname.split(".")[0]
+            : "");
+
         const url = periode
-          ? `/api/kuota?periode=${encodeURIComponent(periode)}${schoolId ? "&school_id=" + schoolId : ""}`
-          : `/api/kuota${schoolId ? "?school_id=" + schoolId : ""}`;
-        const res = await fetch(url);
+          ? `/api/kuota?periode=${encodeURIComponent(periode)}${effectiveId ? "&school_id=" + effectiveId : ""}`
+          : `/api/kuota${effectiveId ? "?school_id=" + effectiveId : ""}`;
+        const res = await fetch(url, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
         const json = await res.json();
         if (json.success && json.data) {
           const raw = json.data;
@@ -253,10 +262,20 @@ export function useKuotaData(schoolId: string | number | undefined) {
         return;
       }
 
-      const url = `/api/kuota/targets${schoolId ? "?school_id=" + schoolId : ""}`;
+      const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+      const effectiveId =
+        schoolId ||
+        (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
+          ? window.location.hostname.split(".")[0]
+          : "");
+
+      const url = `/api/kuota/targets${effectiveId ? "?school_id=" + effectiveId : ""}`;
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ targets: editingTargets }),
       });
       const json = await res.json();
@@ -264,7 +283,7 @@ export function useKuotaData(schoolId: string | number | undefined) {
         setEditMode(false);
         fetchKuota(selectedPeriode || undefined);
       } else {
-        alert(json.error || "Gagal menyimpan target kuota");
+        alert(json.message || json.error || "Gagal menyimpan target kuota");
       }
     } catch (err) {
       console.error(err);

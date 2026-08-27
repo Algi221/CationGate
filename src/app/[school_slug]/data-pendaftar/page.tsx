@@ -24,11 +24,11 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 export default function DataPendaftarPage() {
   const params = useParams();
-  const rawSlug = (params?.school_slug as string) || "smktarunabhakti";
+  const rawSlug = (params?.school_slug as string) || "";
   const { href } = useSchoolHref();
   const _schoolSlug = encodeURIComponent(rawSlug.replace(/[^a-zA-Z0-9_-]/g, ""));
 
-  const { publicApplicants } = usePPDB();
+  const { publicApplicants, ppdbTitle } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
   const [_filterStatus, _setFilterStatus] = useState("Semua");
@@ -67,7 +67,7 @@ export default function DataPendaftarPage() {
         </Link>
         <div className="flex items-center gap-4">
           <span className="font-extrabold text-lg text-slate-800 dark:text-white tracking-tight">
-            PPDB <span className="text-blue-600">SMK TB</span>
+            Portal Data <span className="text-blue-600">{ppdbTitle || "PPDB"}</span>
           </span>
           <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
           <ToggleTheme

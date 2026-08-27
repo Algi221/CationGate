@@ -4,7 +4,7 @@ import React from "react";
 import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolFooter } from "@/components/landing/SchoolFooter";
 import { ErrorView } from "@/components/features/error";
-import { SchoolMaintenanceView } from "@/components/features/school-landing/components/SchoolMaintenanceView";
+
 import { useSchoolLandingState } from "@/components/features/school-landing/hooks/useSchoolLandingState";
 import { SchoolHero } from "@/components/features/school-landing/components/SchoolHero";
 import { SchoolGelombang } from "@/components/features/school-landing/components/SchoolGelombang";
@@ -20,7 +20,7 @@ export default function SchoolLandingPage() {
     schoolSlug,
     schoolDisplayName,
     isSchoolNotFound,
-    isLandingPageActive,
+
     isPlatformMaintenance,
     schoolStatus,
     isSchoolVerified,
@@ -43,30 +43,6 @@ export default function SchoolLandingPage() {
     gelombangConfig,
     formatDate
   } = useSchoolLandingState();
-
-  const [isPathBasedBlocked] = React.useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      const hostname = window.location.hostname.toLowerCase();
-      const isSubdomain =
-        (hostname.endsWith(".cationgate.site") && hostname !== "cationgate.site" && hostname !== "www.cationgate.site") ||
-        (hostname.endsWith(".localhost") && hostname !== "localhost") ||
-        (hostname.endsWith(".vercel.app") && hostname !== "cationgate.vercel.app");
-      return !isSubdomain;
-    }
-    return false;
-  });
-
-  if (isPathBasedBlocked) {
-    return (
-      <ErrorView
-        title="404 - Halaman Tidak Ditemukan"
-        description={`Halaman instansi '${schoolSlug}' tidak dapat diakses melalui path URL utama. Silakan kunjungi subdomain resmi instansi ini.`}
-        urlPath={`/${schoolSlug}`}
-        ctaText="Kembali ke Beranda CationGate"
-        ctaHref="/"
-      />
-    );
-  }
 
   if (isPlatformMaintenance) {
     return (
@@ -103,17 +79,7 @@ export default function SchoolLandingPage() {
     );
   }
 
-  if (!isLandingPageActive) {
-    return (
-      <SchoolMaintenanceView
-        schoolSlug={schoolSlug}
-        schoolDisplayName={schoolDisplayName}
-        waAdmin={waAdmin}
-        schoolPeriod={schoolPeriod}
-        address={address}
-      />
-    );
-  }
+  // NOTE: isLandingPageActive gate removed — landing page is always accessible to students
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-[#020617] text-slate-900 dark:text-white transition-colors duration-300 font-sans selection:bg-blue-500 selection:text-white">

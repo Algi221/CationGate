@@ -46,14 +46,16 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
     <div className="relative w-full overflow-hidden">
       {/* BACKGROUND IMAGE DENGAN FADE OUT GRADIENT */}
       <div className="absolute inset-0 -z-10 overflow-hidden bg-slate-50 dark:bg-[#020617]">
-        <Image
-          src={heroBgImage || "/assets/background/bg-seklah.jpeg"}
-          alt="Background Sekolah"
-          fill
-          priority
-          unoptimized={Boolean(heroBgImage)}
-          className="object-cover object-top opacity-30 dark:opacity-15"
-        />
+        {heroBgImage && (
+          <Image
+            src={heroBgImage}
+            alt="Background Sekolah"
+            fill
+            priority
+            unoptimized
+            className="object-cover object-top opacity-30 dark:opacity-15"
+          />
+        )}
         {/* Gradient overlay biar atasnya kelihatan, makin ke bawah makin menyatu halus dengan body */}
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-slate-50/80 to-slate-50 dark:via-[#020617]/80 dark:to-[#020617]" />
       </div>
@@ -83,9 +85,11 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
             />
           </h1>
 
-          <p className="hero-subtitle relative z-10 text-center mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium drop-shadow-sm">
-            {heroSubtitle}
-          </p>
+          {heroSubtitle && (
+            <p className="hero-subtitle relative z-10 text-center mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium drop-shadow-sm">
+              {heroSubtitle}
+            </p>
+          )}
 
           <div className="hero-action flex justify-center mt-8">
             <Link

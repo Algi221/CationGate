@@ -30,8 +30,11 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu-1";
 
+import Swal from "sweetalert2";
+
 interface SchoolNavbarProps {
   schoolSlug: string;
+  isPreview?: boolean;
 }
 
 const DEFAULT_MAJORS = [
@@ -43,7 +46,7 @@ const DEFAULT_MAJORS = [
   { code: "TE", title: "Teknik Elektronika", desc: "IoT, robotics & microcontroller", icon: Cpu }
 ];
 
-export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
+export function SchoolNavbar({ schoolSlug, isPreview = false }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
   const { href } = useSchoolHref(schoolSlug);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -51,15 +54,41 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
   const [majors, setMajors] = useState<any[]>(DEFAULT_MAJORS);
   const _pathname = usePathname();
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, targetPath: string) => {
+    if (!isPreview) return;
+    e.preventDefault();
+    if (targetPath.includes("#")) {
+      const hash = targetPath.split("#")[1];
+      const el = document.getElementById(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+    Swal.fire({
+      toast: true,
+      position: "top",
+      icon: "info",
+      title: "Mode Live Preview",
+      text: "Tautan ini akan aktif penuh setelah perubahan Anda disimpan & dipublikasikan.",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
+  };
+
   useEffect(() => {
     const loadMajors = async () => {
       try {
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`);
+        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`);
         const data = await res.json();
 
         if (data.success && data.data && data.data.ppdb_majors_config) {
-          const config = data.data;
-          if (Array.isArray(config.ppdb_majors_config)) {
+          let majorsConfig = data.data.ppdb_majors_config;
+          if (typeof majorsConfig === "string" && (majorsConfig.startsWith("[") || majorsConfig.startsWith("{"))) {
+            try { majorsConfig = JSON.parse(majorsConfig); } catch (_e) {}
+          }
+          if (Array.isArray(majorsConfig) && majorsConfig.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const iconMap: Record<string, any> = {
               RPL: Cpu,
@@ -70,7 +99,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
               TE: Cpu
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const mapped = config.ppdb_majors_config.map((m: any) => ({
+            const mapped = majorsConfig.map((m: any) => ({
               ...m,
               icon: iconMap[m.code] || Cpu
             }));
@@ -138,7 +167,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                 {/* Beranda */}
                 <NavigationMenuItem>
                   <NavigationMenuLink
-                    render={<Link href={href("/")} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                    render={<Link href={href("/")} onClick={(e) => handleLinkClick(e, href("/"))} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
                   >
                     Beranda
                   </NavigationMenuLink>
@@ -159,7 +188,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                       ].map((sub) => (
                         <li key={sub.title}>
                           <NavigationMenuLink
-                            render={<Link href={sub.href} className="block px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800 rounded-md transition-colors" />}
+                            render={<Link href={sub.href} onClick={(e) => handleLinkClick(e, sub.href)} className="block px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800 rounded-md transition-colors" />}
                           >
                             {sub.title}
                           </NavigationMenuLink>
@@ -183,6 +212,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                               render={
                                 <Link
                                   href={href(`/jurusan/${encodeURIComponent(major.code.toLowerCase())}`)}
+                                  onClick={(e) => handleLinkClick(e, href(`/jurusan/${encodeURIComponent(major.code.toLowerCase())}`))}
                                   className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-hidden transition-colors hover:bg-slate-100 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground dark:hover:bg-slate-800"
                                 />
                               }
@@ -212,7 +242,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                 {/* Informasi */}
                 <NavigationMenuItem>
                   <NavigationMenuLink
-                    render={<Link href={href("/forum")} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                    render={<Link href={href("/forum")} onClick={(e) => handleLinkClick(e, href("/forum"))} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
                   >
                     Informasi
                   </NavigationMenuLink>
@@ -231,7 +261,11 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
               duration={1000}
               className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-0 bg-transparent dark:bg-transparent"
             />
-            <Link href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")} className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
+            <Link
+              href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
+              onClick={(e) => handleLinkClick(e, schoolSlug === 'demo' ? href("/dashboard") : href("/daftar"))}
+              className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap"
+            >
               {schoolSlug === 'demo' ? "Dashboard Demo" : "Daftar"}
             </Link>
 
@@ -264,7 +298,14 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
-            <Link href={href("/")} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
+            <Link
+              href={href("/")}
+              onClick={(e) => {
+                setMobileMenuOpen(false);
+                handleLinkClick(e, href("/"));
+              }}
+              className="flex items-center gap-2 mb-6"
+            >
               {ppdbLogo ? (
                 <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
               ) : schoolSlug === "smktarunabhakti" || schoolSlug === "demo" ? (
@@ -282,28 +323,40 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
             <div className="flex flex-col w-full gap-2">
               <Link
                 href={href("/")}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  handleLinkClick(e, href("/"));
+                }}
                 className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
               >
                 Beranda
               </Link>
               <Link
                 href={href("/profil")}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  handleLinkClick(e, href("/profil"));
+                }}
                 className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
               >
                 Profil Sekolah
               </Link>
               <Link
                 href={href("/forum")}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  handleLinkClick(e, href("/forum"));
+                }}
                 className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
               >
                 Forum Informasi
               </Link>
               <Link
                 href={href("/blog")}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  handleLinkClick(e, href("/blog"));
+                }}
                 className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
               >
                 Blog
@@ -313,7 +366,10 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
             <div className="mt-8 w-full flex flex-col gap-3">
               <Link
                 href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  handleLinkClick(e, schoolSlug === 'demo' ? href("/dashboard") : href("/daftar"));
+                }}
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-95"
               >
                 {schoolSlug === 'demo' ? "Buka Dashboard Demo" : "Daftar Sekarang"}

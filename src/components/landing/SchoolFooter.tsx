@@ -29,8 +29,12 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
       .then((data) => {
         if (data.success && data.data) {
           const c = data.data;
-          if (Array.isArray(c.ppdb_majors_config)) {
-            setMajors(c.ppdb_majors_config);
+          let majorsConfig = c.ppdb_majors_config;
+          if (typeof majorsConfig === "string" && (majorsConfig.startsWith("[") || majorsConfig.startsWith("{"))) {
+            try { majorsConfig = JSON.parse(majorsConfig); } catch (_e) {}
+          }
+          if (Array.isArray(majorsConfig) && majorsConfig.length > 0) {
+            setMajors(majorsConfig);
           } else if (isDemo) {
             setMajors([
               { code: "RPL", title: "Rekayasa Perangkat Lunak" },
@@ -52,7 +56,11 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
       .catch(() => {});
   }, [schoolSlug, isDemo]);
 
-  const identitas = profilSekolah?.identitas || {};
+  let rawProfil = profilSekolah;
+  if (typeof rawProfil === "string" && (rawProfil.startsWith("{") || rawProfil.startsWith("["))) {
+    try { rawProfil = JSON.parse(rawProfil); } catch (_e) {}
+  }
+  const identitas = (rawProfil && typeof rawProfil === "object") ? rawProfil.identitas || {} : {};
   const displayAddress = schoolContact.address || identitas.alamat || (isDemo ? "Jl. Pendidikan No. 1, Jakarta" : "");
   const displayPhone = schoolContact.phone || identitas.telepon || (isDemo ? "(021) 1234567" : "");
   const displayEmail = schoolContact.email || identitas.email || (isDemo ? "info@demo.cationgate.site" : "");

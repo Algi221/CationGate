@@ -5,11 +5,13 @@ import { useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import { InformasiItem } from "../types";
 
-const BACKEND_URL = typeof window !== "undefined" ? "/api" : "http://localhost:3000/api";
-
 export function useForumState() {
   const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || "";
+  const schoolSlug =
+    (params?.school_slug as string) ||
+    (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
+      ? window.location.hostname.split(".")[0]
+      : "");
   const { ppdbLogo, ppdbTitle, profilSekolah } = usePPDB();
 
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
@@ -35,9 +37,10 @@ export function useForumState() {
 
   useEffect(() => {
     const fetchInformasi = async () => {
+      if (!schoolSlug) return;
       try {
         setLoading(true);
-        const res = await fetch(`${BACKEND_URL}/informasi?school_slug=${schoolSlug}`);
+        const res = await fetch(`/api/informasi?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`);
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
           setInformasi(json.data);
@@ -48,15 +51,13 @@ export function useForumState() {
         setLoading(false);
       }
     };
-    if (schoolSlug) {
-      fetchInformasi();
-    }
+    fetchInformasi();
   }, [schoolSlug]);
 
   const handleOpenDetail = async (item: InformasiItem) => {
     setLoadingDetailId(item.id);
     try {
-      const res = await fetch(`${BACKEND_URL}/informasi/${item.id}?school_slug=${schoolSlug}`);
+      const res = await fetch(`/api/informasi/${item.id}?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`);
       const json = await res.json();
       if (json.success && json.data) {
         setSelectedPost(json.data);

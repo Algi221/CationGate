@@ -68,12 +68,27 @@ export function useJurusanDetailState() {
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
-          if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-            const majorsList = config.ppdb_majors_config;
+          let majorsList = config.ppdb_majors_config;
+          if (typeof majorsList === "string" && (majorsList.startsWith("[") || majorsList.startsWith("{"))) {
+            try { majorsList = JSON.parse(majorsList); } catch (_e) {}
+          }
+          if (majorsList && Array.isArray(majorsList)) {
             const currentIdx = majorsList.findIndex(
-              (m: Record<string, unknown>) =>
-                ((m.code as string) || "").toLowerCase() === code ||
-                (((m.code as string) || "").toLowerCase() === "anm" && code === "an")
+              (m: Record<string, unknown>) => {
+                const mCode = ((m.code as string) || "").toLowerCase().trim();
+                const mTitle = ((m.title as string) || "").toLowerCase().trim();
+                const mAlias = ((m.alias as string) || "").toLowerCase().trim();
+                return (
+                  mCode === code ||
+                  mCode === rawCode.toLowerCase() ||
+                  mTitle === code ||
+                  mAlias === code ||
+                  (mCode === "anm" && (code === "an" || code === "animasi")) ||
+                  (mCode === "animasi" && (code === "anm" || code === "an")) ||
+                  (mCode === "tjkt" && (code === "tkj" || code === "tjkt")) ||
+                  (mCode === "tkj" && (code === "tjkt" || code === "tkj"))
+                );
+              }
             );
 
             if (currentIdx !== -1) {
@@ -168,7 +183,7 @@ export function useJurusanDetailState() {
     if (code) {
       loadDynamicConfig();
     }
-  }, [code, schoolSlug]);
+  }, [code, rawCode, schoolSlug]);
 
   useEffect(() => {
     if (schoolSlug === "demo") {

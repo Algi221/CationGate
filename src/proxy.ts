@@ -11,7 +11,7 @@ const BLOCKED_AUDIT_AGENTS = [
 ];
 
 // Reserved system/marketing subdomains that should NOT be treated as school slugs
-const SYSTEM_SUBDOMAINS = ["www", "api", "admin", "app", "mail", "cname", "static", "assets"];
+const SYSTEM_SUBDOMAINS = ["www", "api", "admin", "app", "dashboard", "portal", "auth", "mail", "cname", "static", "assets"];
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -56,8 +56,15 @@ export default function proxy(request: NextRequest) {
     }
   }
 
-  // If subdomain is in system reserved keywords, ignore it
+  // If subdomain is in system reserved keywords (e.g. dashboard.cationgate.site, admin.cationgate.site)
   if (subdomain && SYSTEM_SUBDOMAINS.includes(subdomain)) {
+    if (["dashboard", "admin", "app", "portal", "auth"].includes(subdomain)) {
+      const port = request.nextUrl.port ? `:${request.nextUrl.port}` : "";
+      const isLocalhost = hostname.includes("localhost");
+      const targetHost = isLocalhost ? `localhost${port}` : "cationgate.site";
+      const protocol = isLocalhost ? "http" : "https";
+      return NextResponse.redirect(new URL(`${protocol}://${targetHost}/login`, request.url), 307);
+    }
     subdomain = null;
   }
 

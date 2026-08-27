@@ -284,11 +284,11 @@ export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = fals
 
       {/* Fullscreen/Container Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
-        <div className={`${isPreview ? "absolute inset-0 min-h-full" : "fixed inset-0"} z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 ${forceMobile ? "flex" : "lg:hidden"}`}>
+        <div className={`fixed inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] p-6 overflow-y-auto animate-in fade-in duration-300 ${forceMobile ? "flex" : "lg:hidden"}`}>
           {/* Close Button X in top right */}
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-6 right-6 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
+            className="absolute top-5 right-5 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer z-20"
             aria-label="Close Mobile Menu"
           >
             <X size={20} />

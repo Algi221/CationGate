@@ -170,7 +170,7 @@ export const LivePreviewLandingModal: React.FC<LivePreviewLandingModalProps> = (
 
       {/* Screen Frame Container */}
       <div
-        className={`grow w-full overflow-hidden transition-all duration-300 rounded-3xl border border-slate-800 bg-white dark:bg-[#020617] shadow-2xl flex flex-col ${
+        className={`grow w-full overflow-hidden transition-all duration-300 rounded-3xl border border-slate-800 bg-white dark:bg-[#020617] shadow-2xl flex flex-col transform-gpu ${
           deviceMode === "mobile" ? "max-w-100 max-h-[85vh] ring-8 ring-slate-800" : "max-w-6xl max-h-[85vh]"
         }`}
       >

@@ -169,13 +169,13 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* Jurusan Dropdown */}
-                {majors.length > 0 && (
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
-                      Jurusan
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
+                {/* Jurusan Dropdown - Selalu Tampil Dinamis */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+                    Jurusan
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    {majors && majors.length > 0 ? (
                       <ul className="grid w-100 md:w-125 lg:w-150 grid-cols-2 gap-2 p-4">
                         {majors.map((major, idx) => (
                           <li key={idx}>
@@ -195,9 +195,19 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                           </li>
                         ))}
                       </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                )}
+                    ) : (
+                      <div className="w-72 p-5 text-center space-y-1.5">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center">
+                          <BookOpen className="w-4 h-4" />
+                        </div>
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Program Keahlian Belum Ditambahkan</p>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
+                          Daftar jurusan dan konsentrasi keahlian sekolah ini akan segera diperbarui oleh admin instansi.
+                        </p>
+                      </div>
+                    )}
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
                 {/* Informasi */}
                 <NavigationMenuItem>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ArrowRight, X, ShieldCheck, Zap } from "lucide-react";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
@@ -21,7 +21,7 @@ export const SubscriptionOnboardingModal: React.FC<SubscriptionOnboardingModalPr
 
   useEffect(() => {
     // Only show if school is verified and not in demo mode
-    if (!isVerified || schoolSlug === "demo") return;
+    if (!isVerified || schoolSlug === "demo" || schoolSlug === "smktarunabhakti" || schoolSlug === "smktiglobal") return;
 
     // Check if user already dismissed it this session
     const storageKey = `cationgate_sub_onboarding_dismissed_${schoolSlug}`;
@@ -30,18 +30,51 @@ export const SubscriptionOnboardingModal: React.FC<SubscriptionOnboardingModalPr
       if (isDismissed === "true") return;
 
       // Check if school already has active subscription in local storage
-      const savedSub = localStorage.getItem(`ppdb_school_subscription_${schoolSlug}`);
-      if (savedSub && (savedSub.includes("PRO") || savedSub.includes("ACTIVE"))) {
+      const savedSub = localStorage.getItem(`ppdb_school_subscription_${schoolSlug}`) || localStorage.getItem("ppdb_school_subscription_default");
+      if (savedSub && (savedSub.includes("PRO") || savedSub.includes("ACTIVE") || savedSub.includes("YEARLY") || savedSub.includes("ENTERPRISE"))) {
         return;
       }
     }
 
-    // Trigger popup after exactly 3 seconds (3000ms)
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, 3000);
+    let isCancelled = false;
 
-    return () => clearTimeout(timer);
+    // Check live subscription status from API
+    fetch(`/api/saas/subscription-status?slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (isCancelled) return;
+        if (json.success && json.data) {
+          const plan = String(json.data.plan || "").toUpperCase();
+          const status = String(json.data.status || "").toUpperCase();
+          const isExpired = Boolean(json.data.isExpired);
+
+          if ((plan.includes("PRO") || plan.includes("ENTERPRISE") || status === "ACTIVE" || status === "SETTLEMENT") && !isExpired) {
+            return;
+          }
+        }
+
+        // Trigger popup after exactly 3 seconds (3000ms) only for unsubscribed schools
+        const timer = setTimeout(() => {
+          if (!isCancelled) {
+            setIsOpen(true);
+          }
+        }, 3000);
+
+        return () => clearTimeout(timer);
+      })
+      .catch(() => {
+        // Fallback timer if API unreachable
+        const timer = setTimeout(() => {
+          if (!isCancelled) {
+            setIsOpen(true);
+          }
+        }, 3000);
+        return () => clearTimeout(timer);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [isVerified, schoolSlug]);
 
   const handleDismiss = () => {

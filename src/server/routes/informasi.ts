@@ -73,10 +73,20 @@ async function processInformasiMedia(fotoUrl: string | null | undefined): Promis
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const fontInMemInformasi = new Map<string, any[]>();
+
 function getAdminSchoolId(c: Context): string | undefined {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = c.get('admin') as any;
-  return admin?.school_id || admin?.school_slug || admin?.slug;
+  return (
+    c.req.query('school_slug') ||
+    c.req.query('school_id') ||
+    c.req.header('x-school-slug') ||
+    admin?.school_id ||
+    admin?.school_slug ||
+    admin?.slug
+  );
 }
 
 // GET /informasi - Public list
@@ -97,39 +107,58 @@ router.get('/', async (c: Context) => {
     const numId = !isNaN(Number(resolved)) ? Number(resolved) : (!isNaN(Number(rawSchoolId)) ? Number(rawSchoolId) : null);
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    let rows: unknown[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allRows: any[] = [];
+    const seenIds = new Set<string | number>();
 
+    const addRow = (item: any) => {
+      if (!item) return;
+      const key = item.id || `${item.judul}_${item.tanggal}`;
+      if (!seenIds.has(key)) {
+        seenIds.add(key);
+        allRows.push(item);
+      }
+    };
+
+    // 1. In-memory entries
+    const memList1 = fontInMemInformasi.get(String(rawSchoolId)) || [];
+    const memList2 = resolved ? (fontInMemInformasi.get(String(resolved)) || []) : [];
+    [...memList1, ...memList2].forEach(addRow);
+
+    // 2. Supabase
     try {
       let query = supabase.from('informasi').select('*');
       if (numId !== null) {
         query = query.or(`school_id.eq.${numId},school_id.eq.${rawSchoolId}`);
       } else if (resolved) {
-        query = query.eq('school_id', resolved);
+        query = query.or(`school_id.eq.${resolved},school_id.eq.${rawSchoolId}`);
+      } else {
+        query = query.eq('school_id', rawSchoolId);
       }
       const { data: sbData, error } = await query.order('tanggal', { ascending: false }).order('created_at', { ascending: false });
-      if (!error && sbData && sbData.length > 0) {
-        rows = sbData;
+      if (!error && sbData && Array.isArray(sbData)) {
+        sbData.forEach(addRow);
       }
     } catch (_sbErr) {}
 
-    if (rows.length === 0) {
-      try {
-        const pgRes = await pool.query(
-          `SELECT * FROM informasi 
-           WHERE (CASE WHEN $1::integer IS NOT NULL THEN school_id = $1 ELSE false END)
-              OR school_id::text = $2 OR school_id::text = $3
-           ORDER BY tanggal DESC, created_at DESC`,
-          [numId, String(rawSchoolId), String(resolved || '')]
-        );
-        if (pgRes.rows && pgRes.rows.length > 0) {
-          rows = pgRes.rows;
-        }
-      } catch (_pgErr) {}
-    }
+    // 3. Direct PostgreSQL
+    try {
+      const pgRes = await pool.query(
+        `SELECT * FROM informasi 
+         WHERE (CASE WHEN $1::integer IS NOT NULL THEN school_id::text = $1::text ELSE false END)
+            OR school_id::text = $2 OR school_id::text = $3
+         ORDER BY tanggal DESC, created_at DESC`,
+        [numId, String(rawSchoolId), String(resolved || '')]
+      );
+      if (pgRes.rows && Array.isArray(pgRes.rows)) {
+        pgRes.rows.forEach(addRow);
+      }
+    } catch (_pgErr) {}
 
+    // 4. Sanitize media
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sanitizedRows = (rows || []).map((row: any) => {
-      if (row.foto_url && row.foto_url.startsWith('{')) {
+    const sanitizedRows = allRows.map((row: any) => {
+      if (row.foto_url && typeof row.foto_url === 'string' && row.foto_url.startsWith('{')) {
         try {
           const parsed = JSON.parse(row.foto_url);
           return {
@@ -149,6 +178,9 @@ router.get('/', async (c: Context) => {
       return row;
     });
 
+    // Sort newest first
+    sanitizedRows.sort((a, b) => new Date(b.created_at || b.tanggal).getTime() - new Date(a.created_at || a.tanggal).getTime());
+
     return c.json({ success: true, data: sanitizedRows });
   } catch (error: unknown) {
     console.error('Error fetching informasi:', error);
@@ -162,6 +194,12 @@ router.get('/:id', async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     if (isNaN(id) || id <= 0) {
       return c.json({ success: false, message: 'ID tidak valid.' }, 400);
+    }
+
+    // Check in-memory first
+    for (const list of fontInMemInformasi.values()) {
+      const found = list.find((item) => item.id === id);
+      if (found) return c.json({ success: true, data: found });
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
@@ -204,11 +242,7 @@ router.post('/', adminAuth, async (c: Context) => {
     }
     const { judul, konten, tanggal, foto_url } = result.data;
 
-    const rawSchoolId = getAdminSchoolId(c);
-    if (!rawSchoolId) {
-      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
-    }
-
+    const rawSchoolId = getAdminSchoolId(c) || 'default';
     const resolved = await resolveSchoolUUID(String(rawSchoolId), fontInMemSchools);
     const targetSchoolId = resolved || String(rawSchoolId);
     const numSchoolId = !isNaN(Number(targetSchoolId)) ? Number(targetSchoolId) : targetSchoolId;
@@ -259,6 +293,14 @@ router.post('/', adminAuth, async (c: Context) => {
       };
     }
 
+    // Save to memory store under all relevant keys
+    const keysToUpdate = new Set([String(rawSchoolId), String(targetSchoolId), String(numSchoolId)]);
+    if (resolved) keysToUpdate.add(String(resolved));
+    keysToUpdate.forEach((k) => {
+      if (!fontInMemInformasi.has(k)) fontInMemInformasi.set(k, []);
+      fontInMemInformasi.get(k)?.unshift(savedRecord);
+    });
+
     return c.json({
       success: true,
       message: 'Informasi berhasil ditambahkan.',
@@ -298,7 +340,8 @@ router.put('/:id', adminAuth, async (c: Context) => {
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    let updatedRecord: unknown = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let updatedRecord: any = null;
 
     try {
       const { data, error } = await supabase.from('informasi').update(dataToUpdate).eq('id', id).select().maybeSingle();
@@ -327,10 +370,19 @@ router.put('/:id', adminAuth, async (c: Context) => {
       }
     }
 
+    // Update in-memory stores
+    for (const list of fontInMemInformasi.values()) {
+      const idx = list.findIndex((item) => item.id === id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...dataToUpdate, ...updatedRecord };
+        if (!updatedRecord) updatedRecord = list[idx];
+      }
+    }
+
     return c.json({
       success: true,
       message: 'Informasi berhasil diperbarui.',
-      data: updatedRecord
+      data: updatedRecord || { id, ...dataToUpdate }
     });
   } catch (error: unknown) {
     console.error('Error updating informasi:', error);
@@ -355,6 +407,11 @@ router.delete('/:id', adminAuth, async (c: Context) => {
     try {
       await pool.query('DELETE FROM informasi WHERE id = $1', [id]);
     } catch (_pgErr) {}
+
+    // Remove from in-memory stores
+    for (const [key, list] of fontInMemInformasi.entries()) {
+      fontInMemInformasi.set(key, list.filter((item) => item.id !== id));
+    }
 
     return c.json({
       success: true,

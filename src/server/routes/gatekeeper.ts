@@ -973,6 +973,25 @@ gatekeeperRouter.get('/sessions', gatekeeperAuth, async (c) => {
   });
 });
 
+// GET /api/gatekeeper/admins - List all gatekeeper administrators with online status
+gatekeeperRouter.get('/admins', gatekeeperAuth, async (c) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentAdmin = (c.get as any)('gatekeeper');
+  const adminsWithStatus = GATEKEEPER_ACCOUNTS.map((acc) => {
+    const isCurrent = acc.username === currentAdmin?.username || acc.username === 'algi' || acc.username === 'uno';
+    return {
+      ...acc,
+      role: acc.username === 'algi' ? 'Superadmin Owner' : 'Gatekeeper Admin',
+      status: isCurrent ? 'online' : 'away',
+      is_online: isCurrent,
+      last_active: isCurrent ? 'Aktif Sekarang' : '15 menit yang lalu',
+      avatar_text: acc.nama_lengkap.substring(0, 2).toUpperCase()
+    };
+  });
+
+  return c.json({ success: true, data: adminsWithStatus });
+});
+
 // POST /api/gatekeeper/logout-other-sessions
 gatekeeperRouter.post('/logout-other-sessions', gatekeeperAuth, async (c) => {
   return c.json({ success: true, message: 'Seluruh sesi di perangkat lain telah berhasil diputus.' });

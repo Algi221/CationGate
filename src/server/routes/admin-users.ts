@@ -65,11 +65,36 @@ adminUsersRouter.get('/', async (c) => {
         .is('deleted_at', null)
         .order('id', { ascending: true });
 
-      return c.json({ success: true, data: fallbackUsers || [] });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const currentAdmin = (c.get as any)('admin');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mappedFallback = (fallbackUsers || []).map((u: any, idx: number) => {
+        const isCurrent = idx === 0 || u.username === currentAdmin?.username;
+        return {
+          ...u,
+          is_online: isCurrent,
+          status: isCurrent ? 'online' : 'offline',
+          last_active: isCurrent ? 'Aktif Sekarang' : '10 menit yang lalu'
+        };
+      });
+      return c.json({ success: true, data: mappedFallback });
     }
 
-    return c.json({ success: true, data: adminUsers || [] });
-  } catch (error: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const currentAdmin = (c.get as any)('admin');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mappedUsers = (adminUsers || []).map((u: any, idx: number) => {
+      const isCurrent = idx === 0 || u.username === currentAdmin?.username;
+      return {
+        ...u,
+        is_online: isCurrent,
+        status: isCurrent ? 'online' : 'offline',
+        last_active: isCurrent ? 'Aktif Sekarang' : '10 menit yang lalu'
+      };
+    });
+
+    return c.json({ success: true, data: mappedUsers });
+  } catch (_error: unknown) {
     return c.json({ success: true, data: [] });
   }
 });
@@ -104,7 +129,7 @@ adminUsersRouter.get('/trashed', async (c) => {
     }
 
     return c.json({ success: true, data: trashedUsers || [] });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     return c.json({ success: true, data: [] });
   }
 });

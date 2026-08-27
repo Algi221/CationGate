@@ -126,9 +126,8 @@ app.route('/contact', contactRoute)
 
 app.get('/health', (c) => c.json({ status: 'OK', service: 'PPDB SMK Taruna Bhakti API Server v1.0.0 (Monolith)' }));
 
-app.get('*', (c) => {
-  if (c.req.path.startsWith('/api/')) return c.notFound();
-  return c.html(`<!DOCTYPE html><html><body><script>window.location.href = '/'</script></body></html>`);
+app.all('*', (c) => {
+  return c.json({ success: false, message: 'Endpoint API tidak ditemukan' }, 404);
 });
 
 export default app;

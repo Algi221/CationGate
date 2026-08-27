@@ -350,18 +350,54 @@ export default function ProfilSekolahPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NPSN</label>
-                    <input type="text" name="npsn" value={identitas.npsn} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Nomor Pokok Sekolah Nasional" />
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NPSN (10 Digit Angka)</label>
+                    <input
+                      type="text"
+                      name="npsn"
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={identitas.npsn}
+                      onChange={(e) => {
+                        const numericVal = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        setIdentitas((prev) => ({ ...prev, npsn: numericVal }));
+                      }}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
+                      placeholder="Contoh: 2080701234"
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Status Akreditasi</label>
-                    <input type="text" name="akreditasi" value={identitas.akreditasi} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: A (Unggul)" />
+                    <select
+                      name="akreditasi"
+                      value={identitas.akreditasi || "A (Unggul)"}
+                      onChange={(e) => {
+                        setIdentitas((prev) => ({ ...prev, akreditasi: e.target.value }));
+                      }}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white cursor-pointer font-medium"
+                    >
+                      <option value="A (Unggul)">A (Unggul)</option>
+                      <option value="B (Baik Sekali)">B (Baik Sekali)</option>
+                      <option value="C (Baik)">C (Baik)</option>
+                      <option value="Belum Terakreditasi">Belum Terakreditasi</option>
+                    </select>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Tahun Berdiri</label>
-                    <input type="text" name="tahun_berdiri" value={identitas.tahun_berdiri} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: 2004" />
+                    <input
+                      type="text"
+                      name="tahun_berdiri"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={identitas.tahun_berdiri}
+                      onChange={(e) => {
+                        const num = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setIdentitas((prev) => ({ ...prev, tahun_berdiri: num }));
+                      }}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
+                      placeholder="Contoh: 2004"
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -371,7 +407,18 @@ export default function ProfilSekolahPage() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">No. Telepon / WhatsApp</label>
-                    <input type="text" name="telepon" value={identitas.telepon} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="081234567890" />
+                    <input
+                      type="text"
+                      name="telepon"
+                      inputMode="numeric"
+                      value={identitas.telepon}
+                      onChange={(e) => {
+                        const num = e.target.value.replace(/[^\d+]/g, "").slice(0, 15);
+                        setIdentitas((prev) => ({ ...prev, telepon: num }));
+                      }}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
+                      placeholder="081234567890"
+                    />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">

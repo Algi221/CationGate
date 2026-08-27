@@ -68,7 +68,10 @@ const ScrollFloat = ({
     const el = containerRef.current;
     if (!el) return;
 
-    const scroller = scrollContainerRef && scrollContainerRef.current ? scrollContainerRef.current : window;
+    const scroller =
+      (scrollContainerRef && scrollContainerRef.current) ||
+      el.closest(".overflow-y-auto, [data-scroll-container], [role='dialog']") ||
+      window;
 
     const ctx = gsap.context(() => {
       const charElements = el.querySelectorAll('.char');

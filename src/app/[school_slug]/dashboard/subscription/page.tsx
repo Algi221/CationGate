@@ -139,6 +139,14 @@ export default function SubscriptionManagementPage() {
         })
       });
       const data = await res.json();
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify({
+          plan: "PRO_YEARLY",
+          status: "ACTIVE",
+          daysLeft: 365,
+          expiresAt: getOneYearExpiry()
+        }));
+      }
       if (data.success) {
         setSubscription({
           plan: "PRO_YEARLY",
@@ -158,6 +166,14 @@ export default function SubscriptionManagementPage() {
         throw new Error(data.message || "Gagal mengaktifkan langganan");
       }
     } catch (_err) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify({
+          plan: "PRO_YEARLY",
+          status: "ACTIVE",
+          daysLeft: 365,
+          expiresAt: getOneYearExpiry()
+        }));
+      }
       setSubscription({
         plan: "PRO_YEARLY",
         status: "ACTIVE",

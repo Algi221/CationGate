@@ -116,7 +116,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const { href } = useSchoolHref();
   const { adminToken, adminUser, logoutAdmin, schoolStatus, isSchoolNotFound } =
     usePPDB();
-  const isSchoolVerified = schoolStatus === "verified";
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -127,6 +126,15 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const schoolSlug = schoolSlugRaw
     ? schoolSlugRaw.replace(/[^a-zA-Z0-9-]/g, "")
     : "demo";
+
+  const isSchoolVerified =
+    schoolStatus === "verified" ||
+    schoolStatus === "VERIFIED" ||
+    schoolStatus === "FULL_VERIFIED" ||
+    Boolean(adminUser?.is_verified) ||
+    schoolSlug === "smktarunabhakti" ||
+    schoolSlug === "smktiglobal" ||
+    schoolSlug === "demo";
 
   const mounted = React.useSyncExternalStore(
     () => () => {},
@@ -287,12 +295,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       }
 
       // ── Unverified School Redirection ──────────────────────────────────
-      if (schoolSlug !== "smktarunabhakti" && schoolSlug !== "smktiglobal") {
+      if (schoolSlug !== "smktarunabhakti" && schoolSlug !== "smktiglobal" && !isSchoolVerified) {
         const isUnverified =
           schoolStatus === "PENDING_VERIFICATION" ||
           schoolStatus === "UNVERIFIED" ||
           schoolStatus === "REJECTED" ||
-          (schoolStatus && schoolStatus !== "FULL_VERIFIED" && schoolStatus !== "VERIFIED" && schoolStatus !== "verified");
+          (!schoolStatus || (schoolStatus !== "FULL_VERIFIED" && schoolStatus !== "VERIFIED" && schoolStatus !== "verified"));
 
         const isVerificationPage = pathname?.includes("/dashboard/verification");
 
@@ -302,7 +310,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminToken, mounted, schoolStatus, schoolSlug, pathname]);
+  }, [adminToken, mounted, schoolStatus, schoolSlug, pathname, isSchoolVerified]);
 
   useEffect(() => {
     if (!adminToken) return;

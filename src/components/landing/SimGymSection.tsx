@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import FloatingComment, { TagColor } from "./FloatingComment";
+import { generateAvatarDataUrl } from "@/utils/avatar";
 
 const COMMENTS_DATA = [
   {
     id: 1,
     name: "Alex Danvers",
     text: "UI-nya sangat modern, calon siswa jadi gampang buat ngisi formulir pendaftaran lewat HP.",
-    avatarUrl: "https://api.dicebear.com/7.x/notionists/svg?seed=Alex",
+    avatarUrl: generateAvatarDataUrl("Alex Danvers"),
     tags: [
       { label: "Responsive", color: "green" as TagColor },
       { label: "UI Design", color: "purple" as TagColor },
@@ -23,7 +24,7 @@ const COMMENTS_DATA = [
     id: 2,
     name: "Sarah Jenkins",
     text: "Alur pendaftarannya jelas banget, nggak bikin bingung orang tua murid pas daftar!",
-    avatarUrl: "https://api.dicebear.com/7.x/notionists/svg?seed=Sarah",
+    avatarUrl: generateAvatarDataUrl("Sarah Jenkins"),
     tags: [
       { label: "User Flow", color: "green" as TagColor },
       { label: "Accessible", color: "blue" as TagColor },
@@ -36,7 +37,7 @@ const COMMENTS_DATA = [
     id: 3,
     name: "Michael Chang",
     text: "Dashboard adminnya lengkap. Ngerekap data pendaftar jadi hitungan detik doang.",
-    avatarUrl: "https://api.dicebear.com/7.x/notionists/svg?seed=Michael",
+    avatarUrl: generateAvatarDataUrl("Michael Chang"),
     tags: [
       { label: "Admin Panel", color: "blue" as TagColor },
       { label: "Fast", color: "purple" as TagColor },
@@ -50,7 +51,7 @@ const COMMENTS_DATA = [
     id: 4,
     name: "Emily R.",
     text: "Tema gelapnya keren banget, bikin web SPMB sekolah kelihatan jauh lebih premium.",
-    avatarUrl: "https://api.dicebear.com/7.x/notionists/svg?seed=Emily",
+    avatarUrl: generateAvatarDataUrl("Emily R."),
     tags: [
       { label: "Dark Mode", color: "green" as TagColor },
       { label: "Premium", color: "purple" as TagColor },
@@ -64,7 +65,7 @@ const COMMENTS_DATA = [
     id: 5,
     name: "David Kim",
     text: "Sangat fleksibel, komponennya gampang banget disesuaikan sama branding SMK kita.",
-    avatarUrl: "https://api.dicebear.com/7.x/notionists/svg?seed=David",
+    avatarUrl: generateAvatarDataUrl("David Kim"),
     tags: [
       { label: "Customizable", color: "blue" as TagColor },
       { label: "Branding", color: "purple" as TagColor },
@@ -78,7 +79,7 @@ const COMMENTS_DATA = [
     id: 6,
     name: "Chris L.",
     text: "Upload dokumen kelulusan lancar tanpa kendala server.",
-    avatarUrl: "https://api.dicebear.com/7.x/notionists/svg?seed=Chris",
+    avatarUrl: generateAvatarDataUrl("Chris L."),
     tags: [{ label: "Upload", color: "purple" as TagColor }],
     x: "45%",
     y: "12%",
@@ -89,7 +90,7 @@ const COMMENTS_DATA = [
     id: 7,
     name: "Jessica W.",
     text: "Loading super cepat, anti lemot saat server pendaftaran penuh.",
-    avatarUrl: "https://api.dicebear.com/7.x/notionists/svg?seed=Jessica",
+    avatarUrl: generateAvatarDataUrl("Jessica W."),
     tags: [{ label: "Performance", color: "green" as TagColor }],
     x: "65%",
     y: "10%",

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { generateAvatarDataUrl } from "@/utils/avatar";
 
 const testimonials = [
   {
@@ -148,12 +149,12 @@ export default function TestimonialsSection() {
                     </p>
                   </div>
 
-                  {/* Profil Karakter DiceBear */}
+                  {/* Profil Karakter Avatar */}
                   <div className="flex items-center gap-3.5 mt-auto pt-4 border-t border-zinc-100">
                     <div className="w-11 h-11 rounded-full bg-zinc-100 border border-zinc-200 overflow-hidden shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={`https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(testimonial.name)}&scale=120&backgroundColor=transparent`}
+                        src={generateAvatarDataUrl(testimonial.name)}
                         alt={testimonial.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"

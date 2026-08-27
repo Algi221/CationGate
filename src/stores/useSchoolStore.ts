@@ -141,11 +141,15 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
       if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
       const data = await res.json();
       if (data.success && data.data) {
+        let profil = data.data.ppdb_profil_sekolah || get().profilSekolah;
+        if (typeof profil === "string" && (profil.startsWith("{") || profil.startsWith("["))) {
+          try { profil = JSON.parse(profil); } catch (_e) {}
+        }
         set({
           ppdbLogo: data.data.ppdb_logo_url || get().ppdbLogo,
           ppdbTitle: data.data.ppdb_title || get().ppdbTitle,
           ppdbFooterDesc: data.data.ppdb_footer_desc || get().ppdbFooterDesc,
-          profilSekolah: data.data.ppdb_profil_sekolah || get().profilSekolah,
+          profilSekolah: profil,
           schoolPeriod: data.data.ppdb_school_period || get().schoolPeriod,
           isConfigLoaded: true,
         });

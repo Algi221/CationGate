@@ -228,11 +228,7 @@ export default function KelolaUIPage() {
 
           <button
             onClick={() => setShowConfirmModal(true)}
-<<<<<<< HEAD
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20"
-=======
-            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-blue-500/20"
->>>>>>> 95f0c71 (style(ui): adjust main feature page clearrrr)
           >
             <Check size={13} />
             <span>Simpan</span>

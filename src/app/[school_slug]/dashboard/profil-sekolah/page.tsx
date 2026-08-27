@@ -75,12 +75,15 @@ export default function ProfilSekolahPage() {
         if (c.ppdb_phone) setIdentitas(prev => ({ ...prev, telepon: c.ppdb_phone }));
         if (c.ppdb_email) setIdentitas(prev => ({ ...prev, email: c.ppdb_email }));
 
-        if (c.ppdb_profil_sekolah && typeof c.ppdb_profil_sekolah === "object") {
-          const p = c.ppdb_profil_sekolah;
+        let p = c.ppdb_profil_sekolah;
+        if (typeof p === "string" && (p.startsWith("{") || p.startsWith("["))) {
+          try { p = JSON.parse(p); } catch (_e) {}
+        }
+        if (p && typeof p === "object") {
           if (p.identitas) setIdentitas(prev => ({ ...prev, ...p.identitas, nama: c.ppdb_title || p.identitas.nama || prev.nama }));
           if (p.sejarah) setSejarah(p.sejarah);
           if (p.ringkasan) setRingkasan(p.ringkasan);
-          if (p.video_profil_url) setVideoProfilUrl(p.video_profil_url);
+          if (p.video_profil_url !== undefined && p.video_profil_url !== null) setVideoProfilUrl(p.video_profil_url);
           if (p.hero_image) setHeroImage(p.hero_image);
           if (p.pimpinan) setPimpinan(prev => ({ ...prev, ...p.pimpinan }));
           if (p.visi_misi) {
@@ -106,21 +109,27 @@ export default function ProfilSekolahPage() {
     if (ppdbLogo) setLogoInput(ppdbLogo);
 
     if (profilSekolah) {
-      if (profilSekolah.identitas) {
-        setIdentitas(prev => ({ ...prev, ...profilSekolah.identitas }));
+      let p = profilSekolah;
+      if (typeof p === "string" && (p.startsWith("{") || p.startsWith("["))) {
+        try { p = JSON.parse(p); } catch (_e) {}
       }
-      if (profilSekolah.sejarah) setSejarah(profilSekolah.sejarah);
-      if (profilSekolah.ringkasan) setRingkasan(profilSekolah.ringkasan);
-      if (profilSekolah.video_profil_url) setVideoProfilUrl(profilSekolah.video_profil_url);
-      if (profilSekolah.hero_image) setHeroImage(profilSekolah.hero_image);
-      if (profilSekolah.pimpinan) {
-        setPimpinan(prev => ({ ...prev, ...profilSekolah.pimpinan }));
+      if (p && typeof p === "object") {
+        if (p.identitas) {
+          setIdentitas(prev => ({ ...prev, ...p.identitas }));
+        }
+        if (p.sejarah) setSejarah(p.sejarah);
+        if (p.ringkasan) setRingkasan(p.ringkasan);
+        if (p.video_profil_url !== undefined && p.video_profil_url !== null) setVideoProfilUrl(p.video_profil_url);
+        if (p.hero_image) setHeroImage(p.hero_image);
+        if (p.pimpinan) {
+          setPimpinan(prev => ({ ...prev, ...p.pimpinan }));
+        }
+        if (p.visi_misi) {
+          setVisi(p.visi_misi.visi || "");
+          setMisi(p.visi_misi.misi || "");
+        }
+        if (p.tujuan) setTujuan(p.tujuan);
       }
-      if (profilSekolah.visi_misi) {
-        setVisi(profilSekolah.visi_misi.visi || "");
-        setMisi(profilSekolah.visi_misi.misi || "");
-      }
-      if (profilSekolah.tujuan) setTujuan(profilSekolah.tujuan);
     }
   }, [profilSekolah, ppdbTitle, ppdbLogo]);
 

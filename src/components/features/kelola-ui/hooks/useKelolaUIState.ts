@@ -261,8 +261,9 @@ export function useKelolaUIState() {
       if (activeConfig.ppdb_hero_bg_image) setHeroBgImage(activeConfig.ppdb_hero_bg_image);
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
-      if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
+      if (activeConfig.ppdb_address || activeConfig.ppdb_alamat) setAddress(activeConfig.ppdb_address || activeConfig.ppdb_alamat);
       if (activeConfig.ppdb_map_title) setMapTitle(activeConfig.ppdb_map_title);
+      if (activeConfig.ppdb_map_url || activeConfig.ppdb_maps_embed) setMapUrl(activeConfig.ppdb_map_url || activeConfig.ppdb_maps_embed);
       if (activeConfig.ppdb_school_period) setSchoolPeriod(activeConfig.ppdb_school_period);
       if (activeConfig.ppdb_faq_title) setFaqTitle(activeConfig.ppdb_faq_title);
       if (activeConfig.ppdb_faq_subtitle) setFaqSubtitle(activeConfig.ppdb_faq_subtitle);

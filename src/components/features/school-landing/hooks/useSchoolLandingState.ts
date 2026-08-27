@@ -97,6 +97,34 @@ const DEFAULT_MAJORS: MajorItem[] = [
   }
 ];
 
+const getLocalLandingCache = (slug: string) => {
+  if (typeof window === "undefined" || !slug) return null;
+  try {
+    const raw = localStorage.getItem(`cation_landing_cache_${slug}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_e) {
+    return null;
+  }
+};
+
+const setLocalLandingCache = (slug: string, data: Record<string, unknown>) => {
+  if (typeof window === "undefined" || !slug) return;
+  try {
+    localStorage.setItem(`cation_landing_cache_${slug}`, JSON.stringify(data));
+  } catch (_e) {}
+};
+
+const parseConfigArray = <T>(val: unknown): T[] | null => {
+  if (Array.isArray(val)) return val as T[];
+  if (typeof val === "string" && val.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return parsed as T[];
+    } catch (_e) {}
+  }
+  return null;
+};
+
 export function useSchoolLandingState() {
   const { ppdbTitle, isSchoolNotFound, schoolStatus, isConfigLoaded } = usePPDB();
   const params = useParams();
@@ -107,7 +135,10 @@ export function useSchoolLandingState() {
       : "sekolah");
   const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
 
+  const initialCache = getLocalLandingCache(schoolSlug) || {};
+
   const schoolDisplayName =
+    initialCache.ppdb_title ||
     ppdbTitle ||
     schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -118,36 +149,54 @@ export function useSchoolLandingState() {
     isDemo;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroTitle, setHeroTitle] = useState("Penerimaan Peserta Didik Baru");
-  const [heroTitleSub, setHeroTitleSub] = useState(isDemo ? `SPMB SMK Demo` : `SPMB ${schoolDisplayName}`);
+  const [heroTitle, setHeroTitle] = useState(initialCache.ppdb_hero_title || "Penerimaan Peserta Didik Baru");
+  const [heroTitleSub, setHeroTitleSub] = useState(
+    initialCache.ppdb_hero_title_sub || (isDemo ? `SPMB SMK Demo` : `SPMB ${schoolDisplayName}`)
+  );
   const [heroSubtitle, setHeroSubtitle] = useState(
-    isDemo
+    initialCache.ppdb_hero_subtitle || (isDemo
       ? "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
-      : ""
+      : "")
   );
-  const [heroBgImage, setHeroBgImage] = useState<string>("");
+  const [heroBgImage, setHeroBgImage] = useState<string>(initialCache.ppdb_hero_bg_image || "");
 
-  const [address, setAddress] = useState("");
-  const [mapTitle, setMapTitle] = useState(`Kunjungi ${schoolDisplayName}`);
-  const [mapUrl, setMapUrl] = useState("");
-  const [waAdmin, setWaAdmin] = useState("");
-  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
+  const [address, setAddress] = useState(initialCache.ppdb_address || initialCache.ppdb_alamat || "");
+  const [mapTitle, setMapTitle] = useState(initialCache.ppdb_map_title || `Kunjungi ${schoolDisplayName}`);
+  const [mapUrl, setMapUrl] = useState(initialCache.ppdb_map_url || initialCache.ppdb_maps_embed || "");
+  const [waAdmin, setWaAdmin] = useState(initialCache.ppdb_wa_admin || "");
+  const [schoolPeriod, setSchoolPeriod] = useState(initialCache.ppdb_school_period || "2026-2027");
 
-  const [faqList, setFaqList] = useState<FaqItem[]>(isDemo ? DEFAULT_FAQ : []);
-  const [faqTitle, setFaqTitle] = useState(isDemo ? "Pertanyaan yang Sering Diajukan" : "");
+  const [faqList, setFaqList] = useState<FaqItem[]>(
+    parseConfigArray<FaqItem>(initialCache.ppdb_faq_config) || (isDemo ? DEFAULT_FAQ : [])
+  );
+  const [faqTitle, setFaqTitle] = useState(initialCache.ppdb_faq_title || (isDemo ? "Pertanyaan yang Sering Diajukan" : ""));
   const [faqSubtitle, setFaqSubtitle] = useState(
-    isDemo ? "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru." : ""
+    initialCache.ppdb_faq_subtitle || (isDemo ? "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru." : "")
   );
 
-  const [alurList, setAlurList] = useState<AlurItem[]>(isDemo ? DEFAULT_ALUR : []);
-  const [majors, setMajors] = useState<MajorItem[]>(isDemo ? DEFAULT_MAJORS : []);
-  const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
+  const [alurList, setAlurList] = useState<AlurItem[]>(
+    parseConfigArray<AlurItem>(initialCache.ppdb_alur_config) || (isDemo ? DEFAULT_ALUR : [])
+  );
+  const [majors, setMajors] = useState<MajorItem[]>(
+    parseConfigArray<MajorItem>(initialCache.ppdb_majors_config) || (isDemo ? DEFAULT_MAJORS : [])
+  );
+  const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(
+    initialCache.ppdb_landing_active !== undefined ? Boolean(initialCache.ppdb_landing_active) : true
+  );
   const [isPlatformMaintenance, setIsPlatformMaintenance] = useState<boolean>(false);
-  const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>(isDemo ? DEFAULT_PARTNERS : []);
+  const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>(
+    parseConfigArray<PartnerItem>(initialCache.ppdb_partners_config) || (isDemo ? DEFAULT_PARTNERS : [])
+  );
 
-  const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>({
-    gelombang1: { start: "", end: "" },
-    gelombang2: { start: "", end: "" }
+  const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>(() => {
+    let g = initialCache.ppdb_gelombang_config;
+    if (typeof g === "string" && g.trim().startsWith("{")) {
+      try { g = JSON.parse(g); } catch (_e) {}
+    }
+    return g && typeof g === "object" ? g : {
+      gelombang1: { start: "", end: "" },
+      gelombang2: { start: "", end: "" }
+    };
   });
 
   const formatDate = (dateString: string | null | undefined) => {
@@ -179,12 +228,14 @@ export function useSchoolLandingState() {
         } catch (_e) {}
 
         // 2. Check Specific School Landing Config
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`, {
+        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`, {
           cache: "no-store"
         });
         const json = await res.json();
         if (json.success && json.data) {
           const cfg = json.data;
+          setLocalLandingCache(schoolSlug, cfg);
+
           if (cfg.ppdb_landing_active !== undefined) {
             setIsLandingPageActive(
               cfg.ppdb_landing_active === true ||
@@ -214,40 +265,40 @@ export function useSchoolLandingState() {
           if (cfg.ppdb_faq_title) setFaqTitle(cfg.ppdb_faq_title);
           if (cfg.ppdb_faq_subtitle) setFaqSubtitle(cfg.ppdb_faq_subtitle);
 
-          if (cfg.ppdb_faq_config && Array.isArray(cfg.ppdb_faq_config)) {
-            setFaqList(cfg.ppdb_faq_config);
+          const parsedFaq = parseConfigArray<FaqItem>(cfg.ppdb_faq_config);
+          if (parsedFaq) {
+            setFaqList(parsedFaq);
           } else if (isDemo) {
             setFaqList(DEFAULT_FAQ);
-          } else {
-            setFaqList([]);
           }
 
-          if (cfg.ppdb_alur_config && Array.isArray(cfg.ppdb_alur_config)) {
-            setAlurList(cfg.ppdb_alur_config);
+          const parsedAlur = parseConfigArray<AlurItem>(cfg.ppdb_alur_config);
+          if (parsedAlur) {
+            setAlurList(parsedAlur);
           } else if (isDemo) {
             setAlurList(DEFAULT_ALUR);
-          } else {
-            setAlurList([]);
           }
 
-          if (cfg.ppdb_majors_config && Array.isArray(cfg.ppdb_majors_config)) {
-            setMajors(cfg.ppdb_majors_config);
+          const parsedMajors = parseConfigArray<MajorItem>(cfg.ppdb_majors_config);
+          if (parsedMajors) {
+            setMajors(parsedMajors);
           } else if (isDemo) {
             setMajors(DEFAULT_MAJORS);
-          } else {
-            setMajors([]);
           }
 
-          if (cfg.ppdb_partners_config && Array.isArray(cfg.ppdb_partners_config)) {
-            setPartnersList(cfg.ppdb_partners_config);
+          const parsedPartners = parseConfigArray<PartnerItem>(cfg.ppdb_partners_config);
+          if (parsedPartners) {
+            setPartnersList(parsedPartners);
           } else if (isDemo) {
             setPartnersList(DEFAULT_PARTNERS);
-          } else {
-            setPartnersList([]);
           }
 
-          if (cfg.ppdb_gelombang_config) {
-            setGelombangConfig(cfg.ppdb_gelombang_config);
+          let g = cfg.ppdb_gelombang_config;
+          if (typeof g === "string" && g.trim().startsWith("{")) {
+            try { g = JSON.parse(g); } catch (_e) {}
+          }
+          if (g && typeof g === "object") {
+            setGelombangConfig(g);
           }
         }
       } catch (err) {

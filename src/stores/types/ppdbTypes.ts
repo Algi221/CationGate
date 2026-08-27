@@ -57,4 +57,7 @@ export interface PPDBApplicant {
   deleted_at?: string | null;
   deleted_by?: string | null;
   alasan_hapus?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
+

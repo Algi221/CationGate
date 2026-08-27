@@ -1001,7 +1001,6 @@ export class SaasService {
 
     // Invalidate Redis caches
     try {
-      const redis = getRedis();
       if (redis) {
         await redis.del(`school:${slug}`);
         await redis.del(`config_${slug}`);

@@ -45,8 +45,8 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
   return (
     <div className="relative w-full overflow-hidden">
       {/* BACKGROUND IMAGE DENGAN FADE OUT GRADIENT */}
-      <div className="absolute inset-0 -z-10 overflow-hidden bg-slate-50 dark:bg-[#020617]">
-        {heroBgImage && (
+      <div className="absolute inset-0 -z-10 overflow-hidden bg-slate-50 dark:bg-[#020617]" suppressHydrationWarning>
+        {heroBgImage ? (
           <Image
             src={heroBgImage}
             alt="Background Sekolah"
@@ -55,7 +55,7 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
             unoptimized
             className="object-cover object-top opacity-30 dark:opacity-15"
           />
-        )}
+        ) : null}
         {/* Gradient overlay biar atasnya kelihatan, makin ke bawah makin menyatu halus dengan body */}
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-slate-50/80 to-slate-50 dark:via-[#020617]/80 dark:to-[#020617]" />
       </div>

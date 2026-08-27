@@ -176,9 +176,7 @@ export const LivePreviewLandingModal: React.FC<LivePreviewLandingModalProps> = (
       >
         <div className={`grow overflow-y-auto w-full relative ${deviceMode === "mobile" ? "preview-mobile-frame" : ""}`} data-scroll-container>
           {/* Simulated Navbar */}
-          <div className="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-            <SchoolNavbar schoolSlug={schoolSlug} isPreview={true} forceMobile={deviceMode === "mobile"} />
-          </div>
+          <SchoolNavbar schoolSlug={schoolSlug} isPreview={true} forceMobile={deviceMode === "mobile"} />
 
           {/* Simulated Landing Page Content */}
           <main className="w-full relative z-0">

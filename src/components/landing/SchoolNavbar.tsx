@@ -12,7 +12,9 @@ import {
   Video,
   Palette,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
+import { CurvedNavbar, HamburgerButton } from "./CurvedMobileMenu";
 
 import SafeImage from "@/components/SafeImage";
 import { usePPDB } from "@/context/PPDBContext";
@@ -271,114 +273,66 @@ export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = fals
             </Link>
 
             {/* Hamburger Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`${forceMobile ? "flex" : "flex lg:hidden"} items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-101 cursor-pointer`}
-              aria-label="Toggle Mobile Menu"
-            >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
+            <div className={`${forceMobile ? "flex" : "flex lg:hidden"} items-center relative z-250 shrink-0`}>
+              <HamburgerButton
+                isActive={mobileMenuOpen}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              />
+            </div>
           </div>
         </nav>
       </header>
 
-      {/* Fullscreen/Container Mobile Navigation Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className={`fixed inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] p-6 overflow-y-auto animate-in fade-in duration-300 ${forceMobile ? "flex" : "lg:hidden"}`}>
-          {/* Close Button X in top right */}
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-5 right-5 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer z-20"
-            aria-label="Close Mobile Menu"
-          >
-            <X size={20} />
-          </button>
-
-          {/* Decorative gradients */}
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
-
-          <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
-            <Link
-              href={href("/")}
-              onClick={(e) => {
-                setMobileMenuOpen(false);
-                handleLinkClick(e, href("/"));
-              }}
-              className="flex items-center gap-2 mb-6"
-            >
-              {ppdbLogo ? (
-                <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
-              ) : schoolSlug === "smktarunabhakti" || schoolSlug === "demo" ? (
-                <SafeImage src="/assets/logo_sekolah/logo_smktb.png" alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
-              ) : (
-                <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md">
-                  {(displayTitle || "S").substring(0, 2).toUpperCase()}
-                </div>
-              )}
-              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                {displayTitle}
-              </span>
-            </Link>
-
-            <div className="flex flex-col w-full gap-2">
-              <Link
-                href={href("/")}
-                onClick={(e) => {
-                  setMobileMenuOpen(false);
-                  handleLinkClick(e, href("/"));
-                }}
-                className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
-              >
-                Beranda
-              </Link>
-              <Link
-                href={href("/profil")}
-                onClick={(e) => {
-                  setMobileMenuOpen(false);
-                  handleLinkClick(e, href("/profil"));
-                }}
-                className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
-              >
-                Profil Sekolah
-              </Link>
-              <Link
-                href={href("/forum")}
-                onClick={(e) => {
-                  setMobileMenuOpen(false);
-                  handleLinkClick(e, href("/forum"));
-                }}
-                className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
-              >
-                Forum Informasi
-              </Link>
-              <Link
-                href={href("/blog")}
-                onClick={(e) => {
-                  setMobileMenuOpen(false);
-                  handleLinkClick(e, href("/blog"));
-                }}
-                className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
-              >
-                Blog
-              </Link>
-            </div>
-
-            <div className="mt-8 w-full flex flex-col gap-3">
-              <Link
-                href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
-                onClick={(e) => {
-                  setMobileMenuOpen(false);
-                  handleLinkClick(e, schoolSlug === 'demo' ? href("/dashboard") : href("/daftar"));
-                }}
-                className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-95"
-              >
-                {schoolSlug === 'demo' ? "Buka Dashboard Demo" : "Daftar Sekarang"}
-              </Link>
-            </div>
-          </div>
-        </div>
-      )} 
+      {/* Mobile Navigation Drawer / Sidebar */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <CurvedNavbar
+            setIsActive={setMobileMenuOpen}
+            schoolLogo={ppdbLogo || (schoolSlug === "smktarunabhakti" || isDemo ? "/assets/logo_sekolah/logo_smktb.png" : undefined)}
+            schoolName={displayTitle}
+            onLinkClick={handleLinkClick}
+            navItems={[
+              { heading: "Beranda", href: href("/") },
+              {
+                heading: "Profil Sekolah",
+                href: href("/profil"),
+                subItems: [
+                  { title: "Sejarah", href: href("/profil?section=sejarah") },
+                  { title: "Identitas Sekolah", href: href("/profil?section=identitas") },
+                  { title: "Visi & Misi", href: href("/profil?section=visimisi") },
+                  { title: "Tujuan", href: href("/profil?section=tujuan") }
+                ]
+              },
+              {
+                heading: "Jurusan",
+                href: href("/#majors"),
+                subItems: majors.map((m) => ({
+                  title: m.title || m.code,
+                  href: href(`/jurusan/${encodeURIComponent(m.code.toLowerCase())}`)
+                }))
+              },
+              { heading: "Forum Informasi", href: href("/forum") },
+              { heading: "Blog", href: href("/blog") }
+            ]}
+            footer={
+              <div className="flex flex-col w-full px-6 md:px-24 py-8 pb-12 gap-4">
+                <Link
+                  href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    handleLinkClick(e, schoolSlug === 'demo' ? href("/dashboard") : href("/daftar"));
+                  }}
+                  className="w-full"
+                >
+                  <button className="w-full justify-center bg-blue-600 hover:bg-blue-700 font-bold text-base text-white rounded-2xl h-14 transition-all duration-300 flex items-center shadow-md shadow-blue-600/25 cursor-pointer">
+                    {schoolSlug === 'demo' ? "Buka Dashboard Demo" : "Daftar Sekarang"}
+                  </button>
+                </Link>
+              </div>
+            }
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

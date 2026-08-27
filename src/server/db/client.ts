@@ -57,6 +57,55 @@ export async function initDb(): Promise<void> {
         ALTER TABLE ui_revisions DROP CONSTRAINT IF EXISTS ui_revisions_school_id_fkey;
         ALTER TABLE informasi DROP CONSTRAINT IF EXISTS informasi_school_id_fkey;
 
+        -- Expand column sizes in calon_siswa and student_applicants
+        DO $$ BEGIN
+          ALTER TABLE calon_siswa ALTER COLUMN kode_pos TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN golongan_darah TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN punya_kps TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN punya_kip TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN perkelahian TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN narkoba TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN pelanggaran_lain TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN kode_pos_ayah TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN kode_pos_ibu TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN kode_pos_wali TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN kewarganegaraan TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN kewarganegaraan_ayah TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN kewarganegaraan_ibu TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN kewarganegaraan_wali TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN diterima_kelas TYPE VARCHAR(100);
+          ALTER TABLE calon_siswa ALTER COLUMN jurusan_1 TYPE VARCHAR(100);
+          ALTER TABLE calon_siswa ALTER COLUMN periode TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN gelombang TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN whatsapp TYPE VARCHAR(50);
+          ALTER TABLE calon_siswa ALTER COLUMN telepon_ortu TYPE VARCHAR(50);
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE student_applicants ALTER COLUMN kode_pos TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN golongan_darah TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN punya_kps TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN punya_kip TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN perkelahian TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN narkoba TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN pelanggaran_lain TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN kode_pos_ayah TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN kode_pos_ibu TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN kode_pos_wali TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN kewarganegaraan TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN kewarganegaraan_ayah TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN kewarganegaraan_ibu TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN kewarganegaraan_wali TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN diterima_kelas TYPE VARCHAR(100);
+          ALTER TABLE student_applicants ALTER COLUMN jurusan_1 TYPE VARCHAR(100);
+          ALTER TABLE student_applicants ALTER COLUMN periode TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN gelombang TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN whatsapp TYPE VARCHAR(50);
+          ALTER TABLE student_applicants ALTER COLUMN telepon_ortu TYPE VARCHAR(50);
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END $$;
+
         -- Convert school_id columns to TEXT to seamlessly support UUID, numeric, and slug tenants
         DO $$ BEGIN
           ALTER TABLE landing_page_config ALTER COLUMN school_id TYPE TEXT USING school_id::text;

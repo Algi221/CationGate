@@ -37,7 +37,7 @@ export const inMemTransactions: SaasTransaction[] = [
     school_name: "SMK Taruna Bhakti",
     school_slug: "smktarunabhakti",
     plan_name: "Pro Tahunan",
-    amount: 15000000,
+    amount: 1200000,
     payment_method: "Midtrans (BCA Virtual Account)",
     status: "SETTLEMENT",
     customer_name: "Admin SMK Taruna Bhakti",
@@ -51,7 +51,7 @@ export const inMemTransactions: SaasTransaction[] = [
     school_name: "SMK TI Bali Global Denpasar",
     school_slug: "smktiglobal",
     plan_name: "Enterprise Institution",
-    amount: 35000000,
+    amount: 1200000,
     payment_method: "Midtrans (QRIS Mandiri)",
     status: "SETTLEMENT",
     customer_name: "Panitia SPMB Bali Global",
@@ -514,7 +514,7 @@ export class SaasService {
     const now = new Date();
     const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
 
-    const txAmount = typeof amount === 'number' && amount > 0 ? amount : 15000000;
+    const txAmount = typeof amount === 'number' && amount > 0 ? amount : 1200000;
     const txPlan = planName || (txAmount >= 30000000 ? 'Enterprise Institution' : 'Pro Tahunan');
     const txMethod = paymentMethod || 'Midtrans (Simulasi Sandbox)';
     const finalOrderId = orderId || `CG-SIM-${Date.now()}`;
@@ -551,8 +551,8 @@ export class SaasService {
     let resolvedUUID: string | null = null;
     let schoolName = 'Sekolah SMK';
     let schoolSlug = idOrSlug;
-    let adminName = 'Admin Sekolah';
-    let officialEmail = `${idOrSlug}@school.id`;
+    let _adminName = 'Admin Sekolah';
+    let _officialEmail = `${idOrSlug}@school.id`;
 
     try {
       let scUpdate = supabase
@@ -575,8 +575,8 @@ export class SaasService {
         resolvedUUID = updatedSchool.id;
         if (updatedSchool.name) schoolName = updatedSchool.name;
         if (updatedSchool.slug) schoolSlug = updatedSchool.slug;
-        if (updatedSchool.admin_name) adminName = updatedSchool.admin_name;
-        if (updatedSchool.official_email) officialEmail = updatedSchool.official_email;
+        if (updatedSchool.admin_name) _adminName = updatedSchool.admin_name;
+        if (updatedSchool.official_email) _officialEmail = updatedSchool.official_email;
       }
     } catch (e) {
       console.warn('Supabase schools update warning:', e);
@@ -598,8 +598,8 @@ export class SaasService {
         s.subscription_plan = 'PRO_YEARLY';
         if (s.name) schoolName = s.name;
         if (s.slug) schoolSlug = s.slug;
-        if (s.admin_name) adminName = s.admin_name;
-        if (s.official_email) officialEmail = s.official_email;
+        if (s.admin_name) _adminName = s.admin_name;
+        if (s.official_email) _officialEmail = s.official_email;
       }
     });
 
@@ -611,8 +611,8 @@ export class SaasService {
       localObj.subscription_plan = 'PRO_YEARLY';
       if (localObj.name) schoolName = localObj.name;
       if (localObj.slug) schoolSlug = localObj.slug;
-      if (localObj.admin_name) adminName = localObj.admin_name;
-      if (localObj.official_email) officialEmail = localObj.official_email;
+      if (localObj.admin_name) _adminName = localObj.admin_name;
+      if (localObj.official_email) _officialEmail = localObj.official_email;
     }
 
     if (idOrSlug === 'smktarunabhakti' || targetSlug === 'smktarunabhakti') {
@@ -719,7 +719,7 @@ export class SaasService {
               school_name: ord.schools?.name || 'Sekolah Terdaftar',
               school_slug: ord.schools?.slug || 'school',
               plan_name: ord.amount >= 30000000 ? 'Enterprise Institution' : 'Pro Tahunan',
-              amount: ord.amount || 15000000,
+              amount: ord.amount || 1200000,
               payment_method: 'Midtrans Payment Gateway',
               status: (ord.status || 'SETTLEMENT') as SaasTransaction['status'],
               customer_name: ord.schools?.admin_name || 'Admin Instansi',

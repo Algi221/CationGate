@@ -19,6 +19,13 @@ import {
 import Swal from "sweetalert2";
 import { uploadFileDirect, base64ToFile } from "@/utils/storage";
 import { compressImage } from "@/utils/mediaCompressor";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 export default function ProfilSekolahPage() {
   const params = useParams();
@@ -368,19 +375,22 @@ export default function ProfilSekolahPage() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Status Akreditasi</label>
-                    <select
-                      name="akreditasi"
+                    <Select
                       value={identitas.akreditasi || "A (Unggul)"}
-                      onChange={(e) => {
-                        setIdentitas((prev) => ({ ...prev, akreditasi: e.target.value }));
+                      onValueChange={(val) => {
+                        setIdentitas((prev) => ({ ...prev, akreditasi: val }));
                       }}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white cursor-pointer font-medium"
                     >
-                      <option value="A (Unggul)">A (Unggul)</option>
-                      <option value="B (Baik Sekali)">B (Baik Sekali)</option>
-                      <option value="C (Baik)">C (Baik)</option>
-                      <option value="Belum Terakreditasi">Belum Terakreditasi</option>
-                    </select>
+                      <SelectTrigger className="w-full h-11.5 px-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white font-medium">
+                        <SelectValue placeholder="Pilih Status Akreditasi" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A (Unggul)">A (Unggul)</SelectItem>
+                        <SelectItem value="B (Baik Sekali)">B (Baik Sekali)</SelectItem>
+                        <SelectItem value="C (Baik)">C (Baik)</SelectItem>
+                        <SelectItem value="Belum Terakreditasi">Belum Terakreditasi</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">

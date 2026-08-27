@@ -1,10 +1,8 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { ShieldAlert, ArrowRight, LogIn, Mail } from "lucide-react";
-import { useSchoolHref } from "@/hooks/useSchoolHref";
+import { ShieldAlert } from "lucide-react";
 
 interface SchoolUnverifiedLandingViewProps {
   schoolSlug: string;
@@ -13,76 +11,55 @@ interface SchoolUnverifiedLandingViewProps {
 }
 
 export function SchoolUnverifiedLandingView({
-  schoolSlug,
+  schoolSlug: _schoolSlug,
   schoolDisplayName,
   schoolStatus = "UNVERIFIED"
 }: SchoolUnverifiedLandingViewProps) {
-  const { href } = useSchoolHref(schoolSlug);
-
   const isRejected = schoolStatus === "REJECTED";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-6 text-center font-sans">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05)_0%,transparent_70%)] pointer-events-none" />
+    <div className="min-h-screen bg-slate-50/70 dark:bg-[#020617] flex items-center justify-center p-4 sm:p-6 text-center font-sans relative overflow-hidden selection:bg-slate-900 selection:text-white">
+      {/* Subtle geometric background grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="relative z-10 w-full max-w-lg p-8 sm:p-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl space-y-6 my-auto"
+        transition={{ duration: 0.25 }}
+        className="relative z-10 w-full max-w-md p-8 sm:p-10 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6 my-auto"
       >
-        {/* Icon */}
-        <div className="w-20 h-20 rounded-3xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/10">
-          <ShieldAlert size={40} strokeWidth={2.2} />
+        {/* Minimalist Top Status Pill */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse" />
+          <span>{isRejected ? "Dokumen Perlu Penyesuaian" : "Tahap Peninjauan Resmi"}</span>
         </div>
 
-        {/* Badge & Headings */}
-        <div className="space-y-3">
-          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-            isRejected
-              ? "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900"
-              : "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900"
-          }`}>
-            {isRejected ? "⚠️ Dokumen Perlu Revisi" : "🔒 Portal Dalam Proses Verifikasi"}
-          </span>
+        {/* Minimalist Monochrome Icon */}
+        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-slate-100 flex items-center justify-center mx-auto shadow-inner">
+          <ShieldAlert size={28} strokeWidth={2.2} />
+        </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+        {/* Headings & Informative Content */}
+        <div className="space-y-2.5">
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
             Portal {schoolDisplayName} Belum Aktif
           </h1>
 
-          <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
             {isRejected
-              ? "Pengajuan legalitas instansi ini memerlukan perbaikan dokumen. Admin sekolah dapat masuk ke dashboard untuk memperbarui berkas SK operasional resmi."
-              : "Instansi ini sedang dalam tahap peninjauan legalitas SK izin operasional oleh Tim Superadmin Gatekeeper. Landing page dan formulir pendaftaran PPDB akan terbuka otomatis setelah verifikasi disetujui."}
+              ? "Pengajuan legalitas instansi ini sedang dalam tahap penyesuaian dokumen izin operasional oleh pihak sekolah."
+              : "Instansi ini sedang dalam tahap peninjauan legalitas SK izin operasional resmi. Seluruh formulir pendaftaran PPDB dan informasi sekolah akan terbuka otomatis setelah verifikasi selesai."}
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href={href("/login")}
-            className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/25 transition-all inline-flex items-center justify-center gap-2"
-          >
-            <LogIn size={15} /> Login Admin Sekolah
-          </Link>
-
-          <a
-            href="mailto:support@cationgate.site"
-            className="w-full sm:w-auto px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-bold transition-all inline-flex items-center justify-center gap-2"
-          >
-            <Mail size={15} /> Hubungi Bantuan
-          </a>
-        </div>
-
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-          <a
-            href="https://cationgate.site"
-            className="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition inline-flex items-center gap-1"
-          >
-            Kembali ke Portal Utama CationGate <ArrowRight size={13} />
-          </a>
+        {/* Informative Footer Badge */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
+          <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            Sistem Penerimaan Peserta Didik Baru Terpadu
+          </p>
         </div>
       </motion.div>
     </div>
   );
 }
+

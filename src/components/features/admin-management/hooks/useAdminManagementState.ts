@@ -26,6 +26,7 @@ export function useAdminManagementState() {
   const [editAdminId, setEditAdminId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     password: "",
     nama_lengkap: "",
     role: "admin"
@@ -71,11 +72,14 @@ export function useAdminManagementState() {
   const fetchAdmins = useCallback(
     async (showSpinner = false) => {
       const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       try {
         if (showSpinner) setLoading(true);
         setError("");
-        const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+        const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
         const res = await fetch(`/api/admin/users${query}`, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -98,11 +102,14 @@ export function useAdminManagementState() {
 
   const fetchTrashedAdmins = useCallback(async () => {
     const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
-    if (!token) return;
+    if (!token) {
+      setTrashLoading(false);
+      return;
+    }
     try {
       setTrashLoading(true);
       setError("");
-      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
       const res = await fetch(`/api/admin/users/trashed${query}`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -139,7 +146,10 @@ export function useAdminManagementState() {
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
-    if (!token) return;
+    if (!token) {
+      Swal.fire({ icon: "error", title: "Sesi Tidak Valid", text: "Silakan login ulang terlebih dahulu." });
+      return;
+    }
 
     if (admins.length >= 5) {
       Swal.fire({
@@ -155,7 +165,7 @@ export function useAdminManagementState() {
       setFormLoading(true);
       setError("");
       setSuccessMsg("");
-      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
       const res = await fetch(`/api/admin/users${query}`, {
         method: "POST",
         headers: {
@@ -166,18 +176,43 @@ export function useAdminManagementState() {
       });
       const data = await res.json();
       if (data.success) {
-        setSuccessMsg("Akun admin baru berhasil dibuat!");
-        setFormData({ username: "", password: "", nama_lengkap: "", role: "admin" });
+        setSuccessMsg(data.message || "Akun admin baru berhasil dibuat!");
+        const createdLink = data.activation_link || "";
+        const emailTarget = formData.email;
+
+        setFormData({ username: "", email: "", password: "", nama_lengkap: "", role: "admin" });
         setShowAddForm(false);
         fetchAdmins();
+
         Swal.fire({
-          title: "Admin Berhasil Ditambahkan!",
-          text: `Akun panitia ${formData.nama_lengkap} aktif.`,
+          title: "Admin Berhasil Didaftarkan! 🎉",
+          html: `
+            <div class="text-left text-xs space-y-2 mt-2">
+              <p class="text-slate-600 dark:text-slate-300">
+                Akun staf <strong>${formData.nama_lengkap}</strong> (${emailTarget}) berhasil dibuat.
+              </p>
+              <div class="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/50">
+                <p class="font-bold text-blue-700 dark:text-blue-300 mb-1">Tautan Aktivasi Akun Gmail:</p>
+                <input readonly value="${createdLink}" class="w-full text-[11px] p-2 bg-white dark:bg-slate-900 rounded border border-blue-200 dark:border-blue-800 font-mono select-all" />
+              </div>
+              <p class="text-[11px] text-slate-400">
+                * Undangan aktivasi telah dikirimkan ke email. Anda juga dapat menyalin tautan di atas untuk dikirimkan melalui WhatsApp.
+              </p>
+            </div>
+          `,
           icon: "success",
-          confirmButtonColor: "#2563EB"
+          confirmButtonColor: "#2563EB",
+          confirmButtonText: "Salin Link & Selesai",
+          showCancelButton: true,
+          cancelButtonText: "Tutup"
+        }).then((result) => {
+          if (result.isConfirmed && createdLink && navigator.clipboard) {
+            navigator.clipboard.writeText(createdLink);
+          }
         });
       } else {
         setError(data.message || "Gagal membuat akun admin");
+        Swal.fire({ icon: "error", title: "Gagal Menambahkan Admin", text: data.message || "Terjadi kesalahan pada server." });
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Gagal membuat akun admin");
@@ -190,6 +225,7 @@ export function useAdminManagementState() {
     setEditAdminId(admin.id);
     setFormData({
       username: admin.username,
+      email: admin.email || "",
       password: "",
       nama_lengkap: admin.nama_lengkap,
       role: admin.role
@@ -208,6 +244,7 @@ export function useAdminManagementState() {
       setSuccessMsg("");
       const payload: Record<string, string> = {
         username: formData.username,
+        email: formData.email,
         nama_lengkap: formData.nama_lengkap,
         role: formData.role
       };
@@ -215,7 +252,7 @@ export function useAdminManagementState() {
         payload.password = formData.password;
       }
 
-      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
       const res = await fetch(`/api/admin/users/${editAdminId}${query}`, {
         method: "PUT",
         headers: {
@@ -227,7 +264,7 @@ export function useAdminManagementState() {
       const data = await res.json();
       if (data.success) {
         setSuccessMsg("Data admin berhasil diperbarui!");
-        setFormData({ username: "", password: "", nama_lengkap: "", role: "admin" });
+        setFormData({ username: "", email: "", password: "", nama_lengkap: "", role: "admin" });
         setShowAddForm(false);
         setEditAdminId(null);
         fetchAdmins();
@@ -263,7 +300,7 @@ export function useAdminManagementState() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+          const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
           const res = await fetch(`/api/admin/users/${id}${query}`, {
             method: "DELETE",
             headers: {
@@ -290,7 +327,7 @@ export function useAdminManagementState() {
     if (!token) return;
 
     try {
-      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}` : "";
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
       const res = await fetch(`/api/admin/users/${id}/restore${query}`, {
         method: "POST",
         headers: {
@@ -316,6 +353,50 @@ export function useAdminManagementState() {
     }
   };
 
+  const handleResendActivation = async (id: number, email?: string) => {
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
+    if (!token) return;
+
+    try {
+      const query = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
+      const res = await fetch(`/api/admin/users/${id}/resend-activation${query}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        const link = data.activation_link;
+        Swal.fire({
+          title: "Tautan Aktivasi Dibuat Ulang! ✉️",
+          html: `
+            <div class="text-left text-xs space-y-2">
+              <p class="text-slate-600 dark:text-slate-300">
+                Tautan aktivasi baru telah dikirimkan ke <strong>${email || "email staf"}</strong>.
+              </p>
+              <div class="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/50">
+                <input readonly value="${link}" class="w-full text-[11px] p-2 bg-white dark:bg-slate-900 rounded border border-blue-200 dark:border-blue-800 font-mono select-all" />
+              </div>
+            </div>
+          `,
+          icon: "success",
+          confirmButtonColor: "#2563EB",
+          confirmButtonText: "Salin Link"
+        }).then((result) => {
+          if (result.isConfirmed && link && navigator.clipboard) {
+            navigator.clipboard.writeText(link);
+          }
+        });
+        fetchAdmins();
+      } else {
+        Swal.fire({ icon: "error", title: "Gagal Mengirim Ulang", text: data.message || "Terjadi kesalahan." });
+      }
+    } catch (_err) {
+      Swal.fire({ icon: "error", title: "Error", text: "Gagal menghubungi server." });
+    }
+  };
+
   return {
     adminUser,
     activeTab,
@@ -338,10 +419,12 @@ export function useAdminManagementState() {
     trashedAdmins,
     trashLoading,
     isPro,
+    schoolSlug,
     handleAddAdmin,
     handleEditClick,
     handleUpdateAdmin,
     handleDeleteAdmin,
-    handleRestoreAdmin
+    handleRestoreAdmin,
+    handleResendActivation
   };
 }

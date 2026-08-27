@@ -1,31 +1,53 @@
 "use client";
 
 import React from "react";
-import { User, KeyRound, Edit3, Trash2 } from "lucide-react";
+import { User, KeyRound, Edit3, Trash2, Mail, CheckCircle2, Clock, Copy, RefreshCw } from "lucide-react";
 import { AdminItem } from "../types";
+import Swal from "sweetalert2";
 
 interface AdminActiveTableProps {
   admins: AdminItem[];
   loading: boolean;
   adminUser: { id?: number; username?: string; role?: string } | null;
+  schoolSlug?: string;
   handleEditClick: (admin: AdminItem) => void;
   handleDeleteAdmin: (id: number, nama: string) => void;
+  handleResendActivation?: (id: number, email?: string) => void;
 }
 
 export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
   admins,
   loading,
   adminUser,
+  schoolSlug,
   handleEditClick,
-  handleDeleteAdmin
+  handleDeleteAdmin,
+  handleResendActivation
 }) => {
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl">
+      <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Memuat Daftar Admin...</p>
       </div>
     );
   }
+
+  const handleCopyActivationLink = (admin: AdminItem) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://cationgate.site";
+    const slug = schoolSlug || "demo";
+    const link = admin.activation_link || `${origin}/${slug}/admin/activate?token=${admin.activation_token}`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link);
+      Swal.fire({
+        icon: "success",
+        title: "Tautan Aktivasi Disalin!",
+        html: `<p class="text-xs text-slate-500 mb-2">Kirimkan tautan ini kepada <strong>${admin.nama_lengkap}</strong>:</p><input readonly value="${link}" class="w-full text-xs p-2 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700 font-mono select-all" />`,
+        confirmButtonText: "Selesai"
+      });
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
@@ -33,10 +55,10 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
         <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
           <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 uppercase tracking-wider text-[11px] font-black text-slate-500">
             <tr>
-              <th className="py-4 px-6">Nama Staf & Username</th>
+              <th className="py-4 px-6">Nama Staf & Kredensial</th>
               <th className="py-4 px-6">Hak Akses / Peran</th>
-              <th className="py-4 px-6">Status Kehadiran</th>
-              <th className="py-4 px-6">Dibuat Tanggal</th>
+              <th className="py-4 px-6">Status Aktivasi</th>
+              <th className="py-4 px-6">Kehadiran</th>
               <th className="py-4 px-6 text-right">Aksi</th>
             </tr>
           </thead>
@@ -44,12 +66,14 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
             {admins.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center py-12 text-slate-400 font-medium">
-                  Belum ada staf panitia atau admin terdaftar.
+                  Belum ada staf panitia atau admin terdaftar di instansi ini.
                 </td>
               </tr>
             ) : (
               admins.map((admin, idx) => {
                 const isOnline = admin.is_online !== undefined ? admin.is_online : (idx === 0 || admin.username === adminUser?.username);
+                const isActive = admin.is_active !== false;
+
                 return (
                   <tr key={admin.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
@@ -66,8 +90,17 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                           />
                         </div>
                         <div>
-                          <div className="text-sm font-extrabold">{admin.nama_lengkap}</div>
-                          <div className="text-[11px] font-mono text-slate-400">@{admin.username}</div>
+                          <div className="text-sm font-extrabold flex items-center gap-2">
+                            {admin.nama_lengkap}
+                          </div>
+                          <div className="text-[11px] font-mono text-slate-400 flex items-center gap-2 mt-0.5">
+                            <span>@{admin.username}</span>
+                            {admin.email && (
+                              <span className="flex items-center gap-1 text-slate-400">
+                                · <Mail size={11} /> {admin.email}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -76,12 +109,38 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                           admin.role === "superadmin"
                             ? "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
+                            : admin.role === "panitia"
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
                             : "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
                         }`}
                       >
                         <KeyRound size={10} />
                         {admin.role}
                       </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      {isActive ? (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50">
+                          <CheckCircle2 size={12} />
+                          <span>Terverifikasi</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-1 items-start">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50">
+                            <Clock size={12} />
+                            <span>Menunggu Aktivasi Gmail</span>
+                          </div>
+                          {admin.activation_token && (
+                            <button
+                              type="button"
+                              onClick={() => handleCopyActivationLink(admin)}
+                              className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer mt-0.5"
+                            >
+                              <Copy size={10} /> Salin Link Aktivasi
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="py-4 px-6">
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
@@ -95,40 +154,40 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 font-medium text-slate-400">
-                      {admin.created_at
-                        ? new Date(admin.created_at).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric"
-                          })
-                        : "-"}
-                    </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        onClick={() => handleEditClick(admin)}
-                        className="p-2 rounded-xl text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                        title="Edit Admin"
-                      >
-                        <Edit3 size={15} />
-                      </button>
-                      {admin.id !== adminUser?.id && (
+                    <td className="py-4 px-6 text-right">
+                      <div className="inline-flex items-center gap-1.5">
+                        {!isActive && handleResendActivation && (
+                          <button
+                            onClick={() => handleResendActivation(admin.id, admin.email)}
+                            className="p-2 rounded-xl text-amber-600 hover:text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition cursor-pointer"
+                            title="Kirim Ulang Tautan Aktivasi"
+                          >
+                            <RefreshCw size={14} />
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleDeleteAdmin(admin.id, admin.nama_lengkap)}
-                          className="p-2 rounded-xl text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                          title="Hapus ke Sampah"
+                          onClick={() => handleEditClick(admin)}
+                          className="p-2 rounded-xl text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                          title="Edit Admin"
                         >
-                          <Trash2 size={15} />
+                          <Edit3 size={15} />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
+                        {admin.id !== adminUser?.id && (
+                          <button
+                            onClick={() => handleDeleteAdmin(admin.id, admin.nama_lengkap)}
+                            className="p-2 rounded-xl text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                            title="Hapus ke Sampah"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
         </table>
       </div>
     </div>

@@ -22,9 +22,9 @@
 }
 
 .badge-pill {
-  background: rgba(37, 99, 235, 0.08);
-  border: 1px solid rgba(37, 99, 235, 0.18);
-  color: #2563eb;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: #0f172a;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.5px;
@@ -32,13 +32,13 @@
   border-radius: 9999px;
   display: inline-block;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 html.dark .badge-pill {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #60a5fa;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
 }
 
 .hero-title {
@@ -110,8 +110,8 @@ html.dark .btn-hero-action {
 
 .btn-hero-action:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.15);
-  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  border-color: rgba(15, 23, 42, 0.5);
 }
 
 /* FLOATING BADGES (BALON JURUSAN) */
@@ -126,7 +126,7 @@ html.dark .btn-hero-action {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.03);
   z-index: 5;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -142,13 +142,13 @@ html.dark .floating-badge {
 .floating-badge:hover {
   transform: scale(1.06) translateY(-4px) !important;
   background: #ffffff;
-  border-color: rgba(37, 99, 235, 0.35);
-  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.16);
+  border-color: rgba(15, 23, 42, 0.35);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
 }
 
 html.dark .floating-badge:hover {
   background: #1e293b;
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .badge-icon {
@@ -158,9 +158,14 @@ html.dark .floating-badge:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(37, 99, 235, 0.06);
-  color: #2563eb;
+  background: rgba(0, 0, 0, 0.06);
+  color: #0f172a;
   transition: all 0.3s ease;
+}
+
+html.dark .badge-icon {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
 }
 
 .badge-info {

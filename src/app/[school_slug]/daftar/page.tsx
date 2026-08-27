@@ -83,28 +83,41 @@ export default function DaftarPage() {
 
   if (isConfigLoaded && !isSubscriptionActive && !isSchoolVerified) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950 p-6 text-center">
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
-          <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 mx-auto">
-            <Lock size={32} />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50/70 dark:bg-[#020617] p-4 sm:p-6 text-center transition-colors duration-300 relative overflow-hidden selection:bg-slate-900 selection:text-white">
+        {/* Subtle geometric background grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none" />
+
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 max-w-md w-full shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+          {/* Top Status Pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/70 dark:border-amber-900/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span>Layanan Belum Aktif</span>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wider">Layanan Belum Aktif</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Portal SPMB online {ppdbTitle || schoolSlug.toUpperCase()} saat ini belum dapat menerima pendaftaran calon peserta didik baru karena instansi sekolah belum mengaktifkan paket langganan resmi.
+
+          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800/80 rounded-2xl flex items-center justify-center text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 mx-auto shadow-inner">
+            <Lock size={28} strokeWidth={2.2} />
+          </div>
+
+          <div className="space-y-2.5">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+              Layanan Belum Aktif
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+              Portal SPMB online <span className="font-bold text-slate-700 dark:text-slate-200">{ppdbTitle || schoolSlug.toUpperCase()}</span> saat ini belum dapat menerima pendaftaran calon peserta didik baru karena instansi sekolah belum mengaktifkan paket langganan resmi.
             </p>
           </div>
+
           <div className="pt-2 flex flex-col gap-2.5">
             <Link
               href={href("/")}
-              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
+              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 font-extrabold text-xs rounded-2xl shadow-md transition-all duration-150 uppercase tracking-wider cursor-pointer active:scale-[0.98]"
             >
-              <Home size={14} />
+              <Home size={15} />
               <span>Kembali Ke Beranda</span>
             </Link>
             <Link
               href={href("/dashboard/subscription")}
-              className="w-full inline-flex justify-center items-center gap-2 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-xs rounded-xl transition-all uppercase tracking-wider cursor-pointer"
+              className="w-full inline-flex justify-center items-center gap-2 py-3 bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-xs rounded-2xl border border-slate-200/80 dark:border-slate-700 transition-all uppercase tracking-wider cursor-pointer"
             >
               <span>Aktivasi Langganan (Admin)</span>
             </Link>
@@ -116,24 +129,47 @@ export default function DaftarPage() {
 
   if (portalStatus === "closed") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950 p-6 text-center">
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
-          <div className="w-16 h-16 bg-red-50 dark:bg-red-950/40 rounded-2xl flex items-center justify-center text-red-500 border border-red-100 dark:border-red-900/40 mx-auto">
-            <Clock size={32} />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50/70 dark:bg-[#020617] p-4 sm:p-6 text-center transition-colors duration-300 relative overflow-hidden selection:bg-slate-900 selection:text-white">
+        {/* Subtle geometric background grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none" />
+
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 max-w-md w-full shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+          {/* Top Status Pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/70 dark:border-rose-900/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+            <span>Pendaftaran Ditutup</span>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wider">Pendaftaran Ditutup</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Mohon maaf, portal Penerimaan Peserta Didik Baru (PPDB) {ppdbTitle || schoolSlug.toUpperCase()} saat ini sedang ditutup atau belum membuka gelombang pendaftaran publik resmi.
+
+          {/* Minimalist Clock Icon */}
+          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800/80 rounded-2xl flex items-center justify-center text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 mx-auto shadow-inner">
+            <Clock size={28} strokeWidth={2.2} />
+          </div>
+
+          {/* Text Content */}
+          <div className="space-y-2.5">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+              Pendaftaran Ditutup
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+              Mohon maaf, portal Penerimaan Peserta Didik Baru (PPDB) <span className="font-bold text-slate-700 dark:text-slate-200">{ppdbTitle || schoolSlug.toUpperCase()}</span> saat ini sedang ditutup atau belum membuka gelombang pendaftaran publik resmi.
             </p>
           </div>
-          <div className="pt-2">
+
+          {/* Black & White Primary Button */}
+          <div className="pt-2 space-y-2.5">
             <Link
               href={href("/")}
-              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
+              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 font-extrabold text-xs rounded-2xl shadow-md transition-all duration-150 uppercase tracking-wider cursor-pointer active:scale-[0.98]"
             >
-              <Home size={14} />
+              <Home size={15} />
               <span>Kembali Ke Beranda</span>
+            </Link>
+
+            <Link
+              href={href("/forum")}
+              className="w-full inline-flex justify-center items-center gap-1.5 py-2.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-bold text-xs transition-colors"
+            >
+              <span>Lihat Informasi &amp; Jadwal Gelombang →</span>
             </Link>
           </div>
         </div>

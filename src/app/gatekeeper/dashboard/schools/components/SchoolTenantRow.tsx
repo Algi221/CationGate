@@ -124,16 +124,6 @@ export const SchoolTenantRow: React.FC<SchoolTenantRowProps> = ({
           >
             <ExternalLink className="w-4 h-4" />
           </a>
-
-          <a
-            href={getSubdomainUrl(sc.slug, "/dashboard")}
-            target="_blank"
-            rel="noreferrer"
-            className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2e3749] dark:text-[#FFD33B] text-xs font-bold border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors cursor-pointer"
-            title={`Buka Dashboard (${sc.slug}.cationgate.site/dashboard)`}
-          >
-            Dashboard
-          </a>
         </div>
       </td>
     </tr>

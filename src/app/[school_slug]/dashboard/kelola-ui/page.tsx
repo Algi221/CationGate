@@ -179,7 +179,7 @@ export default function KelolaUIPage() {
           </div>
         </div>
 
-        <div className="flex gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           {hasLocalDraft && (
             <button
               onClick={async () => {
@@ -196,38 +196,41 @@ export default function KelolaUIPage() {
                   window.location.reload();
                 }
               }}
-              className="px-4 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 cursor-pointer"
+              className="px-3 py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer"
+              title="Reset Draf Lokal"
             >
-              <RotateCcw size={14} />
-              <span>Reset Draf</span>
+              <RotateCcw size={13} />
+              <span>Reset</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={() => setShowLivePreviewModal(true)}
-            className="px-4 py-3 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+            className="px-3 py-2 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+            title="Pratinjau Draf (Live Preview)"
           >
-            <Eye size={15} />
-            <span>Pratinjau Draf (Live Preview)</span>
+            <Eye size={13} />
+            <span>Pratinjau</span>
           </button>
 
           <a
             href={href("/")}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-3 bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+            className="px-3 py-2 bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+            title="Buka Website Publik"
           >
-            <ExternalLink size={14} />
-            <span>Website Publik</span>
+            <ExternalLink size={13} />
+            <span>Lihat Web</span>
           </a>
 
           <button
             onClick={() => setShowConfirmModal(true)}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-blue-500/20"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20"
           >
-            <Check size={14} />
-            <span>Simpan Perubahan</span>
+            <Check size={13} />
+            <span>Simpan</span>
           </button>
         </div>
       </div>

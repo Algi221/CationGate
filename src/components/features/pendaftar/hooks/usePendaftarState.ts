@@ -369,7 +369,7 @@ export function usePendaftarState() {
       } catch (_e) {}
     };
     fetchConfig();
-  }, [schoolSlug, isDemoMode]);
+  }, [schoolSlug, isDemoMode, isDemo]);
 
   const bstRoot = useMemo(() => {
     let root: BSTNode | null = null;

@@ -29,9 +29,15 @@ export async function initDb(): Promise<void> {
       await client.query(`
         CREATE TABLE IF NOT EXISTS admin_users (id SERIAL PRIMARY KEY);
         ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS username VARCHAR(50) UNIQUE;
+        ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS email VARCHAR(100);
         ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
         ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS nama_lengkap VARCHAR(100);
         ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'admin';
+        ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
+        ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS activation_token VARCHAR(100);
+        ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS activation_expires_at TIMESTAMP;
+        ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMP;
+        ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;
       `);
 
       const sql = fs.readFileSync(schemaPath, 'utf8');

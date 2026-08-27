@@ -321,7 +321,7 @@ export default function AboutPage() {
                 Kolaborasi Ahli
               </span>
               <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-zinc-900">
-                Tim & Pendidik Kunci
+                Tim Pengembang
               </h2>
             </div>
             <p className="max-w-md text-zinc-500 font-medium text-sm md:text-base leading-relaxed">

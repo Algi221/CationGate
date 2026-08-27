@@ -23,6 +23,7 @@ saasRouter.post('/activate', adminAuth, SaasController.activate);
 
 // 5. PUBLIC: Create payment token for school plan
 saasRouter.post('/create-payment-token', SaasController.createPaymentToken);
+saasRouter.post('/create-transaction', SaasController.createPaymentToken);
 
 // 6. PUBLIC: Create payment token for student registration fee
 saasRouter.post('/payment/student-form-token', SaasController.createStudentFormToken);
@@ -39,7 +40,10 @@ saasRouter.get('/subscription-status', SaasController.getSubscriptionStatus);
 // 10. PUBLIC/ADMIN: Submit school verification documents (SK & legal accreditation)
 saasRouter.post('/submit-school-verification', SaasController.submitSchoolVerification);
 
-// 11. PUBLIC: Platform Maintenance Status Check
+// 11. PUBLIC/ADMIN: Get transaction history (optionally filtered by school slug)
+saasRouter.get('/transactions', SaasController.getTransactions);
+
+// 12. PUBLIC: Platform Maintenance Status Check
 saasRouter.get('/maintenance-status', async (c) => {
   const { globalIsMaintenanceMode } = await import('./gatekeeper');
   return c.json({ success: true, is_maintenance: globalIsMaintenanceMode });

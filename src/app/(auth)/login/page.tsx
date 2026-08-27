@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { z } from "zod";
+import { safeRedirect, sanitizeSlug } from "@/lib/sanitizeUrl";
 
 const loginFormSchema = z.object({
   email: z
@@ -137,7 +138,7 @@ function LoginForm() {
           (data.admin?.school_id && !String(data.admin.school_id).includes("-")
             ? data.admin.school_id
             : null);
-        const targetSlug = rawSlug ? String(rawSlug).replace(/[^a-zA-Z0-9-]/g, "").toLowerCase().slice(0, 60) : "";
+        const targetSlug = sanitizeSlug(rawSlug);
         const isVerifiedSchool =
           data.is_verified === true ||
           data.school_status === "FULL_VERIFIED" ||
@@ -159,7 +160,7 @@ function LoginForm() {
               ? `http://${targetSlug}.localhost${port}${path}?auth_token=${encodeURIComponent(data.token)}`
               : `https://${targetSlug}.cationgate.site${path}?auth_token=${encodeURIComponent(data.token)}`;
 
-            window.location.href = targetUrl;
+            safeRedirect(targetUrl, `/${targetSlug}${path}`);
             return;
           }
           if (isVerifiedSchool) {
@@ -196,6 +197,19 @@ function LoginForm() {
   const svgPathDesktop =
     "M 0 0 L 540 0 C 620 300, 460 500, 280 670 C 130 740, 0 670, 0 670 Z";
   const solidColor = "#0077c8"; // Vibrant Azure Blue from design screenshot
+
+  const handleGoToHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("cationgate_skip_splash", "true");
+      sessionStorage.setItem("cationgate_internal_navigation", "true");
+      const host = window.location.host.toLowerCase();
+      const isLocalhost = host.includes("localhost");
+      const port = window.location.port ? `:${window.location.port}` : "";
+      const homeUrl = isLocalhost ? `http://localhost${port}/` : "https://cationgate.site/";
+      safeRedirect(homeUrl, "/");
+    }
+  };
 
   return (
     <main className="min-h-screen lg:h-screen w-screen bg-white text-slate-950 overflow-x-hidden relative flex flex-col justify-between p-4 sm:p-6 lg:p-10 pb-10 font-sans scheme-light">
@@ -235,17 +249,9 @@ function LoginForm() {
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                sessionStorage.setItem(
-                  "cationgate_internal_navigation",
-                  "true"
-                );
-                sessionStorage.setItem("cationgate_skip_splash", "true");
-              }
-            }}
-            className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-all group drop-shadow-sm"
-            title="Kembali ke Beranda"
+            onClick={handleGoToHome}
+            className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-all group drop-shadow-sm cursor-pointer"
+            title="Kembali ke Beranda CationGate"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <span>Beranda</span>
@@ -255,16 +261,8 @@ function LoginForm() {
         {/* Center: Brand Logo */}
         <Link
           href="/"
-          onClick={() => {
-            if (typeof window !== "undefined") {
-              sessionStorage.setItem(
-                "cationgate_internal_navigation",
-                "true"
-              );
-              sessionStorage.setItem("cationgate_skip_splash", "true");
-            }
-          }}
-          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102"
+          onClick={handleGoToHome}
+          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102 cursor-pointer"
         >
           <Image
             src="/assets/logo_cationgate/CationGate_Logo.png"

@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Power, Lock, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
+import { useSchoolHref } from "@/hooks/useSchoolHref";
+
 interface PpdbStatusToggleProps {
   isSpmbOpen: boolean;
   isUpdatingSpmb: boolean;
@@ -18,6 +20,8 @@ export const PpdbStatusToggle: React.FC<PpdbStatusToggleProps> = ({
   isVerified,
   onToggleSpmbStatus
 }) => {
+  const { href } = useSchoolHref();
+
   return (
     <div className="space-y-4 text-left">
       {/* Kontrol Pendaftaran Publik */}
@@ -88,7 +92,7 @@ export const PpdbStatusToggle: React.FC<PpdbStatusToggleProps> = ({
             </div>
           </div>
           <Link
-            href="./verification"
+            href={href("/dashboard/verification")}
             className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-all shadow-md shrink-0 flex items-center gap-1.5 cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4" /> Buka Form Verifikasi

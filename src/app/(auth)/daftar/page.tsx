@@ -12,6 +12,8 @@ import { EditorialLottiePanel } from "@/components/features/auth-daftar/componen
 import { Step1Instansi } from "@/components/features/auth-daftar/components/Step1Instansi";
 import { Step2AkunAdmin } from "@/components/features/auth-daftar/components/Step2AkunAdmin";
 import { Step3Konfirmasi } from "@/components/features/auth-daftar/components/Step3Konfirmasi";
+import { OtpVerificationCard } from "@/components/features/auth-daftar/components/OtpVerificationCard";
+import { safeRedirect } from "@/lib/sanitizeUrl";
 
 export default function DaftarSaaS() {
   const {
@@ -45,6 +47,20 @@ export default function DaftarSaaS() {
     handleSubmit
   } = useDaftarSaaSState();
 
+  const isOtpStep = step === 4;
+
+  const handleGoToHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("cationgate_skip_splash", "true");
+      const host = window.location.host.toLowerCase();
+      const isLocalhost = host.includes("localhost");
+      const port = window.location.port ? `:${window.location.port}` : "";
+      const homeUrl = isLocalhost ? `http://localhost${port}/` : "https://cationgate.site/";
+      safeRedirect(homeUrl, "/");
+    }
+  };
+
   return (
     <main className="min-h-screen lg:h-screen w-screen bg-white text-slate-950 overflow-x-hidden relative flex flex-col justify-between p-4 sm:p-6 lg:p-8 pb-4 font-sans">
       <Script
@@ -55,7 +71,7 @@ export default function DaftarSaaS() {
         }}
       />
 
-      {/* BACKGROUND BUBBLE (FULL-BLEED 50% VIEWPORT ON DESKTOP DENGAN MORPHING ANIMASI 3 STEP) */}
+      {/* BACKGROUND BUBBLE (FULL-BLEED 50% VIEWPORT ON DESKTOP DENGAN MORPHING ANIMASI) */}
       <div className="absolute top-0 left-0 w-full lg:w-[50vw] h-45 lg:h-[92vh] pointer-events-none z-0">
         <svg
           viewBox={isMobile ? "0 0 414 200" : "0 0 600 700"}
@@ -85,31 +101,28 @@ export default function DaftarSaaS() {
 
       {/* HEADER / NAVBAR */}
       <div className="relative lg:absolute top-2 lg:top-6 left-2 lg:left-8 right-2 lg:right-8 flex items-center justify-between z-20 mb-3 lg:mb-0">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                sessionStorage.setItem("cationgate_skip_splash", "true");
-              }
-            }}
-            className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-all group drop-shadow-sm"
-            title="Kembali ke Beranda"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>Beranda</span>
-          </Link>
-        </div>
+        {/* Left Action: Beranda button (hidden during OTP step) */}
+        {!isOtpStep ? (
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              onClick={handleGoToHome}
+              className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-white/80 transition-all group drop-shadow-sm cursor-pointer"
+              title="Kembali ke Beranda CationGate"
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span>Beranda</span>
+            </Link>
+          </div>
+        ) : (
+          <div className="w-16" />
+        )}
 
         {/* Center Brand Logo */}
         <Link 
           href="/"
-          onClick={() => {
-            if (typeof window !== "undefined") {
-              sessionStorage.setItem("cationgate_skip_splash", "true");
-            }
-          }}
-          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102"
+          onClick={handleGoToHome}
+          className="flex items-center gap-2 group lg:absolute lg:left-[45vw] lg:translate-x-[-55%] transition-transform hover:scale-102 cursor-pointer"
         >
           <Image
             src="/assets/logo_cationgate/CationGate_Logo.png"
@@ -126,18 +139,22 @@ export default function DaftarSaaS() {
           </div>
         </Link>
 
-        {/* Right Action: Login Link (Style Matching SS 2) */}
-        <div className="flex items-center gap-2.5 text-xs">
-          <span className="hidden text-slate-500 font-medium sm:block">
-            Sudah memiliki akun?
-          </span>
-          <Link
-            href="/login"
-            className="rounded-full border border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-1.5 font-bold text-slate-700 transition-all hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-sm active:scale-95 shadow-xs"
-          >
-            Masuk
-          </Link>
-        </div>
+        {/* Right Action: Login Link (hidden during OTP step) */}
+        {!isOtpStep ? (
+          <div className="flex items-center gap-2.5 text-xs">
+            <span className="hidden text-slate-500 font-medium sm:block">
+              Sudah memiliki akun?
+            </span>
+            <Link
+              href="/login"
+              className="rounded-full border border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-1.5 font-bold text-slate-700 transition-all hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-sm active:scale-95 shadow-xs"
+            >
+              Masuk
+            </Link>
+          </div>
+        ) : (
+          <div className="w-16" />
+        )}
       </div>
 
       {/* MAIN CONTAINER */}
@@ -175,7 +192,7 @@ export default function DaftarSaaS() {
 
             <form
               onSubmit={
-                step === 3
+                step >= 3
                   ? handleSubmit
                   : (e) => {
                       e.preventDefault();
@@ -246,21 +263,16 @@ export default function DaftarSaaS() {
                   </div>
                 )}
 
-                {/* STEP 3 & OTP */}
+                {/* STEP 3 & 4 (Step 3 remains rendered in background) */}
                 {step >= 3 && (
                   <Step3Konfirmasi
                     formData={formData}
-                    step={step}
                     loading={loading}
                     onPrevStep={() => setStep(2)}
                     onSendOtp={() => {
                       handleSendOTP();
                       setStep(4);
                     }}
-                    onCloseOtp={() => setStep(3)}
-                    onVerifyOtp={handleVerifyOTPAsync}
-                    onResendOtp={handleResendAsync}
-                    onSubmit={handleSubmit}
                   />
                 )}
               </AnimatePresence>
@@ -269,44 +281,59 @@ export default function DaftarSaaS() {
         </div>
       </div>
 
-      {/* STEP BAR DESKTOP (BOTTOM) */}
-      <div className="hidden lg:flex justify-center z-20 relative pb-1 w-full max-w-7xl mx-auto">
-        <div className="inline-flex items-center gap-2 bg-[#F1F3F6] p-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-200/80">
-          {[1, 2, 3].map((s) => {
-            const isActive = Math.min(step, 3) === s;
-            const isAccessible = s <= maxReachedStep;
+      {/* POPUP MODAL VERIFIKASI OTP (DENGAN NGEBLUR DI BELAKANGNYA) */}
+      <AnimatePresence>
+        {isOtpStep && (
+          <OtpVerificationCard
+            formData={formData}
+            onClose={() => setStep(3)}
+            onVerifyOtp={handleVerifyOTPAsync}
+            onResendOtp={handleResendAsync}
+            onSubmit={handleSubmit}
+          />
+        )}
+      </AnimatePresence>
 
-            return (
-              <button
-                key={s}
-                type="button"
-                disabled={!isAccessible}
-                onClick={() => {
-                  if (isAccessible) setStep(s);
-                }}
-                className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all duration-300 ${
-                  isActive
-                    ? "bg-[#FFC000] text-slate-950 shadow-xs cursor-pointer"
-                    : isAccessible
-                    ? "text-slate-600 hover:text-slate-950 hover:bg-white/70 cursor-pointer"
-                    : "text-slate-400 opacity-50 cursor-not-allowed"
-                }`}
-              >
-                <span className={`font-black text-xs ${isActive ? "text-slate-950" : "text-slate-700"}`}>
-                  0{s}
-                </span>
-                <span
-                  className={`text-[12px] ${
-                    isActive ? "font-bold text-slate-950" : "font-medium text-slate-600"
+      {/* STEP BAR DESKTOP (BOTTOM) - HANYA MUNCUL DI STEP 1-3 */}
+      {!isOtpStep && (
+        <div className="hidden lg:flex justify-center z-20 relative pb-1 w-full max-w-7xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-[#F1F3F6] p-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-200/80">
+            {[1, 2, 3].map((s) => {
+              const isActive = Math.min(step, 3) === s;
+              const isAccessible = s <= maxReachedStep;
+
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  disabled={!isAccessible}
+                  onClick={() => {
+                    if (isAccessible) setStep(s);
+                  }}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all duration-300 ${
+                    isActive
+                      ? "bg-[#FFC000] text-slate-950 shadow-xs cursor-pointer"
+                      : isAccessible
+                      ? "text-slate-600 hover:text-slate-950 hover:bg-white/70 cursor-pointer"
+                      : "text-slate-400 opacity-50 cursor-not-allowed"
                   }`}
                 >
-                  {s === 1 ? "Instansi" : s === 2 ? "Admin" : "Konfirmasi"}
-                </span>
-              </button>
-            );
-          })}
+                  <span className={`font-black text-xs ${isActive ? "text-slate-950" : "text-slate-700"}`}>
+                    0{s}
+                  </span>
+                  <span
+                    className={`text-[12px] ${
+                      isActive ? "font-bold text-slate-950" : "font-medium text-slate-600"
+                    }`}
+                  >
+                    {s === 1 ? "Instansi" : s === 2 ? "Admin" : "Konfirmasi"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* FOOTER INFO */}
       <div className="w-full text-center text-xs text-slate-400 py-1 relative z-10">
@@ -314,4 +341,4 @@ export default function DaftarSaaS() {
       </div>
     </main>
   );
-}
+}

@@ -18,6 +18,9 @@ export default function ProfilSekolahPublicPage() {
   const router = useRouter();
   const schoolSlug = params?.school_slug as string;
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [liveProfil, setLiveProfil] = useState<any>(null);
+  const [liveTitle, setLiveTitle] = useState<string>("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -25,6 +28,20 @@ export default function ProfilSekolahPublicPage() {
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (schoolSlug) {
+      fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data) {
+            if (data.data.ppdb_title) setLiveTitle(data.data.ppdb_title);
+            if (data.data.ppdb_profil_sekolah) setLiveProfil(data.data.ppdb_profil_sekolah);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [schoolSlug]);
 
   if (!mounted) {
     return (
@@ -39,31 +56,34 @@ export default function ProfilSekolahPublicPage() {
     return null;
   }
 
-  const identitas = profilSekolah?.identitas || {
-    nama: ppdbTitle || (schoolSlug === "smktarunabhakti" ? "SMK Taruna Bhakti" : "Institusi Pendidikan Unggulan"),
-    akreditasi: profilSekolah?.identitas?.akreditasi || (schoolSlug === "smktarunabhakti" ? "A (Unggul)" : "-"),
-    alamat: profilSekolah?.identitas?.alamat || (schoolSlug === "smktarunabhakti" ? "Jl. Pekapuran RT 02/06 Curug, Cimanggis, Kota Depok" : "-"),
-    npsn: profilSekolah?.identitas?.npsn || (schoolSlug === "smktarunabhakti" ? "20229182" : "-"),
-    nis: profilSekolah?.identitas?.nis || (schoolSlug === "smktarunabhakti" ? "100290" : "-"),
-    nss: profilSekolah?.identitas?.nss || (schoolSlug === "smktarunabhakti" ? "302026501001" : "-"),
-    tahun_berdiri: profilSekolah?.identitas?.tahun_berdiri || (schoolSlug === "smktarunabhakti" ? "1998" : "-"),
-    email: profilSekolah?.identitas?.email || (schoolSlug === "smktarunabhakti" ? "tarunabhakti.smk@gmail.com" : "admin@sekolah.sch.id")
+  const activeProfil = liveProfil || profilSekolah;
+  const currentTitle = liveTitle || ppdbTitle || (schoolSlug === "smktarunabhakti" ? "SMK Taruna Bhakti" : "Institusi Pendidikan Unggulan");
+
+  const identitas = activeProfil?.identitas || {
+    nama: currentTitle,
+    akreditasi: activeProfil?.identitas?.akreditasi || (schoolSlug === "smktarunabhakti" ? "A (Unggul)" : "-"),
+    alamat: activeProfil?.identitas?.alamat || (schoolSlug === "smktarunabhakti" ? "Jl. Pekapuran RT 02/06 Curug, Cimanggis, Kota Depok" : "-"),
+    npsn: activeProfil?.identitas?.npsn || (schoolSlug === "smktarunabhakti" ? "20229182" : "-"),
+    nis: activeProfil?.identitas?.nis || (schoolSlug === "smktarunabhakti" ? "100290" : "-"),
+    nss: activeProfil?.identitas?.nss || (schoolSlug === "smktarunabhakti" ? "302026501001" : "-"),
+    tahun_berdiri: activeProfil?.identitas?.tahun_berdiri || (schoolSlug === "smktarunabhakti" ? "1998" : "-"),
+    email: activeProfil?.identitas?.email || (schoolSlug === "smktarunabhakti" ? "tarunabhakti.smk@gmail.com" : "admin@sekolah.sch.id")
   };
 
   const sejarah =
-    profilSekolah?.sejarah ||
-    `${ppdbTitle} merupakan institusi pendidikan kejuruan dan teknik terdepan yang didirikan dengan komitmen tinggi pada tahun 1998 sebagai pusat keunggulan vokasi. Dengan misi pengabdian ilmu pengetahuan dan teknologi untuk memajukan bangsa, ${ppdbTitle} terus bertransformasi mengoptimalkan pembangunan pendidikan yang maju, mandiri, dan bermartabat.`;
+    activeProfil?.sejarah ||
+    `${currentTitle} merupakan institusi pendidikan kejuruan dan teknik terdepan yang didirikan dengan komitmen tinggi pada tahun 1998 sebagai pusat keunggulan vokasi. Dengan misi pengabdian ilmu pengetahuan dan teknologi untuk memajukan bangsa, ${currentTitle} terus bertransformasi mengoptimalkan pembangunan pendidikan yang maju, mandiri, dan bermartabat.`;
 
   const visi =
-    profilSekolah?.visi_misi?.visi ||
+    activeProfil?.visi_misi?.visi ||
     `Menjadi institusi pendidikan kejuruan yang unggul, mandiri, berbudaya, serta diakui secara global pada tahun 2030.`;
 
   const misi =
-    profilSekolah?.visi_misi?.misi ||
+    activeProfil?.visi_misi?.misi ||
     `1. Menyelenggarakan proses pembelajaran berbasis teknologi dan industri terkini.\n2. Mengembangkan karakter peserta didik yang berakhlak mulia, disiplin, dan berjiwa kepemimpinan.\n3. Menjalin kerjasama strategis dengan dunia usaha dan dunia industri (DUDI).\n4. Mendorong riset dan inovasi aplikatif yang bermanfaat bagi masyarakat luas.`;
 
   const tujuan =
-    profilSekolah?.tujuan ||
+    activeProfil?.tujuan ||
     `1. Menghasilkan lulusan yang kompeten dan terserap di dunia kerja.\n2. Mewujudkan tata kelola institusi yang transparan, akuntabel, dan berbasis digital.\n3. Mengembangkan potensi peserta didik secara holistik.`;
 
   return (
@@ -73,16 +93,16 @@ export default function ProfilSekolahPublicPage() {
       </header>
 
       <ProfileHero
-        ppdbTitle={ppdbTitle}
-        ringkasan={profilSekolah?.ringkasan}
-        heroImage={profilSekolah?.hero_image}
+        ppdbTitle={currentTitle}
+        ringkasan={activeProfil?.ringkasan}
+        heroImage={activeProfil?.hero_image}
       />
       <ProfileSejarah
         sejarah={sejarah}
-        videoUrl={profilSekolah?.video_profil_url}
-        ppdbTitle={ppdbTitle}
+        videoUrl={activeProfil?.video_profil_url}
+        ppdbTitle={currentTitle}
       />
-      <ProfilePimpinan ppdbTitle={ppdbTitle} pimpinan={profilSekolah?.pimpinan} />
+      <ProfilePimpinan ppdbTitle={currentTitle} pimpinan={activeProfil?.pimpinan} />
       <ProfileIdentitas identitas={identitas} />
       <ProfileVisiMisi visi={visi} misi={misi} tujuan={tujuan} />
       <ProfileKunjungan identitas={identitas} />

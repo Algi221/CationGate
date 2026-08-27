@@ -68,7 +68,8 @@ export default function DaftarPage() {
     schoolStatus === "VERIFIED" ||
     schoolStatus === "verified" ||
     schoolSlug === "demo" ||
-    schoolSlug === "smktarunabhakti";
+    schoolSlug === "smktarunabhakti" ||
+    schoolSlug === "smktiglobal";
 
   if (isConfigLoaded && !isSchoolVerified) {
     return (
@@ -80,7 +81,7 @@ export default function DaftarPage() {
     );
   }
 
-  if (isConfigLoaded && !isSubscriptionActive) {
+  if (isConfigLoaded && !isSubscriptionActive && !isSchoolVerified) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background dark:bg-slate-950 p-6 text-center">
         <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">

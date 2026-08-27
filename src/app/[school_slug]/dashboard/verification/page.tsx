@@ -35,12 +35,9 @@ function SchoolVerificationContent() {
 
   React.useEffect(() => {
     if (isVerified) {
-      const slug = schoolSlug || "default";
-      if (typeof window !== "undefined" && localStorage.getItem(`verification_dismissed_${slug}`) === "true") {
-        router.replace(href("/dashboard"));
-      }
+      router.replace(href("/dashboard"));
     }
-  }, [isVerified, schoolSlug, router, href]);
+  }, [isVerified, router, href]);
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-12">

@@ -33,7 +33,29 @@ export function BottomRightNotifier() {
     let timeoutId: NodeJS.Timeout;
 
     if (isGatekeeper) {
-      // Periodic check for recent schools or verifications
+      // 1. BroadcastChannel Listener for Realtime Cross-Tab Notifications
+      let bc: BroadcastChannel | null = null;
+      try {
+        if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+          bc = new BroadcastChannel("cationgate_realtime_events");
+          bc.onmessage = (event) => {
+            if (event.data && event.data.type === "VERIFICATION_SUBMITTED") {
+              const sName = event.data.schoolName || event.data.schoolSlug || "Sekolah Baru";
+              setCurrentNotification({
+                id: `notif-realtime-${Date.now()}`,
+                type: "VERIFICATION_SUBMITTED",
+                title: "Pengajuan Verifikasi Baru 📄",
+                message: `${sName} baru saja mengunggah dokumen legalitas untuk ditinjau.`,
+                timestamp: "Baru saja",
+                actionText: "Tinjau Berkas",
+                actionHref: `/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION`
+              });
+            }
+          };
+        }
+      } catch (_e) {}
+
+      // 2. Periodic check for recent schools or verifications
       const checkGatekeeperNotifications = async () => {
         try {
           const res = await fetch(`/api/gatekeeper/schools?t=${Date.now()}`);
@@ -52,7 +74,7 @@ export function BottomRightNotifier() {
                   setCurrentNotification({
                     id: `notif-${latest.slug}-${Date.now()}`,
                     type: "VERIFICATION_SUBMITTED",
-                    title: "Pengajuan Verifikasi Baru",
+                    title: "Pengajuan Verifikasi Baru 📄",
                     message: `${latest.name || latest.slug} telah mengirim berkas legalitas untuk ditinjau.`,
                     timestamp: "Baru saja",
                     actionText: "Tinjau Berkas",
@@ -65,12 +87,13 @@ export function BottomRightNotifier() {
         } catch (_e) {}
       };
 
-      // Check after 3 seconds, then periodically
-      timeoutId = setTimeout(checkGatekeeperNotifications, 3000);
-      const interval = setInterval(checkGatekeeperNotifications, 25000);
+      // Check after 2 seconds, then every 8 seconds
+      timeoutId = setTimeout(checkGatekeeperNotifications, 2000);
+      const interval = setInterval(checkGatekeeperNotifications, 8000);
       return () => {
         clearTimeout(timeoutId);
         clearInterval(interval);
+        if (bc) bc.close();
       };
     }
 

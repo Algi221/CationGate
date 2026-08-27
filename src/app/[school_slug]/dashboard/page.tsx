@@ -11,6 +11,7 @@ import { PpdbStatusToggle } from "@/components/features/dashboard-overview/compo
 import { RegistrationAreaChart } from "@/components/features/dashboard-overview/components/RegistrationAreaChart";
 import { DistributionBarChart } from "@/components/features/dashboard-overview/components/DistributionBarChart";
 import { RecentApplicantsTable } from "@/components/features/dashboard-overview/components/RecentApplicantsTable";
+import { SubscriptionOnboardingModal } from "@/components/features/subscription/components/SubscriptionOnboardingModal";
 
 import { useSchoolHref } from "@/hooks/useSchoolHref";
 
@@ -142,9 +143,10 @@ export default function DashboardOverview() {
     
 
       {/* 5. Tabel Pendaftar Terbaru */}
-      
-        <RecentApplicantsTable schoolSlug={schoolSlug} applicants={applicants} majorsList={majorsList} />
-   
+      <RecentApplicantsTable schoolSlug={schoolSlug} applicants={applicants} majorsList={majorsList} />
+
+      {/* 6. Onboarding Subscription Modal (Muncul 3 detik setelah instansi diverifikasi) */}
+      <SubscriptionOnboardingModal isVerified={isVerified} schoolSlug={schoolSlug} />
     </div>
   );
 }

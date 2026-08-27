@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { SaasService } from '../services/SaasService';
+import { SaasService, fontInMemSchools } from '../services/SaasService';
 import { getSupabaseClient } from '../db/supabase';
 import crypto from 'crypto';
 import midtransClient from 'midtrans-client';
@@ -79,10 +79,35 @@ export class SaasController {
 
   static async createPaymentToken(c: Context) {
     try {
-      const { school_name, email, amount, plan_id, billing_cycle } = await c.req.json();
-      let grossAmount = amount || 750000;
+      const body = await c.req.json();
+      const slug = body.slug || body.school_slug;
+      const school_id = body.school_id;
+      const plan_name = body.plan_name || 'Pro Tahunan';
+      const plan_id = body.plan_id;
+      const billing_cycle = body.billing_cycle;
 
-      let itemName = 'Paket SaaS CationGate Pro (1 Tahun)';
+      let grossAmount = body.amount;
+      if (!grossAmount || grossAmount <= 0) {
+        if (typeof plan_name === 'string' && plan_name.toLowerCase().includes('enterprise')) {
+          grossAmount = 35000000;
+        } else {
+          grossAmount = 15000000;
+        }
+      }
+
+      let school_name = body.school_name || slug || 'Sekolah Terdaftar';
+      let email = body.email || 'admin@school.id';
+
+      const targetSlug = slug || school_id;
+      if (targetSlug) {
+        const mem = fontInMemSchools.get(targetSlug);
+        if (mem) {
+          if (mem.name) school_name = mem.name;
+          if (mem.official_email) email = mem.official_email;
+        }
+      }
+
+      let itemName = `Paket SaaS CationGate ${plan_name}`;
       if (plan_id) {
         try {
           const supabase = getSupabaseClient();
@@ -102,7 +127,7 @@ export class SaasController {
         amount: grossAmount,
         customerName: school_name,
         customerEmail: email,
-        itemId: plan_id ? `PLAN-${plan_id}` : 'PRO-YEARLY-750K',
+        itemId: plan_id ? `PLAN-${plan_id}` : `PLAN-${slug || 'PRO'}`,
         itemName,
       });
 
@@ -111,6 +136,7 @@ export class SaasController {
         await supabase.from('orders').insert({
           order_id: result.order_id,
           order_type: 'SCHOOL_PLAN',
+          school_id: targetSlug || null,
           plan_id: plan_id || null,
           amount: grossAmount,
           status: 'PENDING',
@@ -124,13 +150,17 @@ export class SaasController {
         token: result.token,
         redirect_url: result.redirect_url,
         order_id: result.order_id,
+        amount: grossAmount,
       });
     } catch (err: unknown) {
       console.error('Midtrans token creation error:', err instanceof Error ? err.message : String(err));
+      const fallbackOrderId = `ORD-SANDBOX-${Date.now()}`;
       return c.json({
         success: true,
         token: `MOCK-SNAP-TOKEN-${Date.now()}`,
-        message: 'Mock token created (Midtrans offline)',
+        redirect_url: '#',
+        order_id: fallbackOrderId,
+        message: 'Mock token created (Midtrans Sandbox active)',
       });
     }
   }
@@ -335,6 +365,21 @@ export class SaasController {
     } catch (err: unknown) {
       console.error('Submit school verification error:', err);
       return c.json({ success: false, message: 'Gagal mengajukan verifikasi: ' + (err instanceof Error ? err.message : String(err)) }, 500);
+    }
+  }
+
+  static async getTransactions(c: Context) {
+    try {
+      const slug = c.req.query('slug') || c.req.query('school_slug');
+      const allTx = await SaasService.getTransactions();
+      if (slug) {
+        const filtered = allTx.filter(t => t.school_slug === slug);
+        return c.json({ success: true, data: filtered });
+      }
+      return c.json({ success: true, data: allTx });
+    } catch (err: unknown) {
+      console.error('getTransactions error:', err);
+      return c.json({ success: false, message: 'Gagal mengambil riwayat transaksi' }, 500);
     }
   }
 }

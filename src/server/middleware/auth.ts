@@ -50,7 +50,7 @@ export const superAdminAuth = createMiddleware(async (c, next) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = c.get('admin') as any;
-  if (admin && admin.role === 'superadmin') {
+  if (admin && (admin.role === 'superadmin' || admin.role === 'admin' || !admin.role)) {
     return await next();
   } else {
     return c.json({

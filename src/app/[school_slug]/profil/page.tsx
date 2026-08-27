@@ -10,7 +10,6 @@ import { ProfileSejarah } from "@/components/features/school-profile/components/
 import { ProfilePimpinan } from "@/components/features/school-profile/components/ProfilePimpinan";
 import { ProfileIdentitas } from "@/components/features/school-profile/components/ProfileIdentitas";
 import { ProfileVisiMisi } from "@/components/features/school-profile/components/ProfileVisiMisi";
-import { ProfileKunjungan } from "@/components/features/school-profile/components/ProfileKunjungan";
 
 export default function ProfilSekolahPublicPage() {
   const { ppdbTitle, profilSekolah, isSchoolNotFound, schoolStatus } = usePPDB();
@@ -105,7 +104,6 @@ export default function ProfilSekolahPublicPage() {
       <ProfilePimpinan ppdbTitle={currentTitle} pimpinan={activeProfil?.pimpinan} />
       <ProfileIdentitas identitas={identitas} />
       <ProfileVisiMisi visi={visi} misi={misi} tujuan={tujuan} />
-      <ProfileKunjungan identitas={identitas} />
 
       <SchoolFooter schoolSlug={schoolSlug} />
     </div>

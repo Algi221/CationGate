@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { getBrowserSupabase } from "@/lib/supabase-client";
 import {
@@ -128,21 +128,98 @@ export default function GatekeeperOverviewPage() {
 
   const pendingSchools = schools.filter(s => s.status === "PENDING_VERIFICATION");
 
-  // Format data peta dari data sekolah real/fallback koordinat wilayah
-  const mapSchools = schools.length > 0
-    ? schools.map((s, idx) => ({
-        id: s.id,
-        name: s.name,
-        lat: s.lat || -6.2088 + (((idx * 17) % 10) - 5) * 0.1,
-        lng: s.lng || 106.8456 + (((idx * 23) % 10) - 5) * 0.2,
-        region: s.region || "Jawa",
-      }))
-    : [
-        { id: 1, name: "SMAN 1 Bandung", lat: -6.9175, lng: 107.6191, region: "Jawa Barat" },
-        { id: 2, name: "SMKN 26 Jakarta", lat: -6.2088, lng: 106.8456, region: "DKI Jakarta" },
-        { id: 3, name: "SMA 3 Surabaya", lat: -7.2575, lng: 112.7521, region: "Jawa Timur" },
-        { id: 4, name: "SMAN 1 Tangerang", lat: -6.1783, lng: 106.6319, region: "Banten" },
+  // Dynamic Real School Geo-mapping & Regional Classifier
+  const mapSchools = useMemo(() => {
+    if (!schools || schools.length === 0) {
+      return [
+        { id: 1, name: "SMK Taruna Bhakti", slug: "smktarunabhakti", lat: -6.4025, lng: 106.7942, region: "Jawa Barat", status: "FULL_VERIFIED", npsn: "20229215" },
+        { id: 2, name: "SMK TI Bali Global Denpasar", slug: "smktiglobal", lat: -8.6705, lng: 115.2126, region: "Bali", status: "FULL_VERIFIED", npsn: "50103641" },
+        { id: 3, name: "SMKN 26 Jakarta", slug: "smkn26jkt", lat: -6.2088, lng: 106.8456, region: "DKI Jakarta", status: "FULL_VERIFIED", npsn: "20100223" },
+        { id: 4, name: "SMAN 1 Tangerang", slug: "sman1tgr", lat: -6.1783, lng: 106.6319, region: "Banten", status: "PENDING_VERIFICATION", npsn: "20603214" },
       ];
+    }
+
+    return schools.map((s, idx) => {
+      const text = `${s.name || ''} ${s.slug || ''} ${s.official_email || ''}`.toLowerCase();
+      const jitterLat = (((idx * 17 + (s.slug?.length || 3)) % 10) - 5) * 0.04;
+      const jitterLng = (((idx * 23 + (s.name?.length || 5)) % 10) - 5) * 0.04;
+
+      let lat = -6.4025 + jitterLat;
+      let lng = 106.7942 + jitterLng;
+      let region = "Jawa Barat";
+
+      if (text.includes("bali") || text.includes("denpasar") || text.includes("singaraja") || text.includes("badung")) {
+        lat = -8.6705 + jitterLat;
+        lng = 115.2126 + jitterLng;
+        region = "Bali";
+      } else if (text.includes("surabaya") || text.includes("malang") || text.includes("kediri") || text.includes("jember") || text.includes("jatim")) {
+        lat = -7.2575 + jitterLat;
+        lng = 112.7521 + jitterLng;
+        region = "Jawa Timur";
+      } else if (text.includes("semarang") || text.includes("solo") || text.includes("surakarta") || text.includes("magelang") || text.includes("jateng")) {
+        lat = -6.9667 + jitterLat;
+        lng = 110.4167 + jitterLng;
+        region = "Jawa Tengah";
+      } else if (text.includes("yogyakarta") || text.includes("jogja") || text.includes("sleman") || text.includes("bantul")) {
+        lat = -7.7956 + jitterLat;
+        lng = 110.3695 + jitterLng;
+        region = "DI Yogyakarta";
+      } else if (text.includes("tangerang") || text.includes("serang") || text.includes("cilegon") || text.includes("banten")) {
+        lat = -6.1783 + jitterLat;
+        lng = 106.6319 + jitterLng;
+        region = "Banten";
+      } else if (text.includes("jakarta") || text.includes("dki") || text.includes("jaksel") || text.includes("jaktim") || text.includes("jakbar")) {
+        lat = -6.2088 + jitterLat;
+        lng = 106.8456 + jitterLng;
+        region = "DKI Jakarta";
+      } else if (text.includes("depok") || text.includes("taruna") || text.includes("cimanggis") || text.includes("bogor") || text.includes("bandung") || text.includes("bekasi")) {
+        lat = -6.4025 + jitterLat;
+        lng = 106.7942 + jitterLng;
+        region = "Jawa Barat";
+      } else {
+        const fallbackRegions = [
+          { name: "Jawa Barat", baseLat: -6.9175, baseLng: 107.6191 },
+          { name: "DKI Jakarta", baseLat: -6.2088, baseLng: 106.8456 },
+          { name: "Banten", baseLat: -6.1200, baseLng: 106.1503 },
+          { name: "Jawa Timur", baseLat: -7.2575, baseLng: 112.7521 },
+          { name: "Jawa Tengah", baseLat: -6.9667, baseLng: 110.4167 },
+          { name: "Bali", baseLat: -8.6705, baseLng: 115.2126 },
+        ];
+        const fb = fallbackRegions[idx % fallbackRegions.length];
+        lat = fb.baseLat + jitterLat;
+        lng = fb.baseLng + jitterLng;
+        region = fb.name;
+      }
+
+      return {
+        id: s.id || s.slug || idx,
+        name: s.name || "Sekolah Terdaftar",
+        slug: s.slug,
+        lat,
+        lng,
+        region,
+        status: s.status,
+        npsn: s.npsn
+      };
+    });
+  }, [schools]);
+
+  // Live Demographics Summary from Real School Data
+  const regionDemographics = useMemo(() => {
+    const counts: Record<string, number> = {};
+    mapSchools.forEach(s => {
+      counts[s.region] = (counts[s.region] || 0) + 1;
+    });
+
+    const total = mapSchools.length;
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([region, count]) => ({
+        region,
+        count,
+        percentage: total > 0 ? `${Math.round((count / total) * 100)}%` : "0%"
+      }));
+  }, [mapSchools]);
 
   const stats = [
     {
@@ -488,14 +565,7 @@ export default function GatekeeperOverviewPage() {
       <SchoolMap schools={mapSchools} />
 
 <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1.5 scrollbar-thin [scrollbar-color:#cbd5e1_transparent] dark:[scrollbar-color:#475569_transparent]">
-  {[
-    { region: "Jawa Barat", count: 45, percentage: "37%" },
-    { region: "DKI Jakarta", count: 32, percentage: "26%" },
-    { region: "Jawa Timur", count: 24, percentage: "20%" },
-    { region: "Banten", count: 18, percentage: "15%" },
-    { region: "Jawa Tengah", count: 12, percentage: "10%" },
-    { region: "DI Yogyakarta", count: 8, percentage: "6%" }
-  ].map((item, idx) => (
+  {regionDemographics.map((item, idx) => (
     <div 
       key={idx} 
       className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/70 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-colors"

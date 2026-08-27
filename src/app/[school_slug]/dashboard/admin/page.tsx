@@ -33,11 +33,13 @@ function AdminManagementPageContent() {
     trashedAdmins,
     trashLoading,
     isPro,
+    schoolSlug,
     handleAddAdmin,
     handleEditClick,
     handleUpdateAdmin,
     handleDeleteAdmin,
-    handleRestoreAdmin
+    handleRestoreAdmin,
+    handleResendActivation
   } = useAdminManagementState();
 
   return (
@@ -110,8 +112,10 @@ function AdminManagementPageContent() {
               admins={admins}
               loading={loading}
               adminUser={adminUser}
+              schoolSlug={schoolSlug}
               handleEditClick={handleEditClick}
               handleDeleteAdmin={handleDeleteAdmin}
+              handleResendActivation={handleResendActivation}
             />
           ) : (
             <AdminTrashTable

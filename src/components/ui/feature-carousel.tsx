@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CardProps {
@@ -263,7 +262,7 @@ function ImageShowcase({
             exit={{ opacity: 0, x: -30, scale: 0.98 }}
             transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
             className={cn(
-              `absolute right-[-2%] top-[10%] z-10 w-[100%] md:right-[-2%] md:top-[8%] md:w-[90%]`,
+              `absolute right-[-2%] top-[10%] z-10 w-full md:right-[-2%] md:top-[8%] md:w-[90%]`,
               desktopImgClass
             )}
           >
@@ -279,7 +278,7 @@ function ImageShowcase({
                 alt={`${image.alt} Desktop`}
                 width={2000}
                 height={800}
-                className="block h-auto w-full object-cover object-left-top"
+                className="block h-auto w-full object-cover object-top-left"
               />
             </div>
           </motion.div>
@@ -291,7 +290,7 @@ function ImageShowcase({
             exit={{ opacity: 0, x: 20, y: 20, scale: 0.9 }}
             transition={{ duration: 0.7, delay: 0.12, ease: [0.23, 1, 0.32, 1] }}
             className={cn(
-              `absolute bottom-[-2%] right-[2%] z-20 w-[28%] min-w-[120px] max-w-[200px]`,
+              `absolute bottom-[-2%] right-[2%] z-20 w-[28%] min-w-30 max-w-50`,
               mobileImgClass
             )}
           >
@@ -354,7 +353,7 @@ export function FeatureCarousel({
       </div>
 
       {/* CONTENT */}
-      <div className="relative flex min-h-[500px] flex-col overflow-hidden px-6 pb-14 pt-8 md:min-h-[600px] md:flex-row md:px-10 md:pt-5">
+      <div className="relative flex min-h-125 flex-col overflow-hidden px-6 pb-14 pt-8 md:min-h-150 md:flex-row md:px-10 md:pt-5">
         {/* TEXT */}
         <div className="relative z-40 flex w-full flex-col justify-start pt-4 md:justify-center md:pt-0 md:w-[35%] md:pb-10">
           <AnimatePresence mode="wait">
@@ -411,7 +410,7 @@ export function FeatureCarousel({
         </div>
 
         {/* IMAGES CONTAINER (Ditinggikan untuk mobile) */}
-        <div className="relative min-h-[350px] sm:min-h-[450px] flex-1 mt-8 md:mt-0 md:min-h-0">
+        <div className="relative min-h-87.5 sm:min-h-112.5 flex-1 mt-8 md:mt-0 md:min-h-0">
           <ImageShowcase
             image={image}
             step={current}

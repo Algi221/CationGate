@@ -118,91 +118,91 @@
             rt_rw VARCHAR(10) NOT NULL,
             kelurahan VARCHAR(50) NOT NULL,
             kecamatan VARCHAR(50) NOT NULL,
-            kode_pos VARCHAR(5) NOT NULL,
-            whatsapp VARCHAR(15) NOT NULL,
+            kode_pos VARCHAR(50) NOT NULL,
+            whatsapp VARCHAR(50) NOT NULL,
             email VARCHAR(100) NOT NULL,
-            tinggal_dengan VARCHAR(30) NOT NULL,
-            transportasi VARCHAR(30) NOT NULL,
+            tinggal_dengan VARCHAR(50) NOT NULL,
+            transportasi VARCHAR(50) NOT NULL,
             
             -- Physical Metrics & Periodik
             tinggi_badan INTEGER NOT NULL,
             berat_badan INTEGER NOT NULL,
-            jarak_sekolah VARCHAR(30) NOT NULL,
+            jarak_sekolah VARCHAR(50) NOT NULL,
             jarak_km NUMERIC(5,2) NOT NULL,
             waktu_jam INTEGER NOT NULL,
             waktu_menit INTEGER NOT NULL,
             jumlah_saudara INTEGER NOT NULL,
-            golongan_darah VARCHAR(5) NOT NULL,
+            golongan_darah VARCHAR(50) NOT NULL,
             
             -- Health & Custom Aid
             penyakit_diderita VARCHAR(150),
             kebutuhan_khusus JSONB, -- Stored as dynamic array e.g. ["Autis", "Indigo"]
-            punya_kps VARCHAR(5) DEFAULT 'Tidak',
-            no_kps VARCHAR(30),
-            punya_kip VARCHAR(5) DEFAULT 'Tidak',
-            no_kip VARCHAR(30),
+            punya_kps VARCHAR(50) DEFAULT 'Tidak',
+            no_kps VARCHAR(50),
+            punya_kip VARCHAR(50) DEFAULT 'Tidak',
+            no_kip VARCHAR(50),
             
             -- Achievements & Scholarships (JSONB for dynamic array collections)
             jenis_prestasi JSONB,
             tingkat_prestasi JSONB,
             uraian_prestasi TEXT,
-            tahun_prestasi VARCHAR(10),
+            tahun_prestasi VARCHAR(20),
             penyelenggara VARCHAR(100),
             
             jenis_beasiswa JSONB,
             uraian_beasiswa TEXT,
-            tahun_mulai_beasiswa VARCHAR(10),
-            tahun_selesai_beasiswa VARCHAR(10),
+            tahun_mulai_beasiswa VARCHAR(20),
+            tahun_selesai_beasiswa VARCHAR(20),
             
             -- Father Information
             nama_ayah VARCHAR(150),
             tempat_lahir_ayah VARCHAR(100),
             tgl_lahir_ayah DATE,
-            agama_ayah VARCHAR(20),
-            kewarganegaraan_ayah VARCHAR(3) DEFAULT 'WNI',
+            agama_ayah VARCHAR(50),
+            kewarganegaraan_ayah VARCHAR(50) DEFAULT 'WNI',
             pendidikan_ayah VARCHAR(50),
             pekerjaan_ayah VARCHAR(100),
             penghasilan_ayah VARCHAR(50),
             alamat_ayah TEXT,
-            rtrw_ayah VARCHAR(10),
+            rtrw_ayah VARCHAR(20),
             kelurahan_ayah VARCHAR(50),
             kecamatan_ayah VARCHAR(50),
-            kode_pos_ayah VARCHAR(5),
-            status_ayah VARCHAR(30) DEFAULT 'Masih Hidup',
+            kode_pos_ayah VARCHAR(50),
+            status_ayah VARCHAR(50) DEFAULT 'Masih Hidup',
             
             -- Mother Information
             nama_ibu VARCHAR(150),
             tempat_lahir_ibu VARCHAR(100),
             tgl_lahir_ibu DATE,
-            agama_ibu VARCHAR(20),
-            kewarganegaraan_ibu VARCHAR(3) DEFAULT 'WNI',
+            agama_ibu VARCHAR(50),
+            kewarganegaraan_ibu VARCHAR(50) DEFAULT 'WNI',
             pendidikan_ibu VARCHAR(50),
             pekerjaan_ibu VARCHAR(100),
             penghasilan_ibu VARCHAR(50),
             alamat_ibu TEXT,
-            rtrw_ibu VARCHAR(10),
+            rtrw_ibu VARCHAR(20),
             kelurahan_ibu VARCHAR(50),
             kecamatan_ibu VARCHAR(50),
-            kode_pos_ibu VARCHAR(5),
-            status_ibu VARCHAR(30) DEFAULT 'Masih Hidup',
+            kode_pos_ibu VARCHAR(50),
+            status_ibu VARCHAR(50) DEFAULT 'Masih Hidup',
             
             -- Guardian Information (Wali)
             nama_wali VARCHAR(150),
             tempat_lahir_wali VARCHAR(100),
             tgl_lahir_wali DATE,
-            agama_wali VARCHAR(20),
-            kewarganegaraan_wali VARCHAR(3) DEFAULT 'WNI',
+            agama_wali VARCHAR(50),
+            kewarganegaraan_wali VARCHAR(50) DEFAULT 'WNI',
             pendidikan_wali VARCHAR(50),
             pekerjaan_wali VARCHAR(100),
             penghasilan_wali VARCHAR(50),
             alamat_wali TEXT,
-            rtrw_wali VARCHAR(10),
+            rtrw_wali VARCHAR(20),
             kelurahan_wali VARCHAR(50),
             kecamatan_wali VARCHAR(50),
-            kode_pos_wali VARCHAR(5),
-            status_wali VARCHAR(30) DEFAULT 'Masih Hidup',
+            kode_pos_wali VARCHAR(50),
+            status_wali VARCHAR(50) DEFAULT 'Masih Hidup',
             
-            telepon_ortu VARCHAR(15) NOT NULL,
+            telepon_ortu VARCHAR(50) NOT NULL,
             
             -- Previous Academic Info
             sekolah_asal VARCHAR(150) NOT NULL,
@@ -213,11 +213,11 @@
             lama_belajar INTEGER,
             pindahan_dari VARCHAR(150),
             alasan_pindah TEXT,
-            diterima_kelas VARCHAR(20),
+            diterima_kelas VARCHAR(100),
             diterima_tanggal DATE,
             
             -- Majors Choice
-            jurusan_1 VARCHAR(50) NOT NULL,
+            jurusan_1 VARCHAR(100) NOT NULL,
             alasan_memilih TEXT,
             
             -- Habits & Grades
@@ -232,11 +232,11 @@
             kesulitan_belajar TEXT,
             
             -- Pledges
-            perkelahian VARCHAR(5) DEFAULT 'Tidak',
+            perkelahian VARCHAR(50) DEFAULT 'Tidak',
             ket_perkelahian TEXT,
-            narkoba VARCHAR(5) DEFAULT 'Tidak',
+            narkoba VARCHAR(50) DEFAULT 'Tidak',
             ket_narkoba TEXT,
-            pelanggaran_lain VARCHAR(5) DEFAULT 'Tidak',
+            pelanggaran_lain VARCHAR(50) DEFAULT 'Tidak',
             ket_pelanggaran_lain TEXT,
             janji_taat BOOLEAN DEFAULT FALSE,
             janji_sanksi BOOLEAN DEFAULT FALSE,
@@ -245,8 +245,8 @@
             janji_nama_baik BOOLEAN DEFAULT FALSE,
             
             -- Period & Registration
-            periode VARCHAR(20) DEFAULT '2026-2027',
-            gelombang VARCHAR(20) DEFAULT 'Gelombang 1',
+            periode VARCHAR(50) DEFAULT '2026-2027',
+            gelombang VARCHAR(50) DEFAULT 'Gelombang 1',
 
             -- Registration Card & Physical Doc Verification
             registration_no VARCHAR(50),  -- Nomor Pendaftaran SPMB unik

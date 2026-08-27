@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { useParams } from "next/navigation";
 import { KuotaData, KuotaItem } from "../types";
 
 function getDemoKuotaData(
@@ -81,9 +82,13 @@ export function useKuotaData(schoolId: string | number | undefined) {
   const [selectedPeriode, setSelectedPeriode] = useState<string>("");
   const [availablePeriodes, setAvailablePeriodes] = useState<string[]>([]);
 
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "";
+
   const isDemo =
     schoolId === "demo" ||
     String(schoolId) === "demo" ||
+    schoolSlug === "demo" ||
     (typeof window !== "undefined" && window.location.pathname.includes("/demo/"));
 
   const fetchKuota = useCallback(
@@ -114,6 +119,7 @@ export function useKuotaData(schoolId: string | number | undefined) {
         const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
         const effectiveId =
           schoolId ||
+          schoolSlug ||
           (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
             ? window.location.hostname.split(".")[0]
             : "");
@@ -203,7 +209,7 @@ export function useKuotaData(schoolId: string | number | undefined) {
         setLoading(false);
       }
     },
-    [schoolId, isDemo, availablePeriodes.length]
+    [schoolId, schoolSlug, isDemo, availablePeriodes.length]
   );
 
   useEffect(() => {
@@ -265,6 +271,7 @@ export function useKuotaData(schoolId: string | number | undefined) {
       const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
       const effectiveId =
         schoolId ||
+        schoolSlug ||
         (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
           ? window.location.hostname.split(".")[0]
           : "");

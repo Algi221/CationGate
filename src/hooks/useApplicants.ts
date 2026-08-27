@@ -16,14 +16,26 @@ export type Applicant = {
 
 const fetchApplicants = async (schoolId: string): Promise<Applicant[]> => {
   if (!schoolId) return [];
-  const res = await fetch(`/api/applicants?school_id=${schoolId}`);
-  if (!res.ok) throw new Error("Gagal mengambil data pendaftar");
-  const text = await res.text();
+  const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "";
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const endpoint = token ? `/api/applicants?school_id=${encodeURIComponent(schoolId)}` : `/api/applicants/public?school_slug=${encodeURIComponent(schoolId)}`;
   try {
-    const data = JSON.parse(text);
+    const res = await fetch(endpoint, { headers });
+    if (!res.ok) {
+      // Fallback to public if admin 401/403/500
+      if (token) {
+        const publicRes = await fetch(`/api/applicants/public?school_slug=${encodeURIComponent(schoolId)}`);
+        if (publicRes.ok) {
+          const publicData = await publicRes.json();
+          return publicData.data || [];
+        }
+      }
+      return [];
+    }
+    const data = await res.json();
     return data.data || [];
   } catch (_err) {
-    console.error("Invalid JSON from API:", text.substring(0, 150));
     return [];
   }
 };

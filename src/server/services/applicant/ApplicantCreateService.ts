@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "../../db/supabase";
+import { pool } from "../../db/client";
 import { resolveSchoolUUID } from "../../db/resolve-school";
 import { fontInMemSchools } from "../../routes/saas";
 import { registerApplicantSchema } from "../../validations/applicants";
@@ -47,17 +48,17 @@ export class ApplicantCreateService {
         : new Date("2010-01-01").toISOString(),
       jenis_kelamin:
         validated.jenisKelamin === "L" || validated.jenisKelamin === "Laki-laki" ? "L" : "P",
-      agama: validated.agama || "Islam",
-      kewarganegaraan: validated.kewarganegaraan || "WNI",
+      agama: (validated.agama || "Islam").slice(0, 50),
+      kewarganegaraan: (validated.kewarganegaraan || "WNI").slice(0, 50),
       alamat: validated.alamat || "-",
-      rt_rw: validated.rtRw || "01/01",
-      kelurahan: validated.kelurahan || "-",
-      kecamatan: validated.kecamatan || "-",
-      kode_pos: validated.kodePos || "00000",
-      whatsapp: validated.whatsapp || "-",
+      rt_rw: (validated.rtRw || "01/01").slice(0, 20),
+      kelurahan: (validated.kelurahan || "-").slice(0, 50),
+      kecamatan: (validated.kecamatan || "-").slice(0, 50),
+      kode_pos: (validated.kodePos || "00000").slice(0, 20),
+      whatsapp: (validated.whatsapp || "-").slice(0, 50),
       email: validated.email,
-      tinggal_dengan: validated.tinggalDengan,
-      transportasi: validated.transportasi,
+      tinggal_dengan: (validated.tinggalDengan || "-").slice(0, 50),
+      transportasi: (validated.transportasi || "-").slice(0, 50),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tinggi_badan: parseInt(validated.tinggiBadan as any) || 0,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -316,7 +317,8 @@ export class ApplicantCreateService {
       savedRecord = insertData;
     } catch (dbErr: unknown) {
       const pgErr = dbErr as { code?: string; details?: string; message?: string };
-      console.error("Supabase CalonSiswa create DB failure.", pgErr?.message || String(dbErr));
+      console.warn("Supabase insert fallback to direct PostgreSQL pool:", pgErr?.message || String(dbErr));
+      
       if (pgErr?.code === "23505") {
         const detail = pgErr?.details || pgErr?.message || "";
         if (detail.includes("nisn")) {
@@ -334,11 +336,32 @@ export class ApplicantCreateService {
           };
         }
       }
-      return {
-        success: false as const,
-        statusCode: 500 as const,
-        message: "Gagal memproses formulir pendaftaran: " + (pgErr?.message || String(dbErr))
-      };
+
+      // Try PostgreSQL direct pool query
+      try {
+        const keys = Object.keys(mapped);
+        const values = Object.values(mapped).map((val) =>
+          typeof val === "object" && val !== null ? JSON.stringify(val) : val
+        );
+        const placeholders = keys.map((_, i) => `$${i + 1}`).join(", ");
+        const pgRes = await pool.query(
+          `INSERT INTO calon_siswa (${keys.join(", ")}) VALUES (${placeholders}) RETURNING *`,
+          values
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          savedRecord = pgRes.rows[0];
+        }
+      } catch (poolErr: unknown) {
+        console.error("Pool query failed too:", poolErr);
+      }
+
+      if (!savedRecord) {
+        return {
+          success: false as const,
+          statusCode: 500 as const,
+          message: "Gagal memproses formulir pendaftaran: " + (pgErr?.message || String(dbErr))
+        };
+      }
     }
 
     const registrationNo = `SPMB-${new Date().getFullYear()}-${String(savedRecord.id).padStart(5, "0")}`;

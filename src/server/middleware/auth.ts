@@ -61,14 +61,19 @@ export const superAdminAuth = createMiddleware(async (c, next) => {
 
 export const gatekeeperAuth = createMiddleware(async (c, next) => {
   const authHeader = c.req.header('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
+  let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) {
+    token = c.req.header('x-gatekeeper-token') || c.req.query('token') || null;
+  }
+
+  if (!token) {
     return c.json({ success: false, message: 'Akses ditolak: Sesi Anda tidak valid atau telah berakhir.' }, 401);
   }
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const decoded = jwt.verify(authHeader.slice(7), getJwtSecret()) as any;
-    if (decoded.isGatekeeper !== true || decoded.role !== 'gatekeeper') {
+    const decoded = jwt.verify(token, getJwtSecret()) as any;
+    if (decoded.isGatekeeper !== true && decoded.role !== 'gatekeeper' && decoded.role !== 'superadmin') {
       return c.json({ success: false, message: 'Akses ditolak: Anda tidak memiliki izin untuk tindakan ini.' }, 403);
     }
     c.set('gatekeeper', decoded);

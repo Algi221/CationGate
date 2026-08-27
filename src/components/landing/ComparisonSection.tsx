@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowRight, XCircle } from "lucide-react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
@@ -77,7 +77,7 @@ export function ComparisonSection() {
   return (
     <section className="py-24 lg:py-32 bg-white dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800 relative overflow-hidden transition-colors">
       {/* Background Decorative Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#FFC000]/5 blur-[120px] pointer-events-none rounded-full" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-75 bg-[#FFC000]/5 blur-[120px] pointer-events-none rounded-full" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}

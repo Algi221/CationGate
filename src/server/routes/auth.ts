@@ -157,11 +157,11 @@ authRouter.post('/login', authLimiter, async (c) => {
       }, 403);
     }
 
-    // 1. Try Supabase query matching email (case-insensitive)
+    // 1. Try Supabase query matching email OR username (case-insensitive)
     let query = supabase
       .from('admin_users')
       .select('*')
-      .ilike('email', cleanEmail);
+      .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`);
     if (schoolId) query = query.eq('school_id', schoolId);
     let { data: adminUser } = await query.maybeSingle();
 
@@ -170,7 +170,7 @@ authRouter.post('/login', authLimiter, async (c) => {
       const { data: userWithoutSchool } = await supabase
         .from('admin_users')
         .select('*')
-        .ilike('email', cleanEmail)
+        .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`)
         .maybeSingle();
       if (userWithoutSchool) adminUser = userWithoutSchool;
     }
@@ -179,9 +179,10 @@ authRouter.post('/login', authLimiter, async (c) => {
     if (!adminUser) {
       try {
         const pgRes = await pool.query(
-          `SELECT id, username, email, password_hash, nama_lengkap, role, school_id
+          `SELECT id, username, email, password_hash, nama_lengkap, role, school_id, is_active
            FROM admin_users
-           WHERE LOWER(COALESCE(email, '')) = LOWER($1)
+           WHERE (LOWER(COALESCE(email, '')) = LOWER($1) OR LOWER(COALESCE(username, '')) = LOWER($1))
+             AND deleted_at IS NULL
            LIMIT 1`,
           [cleanEmail]
         );
@@ -250,6 +251,13 @@ authRouter.post('/login', authLimiter, async (c) => {
 
     if (!adminUser) {
       return c.json({ success: false, message: 'Alamat Email atau kata sandi tidak sesuai.' }, 401);
+    }
+
+    if (adminUser.is_active === false) {
+      return c.json({
+        success: false,
+        message: 'Akun admin belum diaktivasi. Silakan periksa tautan aktivasi di Gmail Anda atau hubungi admin sekolah.'
+      }, 403);
     }
 
     // Direct Gatekeeper role check

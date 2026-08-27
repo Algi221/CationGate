@@ -111,6 +111,7 @@ router.get('/', async (c: Context) => {
     const allRows: any[] = [];
     const seenIds = new Set<string | number>();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const addRow = (item: any) => {
       if (!item) return;
       const key = item.id || `${item.judul}_${item.tanggal}`;
@@ -125,7 +126,7 @@ router.get('/', async (c: Context) => {
     const memList2 = resolved ? (fontInMemInformasi.get(String(resolved)) || []) : [];
     [...memList1, ...memList2].forEach(addRow);
 
-    // 2. Supabase
+    // 2. Supabase (check 'informasi' and 'school_announcements')
     try {
       let query = supabase.from('informasi').select('*');
       if (numId !== null) {
@@ -141,6 +142,21 @@ router.get('/', async (c: Context) => {
       }
     } catch (_sbErr) {}
 
+    try {
+      let query2 = supabase.from('school_announcements').select('*');
+      if (numId !== null) {
+        query2 = query2.or(`school_id.eq.${numId},school_id.eq.${rawSchoolId}`);
+      } else if (resolved) {
+        query2 = query2.or(`school_id.eq.${resolved},school_id.eq.${rawSchoolId}`);
+      } else {
+        query2 = query2.eq('school_id', rawSchoolId);
+      }
+      const { data: sbData2, error: err2 } = await query2.order('tanggal', { ascending: false }).order('created_at', { ascending: false });
+      if (!err2 && sbData2 && Array.isArray(sbData2)) {
+        sbData2.forEach(addRow);
+      }
+    } catch (_sbErr2) {}
+
     // 3. Direct PostgreSQL
     try {
       const pgRes = await pool.query(
@@ -155,7 +171,7 @@ router.get('/', async (c: Context) => {
       }
     } catch (_pgErr) {}
 
-    // 4. Sanitize media
+    // 4. Sanitize media - PRESERVE video & dokumen URLs intact
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sanitizedRows = allRows.map((row: any) => {
       if (row.foto_url && typeof row.foto_url === 'string' && row.foto_url.startsWith('{')) {
@@ -165,9 +181,9 @@ router.get('/', async (c: Context) => {
             ...row,
             foto_url: JSON.stringify({
               foto: parsed.foto || "",
-              video: "", 
+              video: parsed.video || "", 
               video_name: parsed.video_name || "",
-              dokumen: "", 
+              dokumen: parsed.dokumen || "", 
               dokumen_name: parsed.dokumen_name || ""
             })
           };

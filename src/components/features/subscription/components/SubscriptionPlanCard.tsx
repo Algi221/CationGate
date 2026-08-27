@@ -64,10 +64,10 @@ export const SubscriptionPlanCard: React.FC<SubscriptionPlanCardProps> = ({
 
           {/* Price */}
           <div className="flex flex-col gap-1 my-6">
-            <span className="text-4xl md:text-5xl font-black tracking-tight">
+            <span className="text-4xl md:text-5xl font-black tracking-tight text-neutral-950">
               Free
             </span>
-            <span className="text-xs font-bold text-neutral-700">
+            <span className="text-xs font-bold text-neutral-800">
               Tanpa biaya tersembunyi selama masa uji coba 30 hari.
             </span>
           </div>
@@ -128,9 +128,12 @@ export const SubscriptionPlanCard: React.FC<SubscriptionPlanCardProps> = ({
 
           {/* Price */}
           <div className="flex flex-col gap-1 my-6">
-            <span className="text-4xl md:text-5xl font-black tracking-tight text-[#FFD33B]">
-              Rp {Number(pkg.price_yearly).toLocaleString("id-ID")}
-            </span>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="text-2xl md:text-3xl font-black tracking-tight text-[#FFD33B]">Rp</span>
+              <span className="text-4xl md:text-5xl font-black tracking-tight text-[#FFD33B]">
+                {Number(pkg.price_yearly).toLocaleString("id-ID")}
+              </span>
+            </div>
             <span className="text-xs font-medium text-neutral-400">
               /tahun lisensi sekolah lengkap.
             </span>
@@ -210,9 +213,12 @@ export const SubscriptionPlanCard: React.FC<SubscriptionPlanCardProps> = ({
 
         {/* Price */}
         <div className="flex flex-col gap-1 my-6">
-          <span className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
-            Rp {Number(pkg.price_yearly).toLocaleString("id-ID")}
-          </span>
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Rp</span>
+            <span className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
+              {Number(pkg.price_yearly).toLocaleString("id-ID")}
+            </span>
+          </div>
           <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
             /tahun paket kustom yayasan.
           </span>

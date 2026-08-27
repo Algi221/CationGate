@@ -241,7 +241,17 @@ export function useKelolaUIState() {
         } catch (_) {}
       }
 
-      const activeConfig = draft ? { ...config, ...draft } : config;
+      // Merge safely: do not let empty draft strings or empty arrays overwrite valid server config
+      const mergedConfig = { ...config };
+      if (draft && typeof draft === "object") {
+        Object.entries(draft).forEach(([k, v]) => {
+          if (v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && v.length === 0 && config[k])) {
+            mergedConfig[k] = v;
+          }
+        });
+      }
+
+      const activeConfig = mergedConfig;
 
       if (activeConfig.ppdb_hero_title) setHeroTitle(activeConfig.ppdb_hero_title);
       if (activeConfig.ppdb_hero_title_sub) setHeroTitleSub(activeConfig.ppdb_hero_title_sub);
@@ -251,8 +261,9 @@ export function useKelolaUIState() {
       if (activeConfig.ppdb_hero_bg_image) setHeroBgImage(activeConfig.ppdb_hero_bg_image);
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
-      if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
+      if (activeConfig.ppdb_address || activeConfig.ppdb_alamat) setAddress(activeConfig.ppdb_address || activeConfig.ppdb_alamat);
       if (activeConfig.ppdb_map_title) setMapTitle(activeConfig.ppdb_map_title);
+      if (activeConfig.ppdb_map_url || activeConfig.ppdb_maps_embed) setMapUrl(activeConfig.ppdb_map_url || activeConfig.ppdb_maps_embed);
       if (activeConfig.ppdb_school_period) setSchoolPeriod(activeConfig.ppdb_school_period);
       if (activeConfig.ppdb_faq_title) setFaqTitle(activeConfig.ppdb_faq_title);
       if (activeConfig.ppdb_faq_subtitle) setFaqSubtitle(activeConfig.ppdb_faq_subtitle);
@@ -733,14 +744,21 @@ export function useKelolaUIState() {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
-    const date = new Date(dateString);
+    let normalized = dateString;
+    if (typeof dateString === "string" && !dateString.includes("Z") && !dateString.includes("+") && dateString.includes(" ")) {
+      normalized = dateString.replace(" ", "T") + "Z";
+    } else if (typeof dateString === "string" && !dateString.endsWith("Z") && !dateString.includes("+") && dateString.includes("T")) {
+      normalized = dateString + "Z";
+    }
+    const date = new Date(normalized);
     return date.toLocaleDateString("id-ID", {
+      timeZone: "Asia/Jakarta",
       day: "numeric",
       month: "short",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit"
-    });
+    }).replace(":", ".");
   };
 
   return {

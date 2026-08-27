@@ -374,11 +374,16 @@ export function AdminSidebar({
         }`}>
           {(() => {
             let delayIndex = 0;
+            const isSchoolSuperAdmin =
+              adminUser?.role === "superadmin" ||
+              !adminUser?.role ||
+              adminUser?.role === "admin";
+
             return menuStructure.map((section) => (
               <React.Fragment key={section.category}>
                 {sectionHeader(section.category)}
                 {section.items.map((item) => {
-                  if (item.superAdminOnly && adminUser?.role !== "superadmin") return null;
+                  if (item.superAdminOnly && !isSchoolSuperAdmin) return null;
                   delayIndex++;
                   return renderMenuItem(item, delayIndex);
                 })}

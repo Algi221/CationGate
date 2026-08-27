@@ -112,6 +112,20 @@ adminUsersRouter.post('/', async (c) => {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
+    // 5-admin limit check per school
+    const { count } = await supabase
+      .from('admin_users')
+      .select('*', { count: 'exact', head: true })
+      .eq('school_id', schoolId)
+      .is('deleted_at', null);
+
+    if (count !== null && count >= 5) {
+      return c.json({
+        success: false,
+        message: 'Batas kuota admin (maksimal 5 admin) untuk instansi sekolah telah tercapai. Kelola atau hapus admin yang tidak aktif terlebih dahulu.'
+      }, 403);
+    }
+
     let checkQuery = supabase.from('admin_users').select('id').eq('username', username);
     if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
     const { data: existing } = await checkQuery.maybeSingle();

@@ -11,6 +11,11 @@ import {
   VerificationDocumentItem
 } from "../types";
 
+import { 
+  step1LegalitasSchema, 
+  step2KontakSchema 
+} from "../schema";
+
 export function useSchoolVerificationState() {
   const params = useParams();
   const router = useRouter();
@@ -113,20 +118,35 @@ export function useSchoolVerificationState() {
 
   const handleNext = () => {
     if (currentStep === 1) {
-      if (!formData.npsn || !formData.legal_sk_number || !formData.admin_name) {
+      const parseRes = step1LegalitasSchema.safeParse({
+        npsn: formData.npsn,
+        dapodik_code: formData.dapodik_code,
+        legal_sk_number: formData.legal_sk_number,
+        accreditation: formData.accreditation,
+        admin_name: formData.admin_name
+      });
+      if (!parseRes.success) {
+        const errorMsg = parseRes.error.issues[0]?.message || "Format data legalitas tidak valid.";
         Swal.fire({
-          title: "Form Belum Lengkap",
-          text: "NPSN, Nomor SK Operasional, dan Nama Penanggung Jawab wajib diisi.",
+          title: "Validasi Gagal",
+          text: errorMsg,
           icon: "warning",
           confirmButtonColor: "#2563EB"
         });
         return;
       }
     } else if (currentStep === 2) {
-      if (!formData.official_email) {
+      const parseRes = step2KontakSchema.safeParse({
+        official_email: formData.official_email,
+        whatsapp: formData.whatsapp,
+        website_url: formData.website_url,
+        instagram_url: formData.instagram_url
+      });
+      if (!parseRes.success) {
+        const errorMsg = parseRes.error.issues[0]?.message || "Format data kontak tidak valid.";
         Swal.fire({
-          title: "Email Wajib Diisi",
-          text: "Email resmi instansi wajib diisi untuk penerimaan notifikasi verifikasi.",
+          title: "Validasi Gagal",
+          text: errorMsg,
           icon: "warning",
           confirmButtonColor: "#2563EB"
         });
@@ -243,6 +263,20 @@ export function useSchoolVerificationState() {
       if (json.success) {
         setIsSubmitted(true);
         setCurrentStep(4);
+
+        // Broadcast realtime notification to Gatekeeper Dashboard
+        try {
+          if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+            const bc = new BroadcastChannel("cationgate_realtime_events");
+            bc.postMessage({
+              type: "VERIFICATION_SUBMITTED",
+              schoolName: formData.admin_name || schoolSlug,
+              schoolSlug: schoolSlug
+            });
+            bc.close();
+          }
+        } catch (_bcErr) {}
+
         Swal.fire({
           title: "Pengajuan Berhasil!",
           text: "Dokumen verifikasi instansi Anda telah berhasil diajukan dan sedang diproses oleh Tim Superadmin Gatekeeper.",

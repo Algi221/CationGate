@@ -141,6 +141,16 @@ export function useAdminManagementState() {
     const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
     if (!token) return;
 
+    if (admins.length >= 5) {
+      Swal.fire({
+        title: "Batas Kuota Admin Tercapai 🔒",
+        text: "Maksimal 5 akun admin panitia per instansi sekolah pada paket Pro. Silakan hapus atau nonaktifkan admin lama untuk menambahkan akun baru.",
+        icon: "warning",
+        confirmButtonColor: "#2563EB"
+      });
+      return;
+    }
+
     try {
       setFormLoading(true);
       setError("");

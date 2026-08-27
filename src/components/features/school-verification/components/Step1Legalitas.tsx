@@ -42,8 +42,13 @@ export const Step1Legalitas: React.FC<Step1LegalitasProps> = ({
           </Label>
           <Input
             value={formData.npsn}
-            onChange={(e) => setFormData((p) => ({ ...p, npsn: e.target.value }))}
-            placeholder="8 digit angka NPSN resmi"
+            onChange={(e) => {
+              const numeric = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setFormData((p) => ({ ...p, npsn: numeric }));
+            }}
+            maxLength={10}
+            inputMode="numeric"
+            placeholder="8-10 digit angka NPSN resmi"
             className="mt-1 rounded-2xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs font-semibold"
           />
         </div>

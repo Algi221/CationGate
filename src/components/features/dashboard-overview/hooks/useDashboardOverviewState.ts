@@ -244,10 +244,13 @@ export function useDashboardOverviewState() {
     const nextStatus = !isSpmbOpen;
 
     // Validate paid subscription before allowing to open public SPMB registration
-    let isSubscribed = isDemo;
+    let isSubscribed = isDemo || isVerified;
     if (!isSubscribed && typeof window !== "undefined") {
       const savedSub = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || 'default'}`);
       if (savedSub && (savedSub.includes("PRO") || savedSub.includes("ENTERPRISE") || savedSub.includes("ACTIVE"))) {
+        isSubscribed = true;
+      }
+      if (schoolStatus === "FULL_VERIFIED" || schoolStatus === "VERIFIED" || schoolStatus === "verified") {
         isSubscribed = true;
       }
     }

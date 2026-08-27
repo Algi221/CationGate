@@ -12,7 +12,9 @@ import {
   Video,
   Palette,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
+import { CurvedNavbar, HamburgerButton } from "./CurvedMobileMenu";
 
 import SafeImage from "@/components/SafeImage";
 import { usePPDB } from "@/context/PPDBContext";
@@ -30,8 +32,12 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu-1";
 
+import Swal from "sweetalert2";
+
 interface SchoolNavbarProps {
   schoolSlug: string;
+  isPreview?: boolean;
+  forceMobile?: boolean;
 }
 
 const DEFAULT_MAJORS = [
@@ -43,7 +49,7 @@ const DEFAULT_MAJORS = [
   { code: "TE", title: "Teknik Elektronika", desc: "IoT, robotics & microcontroller", icon: Cpu }
 ];
 
-export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
+export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = false }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
   const { href } = useSchoolHref(schoolSlug);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -51,15 +57,41 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
   const [majors, setMajors] = useState<any[]>(DEFAULT_MAJORS);
   const _pathname = usePathname();
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, targetPath: string) => {
+    if (!isPreview) return;
+    e.preventDefault();
+    if (targetPath.includes("#")) {
+      const hash = targetPath.split("#")[1];
+      const el = document.getElementById(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+    Swal.fire({
+      toast: true,
+      position: "top",
+      icon: "info",
+      title: "Mode Live Preview",
+      text: "Tautan ini akan aktif penuh setelah perubahan Anda disimpan & dipublikasikan.",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
+  };
+
   useEffect(() => {
     const loadMajors = async () => {
       try {
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`);
+        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`);
         const data = await res.json();
 
         if (data.success && data.data && data.data.ppdb_majors_config) {
-          const config = data.data;
-          if (Array.isArray(config.ppdb_majors_config)) {
+          let majorsConfig = data.data.ppdb_majors_config;
+          if (typeof majorsConfig === "string" && (majorsConfig.startsWith("[") || majorsConfig.startsWith("{"))) {
+            try { majorsConfig = JSON.parse(majorsConfig); } catch (_e) {}
+          }
+          if (Array.isArray(majorsConfig) && majorsConfig.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const iconMap: Record<string, any> = {
               RPL: Cpu,
@@ -70,7 +102,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
               TE: Cpu
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const mapped = config.ppdb_majors_config.map((m: any) => ({
+            const mapped = majorsConfig.map((m: any) => ({
               ...m,
               icon: iconMap[m.code] || Cpu
             }));
@@ -126,19 +158,19 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                   </div>
                 )}
               </div>
-              <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white truncate max-w-45 sm:max-w-xs lg:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400">
+              <span className={`font-black text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 ${forceMobile ? "max-w-28 text-sm" : "max-w-45 sm:max-w-xs lg:max-w-none text-lg sm:text-xl"}`}>
                 {displayTitle}
               </span>
             </Link>
           </div>
 
-          <div className="hidden lg:flex items-center gap-1 shrink-0 z-50">
+          <div className={forceMobile ? "hidden" : "hidden lg:flex items-center gap-1 shrink-0 z-50"}>
             <NavigationMenu>
               <NavigationMenuList>
                 {/* Beranda */}
                 <NavigationMenuItem>
                   <NavigationMenuLink
-                    render={<Link href={href("/")} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                    render={<Link href={href("/")} onClick={(e) => handleLinkClick(e, href("/"))} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
                   >
                     Beranda
                   </NavigationMenuLink>
@@ -159,7 +191,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                       ].map((sub) => (
                         <li key={sub.title}>
                           <NavigationMenuLink
-                            render={<Link href={sub.href} className="block px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800 rounded-md transition-colors" />}
+                            render={<Link href={sub.href} onClick={(e) => handleLinkClick(e, sub.href)} className="block px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800 rounded-md transition-colors" />}
                           >
                             {sub.title}
                           </NavigationMenuLink>
@@ -183,6 +215,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                               render={
                                 <Link
                                   href={href(`/jurusan/${encodeURIComponent(major.code.toLowerCase())}`)}
+                                  onClick={(e) => handleLinkClick(e, href(`/jurusan/${encodeURIComponent(major.code.toLowerCase())}`))}
                                   className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-hidden transition-colors hover:bg-slate-100 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground dark:hover:bg-slate-800"
                                 />
                               }
@@ -212,7 +245,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                 {/* Informasi */}
                 <NavigationMenuItem>
                   <NavigationMenuLink
-                    render={<Link href={href("/forum")} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
+                    render={<Link href={href("/forum")} onClick={(e) => handleLinkClick(e, href("/forum"))} className={navigationMenuTriggerStyle() + " bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"} />}
                   >
                     Informasi
                   </NavigationMenuLink>
@@ -225,103 +258,81 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
             </NavigationMenu>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ToggleTheme
               animationType="circle-spread"
               duration={1000}
               className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-0 bg-transparent dark:bg-transparent"
             />
-            <Link href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")} className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap">
+            <Link
+              href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
+              onClick={(e) => handleLinkClick(e, schoolSlug === 'demo' ? href("/dashboard") : href("/daftar"))}
+              className={`${forceMobile ? "hidden" : "hidden md:inline-flex"} items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap`}
+            >
               {schoolSlug === 'demo' ? "Dashboard Demo" : "Daftar"}
             </Link>
 
-            {/* Hamburger Button visible only on mobile/tablet */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex lg:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-101"
-              aria-label="Toggle Mobile Menu"
-            >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
+            {/* Hamburger Button */}
+            <div className={`${forceMobile ? "flex" : "flex lg:hidden"} items-center relative z-250 shrink-0`}>
+              <HamburgerButton
+                isActive={mobileMenuOpen}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              />
+            </div>
           </div>
         </nav>
       </header>
 
-      {/* Fullscreen Mobile Navigation Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-[#0f172a] animate-in fade-in duration-300 lg:hidden">
-          {/* Close Button X in top right */}
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-6 right-6 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
-            aria-label="Close Mobile Menu"
-          >
-            <X size={20} />
-          </button>
-
-          {/* Decorative gradients */}
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
-
-          <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
-            <Link href={href("/")} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              {ppdbLogo ? (
-                <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
-              ) : schoolSlug === "smktarunabhakti" || schoolSlug === "demo" ? (
-                <SafeImage src="/assets/logo_sekolah/logo_smktb.png" alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
-              ) : (
-                <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md">
-                  {(displayTitle || "S").substring(0, 2).toUpperCase()}
-                </div>
-              )}
-              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                {displayTitle}
-              </span>
-            </Link>
-
-            <div className="flex flex-col w-full gap-2">
-              <Link
-                href={href("/")}
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
-              >
-                Beranda
-              </Link>
-              <Link
-                href={href("/profil")}
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
-              >
-                Profil Sekolah
-              </Link>
-              <Link
-                href={href("/forum")}
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
-              >
-                Forum Informasi
-              </Link>
-              <Link
-                href={href("/blog")}
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 text-lg font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 border-b border-slate-100 dark:border-slate-800 transition-colors"
-              >
-                Blog
-              </Link>
-            </div>
-
-            <div className="mt-8 w-full flex flex-col gap-3">
-              <Link
-                href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-95"
-              >
-                {schoolSlug === 'demo' ? "Buka Dashboard Demo" : "Daftar Sekarang"}
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Mobile Navigation Drawer / Sidebar */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <CurvedNavbar
+            setIsActive={setMobileMenuOpen}
+            schoolLogo={ppdbLogo || (schoolSlug === "smktarunabhakti" || isDemo ? "/assets/logo_sekolah/logo_smktb.png" : undefined)}
+            schoolName={displayTitle}
+            onLinkClick={handleLinkClick}
+            navItems={[
+              { heading: "Beranda", href: href("/") },
+              {
+                heading: "Profil Sekolah",
+                href: href("/profil"),
+                subItems: [
+                  { title: "Sejarah", href: href("/profil?section=sejarah") },
+                  { title: "Identitas Sekolah", href: href("/profil?section=identitas") },
+                  { title: "Visi & Misi", href: href("/profil?section=visimisi") },
+                  { title: "Tujuan", href: href("/profil?section=tujuan") }
+                ]
+              },
+              {
+                heading: "Jurusan",
+                href: href("/#majors"),
+                subItems: majors.map((m) => ({
+                  title: m.title || m.code,
+                  href: href(`/jurusan/${encodeURIComponent(m.code.toLowerCase())}`)
+                }))
+              },
+              { heading: "Forum Informasi", href: href("/forum") },
+              { heading: "Blog", href: href("/blog") }
+            ]}
+            footer={
+              <div className="flex flex-col w-full px-6 md:px-24 py-8 pb-12 gap-4">
+                <Link
+                  href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    handleLinkClick(e, schoolSlug === 'demo' ? href("/dashboard") : href("/daftar"));
+                  }}
+                  className="w-full"
+                >
+                  <button className="w-full justify-center bg-blue-600 hover:bg-blue-700 font-bold text-base text-white rounded-2xl h-14 transition-all duration-300 flex items-center shadow-md shadow-blue-600/25 cursor-pointer">
+                    {schoolSlug === 'demo' ? "Buka Dashboard Demo" : "Daftar Sekarang"}
+                  </button>
+                </Link>
+              </div>
+            }
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

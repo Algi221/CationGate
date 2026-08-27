@@ -34,8 +34,15 @@ export default function ProfilSekolahPublicPage() {
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.data) {
-            if (data.data.ppdb_title) setLiveTitle(data.data.ppdb_title);
-            if (data.data.ppdb_profil_sekolah) setLiveProfil(data.data.ppdb_profil_sekolah);
+            const c = data.data;
+            if (c.ppdb_title) setLiveTitle(c.ppdb_title);
+            let p = c.ppdb_profil_sekolah;
+            if (typeof p === "string" && (p.startsWith("{") || p.startsWith("["))) {
+              try { p = JSON.parse(p); } catch (_e) {}
+            }
+            if (p && typeof p === "object") {
+              setLiveProfil(p);
+            }
           }
         })
         .catch(console.error);
@@ -55,8 +62,12 @@ export default function ProfilSekolahPublicPage() {
     return null;
   }
 
-  const activeProfil = liveProfil || profilSekolah;
-  const currentTitle = liveTitle || ppdbTitle || (schoolSlug === "smktarunabhakti" ? "SMK Taruna Bhakti" : "Institusi Pendidikan Unggulan");
+  let rawProfil = liveProfil || profilSekolah;
+  if (typeof rawProfil === "string" && (rawProfil.startsWith("{") || rawProfil.startsWith("["))) {
+    try { rawProfil = JSON.parse(rawProfil); } catch (_e) {}
+  }
+  const activeProfil = (rawProfil && typeof rawProfil === "object") ? rawProfil : {};
+  const currentTitle = liveTitle || ppdbTitle || (schoolSlug === "smktarunabhakti" ? "SMK Taruna Bhakti" : (schoolSlug ? schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Institusi Pendidikan"));
 
   const identitas = activeProfil?.identitas || {
     nama: currentTitle,

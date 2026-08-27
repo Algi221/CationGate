@@ -138,7 +138,6 @@ export function useSchoolLandingState() {
   const initialCache = getLocalLandingCache(schoolSlug) || {};
 
   const schoolDisplayName =
-    initialCache.ppdb_title ||
     ppdbTitle ||
     schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -149,54 +148,40 @@ export function useSchoolLandingState() {
     isDemo;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroTitle, setHeroTitle] = useState(initialCache.ppdb_hero_title || "Penerimaan Peserta Didik Baru");
-  const [heroTitleSub, setHeroTitleSub] = useState(
-    initialCache.ppdb_hero_title_sub || (isDemo ? `SPMB SMK Demo` : `SPMB ${schoolDisplayName}`)
+  const [heroTitle, setHeroTitle] = useState<string>("Penerimaan Peserta Didik Baru");
+  const [heroTitleSub, setHeroTitleSub] = useState<string>(
+    isDemo ? `SPMB SMK Demo` : `SPMB ${schoolDisplayName}`
   );
-  const [heroSubtitle, setHeroSubtitle] = useState(
-    initialCache.ppdb_hero_subtitle || (isDemo
+  const [heroSubtitle, setHeroSubtitle] = useState<string>(
+    isDemo
       ? "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
-      : "")
+      : ""
   );
-  const [heroBgImage, setHeroBgImage] = useState<string>(initialCache.ppdb_hero_bg_image || "");
+  const [heroBgImage, setHeroBgImage] = useState<string>("");
 
-  const [address, setAddress] = useState(initialCache.ppdb_address || initialCache.ppdb_alamat || "");
-  const [mapTitle, setMapTitle] = useState(initialCache.ppdb_map_title || `Kunjungi ${schoolDisplayName}`);
-  const [mapUrl, setMapUrl] = useState(initialCache.ppdb_map_url || initialCache.ppdb_maps_embed || "");
-  const [waAdmin, setWaAdmin] = useState(initialCache.ppdb_wa_admin || "");
-  const [schoolPeriod, setSchoolPeriod] = useState(initialCache.ppdb_school_period || "2026-2027");
+  const [address, setAddress] = useState<string>(isDemo ? "Jl. Pendidikan No. 1, Jakarta" : "");
+  const [mapTitle, setMapTitle] = useState<string>(`Kunjungi ${schoolDisplayName}`);
+  const [mapUrl, setMapUrl] = useState<string>("");
+  const [waAdmin, setWaAdmin] = useState<string>("");
+  const [schoolPeriod, setSchoolPeriod] = useState<string>("2026-2027");
 
-  const [faqList, setFaqList] = useState<FaqItem[]>(
-    parseConfigArray<FaqItem>(initialCache.ppdb_faq_config) || (isDemo ? DEFAULT_FAQ : [])
-  );
-  const [faqTitle, setFaqTitle] = useState(initialCache.ppdb_faq_title || (isDemo ? "Pertanyaan yang Sering Diajukan" : ""));
-  const [faqSubtitle, setFaqSubtitle] = useState(
-    initialCache.ppdb_faq_subtitle || (isDemo ? "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru." : "")
+  const [faqList, setFaqList] = useState<FaqItem[]>(isDemo ? DEFAULT_FAQ : []);
+  const [faqTitle, setFaqTitle] = useState<string>(isDemo ? "Pertanyaan yang Sering Diajukan" : "");
+  const [faqSubtitle, setFaqSubtitle] = useState<string>(
+    isDemo ? "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru." : ""
   );
 
-  const [alurList, setAlurList] = useState<AlurItem[]>(
-    parseConfigArray<AlurItem>(initialCache.ppdb_alur_config) || (isDemo ? DEFAULT_ALUR : [])
-  );
-  const [majors, setMajors] = useState<MajorItem[]>(
-    parseConfigArray<MajorItem>(initialCache.ppdb_majors_config) || (isDemo ? DEFAULT_MAJORS : [])
-  );
-  const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(
-    initialCache.ppdb_landing_active !== undefined ? Boolean(initialCache.ppdb_landing_active) : true
-  );
+  const [alurList, setAlurList] = useState<AlurItem[]>(isDemo ? DEFAULT_ALUR : []);
+  const [majors, setMajors] = useState<MajorItem[]>(isDemo ? DEFAULT_MAJORS : []);
+  const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
   const [isPlatformMaintenance, setIsPlatformMaintenance] = useState<boolean>(false);
   const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>(
-    parseConfigArray<PartnerItem>(initialCache.ppdb_partners_config) || (isDemo ? DEFAULT_PARTNERS : [])
+    isDemo ? DEFAULT_PARTNERS : []
   );
 
-  const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>(() => {
-    let g = initialCache.ppdb_gelombang_config;
-    if (typeof g === "string" && g.trim().startsWith("{")) {
-      try { g = JSON.parse(g); } catch (_e) {}
-    }
-    return g && typeof g === "object" ? g : {
-      gelombang1: { start: "", end: "" },
-      gelombang2: { start: "", end: "" }
-    };
+  const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>({
+    gelombang1: { start: "", end: "" },
+    gelombang2: { start: "", end: "" }
   });
 
   const formatDate = (dateString: string | null | undefined) => {
@@ -212,6 +197,41 @@ export function useSchoolLandingState() {
       return dateString;
     }
   };
+
+  // 1. Instant Local Cache Hydration on client mount (safe from SSR hydration mismatch)
+  useEffect(() => {
+    const cached = getLocalLandingCache(schoolSlug);
+    if (cached) {
+      if (cached.ppdb_hero_title) setHeroTitle(cached.ppdb_hero_title);
+      if (cached.ppdb_hero_title_sub) setHeroTitleSub(cached.ppdb_hero_title_sub);
+      if (cached.ppdb_hero_subtitle) setHeroSubtitle(cached.ppdb_hero_subtitle);
+      if (cached.ppdb_hero_bg_image) setHeroBgImage(cached.ppdb_hero_bg_image);
+      if (cached.ppdb_address || cached.ppdb_alamat) setAddress(cached.ppdb_address || cached.ppdb_alamat);
+      if (cached.ppdb_map_title) setMapTitle(cached.ppdb_map_title);
+      if (cached.ppdb_map_url || cached.ppdb_maps_embed) setMapUrl(cached.ppdb_map_url || cached.ppdb_maps_embed);
+      if (cached.ppdb_wa_admin) setWaAdmin(cached.ppdb_wa_admin);
+      if (cached.ppdb_school_period) setSchoolPeriod(cached.ppdb_school_period);
+      if (cached.ppdb_faq_title) setFaqTitle(cached.ppdb_faq_title);
+      if (cached.ppdb_faq_subtitle) setFaqSubtitle(cached.ppdb_faq_subtitle);
+
+      const parsedFaq = parseConfigArray<FaqItem>(cached.ppdb_faq_config);
+      if (parsedFaq && parsedFaq.length > 0) setFaqList(parsedFaq);
+      const parsedAlur = parseConfigArray<AlurItem>(cached.ppdb_alur_config);
+      if (parsedAlur && parsedAlur.length > 0) setAlurList(parsedAlur);
+      const parsedMajors = parseConfigArray<MajorItem>(cached.ppdb_majors_config);
+      if (parsedMajors && parsedMajors.length > 0) setMajors(parsedMajors);
+      const parsedPartners = parseConfigArray<PartnerItem>(cached.ppdb_partners_config);
+      if (parsedPartners && parsedPartners.length > 0) setPartnersList(parsedPartners);
+
+      if (cached.ppdb_gelombang_config) {
+        let g = cached.ppdb_gelombang_config;
+        if (typeof g === "string" && g.trim().startsWith("{")) {
+          try { g = JSON.parse(g); } catch (_e) {}
+        }
+        if (g && typeof g === "object") setGelombangConfig(g);
+      }
+    }
+  }, [schoolSlug]);
 
   useEffect(() => {
     const loadDynamicConfig = async () => {

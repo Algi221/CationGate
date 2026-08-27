@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ArrowRight, X, ShieldCheck, Zap } from "lucide-react";
 import { useSchoolHref } from "@/hooks/useSchoolHref";

@@ -69,7 +69,7 @@ adminUsersRouter.get('/', async (c) => {
     }
 
     return c.json({ success: true, data: adminUsers || [] });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     return c.json({ success: true, data: [] });
   }
 });
@@ -104,7 +104,7 @@ adminUsersRouter.get('/trashed', async (c) => {
     }
 
     return c.json({ success: true, data: trashedUsers || [] });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     return c.json({ success: true, data: [] });
   }
 });

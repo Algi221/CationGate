@@ -48,12 +48,19 @@ export default function SubscriptionManagementPage() {
       setLoadingTx(true);
       const targetSlug = schoolSlug || schoolId || "smktarunabhakti";
       const res = await fetch(`/api/saas/transactions?school_slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`);
+      if (!res.ok) {
+        setTransactions([]);
+        return;
+      }
       const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
+      if (json && json.success && Array.isArray(json.data)) {
         setTransactions(json.data);
+      } else {
+        setTransactions([]);
       }
     } catch (err) {
       console.warn("Gagal memuat riwayat transaksi:", err);
+      setTransactions([]);
     } finally {
       setLoadingTx(false);
     }

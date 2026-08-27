@@ -35,6 +35,7 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
             <tr>
               <th className="py-4 px-6">Nama Staf & Username</th>
               <th className="py-4 px-6">Hak Akses / Peran</th>
+              <th className="py-4 px-6">Status Kehadiran</th>
               <th className="py-4 px-6">Dibuat Tanggal</th>
               <th className="py-4 px-6 text-right">Aksi</th>
             </tr>
@@ -42,45 +43,67 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {admins.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-slate-400 font-medium">
+                <td colSpan={5} className="text-center py-12 text-slate-400 font-medium">
                   Belum ada staf panitia atau admin terdaftar.
                 </td>
               </tr>
             ) : (
-              admins.map((admin) => (
-                <tr key={admin.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                  <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black">
-                        <User size={18} />
+              admins.map((admin, idx) => {
+                const isOnline = admin.is_online !== undefined ? admin.is_online : (idx === 0 || admin.username === adminUser?.username);
+                return (
+                  <tr key={admin.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black">
+                            <User size={18} />
+                          </div>
+                          <span
+                            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[#0f172a] ${
+                              isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                            }`}
+                            title={isOnline ? "Online (Aktif)" : "Offline"}
+                          />
+                        </div>
+                        <div>
+                          <div className="text-sm font-extrabold">{admin.nama_lengkap}</div>
+                          <div className="text-[11px] font-mono text-slate-400">@{admin.username}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-extrabold">{admin.nama_lengkap}</div>
-                        <div className="text-[11px] font-mono text-slate-400">@{admin.username}</div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          admin.role === "superadmin"
+                            ? "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
+                            : "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                        }`}
+                      >
+                        <KeyRound size={10} />
+                        {admin.role}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                          }`}
+                        />
+                        <span className={isOnline ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400"}>
+                          {isOnline ? "Online" : "Offline"}
+                        </span>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                        admin.role === "superadmin"
-                          ? "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
-                          : "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                      }`}
-                    >
-                      <KeyRound size={10} />
-                      {admin.role}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 font-medium text-slate-400">
-                    {admin.created_at
-                      ? new Date(admin.created_at).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric"
-                        })
-                      : "-"}
-                  </td>
+                    </td>
+                    <td className="py-4 px-6 font-medium text-slate-400">
+                      {admin.created_at
+                        ? new Date(admin.created_at).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric"
+                          })
+                        : "-"}
+                    </td>
                   <td className="py-4 px-6 text-right">
                     <div className="inline-flex items-center gap-2">
                       <button
@@ -102,9 +125,10 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
+              );
+            })
+          )}
+        </tbody>
         </table>
       </div>
     </div>

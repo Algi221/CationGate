@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { X, Smartphone, Monitor, Check } from "lucide-react";
+import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
 import { SchoolHero } from "@/components/features/school-landing/components/SchoolHero";
 import { SchoolGelombang } from "@/components/features/school-landing/components/SchoolGelombang";
 import { SchoolAlur } from "@/components/features/school-landing/components/SchoolAlur";
@@ -173,7 +174,12 @@ export const LivePreviewLandingModal: React.FC<LivePreviewLandingModalProps> = (
           deviceMode === "mobile" ? "max-w-100 max-h-[85vh] ring-8 ring-slate-800" : "max-w-6xl max-h-[85vh]"
         }`}
       >
-        <div className="grow overflow-y-auto w-full">
+        <div className="grow overflow-y-auto w-full" data-scroll-container>
+          {/* Simulated Navbar */}
+          <div className="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+            <SchoolNavbar schoolSlug={schoolSlug} />
+          </div>
+
           {/* Simulated Landing Page Content */}
           <main className="w-full relative z-0">
             <SchoolHero

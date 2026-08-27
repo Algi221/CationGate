@@ -6,4 +6,7 @@ export interface AdminItem {
   school_id?: string | number;
   created_at?: string;
   deleted_at?: string | null;
+  status?: 'online' | 'offline' | 'away';
+  is_online?: boolean;
+  last_active?: string;
 }

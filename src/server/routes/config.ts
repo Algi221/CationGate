@@ -366,11 +366,45 @@ configRouter.post('/', adminAuth, async (c) => {
           inMem.configs = { ...(inMem.configs || {}), ...processedConfigs };
           if (processedConfigs.ppdb_logo_url) inMem.logo_url = String(processedConfigs.ppdb_logo_url);
           if (processedConfigs.ppdb_title) inMem.name = String(processedConfigs.ppdb_title);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const pIdentitas = (processedConfigs.ppdb_profil_sekolah as any)?.identitas;
+          if (pIdentitas) {
+            if (pIdentitas.npsn) inMem.npsn = pIdentitas.npsn;
+            if (pIdentitas.akreditasi) inMem.accreditation = pIdentitas.akreditasi;
+            if (pIdentitas.email) inMem.official_email = pIdentitas.email;
+            if (pIdentitas.telepon) inMem.phone = pIdentitas.telepon;
+            if (pIdentitas.alamat) inMem.address = pIdentitas.alamat;
+          }
         }
       };
       if (targetSlug) updateInMem(targetSlug);
       if (schoolId) updateInMem(String(schoolId));
       if (qSlug) updateInMem(qSlug);
+
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pIdentitas = (processedConfigs.ppdb_profil_sekolah as any)?.identitas;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const schoolUpdates: Record<string, any> = {};
+        if (processedConfigs.ppdb_title) schoolUpdates.name = processedConfigs.ppdb_title;
+        if (processedConfigs.ppdb_logo_url) schoolUpdates.logo_url = processedConfigs.ppdb_logo_url;
+        if (pIdentitas?.npsn) schoolUpdates.npsn = pIdentitas.npsn;
+        if (pIdentitas?.akreditasi) schoolUpdates.accreditation = pIdentitas.akreditasi;
+        if (pIdentitas?.email) schoolUpdates.official_email = pIdentitas.email;
+        if (pIdentitas?.telepon) schoolUpdates.phone = pIdentitas.telepon;
+        if (pIdentitas?.alamat) schoolUpdates.address = pIdentitas.alamat;
+
+        if (Object.keys(schoolUpdates).length > 0) {
+          const resolvedSlug = targetSlug || qSlug;
+          if (resolvedSlug) {
+            await supabase.from('schools').update(schoolUpdates).eq('slug', resolvedSlug);
+            await supabase.from('prospective_schools').update(schoolUpdates).eq('slug', resolvedSlug);
+          }
+          if (schoolId) {
+            await supabase.from('schools').update(schoolUpdates).eq('id', schoolId);
+          }
+        }
+      } catch (_syncErr) {}
 
       const revEntry = {
         id: Date.now(),

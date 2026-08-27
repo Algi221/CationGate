@@ -180,7 +180,7 @@ export default function KelolaUIPage() {
     </div>
   </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {hasLocalDraft && (
             <button
               onClick={async () => {
@@ -208,18 +208,18 @@ export default function KelolaUIPage() {
           <button
             type="button"
             onClick={() => setShowLivePreviewModal(true)}
-            className="px-3 py-2 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+            className="px-3.5 py-2 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
             title="Pratinjau Draf (Live Preview)"
           >
-            <Eye size={13} />
-            <span>Pratinjau</span>
+            <Eye size={14} />
+            <span>Pratinjau Draf</span>
           </button>
 
           <a
             href={href("/")}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-2 bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+            className="px-3.5 py-2 bg-white dark:bg-[#0f172a] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
             title="Buka Website Publik"
           >
             <ExternalLink size={13} />

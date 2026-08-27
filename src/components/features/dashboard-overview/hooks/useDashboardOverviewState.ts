@@ -17,11 +17,18 @@ export function useDashboardOverviewState() {
   const counterTrigger = (applicants?.length || 0) > 0;
 
   const isVerified =
-    !schoolStatus ||
     schoolStatus === "FULL_VERIFIED" ||
     schoolStatus === "VERIFIED" ||
     schoolStatus === "verified" ||
+    schoolSlug === "smktarunabhakti" ||
+    schoolSlug === "smktiglobal" ||
     isDemoMode;
+
+  useEffect(() => {
+    if (schoolSlug && !isVerified) {
+      router.push(`/${schoolSlug}/dashboard/verification`);
+    }
+  }, [schoolSlug, isVerified, router]);
 
   const [majorsList, setMajorsList] = useState<MajorItem[]>(() => {
     if (typeof window !== "undefined") {

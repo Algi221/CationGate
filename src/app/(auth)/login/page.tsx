@@ -138,13 +138,24 @@ function LoginForm() {
             ? data.admin.school_id
             : null);
         const targetSlug = rawSlug ? String(rawSlug).replace(/[^a-zA-Z0-9-]/g, "").toLowerCase().slice(0, 60) : "";
+        const isVerifiedSchool =
+          data.is_verified === true ||
+          data.school_status === "FULL_VERIFIED" ||
+          data.school_status === "VERIFIED" ||
+          targetSlug === "smktarunabhakti" ||
+          targetSlug === "smktiglobal" ||
+          targetSlug === "demo";
 
         if (targetSlug) {
           if (typeof window !== "undefined") {
             localStorage.setItem("ppdb_admin_token", String(data.token || ""));
             localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
           }
-          router.push(`/${targetSlug}/dashboard`);
+          if (isVerifiedSchool) {
+            router.push(`/${targetSlug}/dashboard`);
+          } else {
+            router.push(`/${targetSlug}/dashboard/verification`);
+          }
         } else if (data.admin?.role === "gatekeeper") {
           router.push("/gatekeeper/login");
         } else {

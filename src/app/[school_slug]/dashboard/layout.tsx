@@ -117,7 +117,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const { adminToken, adminUser, logoutAdmin, schoolStatus, isSchoolNotFound } =
     usePPDB();
   const isSchoolVerified = schoolStatus === "verified";
-  const _router = useRouter();
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const params = useParams();
@@ -284,6 +284,21 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         }
         redirectToRootLogin(false);
         return;
+      }
+
+      // ── Unverified School Redirection ──────────────────────────────────
+      if (schoolSlug !== "smktarunabhakti" && schoolSlug !== "smktiglobal") {
+        const isUnverified =
+          schoolStatus === "PENDING_VERIFICATION" ||
+          schoolStatus === "UNVERIFIED" ||
+          schoolStatus === "REJECTED" ||
+          (schoolStatus && schoolStatus !== "FULL_VERIFIED" && schoolStatus !== "VERIFIED" && schoolStatus !== "verified");
+
+        const isVerificationPage = pathname?.includes("/dashboard/verification");
+
+        if (isUnverified && !isVerificationPage) {
+          router.push(`/${schoolSlug}/dashboard/verification`);
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

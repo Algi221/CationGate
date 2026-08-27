@@ -66,7 +66,13 @@ export function AdminSidebar({
     localStorage.setItem("ppdb-sidebar-collapsed", String(nextVal));
   };
 
-  const isLegalVerified = !schoolStatus || schoolStatus === 'FULL_VERIFIED' || schoolStatus === 'VERIFIED' || schoolStatus === 'verified' || schoolSlug === 'demo' || schoolSlug === 'smktarunabhakti';
+  const isLegalVerified =
+    schoolStatus === 'FULL_VERIFIED' ||
+    schoolStatus === 'VERIFIED' ||
+    schoolStatus === 'verified' ||
+    schoolSlug === 'demo' ||
+    schoolSlug === 'smktarunabhakti' ||
+    schoolSlug === 'smktiglobal';
 
   const menuStructure = !isLegalVerified
     ? [

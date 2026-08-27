@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Building, FileText, Info, Calendar } from "lucide-react";
+import { Building, FileText, Info, Calendar, Upload } from "lucide-react";
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { formatPhoneNumber } from "../defaultData";
 
@@ -157,21 +157,31 @@ export const HeroTab: React.FC<HeroTabProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-inner">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={heroBgImage || "/assets/background/bg-seklah.jpeg"}
-              alt="Preview Background Hero"
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-black/70 backdrop-blur-xs rounded-md text-[10px] font-bold text-white uppercase tracking-wider">
-              {heroBgImage ? "Kustom" : "Bawaan CationGate"}
-            </div>
+            {heroBgImage ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={heroBgImage}
+                  alt="Preview Background Hero"
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute bottom-2 left-2 px-2.5 py-1 bg-black/70 backdrop-blur-xs rounded-md text-[10px] font-bold text-white uppercase tracking-wider">
+                  Kustom
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
+                <Upload size={24} className="mb-1.5 opacity-60" />
+                <span className="text-[11px] font-semibold">Belum ada foto</span>
+              </div>
+            )}
           </div>
 
-          <div className="md:col-span-2 space-y-3">
-            <div className="flex flex-wrap gap-3 items-center">
-              <label className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-2">
-                <span>Upload Foto Gedung Baru</span>
+          <div className="md:col-span-2 space-y-2.5">
+            <div className="flex flex-wrap gap-2.5 items-center">
+              <label className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer w-auto shrink-0">
+                <Upload size={13} />
+                <span>Upload Foto Gedung</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -184,10 +194,10 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                   }}
                 />
               </label>
-              <span className="text-xs text-slate-400">Rasio 16:9 (Landscape), JPG/PNG maks 5MB</span>
+              <span className="text-[11px] text-slate-400">Rasio 16:9, JPG/PNG maks 5MB</span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Foto ini akan ditampilkan secara elegan dengan efek transparansi halus di bagian atas landing page sekolah Anda.
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              Foto gedung akan ditampilkan secara elegan dengan efek transparansi halus di bagian header landing page sekolah Anda.
             </p>
           </div>
         </div>

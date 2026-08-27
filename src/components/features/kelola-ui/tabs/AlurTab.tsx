@@ -204,6 +204,47 @@ export const AlurTab: React.FC<AlurTabProps> = ({
         )}
       </div>
 
+      {/* Live Visual Timeline Preview */}
+      {alurList.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={16} className="text-blue-500" />
+            <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-wider">
+              Pratinjau Desain Alur Pendaftaran di Halaman Publik
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {alurList.map((item, idx) => {
+              const Icon = getAlurIconComponent(item.icon, idx);
+              return (
+                <div
+                  key={item.id}
+                  className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-xs relative overflow-hidden flex flex-col justify-between"
+                >
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center shrink-0">
+                      <Icon size={18} />
+                    </div>
+                    <span className="px-2.5 py-1 bg-blue-600/10 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase">
+                      Langkah {idx + 1}
+                    </span>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-black text-slate-800 dark:text-white mb-1">
+                      {item.title || `Tahapan ${idx + 1}`}
+                    </h5>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 font-medium">
+                      {item.desc || "Deskripsi tahapan pendaftaran..."}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* MODAL / ICON PICKER DIALOG */}
       {activePickerId !== null && activeItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">

@@ -24,6 +24,8 @@ export function usePembagianKelasState() {
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "";
 
+  const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
+
   const [dynamicMajorsList, setDynamicMajorsList] = useState<MajorConfigItem[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("ppdb_majors_config");
@@ -36,9 +38,9 @@ export function usePembagianKelasState() {
         } catch (_) {}
       }
     }
-    return DEFAULT_MAJORS;
+    return isDemo ? DEFAULT_MAJORS : [];
   });
-  const [selectedMajor, setSelectedMajor] = useState<string>("RPL");
+  const [selectedMajor, setSelectedMajor] = useState<string>(() => isDemo ? "RPL" : "");
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>(10);
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,10 +86,14 @@ export function usePembagianKelasState() {
           }
           if (
             json.data.ppdb_majors_config &&
-            Array.isArray(json.data.ppdb_majors_config) &&
-            json.data.ppdb_majors_config.length > 0
+            Array.isArray(json.data.ppdb_majors_config)
           ) {
             setDynamicMajorsList(json.data.ppdb_majors_config);
+            if (json.data.ppdb_majors_config.length > 0) {
+              setSelectedMajor(prev => prev || json.data.ppdb_majors_config[0].code || json.data.ppdb_majors_config[0].title || "");
+            }
+          } else if (!isDemo) {
+            setDynamicMajorsList([]);
           }
         }
       } catch (e) {
@@ -95,22 +101,23 @@ export function usePembagianKelasState() {
       }
     };
     fetchConfig();
-  }, [schoolSlug]);
+  }, [schoolSlug, isDemo]);
 
   const activeMajors = useMemo(() => {
-    const list = dynamicMajorsList && dynamicMajorsList.length > 0 ? dynamicMajorsList : DEFAULT_MAJORS;
+    const list = dynamicMajorsList && dynamicMajorsList.length > 0
+      ? dynamicMajorsList
+      : (isDemo ? DEFAULT_MAJORS : []);
     return list.map((m) => {
       let logo = m.logo || getMajorLogoUrl(m.code);
       if (logo && logo.startsWith("/jurusan/")) {
         logo = `/assets${logo}`;
       }
       return {
-        code: m.code,
-        name: m.title || m.name || m.code,
-        logo: logo || getMajorLogoUrl(m.code)
+        ...m,
+        logo
       };
     });
-  }, [dynamicMajorsList]);
+  }, [dynamicMajorsList, isDemo]);
 
   const generateDefaultClasses = useCallback((): ClassItem[] => {
     const defaultList: ClassItem[] = [];

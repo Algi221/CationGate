@@ -79,7 +79,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
           }
         }
 
-        if (schoolSlug === "demo" || schoolSlug === "smktarunabhakti") {
+        if (schoolSlug === "demo") {
           setMajors(DEFAULT_MAJORS);
         } else {
           setMajors([]);
@@ -94,7 +94,8 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
     }
   }, [schoolSlug]);
 
-  const displayTitle = ppdbTitle || (schoolSlug === "demo" ? "SMK Demo Indonesia" : schoolSlug === "smktarunabhakti" ? "SMK Taruna Bhakti" : (schoolSlug ? schoolSlug.toUpperCase() : "Portal PPDB"));
+  const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
+  const displayTitle = ppdbTitle || (isDemo ? "SMK Demo Indonesia" : (schoolSlug ? schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Portal PPDB"));
 
   return (
     <>
@@ -111,7 +112,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                     sizes="48px"
                     className="object-contain"
                   />
-                ) : schoolSlug === "smktarunabhakti" || schoolSlug === "demo" ? (
+                ) : isDemo ? (
                   <SafeImage
                     src="/assets/logo_sekolah/logo_smktb.png"
                     alt="Logo Sekolah"
@@ -120,7 +121,7 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                     className="object-contain"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-sm">
+                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
                     {(displayTitle || "S").substring(0, 2).toUpperCase()}
                   </div>
                 )}
@@ -169,31 +170,34 @@ export function SchoolNavbar({ schoolSlug }: SchoolNavbarProps) {
                 </NavigationMenuItem>
 
                 {/* Jurusan Dropdown */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
-                    Jurusan
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-100 md:w-125 lg:w-150 grid-cols-2 gap-2 p-4">
-                      {majors.length > 0 ? (
-                        majors.map((major, idx) => (
+                {majors.length > 0 && (
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="bg-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                      Jurusan
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-100 md:w-125 lg:w-150 grid-cols-2 gap-2 p-4">
+                        {majors.map((major, idx) => (
                           <li key={idx}>
                             <NavigationMenuLink
-                              render={<Link href={href(`/jurusan/${encodeURIComponent(major.code.toLowerCase())}`)} className="flex flex-col gap-1 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group/sub" />}
+                              render={
+                                <Link
+                                  href={href(`/jurusan/${encodeURIComponent(major.code.toLowerCase())}`)}
+                                  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-hidden transition-colors hover:bg-slate-100 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground dark:hover:bg-slate-800"
+                                />
+                              }
                             >
-                              <span className="text-sm font-bold text-slate-900 dark:text-white group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400 transition-colors">{major.title || major.code}</span>
-                              <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{major.desc || "Program keahlian unggulan"}</span>
+                              <div className="text-sm font-semibold leading-none">{major.title || major.code}</div>
+                              <p className="line-clamp-2 text-xs leading-snug text-muted-foreground mt-1">
+                                {major.desc || ""}
+                              </p>
                             </NavigationMenuLink>
                           </li>
-                        ))
-                      ) : (
-                        <li className="col-span-2 text-center py-4 text-slate-500 text-sm">
-                          Data jurusan belum tersedia.
-                        </li>
-                      )}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                )}
 
                 {/* Informasi */}
                 <NavigationMenuItem>

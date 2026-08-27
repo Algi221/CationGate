@@ -61,6 +61,11 @@ export async function initDb(): Promise<void> {
           ALTER TABLE ui_revisions ALTER COLUMN school_id TYPE TEXT USING school_id::text;
         EXCEPTION WHEN OTHERS THEN NULL;
         END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE informasi ALTER COLUMN school_id TYPE TEXT USING school_id::text;
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END $$;
       `);
 
       console.log('PostgreSQL Database tables verified/initialized successfully.');

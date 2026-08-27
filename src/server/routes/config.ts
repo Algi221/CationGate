@@ -227,13 +227,16 @@ configRouter.get('/', async (c) => {
       configMap[row.config_key] = val;
     });
 
-    // Merge from in-memory store if available
+    // Merge from in-memory store if available (in-memory has latest saved updates)
     const { fontInMemSchools } = await import('./saas');
     const lookupSlug = schoolSlug || (typeof schoolId === 'string' ? schoolId : '');
-    if (lookupSlug && fontInMemSchools.has(lookupSlug)) {
-      const inMem = fontInMemSchools.get(lookupSlug);
-      if (inMem?.configs) {
-        Object.assign(configMap, { ...inMem.configs, ...configMap });
+    const inMemKeys = [schoolSlug, String(schoolId), resolvedUUID, lookupSlug].filter(Boolean) as string[];
+    for (const key of inMemKeys) {
+      if (fontInMemSchools.has(key)) {
+        const inMem = fontInMemSchools.get(key);
+        if (inMem?.configs) {
+          Object.assign(configMap, inMem.configs);
+        }
       }
     }
 
@@ -241,10 +244,13 @@ configRouter.get('/', async (c) => {
     await setCached(cacheKey, configMap, 3600);
     if (schoolSlug) await setCached(`config_${schoolSlug}`, configMap, 3600);
 
+    const source = configs && configs.length > 0 ? 'db' : (Object.keys(configMap).length > 0 ? 'mem' : 'empty');
+    console.log(`[GET-CONFIG] slug=${schoolSlug || 'none'} schoolId=${schoolId || 'none'} resolved=${resolvedUUID || 'none'} keys=${Object.keys(configMap).length} source=${source}`);
+
     return c.json({
       success: true,
       data: configMap,
-      source: configs && configs.length > 0 ? 'db' : (Object.keys(configMap).length > 0 ? 'mem' : 'empty')
+      source
     });
   } catch (err: unknown) {
     console.warn('Fetch config DB exception (using default config):', err instanceof Error ? err.message : String(err));
@@ -334,10 +340,55 @@ configRouter.post('/', adminAuth, async (c) => {
       }
 
       // Invalidate Redis cache
-      if (schoolId) await delCached(`config_${schoolId}`);
-      if (admin?.school_slug) await delCached(`config_${admin.school_slug}`);
-      if (admin?.slug) await delCached(`config_${admin.slug}`);
-      await delCached('config_default');
+      const cacheKeysToInvalidate = new Set<string>();
+      if (schoolId) cacheKeysToInvalidate.add(`config_${schoolId}`);
+      if (admin?.school_slug) cacheKeysToInvalidate.add(`config_${admin.school_slug}`);
+      if (admin?.slug) cacheKeysToInvalidate.add(`config_${admin.slug}`);
+      cacheKeysToInvalidate.add('config_default');
+      const qSlugForCache = c.req.query('school_slug');
+      if (qSlugForCache) cacheKeysToInvalidate.add(`config_${qSlugForCache}`);
+      for (const ck of cacheKeysToInvalidate) {
+        await delCached(ck);
+      }
+
+      // Update in-memory store immediately
+      const { fontInMemSchools } = await import('./saas');
+      const targetSlug = admin?.school_slug || admin?.slug || (typeof schoolId === 'string' && isNaN(Number(schoolId)) ? schoolId : null);
+      const qSlug = c.req.query('school_slug');
+
+      const updateInMem = (k: string) => {
+        if (!k) return;
+        if (!fontInMemSchools.has(k)) {
+          fontInMemSchools.set(k, { slug: k, configs: {} });
+        }
+        const inMem = fontInMemSchools.get(k);
+        if (inMem) {
+          inMem.configs = { ...(inMem.configs || {}), ...processedConfigs };
+          if (processedConfigs.ppdb_logo_url) inMem.logo_url = String(processedConfigs.ppdb_logo_url);
+          if (processedConfigs.ppdb_title) inMem.name = String(processedConfigs.ppdb_title);
+        }
+      };
+      if (targetSlug) updateInMem(targetSlug);
+      if (schoolId) updateInMem(String(schoolId));
+      if (qSlug) updateInMem(qSlug);
+
+      const revEntry = {
+        id: Date.now(),
+        school_id: numericSchoolId,
+        config_values: processedConfigs,
+        changed_by: adminName,
+        description: description || 'Pembaruan Tampilan Sistem',
+        created_at: new Date().toISOString()
+      };
+      if (schoolId) {
+        const sid = String(schoolId);
+        if (!fontInMemRevisions.has(sid)) fontInMemRevisions.set(sid, []);
+        fontInMemRevisions.get(sid)?.unshift(revEntry);
+      }
+      if (targetSlug && targetSlug !== String(schoolId)) {
+        if (!fontInMemRevisions.has(targetSlug)) fontInMemRevisions.set(targetSlug, []);
+        fontInMemRevisions.get(targetSlug)?.unshift(revEntry);
+      }
 
       return c.json({
         success: true,
@@ -391,11 +442,33 @@ configRouter.post('/', adminAuth, async (c) => {
       }
     }
 
+    // Update in-memory store immediately
+    const { fontInMemSchools } = await import('./saas');
+    const admin = (c.get as (k: string) => unknown)('admin') as { school_slug?: string; slug?: string } | undefined;
+    const targetSlug = admin?.school_slug || admin?.slug || (typeof schoolId === 'string' && isNaN(Number(schoolId)) ? schoolId : null);
+    const singleQSlug = c.req.query('school_slug');
+
+    const updateInMem = (k: string) => {
+      if (!k) return;
+      if (!fontInMemSchools.has(k)) {
+        fontInMemSchools.set(k, { slug: k, configs: {} });
+      }
+      const inMem = fontInMemSchools.get(k);
+      if (inMem) {
+        inMem.configs = { ...(inMem.configs || {}), [key]: processedValue };
+        if (key === 'ppdb_logo_url') inMem.logo_url = String(processedValue);
+        if (key === 'ppdb_title') inMem.name = String(processedValue);
+      }
+    };
+    if (targetSlug) updateInMem(targetSlug);
+    if (schoolId) updateInMem(String(schoolId));
+    if (singleQSlug && singleQSlug !== targetSlug) updateInMem(singleQSlug);
+
     // Invalidate Redis cache
     if (schoolId) await delCached(`config_${schoolId}`);
-    const admin = (c.get as (k: string) => unknown)('admin') as { school_slug?: string; slug?: string } | undefined;
     if (admin?.school_slug) await delCached(`config_${admin.school_slug}`);
     if (admin?.slug) await delCached(`config_${admin.slug}`);
+    if (singleQSlug) await delCached(`config_${singleQSlug}`);
     await delCached('config_default');
 
     return c.json({
@@ -411,12 +484,17 @@ configRouter.post('/', adminAuth, async (c) => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const fontInMemRevisions = new Map<string, Array<{ id: number; changed_by: string; description: string; created_at: string; config_values: any }>>();
+
 // GET /api/config/revisions - Fetch revision history log (Protected Admin)
 configRouter.get('/revisions', adminAuth, async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
     const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = (c as any).get('admin');
 
     const query = supabase.from('ui_revisions')
       .select('id, changed_by, description, created_at')
@@ -424,23 +502,35 @@ configRouter.get('/revisions', adminAuth, async (c) => {
       .eq('school_id', numericSchoolId);
 
     const { data: revisions, error } = await query;
-    if (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let list: any[] = Array.isArray(revisions) ? revisions : [];
+
+    if (error || list.length === 0) {
       try {
         const pgRes = await pool.query(
           `SELECT id, changed_by, description, created_at FROM ui_revisions
-           WHERE school_id = $1::integer OR school_id::text = $2
+           WHERE school_id::text = $1::text
            ORDER BY created_at DESC LIMIT 50`,
-          [!isNaN(Number(schoolId)) ? Number(schoolId) : 0, String(schoolId)]
+          [String(schoolId)]
         );
-        return c.json({ success: true, data: pgRes.rows || [] });
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          list = pgRes.rows;
+        }
       } catch (_pgErr) {
-        throw error;
+        console.warn('Fallback pool query for ui_revisions error:', _pgErr);
+      }
+    }
+
+    if (list.length === 0) {
+      const inMem = fontInMemRevisions.get(String(schoolId)) || (admin?.school_slug ? fontInMemRevisions.get(String(admin.school_slug)) : []) || [];
+      if (inMem.length > 0) {
+        list = inMem;
       }
     }
 
     return c.json({
       success: true,
-      data: revisions
+      data: list
     });
   } catch (err: unknown) {
     console.error('Fetch revisions error:', err instanceof Error ? err.message : String(err));
@@ -480,6 +570,10 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
     }
 
+    console.log(`[SAVE-ALL] Saving ${Object.keys(processedConfigs).length} config keys for school_id=${numericSchoolId} (resolved from tenant: ${schoolId})`);
+
+    let dbSaveSuccess = 0;
+    let dbSaveError = 0;
     for (const [key, value] of Object.entries(processedConfigs)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
@@ -491,6 +585,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
 
       const { error } = await supabase.from('landing_page_config').upsert(payload, { onConflict: 'school_id,config_key' });
       if (error) {
+        console.warn(`[SAVE-ALL] Supabase upsert failed for key="${key}": ${error.message}`);
         try {
           await pool.query(
             `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
@@ -499,10 +594,16 @@ configRouter.post('/save-all', adminAuth, async (c) => {
              DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
             [numericSchoolId, key, JSON.stringify(value)]
           );
+          dbSaveSuccess++;
         } catch (_poolErr) {
+          dbSaveError++;
           console.warn('Fallback pool query for landing_page_config error:', _poolErr);
         }
       }
+    }
+
+    if (dbSaveError > 0) {
+      console.warn(`[SAVE-ALL] DB save completed with ${dbSaveError} errors (${dbSaveSuccess} fallback successes)`);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -523,29 +624,63 @@ configRouter.post('/save-all', adminAuth, async (c) => {
         await pool.query(
           `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
            VALUES ($1, $2, $3, $4, NOW())`,
-          [numericSchoolId, JSON.stringify(configs), adminName, description || 'Melakukan pembaruan massal UI']
+          [String(numericSchoolId), JSON.stringify(configs), adminName, description || 'Melakukan pembaruan massal UI']
         );
       } catch (_revPoolErr) {
         console.warn('Fallback pool query for ui_revisions error:', _revPoolErr);
       }
     }
 
+    // Always record in-memory revision log
+    const revRecord = {
+      id: Date.now(),
+      changed_by: adminName,
+      description: description || 'Melakukan pembaruan massal UI',
+      created_at: new Date().toISOString(),
+      config_values: configs
+    };
+    const sKey = String(numericSchoolId);
+    if (!fontInMemRevisions.has(sKey)) fontInMemRevisions.set(sKey, []);
+    fontInMemRevisions.get(sKey)!.unshift(revRecord);
+
     // Update in-memory store
     const { fontInMemSchools } = await import('./saas');
     const targetSlug = admin?.school_slug || admin?.slug || (typeof schoolId === 'string' && isNaN(Number(schoolId)) ? schoolId : null);
-    if (targetSlug && fontInMemSchools.has(targetSlug)) {
-      const inMem = fontInMemSchools.get(targetSlug);
+    const qSlug = c.req.query('school_slug');
+
+    // Helper: always create entry if missing, then merge configs
+    const updateInMem = (k: string) => {
+      if (!k) return;
+      if (!fontInMemSchools.has(k)) {
+        fontInMemSchools.set(k, { slug: k, configs: {} });
+      }
+      const inMem = fontInMemSchools.get(k);
       if (inMem) {
         inMem.configs = { ...(inMem.configs || {}), ...processedConfigs };
+        if (processedConfigs.ppdb_logo_url) inMem.logo_url = String(processedConfigs.ppdb_logo_url);
+        if (processedConfigs.ppdb_title) inMem.name = String(processedConfigs.ppdb_title);
       }
-    }
+    };
 
-    // Invalidate Redis cache
-    if (schoolId) await delCached(`config_${schoolId}`);
-    if (admin?.school_slug) await delCached(`config_${admin.school_slug}`);
-    if (admin?.slug) await delCached(`config_${admin.slug}`);
-    if (targetSlug) await delCached(`config_${targetSlug}`);
-    await delCached('config_default');
+    if (targetSlug) {
+      if (!fontInMemRevisions.has(targetSlug)) fontInMemRevisions.set(targetSlug, []);
+      fontInMemRevisions.get(targetSlug)!.unshift(revRecord);
+      updateInMem(targetSlug);
+    }
+    if (schoolId) updateInMem(String(schoolId));
+    if (qSlug && qSlug !== targetSlug) updateInMem(qSlug);
+
+    // Invalidate Redis cache — cover ALL possible cache keys
+    const cacheKeys = new Set<string>();
+    if (schoolId) cacheKeys.add(`config_${schoolId}`);
+    if (admin?.school_slug) cacheKeys.add(`config_${admin.school_slug}`);
+    if (admin?.slug) cacheKeys.add(`config_${admin.slug}`);
+    if (targetSlug) cacheKeys.add(`config_${targetSlug}`);
+    if (qSlug) cacheKeys.add(`config_${qSlug}`);
+    cacheKeys.add('config_default');
+    for (const ck of cacheKeys) {
+      await delCached(ck);
+    }
 
     console.log('[SUCCESS] Configurations successfully saved to PostgreSQL database.');
     return c.json({

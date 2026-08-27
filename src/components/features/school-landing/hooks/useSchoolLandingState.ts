@@ -10,6 +10,7 @@ import {
   GelombangConfig, 
   PartnerItem 
 } from "../types";
+import { DEFAULT_PARTNERS } from "@/components/features/kelola-ui/defaultData";
 
 const DEFAULT_FAQ: FaqItem[] = [
   {
@@ -104,7 +105,7 @@ export function useSchoolLandingState() {
     (typeof window !== "undefined" && window.location.hostname.includes(".") && !window.location.hostname.startsWith("www.") && !window.location.hostname.startsWith("gatekeeper.")
       ? window.location.hostname.split(".")[0]
       : "sekolah");
-  const isDemo = schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
+  const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
 
   const schoolDisplayName =
     ppdbTitle ||
@@ -118,9 +119,11 @@ export function useSchoolLandingState() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroTitle, setHeroTitle] = useState("Penerimaan Peserta Didik Baru");
-  const [heroTitleSub, setHeroTitleSub] = useState(`SPMB ${schoolDisplayName}`);
+  const [heroTitleSub, setHeroTitleSub] = useState(isDemo ? `SPMB SMK Demo` : `SPMB ${schoolDisplayName}`);
   const [heroSubtitle, setHeroSubtitle] = useState(
-    "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
+    isDemo
+      ? "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
+      : ""
   );
   const [heroBgImage, setHeroBgImage] = useState<string>("");
 
@@ -130,17 +133,17 @@ export function useSchoolLandingState() {
   const [waAdmin, setWaAdmin] = useState("");
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
 
-  const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
-  const [faqTitle, setFaqTitle] = useState("Pertanyaan yang Sering Diajukan");
+  const [faqList, setFaqList] = useState<FaqItem[]>(isDemo ? DEFAULT_FAQ : []);
+  const [faqTitle, setFaqTitle] = useState(isDemo ? "Pertanyaan yang Sering Diajukan" : "");
   const [faqSubtitle, setFaqSubtitle] = useState(
-    "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru."
+    isDemo ? "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru." : ""
   );
 
-  const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
+  const [alurList, setAlurList] = useState<AlurItem[]>(isDemo ? DEFAULT_ALUR : []);
   const [majors, setMajors] = useState<MajorItem[]>(isDemo ? DEFAULT_MAJORS : []);
   const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
   const [isPlatformMaintenance, setIsPlatformMaintenance] = useState<boolean>(false);
-  const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>([]);
+  const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>(isDemo ? DEFAULT_PARTNERS : []);
 
   const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>({
     gelombang1: { start: "", end: "" },
@@ -190,10 +193,18 @@ export function useSchoolLandingState() {
               cfg.ppdb_landing_active === "1"
             );
           }
-          if (cfg.ppdb_hero_title) setHeroTitle(cfg.ppdb_hero_title);
-          if (cfg.ppdb_hero_title_sub) setHeroTitleSub(cfg.ppdb_hero_title_sub);
-          if (cfg.ppdb_hero_subtitle) setHeroSubtitle(cfg.ppdb_hero_subtitle);
-          if (cfg.ppdb_hero_bg_image) setHeroBgImage(cfg.ppdb_hero_bg_image);
+          if (cfg.ppdb_hero_title !== undefined && cfg.ppdb_hero_title !== null) {
+            setHeroTitle(cfg.ppdb_hero_title);
+          }
+          if (cfg.ppdb_hero_title_sub !== undefined && cfg.ppdb_hero_title_sub !== null) {
+            setHeroTitleSub(cfg.ppdb_hero_title_sub);
+          }
+          if (cfg.ppdb_hero_subtitle !== undefined && cfg.ppdb_hero_subtitle !== null) {
+            setHeroSubtitle(cfg.ppdb_hero_subtitle);
+          }
+          if (cfg.ppdb_hero_bg_image !== undefined && cfg.ppdb_hero_bg_image !== null) {
+            setHeroBgImage(cfg.ppdb_hero_bg_image);
+          }
           if (cfg.ppdb_address || cfg.ppdb_alamat) setAddress(cfg.ppdb_address || cfg.ppdb_alamat);
           if (cfg.ppdb_map_url || cfg.ppdb_maps_embed) setMapUrl(cfg.ppdb_map_url || cfg.ppdb_maps_embed);
           if (cfg.ppdb_map_title) setMapTitle(cfg.ppdb_map_title);
@@ -205,20 +216,36 @@ export function useSchoolLandingState() {
 
           if (cfg.ppdb_faq_config && Array.isArray(cfg.ppdb_faq_config)) {
             setFaqList(cfg.ppdb_faq_config);
+          } else if (isDemo) {
+            setFaqList(DEFAULT_FAQ);
+          } else {
+            setFaqList([]);
           }
+
           if (cfg.ppdb_alur_config && Array.isArray(cfg.ppdb_alur_config)) {
             setAlurList(cfg.ppdb_alur_config);
+          } else if (isDemo) {
+            setAlurList(DEFAULT_ALUR);
+          } else {
+            setAlurList([]);
           }
-          if (isDemo) {
-            setMajors(DEFAULT_MAJORS);
-          } else if (cfg.ppdb_majors_config && Array.isArray(cfg.ppdb_majors_config)) {
+
+          if (cfg.ppdb_majors_config && Array.isArray(cfg.ppdb_majors_config)) {
             setMajors(cfg.ppdb_majors_config);
+          } else if (isDemo) {
+            setMajors(DEFAULT_MAJORS);
           } else {
             setMajors([]);
           }
+
           if (cfg.ppdb_partners_config && Array.isArray(cfg.ppdb_partners_config)) {
             setPartnersList(cfg.ppdb_partners_config);
+          } else if (isDemo) {
+            setPartnersList(DEFAULT_PARTNERS);
+          } else {
+            setPartnersList([]);
           }
+
           if (cfg.ppdb_gelombang_config) {
             setGelombangConfig(cfg.ppdb_gelombang_config);
           }
@@ -228,7 +255,7 @@ export function useSchoolLandingState() {
       }
     };
     loadDynamicConfig();
-  }, [schoolSlug, isDemo]);
+  }, [schoolSlug, isDemo, schoolDisplayName]);
 
   return {
     schoolSlug,

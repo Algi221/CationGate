@@ -94,13 +94,45 @@ export default function proxy(request: NextRequest) {
   }
 
   // 5. Handle Root Domain Routing (cationgate.site / localhost:3000)
-  // Attach x-school-slug header if accessing a school via path (e.g. /smktarunabhakti/dashboard)
-  const dashboardMatch = pathname.match(/^\/([^/]+)\/dashboard/);
-  if (dashboardMatch) {
-    const schoolSlug = dashboardMatch[1];
-    const response = NextResponse.next();
-    response.headers.set("x-school-slug", schoolSlug);
-    return response;
+  // If user accesses a school via path (e.g. /smktarunabhakti or /smktarunabhakti/dashboard),
+  // redirect them directly to the official subdomain to prevent duplicate URLs!
+  const firstSegment = pathname.split("/")[1]?.toLowerCase() || "";
+  const ROOT_RESERVED = [
+    "",
+    "login",
+    "auth",
+    "register",
+    "daftar-sekolah",
+    "forgot-password",
+    "fitur",
+    "harga",
+    "blog",
+    "tentang",
+    "syarat-ketentuan",
+    "kebijakan-privasi",
+    "gatekeeper",
+    "verifikasi-berkas",
+    "api",
+    "assets",
+    "_next",
+    "favicon.ico",
+    "demo"
+  ];
+
+  if (firstSegment && !ROOT_RESERVED.includes(firstSegment)) {
+    const schoolSlug = firstSegment;
+    const cleanPath = pathname.replace(`/${schoolSlug}`, "") || "/";
+    const port = request.nextUrl.port ? `:${request.nextUrl.port}` : "";
+    const isLocalhost = hostname.includes("localhost");
+
+    let redirectTarget: string;
+    if (isLocalhost) {
+      redirectTarget = `http://${schoolSlug}.localhost${port}${cleanPath}${request.nextUrl.search}`;
+    } else {
+      redirectTarget = `https://${schoolSlug}.cationgate.site${cleanPath}${request.nextUrl.search}`;
+    }
+
+    return NextResponse.redirect(new URL(redirectTarget), 307);
   }
 
   return NextResponse.next();

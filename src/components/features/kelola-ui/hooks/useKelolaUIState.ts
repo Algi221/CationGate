@@ -223,7 +223,9 @@ export function useKelolaUIState() {
     try {
       setLoading(true);
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
-      const url = slug ? `/api/config?school_slug=${slug}` : "/api/config";
+      const url = slug
+        ? `/api/config?school_slug=${encodeURIComponent(slug)}&_t=${Date.now()}`
+        : `/api/config?_t=${Date.now()}`;
       const res = await fetch(url, {
         headers: token ? { "Authorization": `Bearer ${token}` } : {}
       });
@@ -353,7 +355,10 @@ export function useKelolaUIState() {
   async function fetchRevisions() {
     try {
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
-      const res = await fetch("/api/config/revisions", {
+      const url = slug
+        ? `/api/config/revisions?school_slug=${encodeURIComponent(slug)}&_t=${Date.now()}`
+        : `/api/config/revisions?_t=${Date.now()}`;
+      const res = await fetch(url, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -514,7 +519,11 @@ export function useKelolaUIState() {
         return;
       }
 
-      const res = await fetch("/api/config/save-all", {
+      const saveUrl = slug
+        ? `/api/config/save-all?school_slug=${encodeURIComponent(slug)}`
+        : `/api/config/save-all`;
+
+      const res = await fetch(saveUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

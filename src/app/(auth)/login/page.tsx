@@ -150,6 +150,17 @@ function LoginForm() {
           if (typeof window !== "undefined") {
             localStorage.setItem("ppdb_admin_token", String(data.token || ""));
             localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
+
+            const host = window.location.host.toLowerCase();
+            const isLocalhost = host.includes("localhost");
+            const port = window.location.port ? `:${window.location.port}` : "";
+            const path = isVerifiedSchool ? "/dashboard" : "/dashboard/verification";
+            const targetUrl = isLocalhost
+              ? `http://${targetSlug}.localhost${port}${path}?auth_token=${encodeURIComponent(data.token)}`
+              : `https://${targetSlug}.cationgate.site${path}?auth_token=${encodeURIComponent(data.token)}`;
+
+            window.location.href = targetUrl;
+            return;
           }
           if (isVerifiedSchool) {
             router.push(`/${targetSlug}/dashboard`);

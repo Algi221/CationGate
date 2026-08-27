@@ -547,7 +547,7 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
       if (!res.ok) return;
       const data = await res.json();
       if (data && data.success && Array.isArray(data.data)) {
-        if (data.data.length === 0 && (schoolSlug === "demo" || schoolSlug === "smktarunabhakti")) {
+        if (data.data.length === 0 && schoolSlug === "demo") {
           set({ publicApplicants: DEMO_APPLICANTS_SEED });
         } else {
           set({ publicApplicants: data.data });

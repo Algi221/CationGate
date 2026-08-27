@@ -78,14 +78,24 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({
           label: "Program Studi",
           key: "jurusan_1",
           type: "select",
-          options: [
-            "Rekayasa Perangkat Lunak",
-            "Teknik Jaringan Komputer & Telekomunikasi",
-            "Desain Komunikasi Visual",
-            "Broadcasting & Perfilman",
-            "Teknik Elektronika",
-            "Animasi"
-          ]
+          options: (() => {
+            if (typeof window !== "undefined") {
+              const saved = localStorage.getItem("ppdb_majors_config");
+              if (saved) {
+                try {
+                  const parsed = JSON.parse(saved);
+                  if (Array.isArray(parsed) && parsed.length > 0) {
+                    const list = parsed.map((m: { title?: string; name?: string }) => m.title || m.name || "").filter(Boolean);
+                    if (editForm.jurusan_1 && !list.includes(editForm.jurusan_1)) {
+                      list.push(editForm.jurusan_1);
+                    }
+                    return list;
+                  }
+                } catch (_) {}
+              }
+            }
+            return editForm.jurusan_1 ? [editForm.jurusan_1] : [];
+          })()
         },
         { label: "Alasan Memilih", key: "alasan_memilih" },
         { label: "Cita-cita", key: "cita_cita" },

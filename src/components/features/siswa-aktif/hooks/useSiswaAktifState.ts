@@ -30,11 +30,50 @@ export function useSiswaAktifState() {
   const [editForm, setEditForm] = useState<Partial<ActiveStudent>>({});
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
+  const [majorsList, setMajorsList] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ppdb_majors_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map((m: { title?: string; name?: string }) => m.title || m.name || "").filter(Boolean);
+          }
+        } catch (_) {}
+      }
+    }
+    return isDemoMode ? [
+      "Rekayasa Perangkat Lunak",
+      "Teknik Jaringan Komputer & Telekomunikasi",
+      "Desain Komunikasi Visual",
+      "Broadcasting & Perfilman",
+      "Teknik Elektronika",
+      "Animasi",
+    ] : [];
+  });
+
   useEffect(() => {
     if (typeof fetchActiveStudents === "function") {
       fetchActiveStudents();
     }
-  }, [fetchActiveStudents]);
+    const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+    fetch("/api/config", {
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data?.ppdb_majors_config && Array.isArray(json.data.ppdb_majors_config)) {
+          const list = json.data.ppdb_majors_config
+            .map((m: { title?: string; name?: string }) => m.title || m.name || "")
+            .filter(Boolean);
+          setMajorsList(list);
+        } else if (!isDemoMode) {
+          setMajorsList([]);
+        }
+      })
+      .catch(() => {});
+  }, [fetchActiveStudents, isDemoMode]);
 
   const [customPeriods, setCustomPeriods] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
@@ -314,6 +353,7 @@ export function useSiswaAktifState() {
     setSearchTerm,
     majorFilter,
     setMajorFilter,
+    majorsList,
     classFilter,
     setClassFilter,
     genderFilter,

@@ -46,6 +46,20 @@ interface SchoolTenant {
   }>;
 }
 
+const getSchoolSubdomainUrl = (slug: string, path: string = "") => {
+  if (typeof window !== "undefined") {
+    const host = window.location.host.toLowerCase();
+    const isLocalhost = host.includes("localhost");
+    const port = window.location.port ? `:${window.location.port}` : "";
+    const cleanPath = path.startsWith("/") ? path : (path ? `/${path}` : "");
+    if (isLocalhost) {
+      return `http://${slug}.localhost${port}${cleanPath}`;
+    }
+    return `https://${slug}.cationgate.site${cleanPath}`;
+  }
+  return `https://${slug}.cationgate.site${path ? `/${path}` : ""}`;
+};
+
 function GatekeeperSchoolManagementContent() {
   const searchParams = useSearchParams();
   const rawFilter = searchParams?.get("filter") || "ALL";
@@ -505,7 +519,7 @@ function GatekeeperSchoolManagementContent() {
                       <div>
                         <h4 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{sc.name}</h4>
                         <a
-                          href={`/${encodeURIComponent(sc.slug)}`}
+                          href={getSchoolSubdomainUrl(sc.slug)}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-1 text-[11px] text-blue-600 dark:text-[#FFD33B] font-mono font-bold hover:underline mt-0.5"
@@ -585,21 +599,21 @@ function GatekeeperSchoolManagementContent() {
 
                       {/* Direct Links */}
                       <a
-                        href={`/${encodeURIComponent(sc.slug)}`}
+                        href={getSchoolSubdomainUrl(sc.slug)}
                         target="_blank"
                         rel="noreferrer"
                         className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        title="Lihat Landing Page Sekolah"
+                        title={`Lihat Landing Page (${sc.slug}.cationgate.site)`}
                       >
                         <ExternalLink className="w-4 h-4" />
                       </a>
 
                       <a
-                        href={`/${encodeURIComponent(sc.slug)}/dashboard`}
+                        href={getSchoolSubdomainUrl(sc.slug, "/dashboard")}
                         target="_blank"
                         rel="noreferrer"
                         className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2e3749] dark:text-[#FFD33B] text-xs font-bold border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors"
-                        title="Buka Dashboard Tenant Sekolah"
+                        title={`Buka Dashboard (${sc.slug}.cationgate.site/dashboard)`}
                       >
                         Dashboard
                       </a>

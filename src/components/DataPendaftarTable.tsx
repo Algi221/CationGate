@@ -33,7 +33,7 @@ interface Student {
 
 export default function DataPendaftarTable() {
   const params = useParams();
-  const _schoolSlug = (params?.school_slug as string) || "smktarunabhakti";
+  const _schoolSlug = (params?.school_slug as string) || "";
   const { publicApplicants } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");

@@ -158,142 +158,139 @@ export default function DaftarSaaS() {
       </div>
 
       {/* MAIN CONTAINER */}
-      <AnimatePresence mode="wait">
-        {isOtpStep ? (
-          /* SINGLE CARD VIEW: OTP VERIFICATION */
-          <div key="otp-view" className="w-full max-w-lg mx-auto flex items-center justify-center my-auto z-10 relative pt-2 lg:pt-4">
-            <OtpVerificationCard
-              formData={formData}
-              onClose={() => setStep(3)}
-              onVerifyOtp={handleVerifyOTPAsync}
-              onResendOtp={handleResendAsync}
-              onSubmit={handleSubmit}
-            />
-          </div>
-        ) : (
-          /* STANDARD 2-COLUMN WIZARD (STEPS 1-3) */
-          <div key="wizard-view" className="w-full max-w-350 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center my-auto z-10 relative pt-2 lg:pt-4">
-            {/* LEFT COLUMN: EDITORIAL VISUAL / LOTTIE */}
-            <EditorialLottiePanel
-              currentVisual={currentVisual}
-              isMobile={isMobile}
-              animationsData={animationsData}
-            />
+      <div className="w-full max-w-350 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center my-auto z-10 relative pt-2 lg:pt-4">
+        {/* LEFT COLUMN: EDITORIAL VISUAL / LOTTIE */}
+        <EditorialLottiePanel
+          currentVisual={currentVisual}
+          isMobile={isMobile}
+          animationsData={animationsData}
+        />
 
-            {/* RIGHT COLUMN: INTERACTIVE WIZARD FORM */}
-            <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-12 z-10">
-              <div className="w-full max-w-115 mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
-                {/* Form Header */}
-                <div className="mb-4 sm:mb-6 text-left">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">
-                    Mulai Digitalisasi Sekolah
-                  </h1>
-                  <p className="mt-1.5 text-xs sm:text-sm text-slate-500 font-medium">
-                    Daftarkan instansi kamu dan mulai kelola sistem PPDB dengan CationGate.
-                  </p>
-                </div>
+        {/* RIGHT COLUMN: INTERACTIVE WIZARD FORM */}
+        <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-12 z-10">
+          <div className="w-full max-w-115 mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
+            {/* Form Header */}
+            <div className="mb-4 sm:mb-6 text-left">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                Mulai Digitalisasi Sekolah
+              </h1>
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-500 font-medium">
+                Daftarkan instansi kamu dan mulai kelola sistem PPDB dengan CationGate.
+              </p>
+            </div>
 
-                {errorMsg && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-xs font-semibold text-red-600 text-left"
-                  >
-                    <Info className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>{errorMsg}</span>
-                  </motion.div>
+            {errorMsg && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-xs font-semibold text-red-600 text-left"
+              >
+                <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </motion.div>
+            )}
+
+            <form
+              onSubmit={
+                step >= 3
+                  ? handleSubmit
+                  : (e) => {
+                      e.preventDefault();
+                      handleNext();
+                    }
+              }
+            >
+              <AnimatePresence mode="wait">
+                {/* STEP 1 */}
+                {step === 1 && (
+                  <div className="space-y-4">
+                    <Step1Instansi
+                      formData={formData}
+                      setFormData={setFormData}
+                      emailChecking={emailChecking}
+                      emailSuccessState={emailSuccessState}
+                      emailErrorState={emailErrorState}
+                      slugChecking={slugChecking}
+                      slugSuccessState={slugSuccessState}
+                      slugErrorState={slugErrorState}
+                      setSlugErrorState={setSlugErrorState}
+                      setSlugSuccessState={setSlugSuccessState}
+                      handleEmailCheck={handleEmailCheck}
+                      setEmailErrorState={setEmailErrorState}
+                      setEmailSuccessState={setEmailSuccessState}
+                    />
+                    <div className="mt-5 sm:mt-6 flex justify-end border-t border-slate-100 pt-4">
+                      <Button
+                        type="submit"
+                        className="h-10 sm:h-11 rounded-xl bg-[#FFC000] hover:bg-[#F3C625] px-6 text-xs font-bold text-slate-950 shadow-md shadow-[#FFC000]/20 cursor-pointer transition-all"
+                      >
+                        Lanjutkan <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
                 )}
 
-                <form
-                  onSubmit={
-                    step === 3
-                      ? handleSubmit
-                      : (e) => {
+                {/* STEP 2 */}
+                {step === 2 && (
+                  <div className="space-y-4">
+                    <Step2AkunAdmin
+                      formData={formData}
+                      setFormData={setFormData}
+                      showPassword={showPassword}
+                      setShowPassword={setShowPassword}
+                    />
+                    <div className="mt-5 sm:mt-6 flex justify-between border-t border-slate-100 pt-4">
+                      <button
+                        type="button"
+                        onClick={(e) => {
                           e.preventDefault();
-                          handleNext();
-                        }
-                  }
-                >
-                  <AnimatePresence mode="wait">
-                    {/* STEP 1 */}
-                    {step === 1 && (
-                      <div className="space-y-4">
-                        <Step1Instansi
-                          formData={formData}
-                          setFormData={setFormData}
-                          emailChecking={emailChecking}
-                          emailSuccessState={emailSuccessState}
-                          emailErrorState={emailErrorState}
-                          slugChecking={slugChecking}
-                          slugSuccessState={slugSuccessState}
-                          slugErrorState={slugErrorState}
-                          setSlugErrorState={setSlugErrorState}
-                          setSlugSuccessState={setSlugSuccessState}
-                          handleEmailCheck={handleEmailCheck}
-                          setEmailErrorState={setEmailErrorState}
-                          setEmailSuccessState={setEmailSuccessState}
-                        />
-                        <div className="mt-5 sm:mt-6 flex justify-end border-t border-slate-100 pt-4">
-                          <Button
-                            type="submit"
-                            className="h-10 sm:h-11 rounded-xl bg-[#FFC000] hover:bg-[#F3C625] px-6 text-xs font-bold text-slate-950 shadow-md shadow-[#FFC000]/20 cursor-pointer transition-all"
-                          >
-                            Lanjutkan <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* STEP 2 */}
-                    {step === 2 && (
-                      <div className="space-y-4">
-                        <Step2AkunAdmin
-                          formData={formData}
-                          setFormData={setFormData}
-                          showPassword={showPassword}
-                          setShowPassword={setShowPassword}
-                        />
-                        <div className="mt-5 sm:mt-6 flex justify-between border-t border-slate-100 pt-4">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setStep(1);
-                            }}
-                            disabled={loading}
-                            className="h-10 sm:h-11 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer hover:bg-slate-100 rounded-xl transition-all inline-flex items-center justify-center"
-                          >
-                            Kembali
-                          </button>
-                          <Button
-                            type="submit"
-                            disabled={loading}
-                            className="h-10 sm:h-11 rounded-xl bg-[#FFC000] hover:bg-[#F3C625] px-6 text-xs font-bold text-slate-950 shadow-md shadow-[#FFC000]/20 cursor-pointer transition-all"
-                          >
-                            Lanjutkan <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* STEP 3 */}
-                    {step === 3 && (
-                      <Step3Konfirmasi
-                        formData={formData}
-                        loading={loading}
-                        onPrevStep={() => setStep(2)}
-                        onSendOtp={() => {
-                          handleSendOTP();
-                          setStep(4);
+                          e.stopPropagation();
+                          setStep(1);
                         }}
-                      />
-                    )}
-                  </AnimatePresence>
-                </form>
-              </div>
-            </div>
+                        disabled={loading}
+                        className="h-10 sm:h-11 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer hover:bg-slate-100 rounded-xl transition-all inline-flex items-center justify-center"
+                      >
+                        Kembali
+                      </button>
+                      <Button
+                        type="submit"
+                        disabled={loading}
+                        className="h-10 sm:h-11 rounded-xl bg-[#FFC000] hover:bg-[#F3C625] px-6 text-xs font-bold text-slate-950 shadow-md shadow-[#FFC000]/20 cursor-pointer transition-all"
+                      >
+                        Lanjutkan <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 3 & 4 (Step 3 remains rendered in background) */}
+                {step >= 3 && (
+                  <Step3Konfirmasi
+                    formData={formData}
+                    loading={loading}
+                    onPrevStep={() => setStep(2)}
+                    onSendOtp={() => {
+                      handleSendOTP();
+                      setStep(4);
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+            </form>
           </div>
+        </div>
+      </div>
+
+      {/* POPUP MODAL VERIFIKASI OTP (DENGAN NGEBLUR DI BELAKANGNYA) */}
+      <AnimatePresence>
+        {isOtpStep && (
+          <OtpVerificationCard
+            formData={formData}
+            onClose={() => setStep(3)}
+            onVerifyOtp={handleVerifyOTPAsync}
+            onResendOtp={handleResendAsync}
+            onSubmit={handleSubmit}
+          />
         )}
       </AnimatePresence>
 

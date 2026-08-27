@@ -6,11 +6,14 @@ import SafeImage from "@/components/SafeImage";
 import { usePPDB } from "@/context/PPDBContext";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
 
+import Swal from "sweetalert2";
+
 interface SchoolFooterProps {
   schoolSlug: string;
+  isPreview?: boolean;
 }
 
-export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
+export function SchoolFooter({ schoolSlug, isPreview = false }: SchoolFooterProps) {
   const { ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah } = usePPDB();
   const { href } = useSchoolHref(schoolSlug);
   const [majors, setMajors] = React.useState<Array<{ code: string; title: string }>>([]);
@@ -19,6 +22,29 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
     phone: "",
     email: ""
   });
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, targetPath: string) => {
+    if (!isPreview) return;
+    e.preventDefault();
+    if (targetPath.includes("#")) {
+      const hash = targetPath.split("#")[1];
+      const el = document.getElementById(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+    Swal.fire({
+      toast: true,
+      position: "top",
+      icon: "info",
+      title: "Mode Live Preview",
+      text: "Tautan footer ini akan aktif penuh setelah perubahan disimpan.",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
+  };
 
   const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
   const schoolDisplayName = ppdbTitle || (isDemo ? "SMK Demo Indonesia" : schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
@@ -71,7 +97,7 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Col 1: Identity & Socials */}
           <div className="space-y-6">
-            <Link href={href("/")} className="flex items-center gap-3 group">
+            <Link href={href("/")} onClick={(e) => handleLinkClick(e, href("/"))} className="flex items-center gap-3 group">
               <div className="relative h-11 w-11 shrink-0 bg-white/10 dark:bg-white/5 rounded-xl p-1.5 backdrop-blur-md border border-slate-200 dark:border-white/10 flex items-center justify-center">
                 {ppdbLogo ? (
                   <SafeImage src={ppdbLogo} alt="Logo Sekolah" fill sizes="48px" className="object-contain" />
@@ -149,7 +175,11 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
               <ul className="space-y-2 text-xs font-semibold">
                 {majors.map((m, idx) => (
                   <li key={idx}>
-                    <Link href={href(`/jurusan/${encodeURIComponent(m.code.toLowerCase())}`)} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <Link
+                      href={href(`/jurusan/${encodeURIComponent(m.code.toLowerCase())}`)}
+                      onClick={(e) => handleLinkClick(e, href(`/jurusan/${encodeURIComponent(m.code.toLowerCase())}`))}
+                      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
                       {m.title || m.code}
                     </Link>
                   </li>
@@ -164,10 +194,42 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
           <div className="space-y-4">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Link Terkait</h4>
             <ul className="space-y-2 text-xs font-semibold">
-              <li><Link href={href("/#alur")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Alur &amp; Jadwal PPDB</Link></li>
-              <li><Link href={href("/#gelombang")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Gelombang Pendaftaran</Link></li>
-              <li><Link href={href("/forum")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Forum Informasi</Link></li>
-              <li><Link href={href("/profil")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Profil Sekolah</Link></li>
+              <li>
+                <Link
+                  href={href("/#alur")}
+                  onClick={(e) => handleLinkClick(e, href("/#alur"))}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Alur &amp; Jadwal PPDB
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={href("/#gelombang")}
+                  onClick={(e) => handleLinkClick(e, href("/#gelombang"))}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Gelombang Pendaftaran
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={href("/forum")}
+                  onClick={(e) => handleLinkClick(e, href("/forum"))}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Forum Informasi
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={href("/profil")}
+                  onClick={(e) => handleLinkClick(e, href("/profil"))}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Profil Sekolah
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -191,9 +253,9 @@ export function SchoolFooter({ schoolSlug }: SchoolFooterProps) {
         <div className="border-t border-slate-200 dark:border-slate-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
           <div>© {new Date().getFullYear()} {schoolDisplayName}. Hak Cipta Dilindungi.</div>
           <div className="flex gap-4">
-            <Link href="/" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Kebijakan Privasi</Link>
+            <Link href="/" onClick={(e) => handleLinkClick(e, "/")} className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Kebijakan Privasi</Link>
             <span>·</span>
-            <Link href="/" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Syarat &amp; Ketentuan</Link>
+            <Link href="/" onClick={(e) => handleLinkClick(e, "/")} className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Syarat &amp; Ketentuan</Link>
           </div>
         </div>
       </div>

@@ -228,7 +228,7 @@ export const LivePreviewLandingModal: React.FC<LivePreviewLandingModalProps> = (
             />
           </main>
 
-          <SchoolFooter schoolSlug={schoolSlug} />
+          <SchoolFooter schoolSlug={schoolSlug} isPreview={true} />
         </div>
       </div>
     </div>

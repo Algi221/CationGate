@@ -378,7 +378,7 @@ export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = fals
             </div>
           </div>
         </div>
-      )}
+      )} 
     </>
   );
 }

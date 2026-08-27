@@ -166,20 +166,22 @@ export default function KelolaUIPage() {
       )}
 
       {/* Header Info Panel */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-all">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center text-blue-500 border border-blue-100 dark:border-blue-900/40 shrink-0">
-            <Palette size={22} />
-          </div>
-          <div>
-            <h2 className="text-base font-black uppercase text-slate-800 dark:text-white tracking-wider">Kelola User Interface</h2>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">
-              Edit Semua Foto, Teks, Jurusan, dan Formulir PPDB secara Real-time
-            </p>
-          </div>
-        </div>
+     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-all">
+  
+  <div className="flex items-center gap-4">
+    <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center text-blue-500 border border-blue-100 dark:border-blue-900/40 shrink-0">
+      <Palette size={22} />
+    </div>
+    <div>
+      <h2 className="text-base font-black uppercase text-slate-800 dark:text-white tracking-wider">Kelola User Interface</h2>
+      <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+        Edit Semua Foto, Teks, Jurusan, dan Formulir PPDB secara Real-time
+      </p>
+    </div>
+  </div>
 
-        <div className="flex gap-2.5">
+  {/* UBAH BAGIAN TOMBOL JADI GINI AJA: Cukup tambah flex-wrap */}
+  <div className="flex flex-wrap xl:items-end gap-2.5">
           {hasLocalDraft && (
             <button
               onClick={async () => {
@@ -209,7 +211,7 @@ export default function KelolaUIPage() {
             className="px-4 py-3 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <Eye size={15} />
-            <span>Pratinjau Draf (Live Preview)</span>
+            <span>Pratinjau Draf </span>
           </button>
 
           <a
@@ -224,7 +226,7 @@ export default function KelolaUIPage() {
 
           <button
             onClick={() => setShowConfirmModal(true)}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-blue-500/20"
+            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-blue-500/20"
           >
             <Check size={14} />
             <span>Simpan Perubahan</span>

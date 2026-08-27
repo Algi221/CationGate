@@ -1,11 +1,40 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/landing/Navbar";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import FeatureCarousel from "@/components/ui/feature-carousel";
 
 export default function FeaturesPage() {
+  const searchParams = useSearchParams();
+  const [currentStep, setCurrentStep] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        const stepIndex = parseInt(hash) - 1;
+        if (stepIndex >= 0 && stepIndex < 6) {
+          setCurrentStep(stepIndex);
+          setTimeout(() => {
+            const carouselElement = document.getElementById("feature-carousel");
+            if (carouselElement) {
+              carouselElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }, 50);
+        }
+      }
+    };
+
+    // Handle hash saat pertama kali load
+    handleHashChange();
+
+    // Handle hash change saat user klik link dengan hash berbeda
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-[#2e3749] dark:text-white flex flex-col justify-between">
       <Navbar />
@@ -24,31 +53,30 @@ export default function FeaturesPage() {
         </div>
 
         {/* BUNGKUS CAROUSEL: "hidden md:block" DIHAPUS agar muncul di mobile */}
-        <div className="w-full min-h-125 max-w-6xl mx-auto relative z-10 block">
+        <div className="w-full min-h-125 max-w-6xl mx-auto relative z-10 block" id="feature-carousel">
           <FeatureCarousel
+            initialStep={currentStep ?? undefined}
             title="Ekosistem Dashboard CationGate"
             description="Lihat ringkasan fitur inti yang paling sering dipakai sekolah"
             bgClass="!text-white dark:!text-white"
             image={{
               alt: "Fitur dashboard CationGate",
 
-              step1light1: "/assets/fitur/calon-siswa.png",
-              step1light2: "/assets/fitur/calon-siswa.png",
+              step1light1: "/assets/fitur/data_calon_siswa.png",
+              step1light2: "/assets/fitur/data_calon_siswa_mobile.png",
 
-              step2light1: "/assets/fitur/siswa-aktif.png",
-              step2light2: "/assets/fitur/siswa-aktif.png",
+              step2light1: "/assets/fitur/siswa_aktif_desktop.png",
+              step2light2: "/assets/fitur/siswa_aktif_mobile.png",
 
-              step3light1: "/assets/fitur/pembagian-kelas.png",
-              step3light2: "/assets/fitur/pembagian-kelas.png",
+              step3light1: "/assets/fitur/pembagian_kelas_desktop.png",
+              step3light2: "/assets/fitur/pembagian_kelas.png",
 
-              step4light1: "/assets/fitur/kelola-informasi.png",
-              step4light2: "/assets/fitur/kelola-informasi.png",
+              step4light1: "/assets/fitur/kelola_informasi.png",
+              step4light2: "/assets/fitur/kelola_informasi_mobile.png",
 
-              step5light1: "/assets/fitur/kelola-ui.png",
-              step5light2: "/assets/fitur/kelola-ui.png",
-
-              step6light1: "/assets/fitur/imageLanding.png",
-              step6light2: "/assets/fitur/imageLanding.png",
+           
+              step5light1: "/assets/fitur/landing_page.png",
+              step5light2: "/assets/fitur/landing_mobile.png",
             }}
           />
         </div>

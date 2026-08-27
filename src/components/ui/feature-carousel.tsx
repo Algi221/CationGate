@@ -23,8 +23,8 @@ interface ImageSet {
   step4light2: StaticImageData | string;
   step5light1: StaticImageData | string;
   step5light2: StaticImageData | string;
-  step6light1: StaticImageData | string;
-  step6light2: StaticImageData | string;
+  // step6light1: StaticImageData | string;
+  // step6light2: StaticImageData | string;
   alt: string;
 }
 
@@ -32,6 +32,7 @@ interface FeatureCarouselProps extends CardProps {
   desktopImgClass?: string;
   mobileImgClass?: string;
   image: ImageSet;
+  initialStep?: number;
 }
 
 interface Step {
@@ -41,7 +42,7 @@ interface Step {
   description: string;
 }
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 5;
 const AUTOPLAY_DURATION = 5000;
 
 const steps: Step[] = [
@@ -65,15 +66,15 @@ const steps: Step[] = [
   },
   {
     id: "4",
-    name: "UI & Info",
+    name: "Kelola Informasi",
     title: "Kelola Informasi dan UI",
     description: "Atur pengumuman, konten landing page, dan tampilan interface sekolah agar tetap konsisten dan mudah dipakai.",
   },
   {
     id: "5",
-    name: "Laporan",
-    title: "Laporan Terintegrasi",
-    description: "Cetak laporan harian dan bulanan dengan satu klik tanpa harus merekap manual dari Excel.",
+    name: "PPDB",
+    title: "PPDB Sekolah",
+    description: "Tampilkan fasilitas, prestasi, dan ekstrakurikuler sekolah secara komprehensif untuk membangun kepercayaan calon wali murid pada masa penerimaan siswa baru.",
   },
 ] as const;
 
@@ -84,7 +85,7 @@ const getStepImages = (image: ImageSet, step: number) => {
     [image.step3light1, image.step3light2],
     [image.step4light1, image.step4light2],
     [image.step5light1, image.step5light2],
-    [image.step6light1, image.step6light2],
+    // [image.step6light1, image.step6light2],
   ];
   return images[step] ?? images[0];
 };
@@ -212,7 +213,7 @@ function StepNavigation({
                     : "bg-neutral-200 text-neutral-500"
               )}
             >
-              {completed ? <Check size={11} strokeWidth={3} /> : index + 1}
+              {index + 1}
             </span>
 
             <span>{step.name}</span>
@@ -314,10 +315,35 @@ export function FeatureCarousel({
   image,
   desktopImgClass,
   mobileImgClass,
+  initialStep,
 }: FeatureCarouselProps) {
   const { current, setIsPaused, goTo } = useFeatureCarousel(TOTAL_STEPS);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (initialStep !== undefined && initialStep !== null) {
+      goTo(initialStep);
+    }
+  }, [initialStep, goTo]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleGoToStep = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const stepIndex = customEvent.detail;
+      if (typeof stepIndex === "number") {
+        goTo(stepIndex);
+      }
+    };
+
+    container.addEventListener("goToStep", handleGoToStep);
+    return () => container.removeEventListener("goToStep", handleGoToStep);
+  }, [goTo]);
 
   return (
+    <div ref={containerRef}>
     <FeatureCard
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -395,6 +421,7 @@ export function FeatureCarousel({
         </div>
       </div>
     </FeatureCard>
+    </div>
   );
 }
 

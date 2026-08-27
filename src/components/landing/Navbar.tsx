@@ -133,42 +133,42 @@ export function Navbar() {
         
       ],
     },
-    {
+{
       label: "Fitur Unggulan",
       href: "/fitur",
       color: "#8EC9F6",
       dropdownType: "bento",
       bentoConfig: {
         leftCard: {
-          icon: Shield,
-          title: "Admin Dashboard",
-          desc: "Pusat kendali operasional sekolah.",
-          href: "/fitur",
+          icon: Shield, // Kamu bisa mengganti ikon ini sesuai library yang kamu pakai
+          title: "Calon Siswa",
+          desc: "Pantau pendaftar, dokumen, dan progres registrasi dari satu dashboard.",
+          href: "/fitur#1",
         },  
         gridItems: [
           {
-            title: "Import & Export Excel",
-            desc: "Kelola data siswa & nilai masal",
-            href: "/fitur",
-            icon: FileCheck,
-          },
-          {
-            title: "Pembagian Kelas",
-            desc: "Automasi plotting siswa baru",
-            href: "/fitur",
+            title: "Siswa Aktif",
+            desc: "Kelola identitas, kelas, dan status akademik.",
+            href: "/fitur#2",
             icon: Users,
           },
           {
-            title: "Manajemen Data",
-            desc: "Kontrol penuh data siswa",
-            href: "/fitur",
+            title: "Pembagian Kelas",
+            desc: "Atur pembagian kelas otomatis sesuai kuota.",
+            href: "/fitur#3",
+            icon: Users, // Pertimbangkan mengganti ini ke ikon seperti Layout atau Grid
+          },
+          {
+            title: "Kelola Informasi",
+            desc: "Atur pengumuman dan tampilan antarmuka.",
+            href: "/fitur#4",
             icon: Database,
           },
           {
-            title: "Validasi Berkas",
-            desc: "Verifikasi dokumen pendaftar",
-            href: "/fitur",
-            icon: FileCheck,
+            title: "PPDB Sekolah",
+            desc: "Tampilkan fasilitas dan prestasi secara komprehensif.",
+            href: "/fitur#5",
+            icon: FileCheck, // Pertimbangkan mengganti ini ke ikon seperti School atau Award
           },
         ],
       },

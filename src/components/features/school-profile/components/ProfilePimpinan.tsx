@@ -76,7 +76,7 @@ export const ProfilePimpinan: React.FC<ProfilePimpinanProps> = ({ ppdbTitle, pim
             <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               {leaderName}
             </h3>
-            <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm sm:text-base pt-2 whitespace-pre-wrap">
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm sm:text-base pt-2 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
               {leaderSpeech}
             </p>
           </div>

@@ -137,9 +137,12 @@ export function useSchoolLandingState() {
 
   const initialCache = getLocalLandingCache(schoolSlug) || {};
 
+  const [customSchoolName, setCustomSchoolName] = useState<string>("");
+
   const schoolDisplayName =
+    customSchoolName ||
     ppdbTitle ||
-    schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    (isDemo ? "SMK Demo Indonesia" : schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
 
   const isSchoolVerified =
     schoolStatus === "FULL_VERIFIED" ||
@@ -202,6 +205,7 @@ export function useSchoolLandingState() {
   useEffect(() => {
     const cached = getLocalLandingCache(schoolSlug);
     if (cached) {
+      if (cached.ppdb_title) setCustomSchoolName(cached.ppdb_title);
       if (cached.ppdb_hero_title) setHeroTitle(cached.ppdb_hero_title);
       if (cached.ppdb_hero_title_sub) setHeroTitleSub(cached.ppdb_hero_title_sub);
       if (cached.ppdb_hero_subtitle) setHeroSubtitle(cached.ppdb_hero_subtitle);
@@ -256,6 +260,9 @@ export function useSchoolLandingState() {
           const cfg = json.data;
           setLocalLandingCache(schoolSlug, cfg);
 
+          if (cfg.ppdb_title) {
+            setCustomSchoolName(cfg.ppdb_title);
+          }
           if (cfg.ppdb_landing_active !== undefined) {
             setIsLandingPageActive(
               cfg.ppdb_landing_active === true ||

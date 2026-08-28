@@ -214,7 +214,15 @@ export function useDashboardOverviewState() {
     return { labels: buckets.map((b) => b.label), counts };
   }, [applicants, trendView]);
 
-  const [isSpmbOpen, setIsSpmbOpen] = useState(() => isDemo);
+  const [isSpmbOpen, setIsSpmbOpen] = useState<boolean>(() => {
+    if (isDemo) return true;
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem(`ppdb_portal_status_${schoolSlug}`) || localStorage.getItem("ppdb_portal_status");
+      if (cached === "closed") return false;
+      if (cached === "open") return true;
+    }
+    return true;
+  });
   const [isUpdatingSpmb, setIsUpdatingSpmb] = useState(false);
 
   useEffect(() => {
@@ -222,23 +230,35 @@ export function useDashboardOverviewState() {
       setIsSpmbOpen(true);
       return;
     }
-    if (!schoolId && !schoolSlug) return;
-    const query = schoolId ? `school_id=${schoolId}` : `school_slug=${schoolSlug}`;
-    fetch(`/api/config?${query}`)
+    if (!schoolSlug && !schoolId) return;
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null);
+    const query = schoolId
+      ? `school_id=${schoolId}&school_slug=${encodeURIComponent(schoolSlug)}`
+      : `school_slug=${encodeURIComponent(schoolSlug)}`;
+
+    fetch(`/api/config?${query}&_t=${Date.now()}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      cache: "no-store"
+    })
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data) {
           const status = json.data.ppdb_portal_status;
-          if (status === "closed") setIsSpmbOpen(false);
-          else if (status === "open") setIsSpmbOpen(true);
-        } else {
-          setIsSpmbOpen(false);
+          if (status === "closed") {
+            setIsSpmbOpen(false);
+            if (typeof window !== "undefined") {
+              localStorage.setItem(`ppdb_portal_status_${schoolSlug}`, "closed");
+            }
+          } else if (status === "open") {
+            setIsSpmbOpen(true);
+            if (typeof window !== "undefined") {
+              localStorage.setItem(`ppdb_portal_status_${schoolSlug}`, "open");
+            }
+          }
         }
       })
-      .catch(() => {
-        setIsSpmbOpen(false);
-      });
-  }, [schoolId, schoolSlug, isDemo]);
+      .catch(() => {});
+  }, [schoolId, schoolSlug, isDemo, adminToken]);
 
   const handleToggleSpmbStatus = async () => {
     const nextStatus = !isSpmbOpen;
@@ -295,11 +315,16 @@ export function useDashboardOverviewState() {
 
     setIsUpdatingSpmb(true);
     try {
-      const res = await fetch(`/api/config?school_id=${schoolId}`, {
+      const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "");
+      const query = schoolId
+        ? `school_id=${schoolId}&school_slug=${encodeURIComponent(schoolSlug)}`
+        : `school_slug=${encodeURIComponent(schoolSlug)}`;
+
+      const res = await fetch(`/api/config?${query}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           key: "ppdb_portal_status",
@@ -309,6 +334,10 @@ export function useDashboardOverviewState() {
       const data = await res.json();
       if (data.success) {
         setIsSpmbOpen(nextStatus);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`ppdb_portal_status_${schoolSlug}`, nextStatus ? "open" : "closed");
+          localStorage.setItem("ppdb_portal_status", nextStatus ? "open" : "closed");
+        }
         Swal.fire({
           title: `Status SPMB ${statusText}!`,
           text: `Pendaftaran SPMB sekolah telah resmi di-${statusText.toLowerCase()}.`,

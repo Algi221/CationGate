@@ -241,11 +241,19 @@ export function useKelolaUIState() {
         } catch (_) {}
       }
 
-      // Merge safely: do not let empty draft strings or empty arrays overwrite valid server config
+      // Merge safely: do not let empty draft strings, empty arrays, or empty gelombang objects overwrite valid server config
       const mergedConfig = { ...config };
       if (draft && typeof draft === "object") {
         Object.entries(draft).forEach(([k, v]) => {
-          if (v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && v.length === 0 && config[k])) {
+          if (v !== undefined && v !== null && v !== "") {
+            if (Array.isArray(v) && v.length === 0 && config[k]) return;
+            if (k === "ppdb_gelombang_config" && typeof v === "object") {
+              const gVal = v as { gelombang1?: { start?: string; end?: string }; gelombang2?: { start?: string; end?: string } };
+              const hasDraftDates = Boolean(gVal?.gelombang1?.start || gVal?.gelombang1?.end || gVal?.gelombang2?.start || gVal?.gelombang2?.end);
+              if (!hasDraftDates && config.ppdb_gelombang_config) {
+                return; // preserve valid server gelombang config
+              }
+            }
             mergedConfig[k] = v;
           }
         });
@@ -319,7 +327,22 @@ export function useKelolaUIState() {
         setMajorsList([]);
       }
       if (activeConfig.ppdb_gelombang_config) {
-        setGelombangConfig(activeConfig.ppdb_gelombang_config);
+        let g = activeConfig.ppdb_gelombang_config;
+        if (typeof g === "string" && g.trim().startsWith("{")) {
+          try { g = JSON.parse(g); } catch (_e) {}
+        }
+        if (g && typeof g === "object") {
+          setGelombangConfig({
+            gelombang1: {
+              start: g.gelombang1?.start || "",
+              end: g.gelombang1?.end || ""
+            },
+            gelombang2: {
+              start: g.gelombang2?.start || "",
+              end: g.gelombang2?.end || ""
+            }
+          });
+        }
       } else if (!isDemo) {
         setGelombangConfig({
           gelombang1: { start: "", end: "" },

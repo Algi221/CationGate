@@ -35,6 +35,7 @@ export const SchoolAlur: React.FC<SchoolAlurProps> = ({ schoolPeriod, alurList }
       <div className="max-w-5xl mx-auto px-6">
         <div className="text-center mb-20">
           <ScrollFloat
+            key={schoolPeriod || "default-period"}
             containerClassName="inline-block mb-2"
             textClassName="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full"
             animationDuration={1}
@@ -43,7 +44,7 @@ export const SchoolAlur: React.FC<SchoolAlurProps> = ({ schoolPeriod, alurList }
             scrollEnd="bottom bottom-=40%"
             stagger={0.02}
           >
-            Proses Mudah &amp; Transparan · TP. {schoolPeriod}
+            Proses Mudah &amp; Transparan · TP. {schoolPeriod || "2026-2027"}
           </ScrollFloat>
           <ScrollFloat
             containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-xs pb-2"

@@ -37,14 +37,14 @@ export const ProfileVisiMisi: React.FC<ProfileVisiMisiProps> = ({ visi, misi, tu
 
           <div className="space-y-2">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Visi Sekolah</h3>
-            <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg leading-relaxed italic border-l-2 border-blue-900 dark:border-blue-500 pl-4 py-1">
+            <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg leading-relaxed italic border-l-2 border-blue-900 dark:border-blue-500 pl-4 py-1 break-words [overflow-wrap:anywhere]">
               &quot;{visi}&quot;
             </p>
           </div>
 
           <div className="space-y-2 pt-2">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Misi Sekolah</h3>
-            <div className="text-slate-700 dark:text-slate-300 text-base sm:text-lg whitespace-pre-wrap leading-relaxed pt-1">
+            <div className="text-slate-700 dark:text-slate-300 text-base sm:text-lg whitespace-pre-wrap leading-relaxed pt-1 break-words [overflow-wrap:anywhere]">
               {misi}
             </div>
           </div>
@@ -64,7 +64,7 @@ export const ProfileVisiMisi: React.FC<ProfileVisiMisiProps> = ({ visi, misi, tu
               Tujuan Sekolah
             </h2>
           </div>
-          <div className="text-slate-700 dark:text-slate-300 text-base sm:text-lg whitespace-pre-wrap leading-relaxed pt-2">
+          <div className="text-slate-700 dark:text-slate-300 text-base sm:text-lg whitespace-pre-wrap leading-relaxed pt-2 break-words [overflow-wrap:anywhere]">
             {tujuan}
           </div>
         </motion.div>

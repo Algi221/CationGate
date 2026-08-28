@@ -247,6 +247,7 @@ configRouter.get('/', async (c) => {
     const source = configs && configs.length > 0 ? 'db' : (Object.keys(configMap).length > 0 ? 'mem' : 'empty');
     console.log(`[GET-CONFIG] slug=${schoolSlug || 'none'} schoolId=${schoolId || 'none'} resolved=${resolvedUUID || 'none'} keys=${Object.keys(configMap).length} source=${source}`);
 
+    c.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     return c.json({
       success: true,
       data: configMap,

@@ -59,7 +59,7 @@ export const ProfileIdentitas: React.FC<ProfileIdentitasProps> = ({ identitas })
               <div className="w-full sm:w-1/3 text-sm font-semibold text-slate-500 dark:text-slate-400">
                 {row.label}
               </div>
-              <div className="w-full sm:w-2/3 text-sm font-bold text-slate-900 dark:text-slate-100 whitespace-pre-wrap">
+              <div className="w-full sm:w-2/3 text-sm font-bold text-slate-900 dark:text-slate-100 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                 {row.value || "-"}
               </div>
             </div>

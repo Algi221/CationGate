@@ -158,41 +158,66 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const searchRef = React.useRef<HTMLDivElement>(null);
 
   const searchableMenus = [
-    { title: "Beranda", desc: "Ringkasan & Metrik", href: href("/dashboard") },
+    { title: "Ringkasan", desc: "Ringkasan & Metrik Pendaftaran", href: href("/dashboard") },
     {
-      title: "Verifikasi Berkas",
-      desc: "Periksa kelengkapan berkas fisik",
-      href: href("/dashboard/verifikasi-berkas"),
+      title: "Verifikasi Sekolah",
+      desc: "Status verifikasi berkas legalitas instansi",
+      href: href("/dashboard/verification"),
     },
     {
-      title: "Data Pendaftar",
-      desc: "Daftar semua calon siswa",
-      href: href("/dashboard/pendaftar"),
+      title: "Data Calon Siswa",
+      desc: "Daftar seluruh calon siswa baru",
+      href: href("/dashboard/pendaftar?tab=active"),
     },
     {
-      title: "Jalur Pendaftaran",
-      desc: "Kelola kuota & afirmasi",
-      href: href("/dashboard/jalur-pendaftaran"),
+      title: "Pendaftar Pindahan",
+      desc: "Calon siswa mutasi / pindahan kelas XI & XII",
+      href: href("/dashboard/pendaftar?tab=transfer"),
     },
     {
-      title: "Daftar Ulang",
-      desc: "Kelola status daftar ulang",
-      href: href("/dashboard/daftar-ulang"),
+      title: "Kuota & Target Jalur",
+      desc: "Kelola kuota pendaftaran jurusan",
+      href: href("/dashboard/pendaftar?tab=kuota"),
+    },
+    {
+      title: "Tempat Sampah Siswa",
+      desc: "Data calon siswa yang dihapus sementara",
+      href: href("/dashboard/pendaftar?tab=trash"),
+    },
+    {
+      title: "Pembagian Kelas",
+      desc: "Pengelompokan kelas otomatis calon siswa",
+      href: href("/dashboard/pembagian-kelas"),
+    },
+    {
+      title: "Siswa Aktif",
+      desc: "Data siswa aktif & ekspor/impor excel",
+      href: href("/dashboard/siswa-aktif"),
     },
     {
       title: "Kelola Informasi",
-      desc: "Pengumuman & Berita",
+      desc: "Pengumuman & berita sekolah",
       href: href("/dashboard/informasi"),
     },
     {
+      title: "Profil Sekolah",
+      desc: "Identitas, visi misi, & struktur organisasi",
+      href: href("/dashboard/profil-sekolah"),
+    },
+    {
       title: "Kelola UI/Data",
-      desc: "Tampilan Landing Page",
+      desc: "Kustomisasi landing page & kejuruan",
       href: href("/dashboard/kelola-ui"),
     },
     {
       title: "Kelola Subscription",
-      desc: "Tagihan & Paket",
+      desc: "Tagihan, paket, & lisensi sekolah",
       href: href("/dashboard/subscription"),
+    },
+    {
+      title: "Manajemen Admin",
+      desc: "Kelola akun administrator sekolah",
+      href: href("/dashboard/admin"),
     },
   ];
 

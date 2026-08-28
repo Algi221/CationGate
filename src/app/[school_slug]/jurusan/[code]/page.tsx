@@ -122,19 +122,21 @@ export default function JurusanDetailPage() {
         <JurusanHero schoolSlug={schoolSlug} major={major} kuotaData={kuotaData} />
 
         {/* 2. PROFILE VIDEO */}
-        <JurusanVideo major={major} />
+        {major.video && <JurusanVideo major={major} />}
 
         {/* 3. CORE CURRICULUM */}
-        <JurusanCurriculum major={major} />
+        {major.syllabus && major.syllabus.length > 0 && <JurusanCurriculum major={major} />}
 
         {/* 4. ACTIVITY GALLERY */}
-        <JurusanGallery major={major} />
+        {major.gallery && major.gallery.length > 0 && <JurusanGallery major={major} />}
 
         {/* 5. CAREER OPPORTUNITIES */}
-        <JurusanCareers major={major} />
+        {major.careers && major.careers.length > 0 && <JurusanCareers major={major} />}
 
         {/* 6. FACILITIES & PARTNERS */}
-        <JurusanFacilities major={major} accentColor={accentColor} />
+        {major.facilities && major.facilities.length > 0 && (
+          <JurusanFacilities major={major} accentColor={accentColor} />
+        )}
 
         {/* 7. FINAL CTA & NEXT MAJOR PREVIEW */}
         {nextMajor && (

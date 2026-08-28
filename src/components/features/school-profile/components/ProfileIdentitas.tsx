@@ -9,8 +9,6 @@ interface ProfileIdentitasProps {
     akreditasi: string;
     alamat: string;
     npsn: string;
-    nis: string;
-    nss: string;
     tahun_berdiri: string;
     email: string;
   };
@@ -50,8 +48,6 @@ export const ProfileIdentitas: React.FC<ProfileIdentitasProps> = ({ identitas })
             { label: "Status Akreditasi", value: identitas.akreditasi },
             { label: "Alamat Lengkap", value: identitas.alamat },
             { label: "NPSN", value: identitas.npsn },
-            { label: "NIS", value: identitas.nis },
-            { label: "NSS", value: identitas.nss },
             { label: "Tahun Berdiri", value: identitas.tahun_berdiri },
             { label: "Email Resmi", value: identitas.email }
           ].map((row, idx) => (

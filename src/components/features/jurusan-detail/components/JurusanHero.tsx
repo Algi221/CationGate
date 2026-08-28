@@ -36,10 +36,12 @@ export const JurusanHero: React.FC<JurusanHeroProps> = ({
     }
   }
 
+  const hasBanner = Boolean(major.banner && major.banner.trim() !== "");
+
   return (
-    <section className="pt-32 pb-16 px-6 max-w-6xl mx-auto w-full relative z-10 flex flex-col lg:flex-row gap-12 items-center text-left">
+    <section className={`pt-32 pb-16 px-6 max-w-6xl mx-auto w-full relative z-10 flex flex-col ${hasBanner ? "lg:flex-row gap-12" : "gap-8 max-w-4xl"} items-center text-left`}>
       {/* Left Copy Column */}
-      <div className="w-full lg:w-1/2 space-y-6">
+      <div className={`w-full ${hasBanner ? "lg:w-1/2" : "max-w-3xl"} space-y-6`}>
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md">
             <Image
@@ -97,21 +99,23 @@ export const JurusanHero: React.FC<JurusanHeroProps> = ({
         </div>
       </div>
 
-      {/* Right Hero Visual Column */}
-      <div className="w-full lg:w-1/2 relative group">
-        <div className="absolute -inset-1.5 major-gradient-bg rounded-[36px] blur-lg opacity-40 group-hover:opacity-60 transition duration-700 pointer-events-none" />
+      {/* Right Hero Visual Column (Render ONLY when banner is provided) */}
+      {hasBanner && (
+        <div className="w-full lg:w-1/2 relative group">
+          <div className="absolute -inset-1.5 major-gradient-bg rounded-[36px] blur-lg opacity-40 group-hover:opacity-60 transition duration-700 pointer-events-none" />
 
-        <div className="relative bg-white dark:bg-[#0f172a] rounded-4xl p-3 border border-slate-200 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
-          <Image
-            src={sanitizeSrc(major.banner) || "/icon.png"}
-            alt={`${major.title} Banner`}
-            width={800}
-            height={450}
-            unoptimized
-            className="w-full h-full object-cover rounded-3xl transform group-hover:scale-[1.02] transition duration-700"
-          />
+          <div className="relative bg-white dark:bg-[#0f172a] rounded-4xl p-3 border border-slate-200 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
+            <Image
+              src={sanitizeSrc(major.banner) || "/icon.png"}
+              alt={`${major.title} Banner`}
+              width={800}
+              height={450}
+              unoptimized
+              className="w-full h-full object-cover rounded-3xl transform group-hover:scale-[1.02] transition duration-700"
+            />
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 };

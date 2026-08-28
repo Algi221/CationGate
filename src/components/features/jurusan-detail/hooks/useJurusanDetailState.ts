@@ -49,12 +49,12 @@ export function useJurusanDetailState() {
         textAccent: "text-blue-600 dark:text-blue-400",
         glowColor: "rgba(0,102,255,0.15)",
         logo: "/icon.png",
-        banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
-        syllabus: [{ subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi." }],
-        careers: [{ title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }],
-        facilities: ["Laboratorium Praktikum"],
+        banner: "",
+        syllabus: [],
+        careers: [],
+        facilities: [],
         gallery: [],
-        partners: "Mitra Industri Sekolah"
+        partners: ""
       });
       setNextMajor(null);
       setNextCode("");
@@ -99,7 +99,7 @@ export function useJurusanDetailState() {
                   title: (found.title as string) || (found.code as string),
                   alias: (found.code as string) || code.toUpperCase(),
                   subtitle: (found.title as string) || (found.code as string),
-                  tagline: "Coding the Future, Building Creative Solutions.",
+                  tagline: "Mendidik talenta unggul dan kompeten berstandar industri.",
                   desc: (found.desc as string) || "",
                   color: "from-blue-600 to-indigo-600",
                   accentColor: (found.color as string) || "#0066ff",
@@ -107,21 +107,13 @@ export function useJurusanDetailState() {
                   textAccent: "text-blue-600 dark:text-blue-400",
                   glowColor: "rgba(0,102,255,0.15)",
                   logo: (found.logo as string) || "/icon.png",
-                  banner:
-                    (found.banner as string) ||
-                    "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
+                  banner: (found.banner as string) || "",
                   video: (found.video as string) || undefined,
-                  syllabus: [
-                    { subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi." }
-                  ],
-                  careers: Array.isArray(found.careers)
-                    ? (found.careers as CareerItem[])
-                    : [{ title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }],
-                  facilities: Array.isArray(found.facilities)
-                    ? (found.facilities as string[])
-                    : ["Laboratorium Praktikum"],
+                  syllabus: Array.isArray(found.syllabus) ? (found.syllabus as { subject: string; desc: string }[]) : [],
+                  careers: Array.isArray(found.careers) ? (found.careers as CareerItem[]) : [],
+                  facilities: Array.isArray(found.facilities) ? (found.facilities as string[]) : [],
                   gallery: Array.isArray(found.gallery) ? (found.gallery as GalleryItem[]) : [],
-                  partners: "Mitra Industri Sekolah"
+                  partners: ""
                 };
                 return {
                   ...base,
@@ -129,8 +121,9 @@ export function useJurusanDetailState() {
                   desc: (found.desc as string) || base.desc,
                   accentColor: (found.color as string) || base.accentColor,
                   logo: (found.logo as string) || base.logo,
-                  banner: (found.banner as string) || base.banner,
+                  banner: (found.banner as string) || "",
                   video: (found.video as string) || base.video,
+                  syllabus: Array.isArray(found.syllabus) ? (found.syllabus as { subject: string; desc: string }[]) : base.syllabus,
                   careers: Array.isArray(found.careers) ? (found.careers as CareerItem[]) : base.careers,
                   facilities: Array.isArray(found.facilities) ? (found.facilities as string[]) : base.facilities,
                   gallery: Array.isArray(found.gallery) ? (found.gallery as GalleryItem[]) : base.gallery

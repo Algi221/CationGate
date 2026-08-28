@@ -115,7 +115,8 @@ export default function KelolaUIPage() {
     handleSaveAll,
     heroBgImage,
     setHeroBgImage,
-    handleHeroBgImageChange
+    handleHeroBgImageChange,
+    isDirty
   } = useKelolaUIState();
   const { href } = useSchoolHref();
 
@@ -226,8 +227,14 @@ export default function KelolaUIPage() {
           </a>
 
           <button
+            disabled={!isDirty || saving}
             onClick={() => setShowConfirmModal(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20"
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              isDirty && !saving
+                ? "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-md shadow-blue-500/20"
+                : "bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50 shadow-none border border-slate-200/50 dark:border-slate-700/50"
+            }`}
+            title={isDirty ? "Simpan Perubahan UI" : "Tidak ada perubahan data untuk disimpan"}
           >
             <Check size={13} />
             <span>Simpan</span>

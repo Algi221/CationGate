@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import { useSchoolStore } from "@/stores/useSchoolStore";
@@ -104,12 +104,74 @@ export function useKelolaUIState() {
   const [g2Error, setG2Error] = useState<string | null>(null);
 
   const [isInitialLoaded, setIsInitialLoaded] = useState(false);
+  const [initialSnapshot, setInitialSnapshot] = useState<string | null>(null);
   const [editingMajor, setEditingMajor] = useState<MajorItem | null>(null);
   const [isNewMajor, setIsNewMajor] = useState(false);
   const [revisions, setRevisions] = useState<RevisionLog[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [changeDescription, setChangeDescription] = useState("");
   const [dragActiveStates, setDragActiveStates] = useState<Record<string, boolean>>({});
+
+  const isDirty = useMemo(() => {
+    if (!initialSnapshot) return false;
+    const current = JSON.stringify({
+      ppdb_landing_active: isLandingPageActive,
+      ppdb_hero_title: heroTitle,
+      ppdb_hero_title_sub: heroTitleSub,
+      ppdb_hero_subtitle: heroSubtitle,
+      ppdb_hero_bg_image: heroBgImage,
+      ppdb_phone: phone,
+      ppdb_email: email,
+      ppdb_address: address,
+      ppdb_map_title: mapTitle,
+      ppdb_map_url: mapUrl,
+      ppdb_school_period: schoolPeriod,
+      ppdb_wa_group_url: waGroupUrl,
+      ppdb_wa_admin: waAdmin,
+      ppdb_form_guideline: formGuideline,
+      ppdb_form_fee: formFee,
+      ppdb_logo_url: schoolLogo,
+      ppdb_title: schoolTitle,
+      ppdb_footer_desc: footerDesc,
+      ppdb_alur_config: alurList,
+      ppdb_majors_config: majorsList,
+      ppdb_faq_config: faqList,
+      ppdb_faq_title: faqTitle,
+      ppdb_faq_subtitle: faqSubtitle,
+      ppdb_partners_config: partnersList,
+      ppdb_gelombang_config: gelombangConfig,
+      ppdb_fields_config: fieldsConfigUI
+    });
+    return current !== initialSnapshot;
+  }, [
+    initialSnapshot,
+    isLandingPageActive,
+    heroTitle,
+    heroTitleSub,
+    heroSubtitle,
+    heroBgImage,
+    phone,
+    email,
+    address,
+    mapTitle,
+    mapUrl,
+    schoolPeriod,
+    waGroupUrl,
+    waAdmin,
+    formGuideline,
+    formFee,
+    schoolLogo,
+    schoolTitle,
+    footerDesc,
+    alurList,
+    majorsList,
+    faqList,
+    faqTitle,
+    faqSubtitle,
+    partnersList,
+    gelombangConfig,
+    fieldsConfigUI
+  ]);
 
   useEffect(() => {
     requestAnimationFrame(() => setMounted(true));
@@ -366,6 +428,36 @@ export function useKelolaUIState() {
       if (activeConfig.ppdb_fields_config && typeof activeConfig.ppdb_fields_config === "object") {
         setFieldsConfigUI(prev => ({ ...prev, ...activeConfig.ppdb_fields_config }));
       }
+
+      const initialSnap = JSON.stringify({
+        ppdb_landing_active: activeConfig.ppdb_landing_active !== undefined ? (activeConfig.ppdb_landing_active === true || activeConfig.ppdb_landing_active === "true") : true,
+        ppdb_hero_title: activeConfig.ppdb_hero_title || "",
+        ppdb_hero_title_sub: activeConfig.ppdb_hero_title_sub || (!draft ? `Portal PPDB ${ppdbTitle || 'Online'}` : ""),
+        ppdb_hero_subtitle: activeConfig.ppdb_hero_subtitle || "",
+        ppdb_hero_bg_image: activeConfig.ppdb_hero_bg_image || "",
+        ppdb_phone: formatPhoneNumber(activeConfig.ppdb_phone || ""),
+        ppdb_email: activeConfig.ppdb_email || "",
+        ppdb_address: activeConfig.ppdb_address || activeConfig.ppdb_alamat || "",
+        ppdb_map_title: activeConfig.ppdb_map_title || "",
+        ppdb_map_url: activeConfig.ppdb_map_url || activeConfig.ppdb_maps_embed || "",
+        ppdb_school_period: activeConfig.ppdb_school_period || "",
+        ppdb_wa_group_url: activeConfig.ppdb_wa_group_url || "",
+        ppdb_wa_admin: formatPhoneNumber(activeConfig.ppdb_wa_admin || ""),
+        ppdb_form_guideline: activeConfig.ppdb_form_guideline || "",
+        ppdb_form_fee: activeConfig.ppdb_form_fee || "",
+        ppdb_logo_url: activeConfig.ppdb_logo_url || "",
+        ppdb_title: activeConfig.ppdb_title || "",
+        ppdb_footer_desc: activeConfig.ppdb_footer_desc || "",
+        ppdb_alur_config: Array.isArray(activeConfig.ppdb_alur_config) ? activeConfig.ppdb_alur_config : (!isDemo ? [] : DEFAULT_ALUR),
+        ppdb_majors_config: isDemo ? DEFAULT_MAJORS : (Array.isArray(activeConfig.ppdb_majors_config) ? activeConfig.ppdb_majors_config : []),
+        ppdb_faq_config: Array.isArray(activeConfig.ppdb_faq_config) ? activeConfig.ppdb_faq_config : (isDemo ? DEFAULT_FAQ : []),
+        ppdb_faq_title: activeConfig.ppdb_faq_title || "",
+        ppdb_faq_subtitle: activeConfig.ppdb_faq_subtitle || "",
+        ppdb_partners_config: Array.isArray(activeConfig.ppdb_partners_config) ? activeConfig.ppdb_partners_config : (isDemo ? DEFAULT_PARTNERS : []),
+        ppdb_gelombang_config: activeConfig.ppdb_gelombang_config || (isDemo ? { gelombang1: { start: "2026-01-01", end: "2026-04-30" }, gelombang2: { start: "2026-05-01", end: "2026-07-15" } } : { gelombang1: { start: "", end: "" }, gelombang2: { start: "", end: "" } }),
+        ppdb_fields_config: (activeConfig.ppdb_fields_config && typeof activeConfig.ppdb_fields_config === "object") ? { ...DEFAULT_FIELDS_CONFIG_UI, ...activeConfig.ppdb_fields_config } : DEFAULT_FIELDS_CONFIG_UI
+      });
+      setInitialSnapshot(initialSnap);
 
       if (draft) {
         showToastMsg("Draf perubahan berhasil dipulihkan dari sesi sebelumnya.", "info");
@@ -877,6 +969,7 @@ export function useKelolaUIState() {
     handleSchoolLogoChange,
     heroBgImage,
     setHeroBgImage,
-    handleHeroBgImageChange
+    handleHeroBgImageChange,
+    isDirty
   };
 }

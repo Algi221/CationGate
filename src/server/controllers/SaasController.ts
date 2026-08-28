@@ -91,7 +91,7 @@ export class SaasController {
         if (typeof plan_name === 'string' && plan_name.toLowerCase().includes('enterprise')) {
           grossAmount = 35000000;
         } else {
-          grossAmount = 15000000;
+          grossAmount = 1200000;
         }
       }
 

@@ -409,47 +409,24 @@ export function OtpInput({
                       : active
                         ? "border-[#FFC000] bg-white ring-4 ring-[#FFC000]/15 dark:border-[#FFC000] dark:bg-slate-900"
                         : char
-                          ? "border-amber-400 bg-white font-bold text-slate-900 dark:border-amber-500/50 dark:bg-slate-900"
+                          ? "border-amber-400 bg-white dark:border-amber-500/50 dark:bg-slate-900"
                           : "border-slate-200 bg-slate-50/80 shadow-inner dark:border-slate-800 dark:bg-slate-900/60"
                 }`}
               />
 
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-0 grid place-items-center"
+                className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
               >
                 <AnimatePresence initial={false} mode="popLayout">
                   {char ? (
                     <motion.span
                       key={char}
-                      initial={
-                        reduced
-                          ? false
-                          : {
-                              opacity: 0,
-                              scale: 0.97,
-                              y: 10,
-                              filter: "blur(6px)",
-                            }
-                      }
-                      animate={{
-                        opacity: 1,
-                        scale: 1,
-                        y: 0,
-                        filter: "blur(0px)",
-                      }}
-                      exit={
-                        reduced
-                          ? { opacity: 0 }
-                          : {
-                              opacity: 0,
-                              scale: 0.98,
-                              y: -6,
-                              filter: "blur(3px)",
-                            }
-                      }
+                      initial={reduced ? false : { opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
                       transition={enter}
-                      className="col-start-1 row-start-1 font-mono text-lg sm:text-xl font-black tabular-nums text-slate-950 dark:text-white"
+                      className="text-lg sm:text-xl font-black text-slate-950 dark:text-white leading-none"
                     >
                       {char}
                     </motion.span>

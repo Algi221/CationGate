@@ -353,7 +353,7 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
           slug: sSlug,
           official_email: sEmail,
           status: 'FULL_VERIFIED',
-          subscription_plan: targetSchool?.plan_type || 'PRO',
+          subscription_plan: targetSchool?.plan_type || 'FREE',
           npsn: targetSchool?.npsn || null,
           dapodik_code: targetSchool?.dapodik_code || null
         }, { onConflict: 'slug' })
@@ -374,19 +374,27 @@ gatekeeperRouter.post('/approve-school', gatekeeperAuth, async (c) => {
       } catch (_e) {}
     }
 
-    // 3.1 Upsert active record in school_subscriptions
+    // 3.1 Upsert record in school_subscriptions (Default: Free Trial 30 Hari, SPMB closed)
     if (savedSchoolUUID) {
       try {
         const now = new Date();
-        const oneYearLater = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         await supabase.from('school_subscriptions').insert({
           school_id: savedSchoolUUID,
-          plan_name: targetSchool?.plan_type ? `${targetSchool.plan_type}_YEARLY` : 'PRO_YEARLY',
-          status: 'ACTIVE',
+          plan_name: targetSchool?.plan_type || 'FREE_TRIAL',
+          status: targetSchool?.plan_type && targetSchool.plan_type !== 'FREE' ? 'ACTIVE' : 'TRIAL',
           started_at: now.toISOString(),
-          expires_at: oneYearLater.toISOString(),
-          amount_paid: targetSchool?.plan_type === 'PRO_MAX' ? 1200000 : 750000
+          expires_at: thirtyDaysLater.toISOString(),
+          amount_paid: 0
         });
+
+        // Ensure default SPMB portal is closed for Free plan
+        await supabase.from('landing_page_config').upsert({
+          school_id: savedSchoolUUID,
+          config_key: 'ppdb_portal_status',
+          config_value: 'closed',
+          updated_at: now.toISOString()
+        }, { onConflict: 'school_id,config_key' });
       } catch (subErr: unknown) {
         console.warn('school_subscriptions insert warning:', subErr instanceof Error ? subErr.message : String(subErr));
       }

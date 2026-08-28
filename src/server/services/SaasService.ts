@@ -795,7 +795,7 @@ export class SaasService {
     if (error || !data || data.length === 0) {
       return [
         { id: 1, name: 'Free Trial', price_monthly: 0, price_yearly: 0, features: ['Pendaftaran Online PPDB', 'Kelola Data Calon Siswa', 'Export Excel', 'Landing Page Sekolah', 'Maks 100 Pendaftar', 'Masa Aktif 30 Hari'], is_active: true },
-        { id: 2, name: 'Pro Tahunan', price_monthly: 1250000, price_yearly: 15000000, features: ['Semua Fitur Free Trial', 'Unlimited Pendaftar', 'Custom Branding & Logo', 'Multi-Admin Dashboard', 'WhatsApp Notifikasi', 'Prioritas Support 24/7', 'Pembagian Kelas Otomatis', 'Laporan & Statistik Lengkap'], is_active: true },
+        { id: 2, name: 'Pro Tahunan', price_monthly: 100000, price_yearly: 1200000, features: ['Semua Fitur Free Trial', 'Unlimited Pendaftar', 'Custom Branding & Logo', 'Multi-Admin Dashboard', 'WhatsApp Notifikasi', 'Prioritas Support 24/7', 'Pembagian Kelas Otomatis', 'Laporan & Statistik Lengkap'], is_active: true },
         { id: 3, name: 'Enterprise Institution', price_monthly: 2916666, price_yearly: 35000000, features: ['Semua Fitur Pro Tahunan', 'Multi-Kampus & Cabang Yayasan', 'Integrasi Dapodik & Emis', 'Dedicated Account Manager', 'Custom Domain Pribadi', 'SLA Uptime 99.9%'], is_active: true }
       ];
     }

@@ -318,7 +318,7 @@ export default function SubscriptionManagementPage() {
     {
       id: 2,
       name: "Pro Tahunan",
-      price_yearly: 15000000,
+      price_yearly: 1200000,
       features: [
         "Semua Fitur Free Trial",
         "Unlimited Pendaftar",

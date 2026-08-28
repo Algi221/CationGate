@@ -304,8 +304,8 @@ export function SchoolNavbar({
                 heading: "Profil Sekolah",
                 href: href("/profil"),
                 subItems: [
-                  { title: "Sejarah", href: href("/profil?section=sejarah") },
                   { title: "Identitas Sekolah", href: href("/profil?section=identitas") },
+                  { title: "Sejarah", href: href("/profil?section=sejarah") },
                   { title: "Visi & Misi", href: href("/profil?section=visimisi") },
                   { title: "Tujuan", href: href("/profil?section=tujuan") }
                 ]

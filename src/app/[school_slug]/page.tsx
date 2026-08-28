@@ -1,148 +1,50 @@
-"use client";
+import { SchoolLandingClient } from "@/components/features/school-landing/components/SchoolLandingClient";
+import { getCached } from "@/server/db/redis";
+import { pool } from "@/server/db/client";
 
-import React from "react";
-import { SchoolNavbar } from "@/components/landing/SchoolNavbar";
-import { SchoolFooter } from "@/components/landing/SchoolFooter";
-import { ErrorView } from "@/components/features/error";
+interface PageProps {
+  params: Promise<{ school_slug: string }>;
+}
 
-import { useSchoolLandingState } from "@/components/features/school-landing/hooks/useSchoolLandingState";
-import { SchoolHero } from "@/components/features/school-landing/components/SchoolHero";
-import { SchoolGelombang } from "@/components/features/school-landing/components/SchoolGelombang";
-import { SchoolAlur } from "@/components/features/school-landing/components/SchoolAlur";
-import { SchoolMajors } from "@/components/features/school-landing/components/SchoolMajors";
-import { SchoolKemitraan } from "@/components/features/school-landing/components/SchoolKemitraan";
-import { SchoolFaq } from "@/components/features/school-landing/components/SchoolFaq";
-import { SchoolContact } from "@/components/features/school-landing/components/SchoolContact";
-import { SchoolUnverifiedLandingView } from "@/components/features/school-landing/components/SchoolUnverifiedLandingView";
+export default async function SchoolLandingPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const schoolSlug = resolvedParams?.school_slug || "";
 
-export default function SchoolLandingPage() {
-  const {
-    schoolSlug,
-    schoolDisplayName,
-    isSchoolNotFound,
+  const initialConfig: Record<string, unknown> = {};
 
-    isPlatformMaintenance,
-    schoolStatus,
-    isSchoolVerified,
-    isConfigLoaded,
-    heroTitle,
-    heroTitleSub,
-    heroSubtitle,
-    heroBgImage,
-    address,
-    mapTitle,
-    mapUrl,
-    waAdmin,
-    schoolPeriod,
-    faqList,
-    faqTitle,
-    faqSubtitle,
-    alurList,
-    majors,
-    partnersList,
-    gelombangConfig,
-    formatDate
-  } = useSchoolLandingState();
-
-  if (isPlatformMaintenance) {
-    return (
-      <ErrorView
-        title="Mode Pemeliharaan Platform"
-        description="Platform CationGate sedang dalam proses pemeliharaan sistem & peningkatan infrastruktur. Layanan pendaftaran akan segera kembali aktif."
-        urlPath={`/${schoolSlug}`}
-        ctaText="Coba Muat Ulang"
-        ctaHref={`/${schoolSlug}`}
-      />
-    );
+  if (schoolSlug && schoolSlug !== "demo") {
+    try {
+      // 1. Try Redis cache for ultra-fast response (0ms)
+      const cached = await getCached<Record<string, unknown>>(`config_${schoolSlug}`);
+      if (cached && typeof cached === "object") {
+        Object.assign(initialConfig, cached);
+      } else {
+        // 2. Direct server pool query for instant SSR
+        const pgRes = await pool.query(
+          `SELECT config_key, config_value FROM landing_page_config 
+           WHERE school_id::text = $1 
+              OR school_id::text IN (SELECT id::text FROM schools WHERE slug = $1)`,
+          [schoolSlug]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          pgRes.rows.forEach((r: { config_key: string; config_value: unknown }) => {
+            let val = r.config_value;
+            if (typeof val === "string" && (val.startsWith("{") || val.startsWith("["))) {
+              try { val = JSON.parse(val); } catch (_) {}
+            }
+            initialConfig[r.config_key] = val;
+          });
+        }
+      }
+    } catch (_err) {
+      // Graceful fallback to client fetching
+    }
   }
-
-  if (isSchoolNotFound) {
-    return (
-      <ErrorView
-        title="Halaman Tidak Ditemukan"
-        description={`Maaf, halaman instansi '${schoolSlug}' tidak dapat ditemukan atau belum terdaftar di platform CationGate.`}
-        urlPath={`/${schoolSlug}`}
-        ctaText="Kembali ke Beranda CationGate"
-        ctaHref="/"
-      />
-    );
-  }
-
-  // Block landing page if school is unconfirmed / pending Gatekeeper verification
-  if (isConfigLoaded && !isSchoolVerified) {
-    return (
-      <SchoolUnverifiedLandingView
-        schoolSlug={schoolSlug}
-        schoolDisplayName={schoolDisplayName}
-        schoolStatus={schoolStatus}
-      />
-    );
-  }
-
-  // NOTE: isLandingPageActive gate removed — landing page is always accessible to students
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#020617] text-slate-900 dark:text-white transition-colors duration-300 font-sans selection:bg-blue-500 selection:text-white">
-      {/* NAVBAR */}
-      <SchoolNavbar schoolSlug={schoolSlug} overrideTitle={schoolDisplayName} />
-
-      {/* MAIN CONTENT SECTIONS */}
-      <main className="grow w-full relative z-0">
-        {/* 1. HERO SECTION */}
-        <SchoolHero
-          schoolSlug={schoolSlug}
-          schoolDisplayName={schoolDisplayName}
-          heroTitle={heroTitle}
-          heroTitleSub={heroTitleSub}
-          heroSubtitle={heroSubtitle}
-          address={address}
-          majors={majors}
-          heroBgImage={heroBgImage}
-        />
-
-        {/* 2. JADWAL GELOMBANG PENDAFTARAN */}
-        <SchoolGelombang
-          schoolPeriod={schoolPeriod}
-          gelombangConfig={gelombangConfig}
-          formatDate={formatDate}
-        />
-
-        {/* 3. ALUR PENDAFTARAN */}
-        <SchoolAlur
-          schoolPeriod={schoolPeriod}
-          alurList={alurList}
-        />
-
-        {/* 4. PROGRAM KEAHLIAN / JURUSAN */}
-        <SchoolMajors
-          schoolSlug={schoolSlug}
-          majors={majors}
-        />
-
-        {/* 5. KEMITRAAN INDUSTRI & SERTIFIKASI */}
-        <SchoolKemitraan
-          partnersList={partnersList}
-        />
-
-        {/* 6. FAQ PPDB */}
-        <SchoolFaq
-          faqTitle={faqTitle}
-          faqSubtitle={faqSubtitle}
-          faqList={faqList}
-        />
-
-        {/* 7. LOKASI MAPS & KONTAK WHATSAPP */}
-        <SchoolContact
-          mapTitle={mapTitle}
-          mapUrl={mapUrl}
-          address={address}
-          waAdmin={waAdmin}
-          schoolDisplayName={schoolDisplayName}
-        />
-      </main>
-
-      {/* FOOTER */}
-      <SchoolFooter schoolSlug={schoolSlug} />
-    </div>
+    <SchoolLandingClient
+      initialData={Object.keys(initialConfig).length > 0 ? initialConfig : undefined}
+      serverSchoolSlug={schoolSlug}
+    />
   );
 }

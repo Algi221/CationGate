@@ -125,7 +125,7 @@ const parseConfigArray = <T>(val: unknown): T[] | null => {
   return null;
 };
 
-export function useSchoolLandingState() {
+export function useSchoolLandingState(initialData?: Record<string, unknown>) {
   const { ppdbTitle, isSchoolNotFound, schoolStatus, isConfigLoaded } = usePPDB();
   const params = useParams();
   const schoolSlug =
@@ -135,10 +135,15 @@ export function useSchoolLandingState() {
       : "sekolah");
   const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
 
-  const [customSchoolName, setCustomSchoolName] = useState<string>("");
+  const initialCfg = initialData || getLocalLandingCache(schoolSlug) || {};
+
+  const [customSchoolName, setCustomSchoolName] = useState<string>(
+    (initialCfg.ppdb_title as string) || ""
+  );
 
   const schoolDisplayName =
     customSchoolName ||
+    (initialCfg.ppdb_title as string) ||
     ppdbTitle ||
     (isDemo ? "SMK Demo Indonesia" : schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
 
@@ -149,39 +154,63 @@ export function useSchoolLandingState() {
     isDemo;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroTitle, setHeroTitle] = useState<string>("Penerimaan Peserta Didik Baru");
+  const [heroTitle, setHeroTitle] = useState<string>(
+    (initialCfg.ppdb_hero_title as string) || "Penerimaan Peserta Didik Baru"
+  );
   const [heroTitleSub, setHeroTitleSub] = useState<string>(
-    isDemo ? `SPMB SMK Demo` : (schoolDisplayName ? `SPMB ${schoolDisplayName}` : "Tahun Ajaran 2026/2027")
+    (initialCfg.ppdb_hero_title_sub as string) || (isDemo ? `SPMB SMK Demo` : (schoolDisplayName ? `SPMB ${schoolDisplayName}` : "Tahun Ajaran 2026/2027"))
   );
   const [heroSubtitle, setHeroSubtitle] = useState<string>(
-    "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
+    (initialCfg.ppdb_hero_subtitle as string) || "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
   );
-  const [heroBgImage, setHeroBgImage] = useState<string>("");
+  const [heroBgImage, setHeroBgImage] = useState<string>((initialCfg.ppdb_hero_bg_image as string) || "");
 
-  const [address, setAddress] = useState<string>(isDemo ? "Jl. Pendidikan No. 1, Jakarta" : "");
-  const [mapTitle, setMapTitle] = useState<string>(`Kunjungi ${schoolDisplayName}`);
-  const [mapUrl, setMapUrl] = useState<string>("");
-  const [waAdmin, setWaAdmin] = useState<string>("");
-  const [schoolPeriod, setSchoolPeriod] = useState<string>("2026-2027");
+  const [address, setAddress] = useState<string>(
+    (initialCfg.ppdb_address as string) || (initialCfg.ppdb_alamat as string) || (isDemo ? "Jl. Pendidikan No. 1, Jakarta" : "")
+  );
+  const [mapTitle, setMapTitle] = useState<string>((initialCfg.ppdb_map_title as string) || `Kunjungi ${schoolDisplayName}`);
+  const [mapUrl, setMapUrl] = useState<string>((initialCfg.ppdb_map_url as string) || (initialCfg.ppdb_maps_embed as string) || "");
+  const [waAdmin, setWaAdmin] = useState<string>((initialCfg.ppdb_wa_admin as string) || "");
+  const [schoolPeriod, setSchoolPeriod] = useState<string>((initialCfg.ppdb_school_period as string) || "2026-2027");
 
-  const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
-  const [faqTitle, setFaqTitle] = useState<string>("Pertanyaan yang Sering Diajukan");
+  const initialFaq = parseConfigArray<FaqItem>(initialCfg.ppdb_faq_config);
+  const [faqList, setFaqList] = useState<FaqItem[]>(
+    initialFaq && initialFaq.length > 0 ? initialFaq : (isDemo ? DEFAULT_FAQ : [])
+  );
+  const [faqTitle, setFaqTitle] = useState<string>((initialCfg.ppdb_faq_title as string) || "Pertanyaan yang Sering Diajukan");
   const [faqSubtitle, setFaqSubtitle] = useState<string>(
-    "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru."
+    (initialCfg.ppdb_faq_subtitle as string) || "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru."
   );
 
-  const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
-  const [majors, setMajors] = useState<MajorItem[]>(DEFAULT_MAJORS);
+  const initialAlur = parseConfigArray<AlurItem>(initialCfg.ppdb_alur_config);
+  const [alurList, setAlurList] = useState<AlurItem[]>(
+    initialAlur && initialAlur.length > 0 ? initialAlur : (isDemo ? DEFAULT_ALUR : [])
+  );
+
+  const initialMajors = parseConfigArray<MajorItem>(initialCfg.ppdb_majors_config);
+  const [majors, setMajors] = useState<MajorItem[]>(
+    initialMajors && initialMajors.length > 0 ? initialMajors : (isDemo ? DEFAULT_MAJORS : [])
+  );
   const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
   const [isPlatformMaintenance, setIsPlatformMaintenance] = useState<boolean>(false);
+
+  const initialPartners = parseConfigArray<PartnerItem>(initialCfg.ppdb_partners_config);
   const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>(
-    DEFAULT_PARTNERS
+    initialPartners && initialPartners.length > 0 ? initialPartners : (isDemo ? DEFAULT_PARTNERS : [])
   );
 
-  const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>({
-    gelombang1: { start: "2026-01-01", end: "2026-06-30" },
-    gelombang2: { start: "2026-07-01", end: "2026-08-31" }
-  });
+  let initialG: GelombangConfig = {
+    gelombang1: { start: "", end: "" },
+    gelombang2: { start: "", end: "" }
+  };
+  if (initialCfg.ppdb_gelombang_config) {
+    let rawG = initialCfg.ppdb_gelombang_config;
+    if (typeof rawG === "string" && rawG.trim().startsWith("{")) {
+      try { rawG = JSON.parse(rawG); } catch (_e) {}
+    }
+    if (rawG && typeof rawG === "object") initialG = rawG as GelombangConfig;
+  }
+  const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>(initialG);
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "";
@@ -292,28 +321,28 @@ export function useSchoolLandingState() {
           if (parsedFaq && parsedFaq.length > 0) {
             setFaqList(parsedFaq);
           } else {
-            setFaqList(DEFAULT_FAQ);
+            setFaqList(isDemo ? DEFAULT_FAQ : []);
           }
 
           const parsedAlur = parseConfigArray<AlurItem>(cfg.ppdb_alur_config);
           if (parsedAlur && parsedAlur.length > 0) {
             setAlurList(parsedAlur);
           } else {
-            setAlurList(DEFAULT_ALUR);
+            setAlurList(isDemo ? DEFAULT_ALUR : []);
           }
 
           const parsedMajors = parseConfigArray<MajorItem>(cfg.ppdb_majors_config);
           if (parsedMajors && parsedMajors.length > 0) {
             setMajors(parsedMajors);
           } else {
-            setMajors(DEFAULT_MAJORS);
+            setMajors(isDemo ? DEFAULT_MAJORS : []);
           }
 
           const parsedPartners = parseConfigArray<PartnerItem>(cfg.ppdb_partners_config);
           if (parsedPartners && parsedPartners.length > 0) {
             setPartnersList(parsedPartners);
           } else {
-            setPartnersList(DEFAULT_PARTNERS);
+            setPartnersList(isDemo ? DEFAULT_PARTNERS : []);
           }
 
           let g = cfg.ppdb_gelombang_config;

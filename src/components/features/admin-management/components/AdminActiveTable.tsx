@@ -1,7 +1,6 @@
-"use client";
-
 import React from "react";
-import { User, KeyRound, Edit3, Trash2, Mail, CheckCircle2, Clock, Copy, RefreshCw } from "lucide-react";
+import Image from "next/image";
+import { KeyRound, Edit3, Trash2, Mail, CheckCircle2, Clock, Copy, RefreshCw } from "lucide-react";
 import { AdminItem } from "../types";
 import Swal from "sweetalert2";
 
@@ -70,7 +69,7 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                 <td colSpan={5} className="text-center py-16 px-4">
                   <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-center space-y-3">
                     <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                      <User size={22} />
+                      <Mail size={22} />
                     </div>
                     <p className="text-sm font-bold text-slate-800 dark:text-white">Belum Ada Staf Admin Tambahan</p>
                     <p className="text-xs text-slate-400 leading-relaxed">
@@ -89,8 +88,12 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                     <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
                       <div className="flex items-center gap-3">
                         <div className="relative">
-                          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black">
-                            <User size={18} />
+                          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black overflow-hidden">
+                            {admin.foto_profil ? (
+                              <Image src={admin.foto_profil} alt={admin.nama_lengkap} width={36} height={36} className="w-full h-full object-cover" unoptimized />
+                            ) : (
+                              <span className="text-sm font-black">{(admin.nama_lengkap || "A").charAt(0).toUpperCase()}</span>
+                            )}
                           </div>
                           <span
                             className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-[#0f172a] ${

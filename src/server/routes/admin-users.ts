@@ -222,7 +222,7 @@ adminUsersRouter.get('/', async (c) => {
 
     let query = supabase
       .from('admin_users')
-      .select('id, username, email, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at')
+      .select('id, username, email, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at, foto_profil')
       .is('deleted_at', null)
       .order('id', { ascending: true });
 
@@ -238,7 +238,7 @@ adminUsersRouter.get('/', async (c) => {
       // Fallback: query via direct PostgreSQL
       try {
         const pgRes = await pool.query(
-          `SELECT id, username, email, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at
+          `SELECT id, username, email, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at, foto_profil
            FROM admin_users
            WHERE deleted_at IS NULL AND (school_id::text = $1 OR school_id IS NULL)
            ORDER BY id ASC`,

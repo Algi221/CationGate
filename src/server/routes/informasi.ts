@@ -121,12 +121,7 @@ router.get('/', async (c: Context) => {
       }
     };
 
-    // 1. In-memory entries
-    const memList1 = fontInMemInformasi.get(String(rawSchoolId)) || [];
-    const memList2 = resolved ? (fontInMemInformasi.get(String(resolved)) || []) : [];
-    [...memList1, ...memList2].forEach(addRow);
-
-    // 2. Supabase (check 'informasi' and 'school_announcements')
+    // 1. Supabase (check 'informasi' and 'school_announcements')
     try {
       let query = supabase.from('informasi').select('*');
       if (numId !== null) {
@@ -157,7 +152,7 @@ router.get('/', async (c: Context) => {
       }
     } catch (_sbErr2) {}
 
-    // 3. Direct PostgreSQL
+    // 2. Direct PostgreSQL
     try {
       const pgRes = await pool.query(
         `SELECT * FROM informasi 
@@ -170,6 +165,11 @@ router.get('/', async (c: Context) => {
         pgRes.rows.forEach(addRow);
       }
     } catch (_pgErr) {}
+
+    // 3. In-memory entries (for local newly created uncommitted rows)
+    const memList1 = fontInMemInformasi.get(String(rawSchoolId)) || [];
+    const memList2 = resolved ? (fontInMemInformasi.get(String(resolved)) || []) : [];
+    [...memList1, ...memList2].forEach(addRow);
 
     // 4. Sanitize media - PRESERVE video & dokumen URLs intact
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -197,9 +197,11 @@ router.get('/', async (c: Context) => {
     // Sort newest first
     sanitizedRows.sort((a, b) => new Date(b.created_at || b.tanggal).getTime() - new Date(a.created_at || a.tanggal).getTime());
 
+    c.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     return c.json({ success: true, data: sanitizedRows });
   } catch (error: unknown) {
     console.error('Error fetching informasi:', error);
+    c.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     return c.json({ success: true, data: [] });
   }
 });
@@ -210,12 +212,6 @@ router.get('/:id', async (c: Context) => {
     const id = parseInt(c.req.param('id') || '0');
     if (isNaN(id) || id <= 0) {
       return c.json({ success: false, message: 'ID tidak valid.' }, 400);
-    }
-
-    // Check in-memory first
-    for (const list of fontInMemInformasi.values()) {
-      const found = list.find((item) => item.id === id);
-      if (found) return c.json({ success: true, data: found });
     }
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
@@ -234,9 +230,21 @@ router.get('/:id', async (c: Context) => {
     }
 
     if (!record) {
+      // Check in-memory as fallback
+      for (const list of fontInMemInformasi.values()) {
+        const found = list.find((item) => item.id === id);
+        if (found) {
+          record = found;
+          break;
+        }
+      }
+    }
+
+    if (!record) {
       return c.json({ success: false, message: 'Informasi tidak ditemukan.' }, 404);
     }
 
+    c.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     return c.json({ success: true, data: record });
   } catch (error: unknown) {
     console.error('Error fetching informasi detail:', error);

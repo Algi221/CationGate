@@ -58,7 +58,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({ ppdbTitle, ringkasan, 
           variants={fadeInVariant}
           className="max-w-4xl mx-auto text-center"
         >
-          <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg font-normal leading-relaxed whitespace-pre-wrap">
+          <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg font-normal leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
             {ringkasan ||
               `${ppdbTitle} merupakan institusi pendidikan teknik dan kejuruan yang didirikan dengan misi pengabdian ilmu pengetahuan dan teknologi untuk memajukan bangsa. ${ppdbTitle} hadir untuk mengoptimalkan pembangunan pendidikan yang maju dan bermartabat.`}
           </p>

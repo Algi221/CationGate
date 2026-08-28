@@ -140,9 +140,12 @@ export function useInformasiState() {
 
       try {
         const token = getAuthToken();
-        const queryParams = schoolSlug ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}` : "";
+        const queryParams = schoolSlug
+          ? `?school_id=${encodeURIComponent(schoolSlug)}&school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`
+          : `?_t=${Date.now()}`;
         const res = await fetch(`${BACKEND_URL}/informasi${queryParams}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          cache: "no-store"
         });
         const data = await res.json();
         if (data.success) {

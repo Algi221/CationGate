@@ -69,7 +69,7 @@ export const ProfileSejarah: React.FC<ProfileSejarahProps> = ({ sejarah, videoUr
               Sejarah Singkat
             </h2>
           </div>
-          <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-base sm:text-lg whitespace-pre-wrap pt-2">
+          <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-base sm:text-lg whitespace-pre-wrap break-words [overflow-wrap:anywhere] pt-2">
             {sejarah}
           </div>
         </motion.div>

@@ -64,8 +64,36 @@ export default function ProfilSekolahPage() {
   const loadConfigData = React.useCallback(async () => {
     const targetSlug = schoolSlug || schoolId;
     if (!targetSlug) return;
+
+    // First load from localStorage cache if available for instant hydration
+    if (typeof window !== "undefined") {
+      try {
+        const localSaved = localStorage.getItem(`ppdb_profil_sekolah_${targetSlug}`);
+        if (localSaved) {
+          const p = JSON.parse(localSaved);
+          if (p && typeof p === "object") {
+            if (p.identitas) setIdentitas(prev => ({ ...prev, ...p.identitas }));
+            if (p.sejarah) setSejarah(p.sejarah);
+            if (p.ringkasan) setRingkasan(p.ringkasan);
+            if (p.video_profil_url !== undefined && p.video_profil_url !== null) setVideoProfilUrl(p.video_profil_url);
+            if (p.hero_image) setHeroImage(p.hero_image);
+            if (p.pimpinan) setPimpinan(prev => ({ ...prev, ...p.pimpinan }));
+            if (p.visi_misi) {
+              setVisi(p.visi_misi.visi || "");
+              setMisi(p.visi_misi.misi || "");
+            }
+            if (p.tujuan) setTujuan(p.tujuan);
+          }
+        }
+      } catch (_e) {}
+    }
+
     try {
-      const res = await fetch(`/api/config?school_slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`);
+      const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null);
+      const res = await fetch(`/api/config?school_slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        cache: "no-store"
+      });
       const json = await res.json();
       if (json.success && json.data) {
         const c = json.data;
@@ -91,47 +119,20 @@ export default function ProfilSekolahPage() {
             setMisi(p.visi_misi.misi || "");
           }
           if (p.tujuan) setTujuan(p.tujuan);
+
+          if (typeof window !== "undefined") {
+            localStorage.setItem(`ppdb_profil_sekolah_${targetSlug}`, JSON.stringify(p));
+          }
         }
       }
     } catch (err) {
       console.warn("Gagal memuat konfigurasi profil sekolah:", err);
     }
-  }, [schoolSlug, schoolId]);
+  }, [schoolSlug, schoolId, adminToken]);
 
   useEffect(() => {
     loadConfigData();
   }, [loadConfigData]);
-
-  useEffect(() => {
-    if (ppdbTitle) {
-      setIdentitas(prev => ({ ...prev, nama: ppdbTitle }));
-    }
-    if (ppdbLogo) setLogoInput(ppdbLogo);
-
-    if (profilSekolah) {
-      let p = profilSekolah;
-      if (typeof p === "string" && (p.startsWith("{") || p.startsWith("["))) {
-        try { p = JSON.parse(p); } catch (_e) {}
-      }
-      if (p && typeof p === "object") {
-        if (p.identitas) {
-          setIdentitas(prev => ({ ...prev, ...p.identitas }));
-        }
-        if (p.sejarah) setSejarah(p.sejarah);
-        if (p.ringkasan) setRingkasan(p.ringkasan);
-        if (p.video_profil_url !== undefined && p.video_profil_url !== null) setVideoProfilUrl(p.video_profil_url);
-        if (p.hero_image) setHeroImage(p.hero_image);
-        if (p.pimpinan) {
-          setPimpinan(prev => ({ ...prev, ...p.pimpinan }));
-        }
-        if (p.visi_misi) {
-          setVisi(p.visi_misi.visi || "");
-          setMisi(p.visi_misi.misi || "");
-        }
-        if (p.tujuan) setTujuan(p.tujuan);
-      }
-    }
-  }, [profilSekolah, ppdbTitle, ppdbLogo]);
 
   const handleSaveAll = async () => {
     if (isDemoMode) {
@@ -163,6 +164,12 @@ export default function ProfilSekolahPage() {
       ppdb_email: identitas.email
     };
 
+    // Save to localStorage immediately
+    if (typeof window !== "undefined" && targetSlug) {
+      localStorage.setItem(`ppdb_profil_sekolah_${targetSlug}`, JSON.stringify(payload));
+      if (identitas.nama) localStorage.setItem(`ppdb_title_${targetSlug}`, identitas.nama);
+    }
+
     try {
       const saveUrl = targetSlug
         ? `/api/config/save-all?school_slug=${encodeURIComponent(targetSlug)}`
@@ -172,7 +179,7 @@ export default function ProfilSekolahPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           configs: configsPayload,
@@ -196,7 +203,6 @@ export default function ProfilSekolahPage() {
           await useSchoolStore.getState().fetchConfigs(targetSlug);
         }
         await fetchConfigs();
-        await loadConfigData();
       } else {
         Swal.fire("Peringatan", json.message || "Gagal menyimpan perubahan. Coba lagi.", "warning");
       }
@@ -360,23 +366,30 @@ export default function ProfilSekolahPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Sekolah</label>
-                    <input type="text" name="nama" value={identitas.nama} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: SMK TARUNA BHAKTI" />
+                  <div className="space-y-2 md:col-span-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Sekolah</label>
+                      <span className="text-xs text-slate-400 font-medium">{identitas.nama?.length || 0}/100</span>
+                    </div>
+                    <input
+                      type="text"
+                      name="nama"
+                      maxLength={100}
+                      value={identitas.nama}
+                      onChange={handleIdentitasChange}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
+                      placeholder="Contoh: SMK Taruna Bhakti"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NPSN (10 Digit Angka)</label>
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">NPSN</label>
                     <input
                       type="text"
                       name="npsn"
-                      inputMode="numeric"
-                      maxLength={10}
+                      maxLength={20}
                       value={identitas.npsn}
-                      onChange={(e) => {
-                        const numericVal = e.target.value.replace(/\D/g, "").slice(0, 10);
-                        setIdentitas((prev) => ({ ...prev, npsn: numericVal }));
-                      }}
+                      onChange={handleIdentitasChange}
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
                       placeholder="Contoh: 2080701234"
                     />
@@ -421,7 +434,7 @@ export default function ProfilSekolahPage() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email Resmi</label>
-                    <input type="email" name="email" value={identitas.email} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="admin@sekolah.sch.id" />
+                    <input type="email" maxLength={100} name="email" value={identitas.email} onChange={handleIdentitasChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="admin@sekolah.sch.id" />
                   </div>
 
                   <div className="space-y-2">
@@ -430,9 +443,10 @@ export default function ProfilSekolahPage() {
                       type="text"
                       name="telepon"
                       inputMode="numeric"
+                      maxLength={20}
                       value={identitas.telepon}
                       onChange={(e) => {
-                        const num = e.target.value.replace(/[^\d+]/g, "").slice(0, 15);
+                        const num = e.target.value.replace(/[^\d+]/g, "").slice(0, 20);
                         setIdentitas((prev) => ({ ...prev, telepon: num }));
                       }}
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
@@ -441,8 +455,11 @@ export default function ProfilSekolahPage() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Alamat Lengkap</label>
-                    <textarea name="alamat" value={identitas.alamat} onChange={handleIdentitasChange} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Jl. Pekapuran No. 1..." />
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Alamat Lengkap</label>
+                      <span className="text-xs text-slate-400 font-medium">{identitas.alamat?.length || 0}/300</span>
+                    </div>
+                    <textarea name="alamat" maxLength={300} value={identitas.alamat} onChange={handleIdentitasChange} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Jl. Pekapuran No. 1..." />
                   </div>
                 </div>
               </div>
@@ -458,18 +475,24 @@ export default function ProfilSekolahPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Ringkasan / Tagline Profil (Hero)</label>
-                    <textarea value={ringkasan} onChange={(e) => setRingkasan(e.target.value)} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Deskripsi ringkas yang tampil di bawah judul 'Tentang Sekolah'..." />
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Ringkasan / Tagline Profil (Hero)</label>
+                      <span className="text-xs text-slate-400 font-medium">{ringkasan.length}/300</span>
+                    </div>
+                    <textarea maxLength={300} value={ringkasan} onChange={(e) => setRingkasan(e.target.value)} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Deskripsi ringkas yang tampil di bawah judul 'Tentang Sekolah'..." />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">URL Video YouTube Company Profile</label>
-                    <input type="text" value={videoProfilUrl} onChange={(e) => setVideoProfilUrl(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: https://www.youtube.com/watch?v=GR5wYYT4PJ8" />
+                    <input type="text" maxLength={255} value={videoProfilUrl} onChange={(e) => setVideoProfilUrl(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Contoh: https://www.youtube.com/watch?v=GR5wYYT4PJ8" />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Sejarah Lengkap Sekolah</label>
-                    <textarea value={sejarah} onChange={(e) => setSejarah(e.target.value)} rows={8} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="SMK Taruna Bhakti didirikan pada tahun..." />
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Sejarah Lengkap Sekolah</label>
+                      <span className="text-xs text-slate-400 font-medium">{sejarah.length}/5000</span>
+                    </div>
+                    <textarea maxLength={5000} value={sejarah} onChange={(e) => setSejarah(e.target.value)} rows={8} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="SMK Taruna Bhakti didirikan pada tahun..." />
                   </div>
                 </div>
               </div>
@@ -507,18 +530,27 @@ export default function ProfilSekolahPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Lengkap &amp; Gelar</label>
-                    <input type="text" value={pimpinan.nama} onChange={(e) => setPimpinan(p => ({ ...p, nama: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Dr. H. Ahmad Fauzi, M.Pd." />
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nama Lengkap &amp; Gelar</label>
+                      <span className="text-xs text-slate-400 font-medium">{pimpinan.nama?.length || 0}/100</span>
+                    </div>
+                    <input type="text" maxLength={100} value={pimpinan.nama} onChange={(e) => setPimpinan(p => ({ ...p, nama: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Dr. H. Ahmad Fauzi, M.Pd." />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Jabatan</label>
-                    <input type="text" value={pimpinan.jabatan} onChange={(e) => setPimpinan(p => ({ ...p, jabatan: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Kepala Sekolah / Rektor" />
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Jabatan</label>
+                      <span className="text-xs text-slate-400 font-medium">{pimpinan.jabatan?.length || 0}/50</span>
+                    </div>
+                    <input type="text" maxLength={50} value={pimpinan.jabatan} onChange={(e) => setPimpinan(p => ({ ...p, jabatan: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Kepala Sekolah / Rektor" />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Sambutan / Pernyataan Pimpinan</label>
-                    <textarea value={pimpinan.sambutan} onChange={(e) => setPimpinan(p => ({ ...p, sambutan: e.target.value }))} rows={4} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Sambutan singkat mengenai visi kepemimpinan dan dedikasi mutu pendidikan..." />
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Sambutan / Pernyataan Pimpinan</label>
+                      <span className="text-xs text-slate-400 font-medium">{pimpinan.sambutan?.length || 0}/2000</span>
+                    </div>
+                    <textarea maxLength={2000} value={pimpinan.sambutan} onChange={(e) => setPimpinan(p => ({ ...p, sambutan: e.target.value }))} rows={4} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Sambutan singkat mengenai visi kepemimpinan dan dedikasi mutu pendidikan..." />
                   </div>
                 </div>
               </div>
@@ -534,13 +566,19 @@ export default function ProfilSekolahPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Visi Institusi</label>
-                    <textarea value={visi} onChange={(e) => setVisi(e.target.value)} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Menjadi lembaga pendidikan unggul..." />
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Visi Institusi</label>
+                      <span className="text-xs text-slate-400 font-medium">{visi.length}/500</span>
+                    </div>
+                    <textarea maxLength={500} value={visi} onChange={(e) => setVisi(e.target.value)} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="Menjadi lembaga pendidikan unggul..." />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Misi Institusi</label>
-                    <textarea value={misi} onChange={(e) => setMisi(e.target.value)} rows={6} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="1. Menyelenggarakan proses pembelajaran...&#10;2. Membentuk karakter peserta didik..." />
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Misi Institusi</label>
+                      <span className="text-xs text-slate-400 font-medium">{misi.length}/2000</span>
+                    </div>
+                    <textarea maxLength={2000} value={misi} onChange={(e) => setMisi(e.target.value)} rows={6} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="1. Menyelenggarakan proses pembelajaran...&#10;2. Membentuk karakter peserta didik..." />
                   </div>
                 </div>
               </div>
@@ -555,7 +593,11 @@ export default function ProfilSekolahPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <textarea value={tujuan} onChange={(e) => setTujuan(e.target.value)} rows={8} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="1. Menghasilkan lulusan yang kompeten...&#10;2. Mewujudkan tata kelola institusi transparan..." />
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Uraian Tujuan Institusi</label>
+                    <span className="text-xs text-slate-400 font-medium">{tujuan.length}/2000</span>
+                  </div>
+                  <textarea maxLength={2000} value={tujuan} onChange={(e) => setTujuan(e.target.value)} rows={8} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white" placeholder="1. Menghasilkan lulusan yang kompeten...&#10;2. Mewujudkan tata kelola institusi transparan..." />
                 </div>
               </div>
             )}

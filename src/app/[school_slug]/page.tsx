@@ -84,7 +84,7 @@ export default function SchoolLandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-[#020617] text-slate-900 dark:text-white transition-colors duration-300 font-sans selection:bg-blue-500 selection:text-white">
       {/* NAVBAR */}
-      <SchoolNavbar schoolSlug={schoolSlug} />
+      <SchoolNavbar schoolSlug={schoolSlug} overrideTitle={schoolDisplayName} />
 
       {/* MAIN CONTENT SECTIONS */}
       <main className="grow w-full relative z-0">

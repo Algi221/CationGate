@@ -38,6 +38,8 @@ interface SchoolNavbarProps {
   schoolSlug: string;
   isPreview?: boolean;
   forceMobile?: boolean;
+  overrideTitle?: string;
+  overrideLogo?: string;
 }
 
 const DEFAULT_MAJORS = [
@@ -49,7 +51,13 @@ const DEFAULT_MAJORS = [
   { code: "TE", title: "Teknik Elektronika", desc: "IoT, robotics & microcontroller", icon: Cpu }
 ];
 
-export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = false }: SchoolNavbarProps) {
+export function SchoolNavbar({
+  schoolSlug,
+  isPreview = false,
+  forceMobile = false,
+  overrideTitle,
+  overrideLogo
+}: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
   const { href } = useSchoolHref(schoolSlug);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -127,7 +135,8 @@ export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = fals
   }, [schoolSlug]);
 
   const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
-  const displayTitle = ppdbTitle || (isDemo ? "SMK Demo Indonesia" : (schoolSlug ? schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Portal PPDB"));
+  const activeLogo = overrideLogo || ppdbLogo;
+  const displayTitle = overrideTitle || ppdbTitle || (isDemo ? "SMK Demo Indonesia" : (schoolSlug ? schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Portal PPDB"));
 
   return (
     <>
@@ -136,9 +145,9 @@ export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = fals
           <div className="flex items-center shrink-0 min-w-0">
             <Link href={href("/")} className="flex items-center gap-3 overflow-visible group min-w-0">
               <div className="relative h-10 w-10 shrink-0 overflow-visible flex items-center justify-center">
-                {ppdbLogo ? (
+                {activeLogo ? (
                   <SafeImage
-                    src={ppdbLogo}
+                    src={activeLogo}
                     alt="Logo Sekolah"
                     fill
                     sizes="48px"
@@ -288,7 +297,7 @@ export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = fals
         {mobileMenuOpen && (
           <CurvedNavbar
             setIsActive={setMobileMenuOpen}
-            schoolLogo={ppdbLogo || (schoolSlug === "smktarunabhakti" || isDemo ? "/assets/logo_sekolah/logo_smktb.png" : undefined)}
+            schoolLogo={activeLogo || (schoolSlug === "smktarunabhakti" || isDemo ? "/assets/logo_sekolah/logo_smktb.png" : undefined)}
             schoolName={displayTitle}
             onLinkClick={handleLinkClick}
             navItems={[
@@ -311,8 +320,7 @@ export function SchoolNavbar({ schoolSlug, isPreview = false, forceMobile = fals
                   href: href(`/jurusan/${encodeURIComponent(m.code.toLowerCase())}`)
                 }))
               },
-              { heading: "Forum Informasi", href: href("/forum") },
-              { heading: "Blog", href: href("/blog") }
+              { heading: "Forum Informasi", href: href("/forum") }
             ]}
             footer={
               <div className="flex flex-col w-full px-6 md:px-24 py-8 pb-12 gap-4">

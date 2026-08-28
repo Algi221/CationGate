@@ -246,7 +246,7 @@ export default function GatekeeperSettingsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl transition-colors duration-300 pb-12">
+    <div className="space-y-6 w-full transition-colors duration-300 pb-12">
       {/* Header */}
       <div className="bg-white dark:bg-[#2e3749] p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-white/10 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-300">
         <div>

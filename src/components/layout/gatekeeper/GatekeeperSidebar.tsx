@@ -239,7 +239,7 @@ export function GatekeeperSidebar({
     <>
       {/* ─── SIDEBAR DESKTOP ────────────────────────────────────────────── */}
       <aside
-        className={`hidden md:flex flex-col h-screen sticky top-0 p-3 transition-all duration-300 z-30 select-none shrink-0 ${
+        className={`hidden md:flex flex-col h-screen sticky top-0 p-3 transition-all duration-300 z-25 select-none shrink-0 ${
           isCollapsed ? "w-20" : "w-64"
         }`}
       >

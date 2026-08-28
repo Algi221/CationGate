@@ -132,7 +132,7 @@ export function AdminSidebar({
           items: [
             { href: href("/dashboard/subscription"), icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
             { href: href("/dashboard/admin"), icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
-            { href: href("/dashboard/settings"), icon: <Settings size={18} />, label: "Pengaturan Akun", lockedIfUnverified: true }
+            // { href: href("/dashboard/settings"), icon: <Settings size={18} />, label: "Pengaturan Akun", lockedIfUnverified: true }
           ]
         }
       ];

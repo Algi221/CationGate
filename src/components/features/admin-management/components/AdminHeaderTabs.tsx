@@ -9,10 +9,11 @@ interface AdminHeaderTabsProps {
   showAddForm: boolean;
   setShowAddForm: (val: boolean) => void;
   setEditAdminId: (id: number | null) => void;
-  setFormData: React.Dispatch<React.SetStateAction<{ username: string; password: string; nama_lengkap: string; role: string }>>;
+  setFormData: React.Dispatch<React.SetStateAction<{ username: string; email: string; password: string; nama_lengkap: string; role: string }>>;
   setError: (msg: string) => void;
   setSuccessMsg: (msg: string) => void;
   trashedCount: number;
+  isPro?: boolean;
 }
 
 export const AdminHeaderTabs: React.FC<AdminHeaderTabsProps> = ({
@@ -24,7 +25,8 @@ export const AdminHeaderTabs: React.FC<AdminHeaderTabsProps> = ({
   setFormData,
   setError,
   setSuccessMsg,
-  trashedCount
+  trashedCount,
+  isPro = true
 }) => {
   return (
     <>
@@ -47,20 +49,35 @@ export const AdminHeaderTabs: React.FC<AdminHeaderTabsProps> = ({
         {activeTab === "admin" && (
           <button
             onClick={() => {
+              if (!isPro) {
+                import("sweetalert2").then(({ default: Swal }) => {
+                  Swal.fire({
+                    icon: "warning",
+                    title: "Fitur Terkunci (Paket Berbayar)",
+                    text: "Fitur Tambah Admin / Staf Panitia hanya tersedia untuk instansi yang berlangganan Paket Pro atau Enterprise. Akun Free Trial hanya memiliki 1 akun admin utama.",
+                    confirmButtonText: "Mengerti",
+                    confirmButtonColor: "#2563eb"
+                  });
+                });
+                return;
+              }
               if (showAddForm) {
                 setShowAddForm(false);
                 setEditAdminId(null);
-                setFormData({ username: "", password: "", nama_lengkap: "", role: "admin" });
+                setFormData({ username: "", email: "", password: "", nama_lengkap: "", role: "admin" });
               } else {
                 setShowAddForm(true);
                 setEditAdminId(null);
-                setFormData({ username: "", password: "", nama_lengkap: "", role: "admin" });
+                setFormData({ username: "", email: "", password: "", nama_lengkap: "", role: "admin" });
               }
               setError("");
               setSuccessMsg("");
             }}
+            title={!isPro ? "Hanya tersedia untuk instansi berlangganan Pro/Enterprise" : undefined}
             className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold uppercase tracking-wider flex items-center gap-2 transition-all ${
-              showAddForm
+              !isPro
+                ? "cursor-not-allowed opacity-60 bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
+                : showAddForm
                 ? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 : "bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20"
             }`}

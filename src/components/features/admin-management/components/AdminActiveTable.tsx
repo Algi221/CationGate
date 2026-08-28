@@ -10,6 +10,7 @@ interface AdminActiveTableProps {
   loading: boolean;
   adminUser: { id?: number; username?: string; role?: string } | null;
   schoolSlug?: string;
+  isPro?: boolean;
   handleEditClick: (admin: AdminItem) => void;
   handleDeleteAdmin: (id: number, nama: string) => void;
   handleResendActivation?: (id: number, email?: string) => void;
@@ -20,6 +21,7 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
   loading,
   adminUser,
   schoolSlug,
+  isPro = true,
   handleEditClick,
   handleDeleteAdmin,
   handleResendActivation
@@ -65,8 +67,16 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {admins.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-slate-400 font-medium">
-                  Belum ada staf panitia atau admin terdaftar di instansi ini.
+                <td colSpan={5} className="text-center py-16 px-4">
+                  <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-center space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                      <User size={22} />
+                    </div>
+                    <p className="text-sm font-bold text-slate-800 dark:text-white">Belum Ada Staf Admin Tambahan</p>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Instansi Anda belum menambahkan staf panitia PPDB baru. Klik tombol <strong>Tambah Admin Baru</strong> di atas untuk membuat akun staf panitia.
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (
@@ -158,25 +168,67 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                       <div className="inline-flex items-center gap-1.5">
                         {!isActive && handleResendActivation && (
                           <button
-                            onClick={() => handleResendActivation(admin.id, admin.email)}
-                            className="p-2 rounded-xl text-amber-600 hover:text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition cursor-pointer"
-                            title="Kirim Ulang Tautan Aktivasi"
+                            onClick={() => {
+                              if (!isPro) {
+                                Swal.fire({
+                                  icon: "warning",
+                                  title: "Fitur Terkunci (Paket Berbayar)",
+                                  text: "Fitur kelola staf panitia hanya tersedia untuk instansi yang berlangganan Paket Pro atau Enterprise.",
+                                  confirmButtonText: "Mengerti",
+                                  confirmButtonColor: "#2563eb"
+                                });
+                                return;
+                              }
+                              handleResendActivation(admin.id, admin.email);
+                            }}
+                            className={`p-2 rounded-xl text-amber-600 hover:text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition ${
+                              !isPro ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                            }`}
+                            title={!isPro ? "Hanya untuk paket Pro/Enterprise" : "Kirim Ulang Tautan Aktivasi"}
                           >
                             <RefreshCw size={14} />
                           </button>
                         )}
                         <button
-                          onClick={() => handleEditClick(admin)}
-                          className="p-2 rounded-xl text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                          title="Edit Admin"
+                          onClick={() => {
+                            if (!isPro) {
+                              Swal.fire({
+                                icon: "warning",
+                                title: "Fitur Terkunci (Paket Berbayar)",
+                                text: "Fitur edit staf panitia hanya tersedia untuk instansi yang berlangganan Paket Pro atau Enterprise.",
+                                confirmButtonText: "Mengerti",
+                                confirmButtonColor: "#2563eb"
+                              });
+                              return;
+                            }
+                            handleEditClick(admin);
+                          }}
+                          className={`p-2 rounded-xl text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition ${
+                            !isPro ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                          }`}
+                          title={!isPro ? "Hanya untuk paket Pro/Enterprise" : "Edit Admin"}
                         >
                           <Edit3 size={15} />
                         </button>
                         {admin.id !== adminUser?.id && (
                           <button
-                            onClick={() => handleDeleteAdmin(admin.id, admin.nama_lengkap)}
-                            className="p-2 rounded-xl text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                            title="Hapus ke Sampah"
+                            onClick={() => {
+                              if (!isPro) {
+                                Swal.fire({
+                                  icon: "warning",
+                                  title: "Fitur Terkunci (Paket Berbayar)",
+                                  text: "Fitur hapus staf panitia hanya tersedia untuk instansi yang berlangganan Paket Pro atau Enterprise.",
+                                  confirmButtonText: "Mengerti",
+                                  confirmButtonColor: "#2563eb"
+                                });
+                                return;
+                              }
+                              handleDeleteAdmin(admin.id, admin.nama_lengkap);
+                            }}
+                            className={`p-2 rounded-xl text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition ${
+                              !isPro ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                            }`}
+                            title={!isPro ? "Hanya untuk paket Pro/Enterprise" : "Hapus ke Sampah"}
                           >
                             <Trash2 size={15} />
                           </button>

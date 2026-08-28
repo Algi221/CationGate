@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { z } from "zod";
+import Swal from "sweetalert2";
 import { safeRedirect, sanitizeSlug } from "@/lib/sanitizeUrl";
 
 const loginFormSchema = z.object({
@@ -108,6 +109,65 @@ function LoginForm() {
       }
 
       if (res.status === 403 && data.message?.includes("Gatekeeper")) {
+        setErrorMsg(data.message);
+        return;
+      }
+
+      if (res.status === 403 && data.requires_verification) {
+        Swal.fire({
+          title: "Verifikasi Akun Admin",
+          html: `<p class="text-xs text-slate-500 mb-3">Akun Anda belum aktif. Masukkan 6 digit Kode OTP yang dikirimkan ke <strong>${data.email || email}</strong>:</p><input id="otp-input" class="w-full text-center text-lg font-mono tracking-widest p-3 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Contoh: 849201" maxlength="6" />`,
+          showCancelButton: true,
+          confirmButtonText: "Verifikasi OTP",
+          cancelButtonText: "Batal",
+          confirmButtonColor: "#2563eb",
+          preConfirm: () => {
+            const input = document.getElementById("otp-input") as HTMLInputElement;
+            if (!input || !input.value.trim()) {
+              Swal.showValidationMessage("Harap masukkan kode OTP");
+              return false;
+            }
+            return input.value.trim();
+          }
+        }).then(async (result) => {
+          if (result.isConfirmed && result.value) {
+            try {
+              const vRes = await fetch("/api/admin/users/activate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  token: result.value,
+                  otp: result.value,
+                  email: (data.email || email).trim().toLowerCase(),
+                  school_slug: searchParams.get("school_slug") || "smktarunabhakti"
+                })
+              });
+              const vData = await vRes.json();
+              if (vData.success) {
+                Swal.fire({
+                  icon: "success",
+                  title: "Akun Berhasil Diverifikasi! 🎉",
+                  text: "Silakan klik tombol Masuk kembali untuk login.",
+                  confirmButtonColor: "#2563eb"
+                });
+              } else {
+                Swal.fire({
+                  icon: "error",
+                  title: "Verifikasi Gagal",
+                  text: vData.message || "Kode OTP tidak valid atau telah kedaluwarsa.",
+                  confirmButtonColor: "#2563eb"
+                });
+              }
+            } catch (_err) {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Terjadi kesalahan saat memverifikasi kode OTP.",
+                confirmButtonColor: "#2563eb"
+              });
+            }
+          }
+        });
         setErrorMsg(data.message);
         return;
       }

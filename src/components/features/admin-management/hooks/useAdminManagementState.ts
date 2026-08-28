@@ -129,13 +129,14 @@ export function useAdminManagementState() {
   }, [adminToken, schoolSlug]);
 
   useEffect(() => {
-    if (!adminUser) return;
-    if (adminUser.role !== "superadmin") {
-      router.push(href("/dashboard"));
-      return;
-    }
     fetchAdmins();
-  }, [adminUser, router, href, fetchAdmins]);
+  }, [fetchAdmins]);
+
+  useEffect(() => {
+    if (adminUser && adminUser.role !== "superadmin" && adminUser.role !== "admin") {
+      router.push(href("/dashboard"));
+    }
+  }, [adminUser, router, href]);
 
   useEffect(() => {
     if (activeTab === "trash") {
@@ -184,30 +185,36 @@ export function useAdminManagementState() {
         setShowAddForm(false);
         fetchAdmins();
 
+        const otpCode = data.otp_code || data.activation_token || "";
+
         Swal.fire({
           title: "Admin Berhasil Didaftarkan! 🎉",
           html: `
-            <div class="text-left text-xs space-y-2 mt-2">
+            <div class="text-left text-xs space-y-3 mt-2">
               <p class="text-slate-600 dark:text-slate-300">
                 Akun staf <strong>${formData.nama_lengkap}</strong> (${emailTarget}) berhasil dibuat.
               </p>
-              <div class="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/50">
-                <p class="font-bold text-blue-700 dark:text-blue-300 mb-1">Tautan Aktivasi Akun Gmail:</p>
-                <input readonly value="${createdLink}" class="w-full text-[11px] p-2 bg-white dark:bg-slate-900 rounded border border-blue-200 dark:border-blue-800 font-mono select-all" />
+              <div class="p-3.5 bg-blue-50 dark:bg-blue-950/40 rounded-2xl border border-blue-200 dark:border-blue-900/50 text-center">
+                <p class="font-bold text-blue-700 dark:text-blue-300 text-[11px] uppercase tracking-wider mb-1">Kode OTP Verifikasi Gmail:</p>
+                <div class="text-2xl font-black font-mono tracking-widest text-blue-600 dark:text-blue-400 my-1 select-all">${otpCode}</div>
+                <p class="text-[10px] text-slate-400">Kode ini telah dikirim ke email staf dan berlaku selama 24 jam.</p>
               </div>
-              <p class="text-[11px] text-slate-400">
-                * Undangan aktivasi telah dikirimkan ke email. Anda juga dapat menyalin tautan di atas untuk dikirimkan melalui WhatsApp.
-              </p>
+              ${createdLink ? `
+              <div class="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <p class="font-bold text-slate-700 dark:text-slate-300 text-[10px] mb-1">Tautan Halaman Verifikasi:</p>
+                <input readonly value="${createdLink}" class="w-full text-[10px] p-1.5 bg-white dark:bg-slate-950 rounded border border-slate-200 dark:border-slate-700 font-mono select-all" />
+              </div>
+              ` : ''}
             </div>
           `,
           icon: "success",
           confirmButtonColor: "#2563EB",
-          confirmButtonText: "Salin Link & Selesai",
+          confirmButtonText: "Salin Kode OTP",
           showCancelButton: true,
           cancelButtonText: "Tutup"
         }).then((result) => {
-          if (result.isConfirmed && createdLink && navigator.clipboard) {
-            navigator.clipboard.writeText(createdLink);
+          if (result.isConfirmed && otpCode && navigator.clipboard) {
+            navigator.clipboard.writeText(otpCode);
           }
         });
       } else {

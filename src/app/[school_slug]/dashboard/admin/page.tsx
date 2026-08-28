@@ -54,77 +54,81 @@ function AdminManagementPageContent() {
         setError={setError}
         setSuccessMsg={setSuccessMsg}
         trashedCount={trashedAdmins.length}
+        isPro={isPro}
       />
 
-      {!isPro ? (
-        <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl mt-6 shadow-sm">
-          <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-4">
-            <Lock size={32} />
+      {!isPro && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center shrink-0">
+              <Lock size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-black text-amber-800 dark:text-amber-300">
+                Fitur Multi-Admin Terkunci (Paket Free Trial)
+              </p>
+              <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                Menambah dan mengelola banyak staf panitia PPDB tersedia untuk paket Pro dan Enterprise.
+              </p>
+            </div>
           </div>
-          <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">
-            Fitur Terkunci (Hanya untuk Paket Berbayar)
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md text-center mb-6 leading-relaxed">
-            Menambah dan mengelola banyak admin panitia secara spesifik hanya tersedia untuk paket Pro dan Pro Max. Silakan berlangganan untuk membuka fitur ini.
-          </p>
           <Link
             href="./subscription"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-blue-500/20 inline-flex items-center gap-2"
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs transition-all shadow-sm shrink-0 inline-flex items-center gap-1.5"
           >
-            <Shield size={16} /> Buka Halaman Subscription
+            <Shield size={13} /> Upgrade Langganan
           </Link>
         </div>
+      )}
+
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/80 rounded-2xl text-xs font-bold text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl text-xs font-bold text-emerald-600 dark:text-emerald-400">
+          {successMsg}
+        </div>
+      )}
+
+      {/* Form Modal Add/Edit */}
+      <AnimatePresence>
+        {showAddForm && (
+          <AdminFormModal
+            editAdminId={editAdminId}
+            formData={formData}
+            setFormData={setFormData}
+            formLoading={formLoading}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            handleSubmit={editAdminId ? handleUpdateAdmin : handleAddAdmin}
+            handleCancel={() => {
+              setShowAddForm(false);
+              setEditAdminId(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {activeTab === "admin" ? (
+        <AdminActiveTable
+          admins={admins}
+          loading={loading}
+          adminUser={adminUser}
+          schoolSlug={schoolSlug}
+          isPro={isPro}
+          handleEditClick={handleEditClick}
+          handleDeleteAdmin={handleDeleteAdmin}
+          handleResendActivation={handleResendActivation}
+        />
       ) : (
-        <>
-          {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/80 rounded-2xl text-xs font-bold text-red-600 dark:text-red-400">
-              {error}
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl text-xs font-bold text-emerald-600 dark:text-emerald-400">
-              {successMsg}
-            </div>
-          )}
-
-          {/* Form Modal Add/Edit */}
-          <AnimatePresence>
-            {showAddForm && (
-              <AdminFormModal
-                editAdminId={editAdminId}
-                formData={formData}
-                setFormData={setFormData}
-                formLoading={formLoading}
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-                handleSubmit={editAdminId ? handleUpdateAdmin : handleAddAdmin}
-                handleCancel={() => {
-                  setShowAddForm(false);
-                  setEditAdminId(null);
-                }}
-              />
-            )}
-          </AnimatePresence>
-
-          {activeTab === "admin" ? (
-            <AdminActiveTable
-              admins={admins}
-              loading={loading}
-              adminUser={adminUser}
-              schoolSlug={schoolSlug}
-              handleEditClick={handleEditClick}
-              handleDeleteAdmin={handleDeleteAdmin}
-              handleResendActivation={handleResendActivation}
-            />
-          ) : (
-            <AdminTrashTable
-              trashedAdmins={trashedAdmins}
-              trashLoading={trashLoading}
-              handleRestoreAdmin={handleRestoreAdmin}
-            />
-          )}
-        </>
+        <AdminTrashTable
+          trashedAdmins={trashedAdmins}
+          trashLoading={trashLoading}
+          handleRestoreAdmin={handleRestoreAdmin}
+        />
       )}
     </div>
   );

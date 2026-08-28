@@ -84,9 +84,9 @@ export async function resolveSchoolUUID(
     }
   } catch (_pgErr) {}
 
-  // Fallback for demo / smktarunabhakti
-  if (strVal === 'demo' || strVal === 'smktarunabhakti') {
-    return strVal;
+  // Fallback for demo
+  if (strVal === 'demo') {
+    return 'demo';
   }
 
   return strVal || null;

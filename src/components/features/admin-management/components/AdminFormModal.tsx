@@ -64,7 +64,7 @@ export const AdminFormModal: React.FC<AdminFormModalProps> = ({
               <input
                 type="text"
                 required
-                value={formData.nama_lengkap}
+                value={formData.nama_lengkap ?? ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, nama_lengkap: e.target.value }))}
                 placeholder="Contoh: Budi Santoso, S.Kom"
                 className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -81,7 +81,7 @@ export const AdminFormModal: React.FC<AdminFormModalProps> = ({
               <input
                 type="email"
                 required
-                value={formData.email}
+                value={formData.email ?? ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value.trim().toLowerCase() }))}
                 placeholder="Contoh: budi.panitia@gmail.com"
                 className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -97,7 +97,7 @@ export const AdminFormModal: React.FC<AdminFormModalProps> = ({
               <input
                 type="text"
                 required
-                value={formData.username}
+                value={formData.username ?? ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
@@ -114,7 +114,7 @@ export const AdminFormModal: React.FC<AdminFormModalProps> = ({
             <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-1.5">
               Hak Akses / Peran
             </label>
-            <Select value={formData.role} onValueChange={(val) => setFormData((prev) => ({ ...prev, role: val }))}>
+            <Select value={formData.role ?? "admin"} onValueChange={(val) => setFormData((prev) => ({ ...prev, role: val }))}>
               <SelectTrigger className="w-full h-11 bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 rounded-xl px-4 text-xs font-bold text-slate-800 dark:text-white">
                 <SelectValue placeholder="Pilih Peran" />
               </SelectTrigger>
@@ -135,7 +135,7 @@ export const AdminFormModal: React.FC<AdminFormModalProps> = ({
               <KeyRound size={16} className="absolute left-3.5 top-3.5 text-slate-400" />
               <input
                 type={showPassword ? "text" : "password"}
-                value={formData.password}
+                value={formData.password ?? ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                 placeholder={editAdminId ? "••••••••" : "Buat password awal atau biarkan kosong"}
                 className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"

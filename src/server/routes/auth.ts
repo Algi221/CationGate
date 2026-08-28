@@ -51,103 +51,7 @@ authRouter.post('/login', authLimiter, async (c) => {
       schoolId = resolvedUUID;
     }
 
-    let ysboAuthenticated = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let ysboUser: any = null;
-    let ysbmoToken: string | null = null;
-
     const supabase = getSupabaseClient();
-
-    const YSBO_API_URL = process.env.YSBO_API_URL;
-    if (YSBO_API_URL) {
-      try {
-        const response = await fetch(YSBO_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            version: 'v1',
-            apps_name: 'PPDB SMK Taruna Bhakti',
-            username: cleanEmail,
-            password
-          })
-        });
-
-        if (response.ok) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const result: any = await response.json();
-          if (result.status_code === 200 && result.data) {
-            ysboAuthenticated = true;
-            ysboUser = result.data;
-            ysbmoToken = result.token || result.data.token || result.access_token || result.data.access_token || result.token_akses || result.data.token_akses || null;
-          }
-        }
-      } catch (fetchErr: unknown) {
-        console.warn('Koneksi API YSBMO gagal, beralih ke kredensial lokal:', fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
-      }
-    }
-
-    if (ysboAuthenticated && ysboUser) {
-      const mappedRole = Number(ysboUser.level_akses) === 4 ? 'superadmin' : 'admin';
-      const name = ysboUser.full_name || ysboUser.text || ysboUser.username || ysboUser.id || cleanEmail;
-      const hashedPassword = bcrypt.hashSync(password, 10);
-      const usernameKey = ysboUser.username || ysboUser.id || cleanEmail;
-
-      let checkQuery = supabase.from('admin_users').select('*').eq('username', usernameKey);
-      if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-      const { data: existingUser } = await checkQuery.maybeSingle();
-
-      if (existingUser) {
-        let updateQuery = supabase.from('admin_users').update({
-          password_hash: hashedPassword,
-          nama_lengkap: name,
-          role: mappedRole,
-          updated_at: new Date().toISOString()
-        }).eq('id', existingUser.id);
-        if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
-        await updateQuery;
-      } else {
-        const payload: Record<string, unknown> = {
-          username: usernameKey,
-          password_hash: hashedPassword,
-          nama_lengkap: name,
-          role: mappedRole
-        };
-        if (schoolId) payload.school_id = schoolId;
-        await supabase.from('admin_users').insert(payload);
-      }
-
-      let fetchQuery = supabase.from('admin_users').select('*').eq('username', usernameKey);
-      if (schoolId) fetchQuery = fetchQuery.eq('school_id', schoolId);
-      const { data: finalUser } = await fetchQuery.single();
-
-      const token = jwt.sign(
-        {
-          id: finalUser?.id || ysboUser.id || 1,
-          username: finalUser?.username || usernameKey,
-          nama: finalUser?.nama_lengkap || name,
-          role: finalUser?.role || mappedRole,
-          school_id: schoolId || undefined,
-          isYSBMO: true
-        },
-        getJwtSecret(),
-        { expiresIn: rememberMe ? '30d' : '7d' }
-      );
-
-      return c.json({
-        success: true,
-        token,
-        admin: {
-          id: finalUser?.id || ysboUser.id || 1,
-          username: finalUser?.username || usernameKey,
-          nama_lengkap: finalUser?.nama_lengkap || name,
-          role: finalUser?.role || mappedRole,
-          school_id: schoolId || undefined
-        },
-        ysbmoToken
-      });
-    }
 
     // Check if this is a Gatekeeper platform account trying to login on school portal
     if (cleanEmail.endsWith('@cationgate.id')) {
@@ -157,23 +61,17 @@ authRouter.post('/login', authLimiter, async (c) => {
       }, 403);
     }
 
-    // 1. Try Supabase query matching email OR username (case-insensitive)
+    // 1. Try Supabase query matching email OR username (case-insensitive) scoped to school
     let query = supabase
       .from('admin_users')
       .select('*')
-      .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`);
-    if (schoolId) query = query.eq('school_id', schoolId);
-    let { data: adminUser } = await query.maybeSingle();
+      .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`)
+      .is('deleted_at', null);
 
-    // If query with schoolId returned nothing, retry without schoolId constraint
-    if (!adminUser && schoolId) {
-      const { data: userWithoutSchool } = await supabase
-        .from('admin_users')
-        .select('*')
-        .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`)
-        .maybeSingle();
-      if (userWithoutSchool) adminUser = userWithoutSchool;
+    if (schoolId && isValidUUID(schoolId)) {
+      query = query.eq('school_id', schoolId);
     }
+    let { data: adminUser } = await query.maybeSingle();
 
     // 2. Direct PostgreSQL pool fallback (robust against connection/casing issues)
     if (!adminUser) {

@@ -25,7 +25,9 @@ const GATEKEEPER_ACCOUNTS = [
   { id: 2, username: 'farel', nama_lengkap: 'Farel', email: 'farel@cationgate.id' },
   { id: 3, username: 'jepan', nama_lengkap: 'Jepan', email: 'jepan@cationgate.id' },
   { id: 4, username: 'husein', nama_lengkap: 'Husein', email: 'husein@cationgate.id' },
-  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id' }
+  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id' },
+  { id: 6, username: 'pentester', nama_lengkap: 'Security Pentester / QA Audit', email: 'pentester@cationgate.id' },
+  { id: 9999, username: 'gatekeeper_test', nama_lengkap: 'Gatekeeper QA Test Account', email: 'gatekeeper@cationgate.id' }
 ];
 
 export let globalIsMaintenanceMode = false;

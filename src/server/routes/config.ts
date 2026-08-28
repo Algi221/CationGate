@@ -655,64 +655,51 @@ configRouter.post('/save-all', adminAuth, async (c) => {
 
     console.log(`[SAVE-ALL] Saving ${Object.keys(processedConfigs).length} config keys for school_id=${numericSchoolId} (resolved from tenant: ${schoolId})`);
 
-    let dbSaveSuccess = 0;
-    let dbSaveError = 0;
-    for (const [key, value] of Object.entries(processedConfigs)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const payload: any = {
-        config_key: key,
-        config_value: value,
-        updated_at: new Date().toISOString(),
-        school_id: numericSchoolId
-      };
-
-      const { error } = await supabase.from('landing_page_config').upsert(payload, { onConflict: 'school_id,config_key' });
-      if (error) {
-        console.warn(`[SAVE-ALL] Supabase upsert failed for key="${key}": ${error.message}`);
-        try {
-          await pool.query(
-            `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-             VALUES ($1, $2, $3, NOW())
-             ON CONFLICT (school_id, config_key)
-             DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-            [numericSchoolId, key, JSON.stringify(value)]
-          );
-          dbSaveSuccess++;
-        } catch (_poolErr) {
-          dbSaveError++;
-          console.warn('Fallback pool query for landing_page_config error:', _poolErr);
-        }
-      }
-    }
-
-    if (dbSaveError > 0) {
-      console.warn(`[SAVE-ALL] DB save completed with ${dbSaveError} errors (${dbSaveSuccess} fallback successes)`);
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = (c as any).get('admin');
     const adminName = admin?.nama || admin?.username || 'Administrator';
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const revPayload: any = {
-      config_values: configs,
-      changed_by: adminName,
-      description: description || 'Melakukan pembaruan massal UI',
-      school_id: numericSchoolId
-    };
-
-    const { error: revError } = await supabase.from('ui_revisions').insert(revPayload);
-    if (revError) {
-      try {
-        await pool.query(
-          `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
-           VALUES ($1, $2, $3, $4, NOW())`,
-          [String(numericSchoolId), JSON.stringify(configs), adminName, description || 'Melakukan pembaruan massal UI']
+    // 1. Atomic PostgreSQL Transaction
+    const pgClient = await pool.connect();
+    try {
+      await pgClient.query('BEGIN');
+      for (const [key, value] of Object.entries(processedConfigs)) {
+        await pgClient.query(
+          `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+           VALUES ($1, $2, $3, NOW())
+           ON CONFLICT (school_id, config_key)
+           DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+          [numericSchoolId, key, JSON.stringify(value)]
         );
-      } catch (_revPoolErr) {
-        console.warn('Fallback pool query for ui_revisions error:', _revPoolErr);
       }
+      await pgClient.query(
+        `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
+         VALUES ($1, $2, $3, $4, NOW())`,
+        [String(numericSchoolId), JSON.stringify(configs), adminName, description || 'Melakukan pembaruan massal UI']
+      );
+      await pgClient.query('COMMIT');
+    } catch (txError) {
+      await pgClient.query('ROLLBACK');
+      console.error('[SAVE-ALL] Transaction failed and rolled back:', txError);
+      return c.json({
+        success: false,
+        message: 'Gagal menyimpan seluruh konfigurasi ke basis data. Perubahan telah dibatalkan agar draf tidak hilang.'
+      }, 500);
+    } finally {
+      pgClient.release();
     }
+
+    // 2. Best-effort Supabase cloud sync
+    try {
+      for (const [key, value] of Object.entries(processedConfigs)) {
+        await supabase.from('landing_page_config').upsert({
+          config_key: key,
+          config_value: value,
+          updated_at: new Date().toISOString(),
+          school_id: numericSchoolId
+        }, { onConflict: 'school_id,config_key' });
+      }
+    } catch (_sbSyncErr) {}
 
     // Always record in-memory revision log
     const revRecord = {

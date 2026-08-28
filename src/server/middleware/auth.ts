@@ -57,11 +57,11 @@ export const superAdminAuth = createMiddleware(async (c, next) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = c.get('admin') as any;
-  if (admin && (admin.role === 'superadmin' || admin.role === 'admin' || admin.role === 'gatekeeper')) {
+  if (admin && (admin.role === 'superadmin' || admin.role === 'gatekeeper')) {
     return await next();
   } else {
     return c.json({
-      message: 'Akses ditolak: Anda tidak memiliki izin untuk tindakan ini.'
+      message: 'Akses ditolak: Tindakan ini memerlukan hak akses Superadmin.'
     }, 403);
   }
 });

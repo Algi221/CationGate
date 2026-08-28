@@ -1,5 +1,11 @@
 
 export async function uploadFileDirect(file: File, prefix: string = 'media'): Promise<string> {
+  const token = typeof window !== 'undefined' ? (localStorage.getItem('ppdb_admin_token') || localStorage.getItem('token')) : null;
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   // 1. Try direct server multipart upload first (fast, reliable, saves directly to server storage)
   try {
     const formData = new FormData();
@@ -8,6 +14,7 @@ export async function uploadFileDirect(file: File, prefix: string = 'media'): Pr
 
     const uploadRes = await fetch('/api/storage/upload', {
       method: 'POST',
+      headers,
       body: formData,
     });
 

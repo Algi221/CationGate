@@ -27,8 +27,30 @@ const ALLOWED_BUCKETS = new Set([
   'school-assets'
 ]);
 
+// In-memory rate limiting for uploads (max 30 requests per minute per IP)
+const uploadRateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkUploadRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = uploadRateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    uploadRateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
+    return true;
+  }
+  if (entry.count >= 30) {
+    return false;
+  }
+  entry.count++;
+  return true;
+}
+
 // 1. Direct Server Multipart File Upload
 storageRouter.post('/upload', async (c) => {
+  const clientIp = c.req.header('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
+  if (!checkUploadRateLimit(clientIp)) {
+    return c.json({ success: false, error: 'Terlalu banyak permintaan unggah berkas. Silakan coba beberapa saat lagi.' }, 429);
+  }
+
   try {
     let file: File | null = null;
     let prefix = 'upload';
@@ -53,6 +75,34 @@ storageRouter.post('/upload', async (c) => {
     const contentType = (file.type || 'image/png').toLowerCase();
     if (contentType && !ALLOWED_MIME_TYPES.has(contentType)) {
       return c.json({ error: `Tipe file '${contentType}' tidak diizinkan untuk alasan keamanan.` }, 400);
+    }
+
+    const isAdminAsset = prefix.startsWith('school_logo') || prefix.startsWith('hero_bg') || prefix.startsWith('major_') || prefix.startsWith('pimpinan_photo');
+    const authHeader = c.req.header('Authorization');
+
+    let tenantFolder = 'general';
+
+    // Verify token for admin assets
+    if (isAdminAsset && authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const jwt = await import('jsonwebtoken');
+        const token = authHeader.split(' ')[1];
+        const secret = process.env.JWT_SECRET;
+        if (secret) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const decoded = jwt.default.verify(token, secret) as any;
+          if (decoded.school_id || decoded.school_slug) {
+            tenantFolder = String(decoded.school_id || decoded.school_slug).replace(/[^a-zA-Z0-9_-]/g, '_');
+          }
+        }
+      } catch (_jwtErr) {}
+    }
+
+    // Block SVG files from unauthenticated or public uploads
+    if (contentType === 'image/svg+xml') {
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return c.json({ error: 'Format SVG hanya diizinkan untuk administrator terotentikasi.' }, 403);
+      }
     }
 
     const arrayBuffer = await file.arrayBuffer();
@@ -89,7 +139,7 @@ storageRouter.post('/upload', async (c) => {
 
     const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanPrefix = prefix.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
-    const filename = `${cleanPrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+    const filename = `${tenantFolder}/${cleanPrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
 
     // Tier 1: Try Supabase Cloud Storage
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;

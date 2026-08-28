@@ -94,12 +94,12 @@ app.use('*', cors({
         hostname.endsWith('.localhost') ||
         hostname === 'cationgate.site' ||
         hostname.endsWith('.cationgate.site') ||
-        hostname.endsWith('.vercel.app')
+        hostname === 'cationgate.vercel.app'
       ) {
         return origin;
       }
     } catch (_e) {}
-    return 'https://cationgate.site';
+    return null;
   },
   allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-gatekeeper-token', 'x-school-slug', 'x-school-id'],

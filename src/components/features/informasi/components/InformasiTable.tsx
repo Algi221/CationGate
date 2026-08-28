@@ -54,16 +54,9 @@ export const InformasiTable: React.FC<InformasiTableProps> = ({
         <h3 className="text-slate-800 dark:text-white font-black text-sm uppercase tracking-wide">
           Belum Ada Informasi
         </h3>
-        <p className="text-xs text-slate-400 dark:text-slate-550 font-medium max-w-xs mt-2 leading-relaxed">
-          Tidak ditemukan pengumuman informasi yang aktif di database saat ini. Buat pengumuman baru Anda sekarang!
+        <p className="text-xs text-slate-400 dark:text-slate-500 font-medium max-w-xs mt-2 leading-relaxed">
+          Tidak ditemukan pengumuman informasi yang aktif di database saat ini. Gunakan tombol di atas untuk membuat pengumuman baru.
         </p>
-        <button
-          onClick={onOpenCreateModal}
-          className="mt-6 px-4 py-2.5 bg-blue-500 hover:bg-blue-400 text-white rounded-xl text-xs font-black uppercase tracking-wider active:scale-[0.98] transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
-        >
-          <Plus size={14} />
-          <span>Buat Sekarang</span>
-        </button>
       </div>
     );
   }

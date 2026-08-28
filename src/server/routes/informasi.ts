@@ -285,14 +285,21 @@ router.post('/', adminAuth, async (c: Context) => {
     };
 
     try {
-      const { data, error } = await supabase.from('informasi').insert(insertData).select().maybeSingle();
+      const { data, error } = await supabase.from('school_announcements').insert(insertData).select().maybeSingle();
       if (!error && data) savedRecord = data;
-    } catch (_sbErr) {}
+    } catch (_sbErr1) {}
+
+    if (!savedRecord) {
+      try {
+        const { data, error } = await supabase.from('informasi').insert(insertData).select().maybeSingle();
+        if (!error && data) savedRecord = data;
+      } catch (_sbErr2) {}
+    }
 
     if (!savedRecord) {
       try {
         const pgRes = await pool.query(
-          `INSERT INTO informasi (school_id, judul, konten, tanggal, foto_url, created_at)
+          `INSERT INTO school_announcements (school_id, judul, konten, tanggal, foto_url, created_at)
            VALUES ($1::text, $2, $3, $4, $5, NOW())
            RETURNING *`,
           [String(numSchoolId), judul, konten, insertData.tanggal, processedFotoUrl]
@@ -300,8 +307,20 @@ router.post('/', adminAuth, async (c: Context) => {
         if (pgRes.rows && pgRes.rows.length > 0) {
           savedRecord = pgRes.rows[0];
         }
-      } catch (pgErr) {
-        console.error('Pool insert to informasi failed:', pgErr);
+      } catch (_pgErr1) {
+        try {
+          const pgRes2 = await pool.query(
+            `INSERT INTO informasi (school_id, judul, konten, tanggal, foto_url, created_at)
+             VALUES ($1::text, $2, $3, $4, $5, NOW())
+             RETURNING *`,
+            [String(numSchoolId), judul, konten, insertData.tanggal, processedFotoUrl]
+          );
+          if (pgRes2.rows && pgRes2.rows.length > 0) {
+            savedRecord = pgRes2.rows[0];
+          }
+        } catch (pgErr2) {
+          console.error('Pool insert to school_announcements/informasi failed:', pgErr2);
+        }
       }
     }
 
@@ -368,9 +387,16 @@ router.put('/:id', adminAuth, async (c: Context) => {
     let updatedRecord: any = null;
 
     try {
-      const { data, error } = await supabase.from('informasi').update(dataToUpdate).eq('id', id).select().maybeSingle();
+      const { data, error } = await supabase.from('school_announcements').update(dataToUpdate).eq('id', id).select().maybeSingle();
       if (!error && data) updatedRecord = data;
-    } catch (_sbErr) {}
+    } catch (_sbErr1) {}
+
+    if (!updatedRecord) {
+      try {
+        const { data, error } = await supabase.from('informasi').update(dataToUpdate).eq('id', id).select().maybeSingle();
+        if (!error && data) updatedRecord = data;
+      } catch (_sbErr2) {}
+    }
 
     if (!updatedRecord) {
       try {
@@ -383,14 +409,22 @@ router.put('/:id', adminAuth, async (c: Context) => {
         if (dataToUpdate.foto_url !== undefined) { fields.push(`foto_url = $${idx++}`); values.push(dataToUpdate.foto_url ? String(dataToUpdate.foto_url) : null); }
 
         if (fields.length > 0) {
-          const pgRes = await pool.query(
-            `UPDATE informasi SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,
-            values
-          );
-          if (pgRes.rows && pgRes.rows.length > 0) updatedRecord = pgRes.rows[0];
+          try {
+            const pgRes1 = await pool.query(
+              `UPDATE school_announcements SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,
+              values
+            );
+            if (pgRes1.rows && pgRes1.rows.length > 0) updatedRecord = pgRes1.rows[0];
+          } catch (_pgErr1) {
+            const pgRes2 = await pool.query(
+              `UPDATE informasi SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,
+              values
+            );
+            if (pgRes2.rows && pgRes2.rows.length > 0) updatedRecord = pgRes2.rows[0];
+          }
         }
       } catch (pgErr) {
-        console.error('Pool update to informasi failed:', pgErr);
+        console.error('Pool update to school_announcements/informasi failed:', pgErr);
       }
     }
 
@@ -425,12 +459,20 @@ router.delete('/:id', adminAuth, async (c: Context) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
 
     try {
+      await supabase.from('school_announcements').delete().eq('id', id);
+    } catch (_sbErr1) {}
+
+    try {
       await supabase.from('informasi').delete().eq('id', id);
-    } catch (_sbErr) {}
+    } catch (_sbErr2) {}
+
+    try {
+      await pool.query('DELETE FROM school_announcements WHERE id = $1', [id]);
+    } catch (_pgErr1) {}
 
     try {
       await pool.query('DELETE FROM informasi WHERE id = $1', [id]);
-    } catch (_pgErr) {}
+    } catch (_pgErr2) {}
 
     // Remove from in-memory stores
     for (const [key, list] of fontInMemInformasi.entries()) {

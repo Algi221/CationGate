@@ -62,6 +62,11 @@ export default function DaftarPage() {
     handleRegisterNew
   } = useRegistrationForm();
   const { href } = useSchoolHref();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isSchoolVerified =
     schoolStatus === "FULL_VERIFIED" ||
@@ -70,6 +75,14 @@ export default function DaftarPage() {
     schoolSlug === "demo" ||
     schoolSlug === "smktarunabhakti" ||
     schoolSlug === "smktiglobal";
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50/70 dark:bg-[#020617]">
+        <div className="w-8 h-8 border-4 border-slate-900 dark:border-white border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (isConfigLoaded && !isSchoolVerified) {
     return (

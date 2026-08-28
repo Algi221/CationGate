@@ -30,7 +30,9 @@ export default function ProfilSekolahPublicPage() {
 
   useEffect(() => {
     if (schoolSlug) {
-      fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`)
+      fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`, {
+        cache: "no-store"
+      })
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.data) {

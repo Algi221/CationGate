@@ -86,7 +86,7 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
           </h1>
 
           {heroSubtitle && (
-            <p className="hero-subtitle relative z-10 text-center mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium drop-shadow-sm break-words [overflow-wrap:anywhere]">
+            <p className="hero-subtitle relative z-10 text-center mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium drop-shadow-sm wrap-break-word">
               {heroSubtitle}
             </p>
           )}

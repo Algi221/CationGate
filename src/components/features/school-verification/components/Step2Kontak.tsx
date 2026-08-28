@@ -48,12 +48,26 @@ export const Step2Kontak: React.FC<Step2KontakProps> = ({
           <Label className="text-xs font-black uppercase text-slate-500">
             Nomor Telepon / WhatsApp Humas Sekolah
           </Label>
-          <Input
-            value={formData.whatsapp}
-            onChange={(e) => setFormData((p) => ({ ...p, whatsapp: e.target.value }))}
-            placeholder="+62812..."
-            className="mt-1 rounded-2xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs font-semibold"
-          />
+          <div className="relative flex items-center mt-1">
+            <div className="absolute left-0 top-0 bottom-0 px-3.5 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 rounded-l-2xl flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-400 select-none">
+              +62
+            </div>
+            <Input
+              type="tel"
+              inputMode="numeric"
+              maxLength={13}
+              value={formData.whatsapp ? formData.whatsapp.replace(/^(\+?62|0)/, "") : ""}
+              onChange={(e) => {
+                let val = e.target.value.replace(/\D/g, "");
+                if (val.startsWith("0")) val = val.slice(1);
+                if (val.startsWith("62")) val = val.slice(2);
+                val = val.slice(0, 13);
+                setFormData((p) => ({ ...p, whatsapp: val ? `+62${val}` : "" }));
+              }}
+              placeholder="81234567890"
+              className="pl-16 rounded-2xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs font-semibold"
+            />
+          </div>
         </div>
 
         <div>

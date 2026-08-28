@@ -475,19 +475,27 @@ export default function ProfilSekolahPage() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">No. Telepon / WhatsApp</label>
-                    <input
-                      type="text"
-                      name="telepon"
-                      inputMode="numeric"
-                      maxLength={20}
-                      value={identitas.telepon}
-                      onChange={(e) => {
-                        const num = e.target.value.replace(/[^\d+]/g, "").slice(0, 20);
-                        setIdentitas((prev) => ({ ...prev, telepon: num }));
-                      }}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
-                      placeholder="081234567890"
-                    />
+                    <div className="relative flex items-center">
+                      <div className="absolute left-0 top-0 bottom-0 px-3.5 bg-slate-100 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 rounded-l-xl flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-400 select-none">
+                        +62
+                      </div>
+                      <input
+                        type="tel"
+                        name="telepon"
+                        inputMode="numeric"
+                        maxLength={13}
+                        value={identitas.telepon ? identitas.telepon.replace(/^(\+?62|0)/, "") : ""}
+                        onChange={(e) => {
+                          let val = e.target.value.replace(/\D/g, "");
+                          if (val.startsWith("0")) val = val.slice(1);
+                          if (val.startsWith("62")) val = val.slice(2);
+                          val = val.slice(0, 13);
+                          setIdentitas((prev) => ({ ...prev, telepon: val ? `0${val}` : "" }));
+                        }}
+                        className="w-full pl-16 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white font-medium"
+                        placeholder="81234567890"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2 md:col-span-2">

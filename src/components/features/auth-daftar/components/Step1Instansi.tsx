@@ -172,15 +172,28 @@ export const Step1Instansi: React.FC<Step1InstansiProps> = ({
             <Label htmlFor="phone" className="text-[11px] font-bold text-slate-700">
               No. Telepon / WhatsApp
             </Label>
-            <Input
-              id="phone"
-              type="tel"
-              required
-              value={formData.phone}
-              onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-              placeholder="081234567890"
-              className="h-10 sm:h-11 rounded-xl border-slate-200 bg-white text-xs shadow-none focus:border-slate-900 focus:ring-0"
-            />
+            <div className="relative flex items-center">
+              <div className="absolute left-0 top-0 bottom-0 px-3 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 rounded-l-xl flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-400 select-none">
+                +62
+              </div>
+              <Input
+                id="phone"
+                type="tel"
+                inputMode="numeric"
+                maxLength={13}
+                required
+                value={formData.phone ? formData.phone.replace(/^(\+?62|0)/, "") : ""}
+                onChange={(e) => {
+                  let val = e.target.value.replace(/\D/g, "");
+                  if (val.startsWith("0")) val = val.slice(1);
+                  if (val.startsWith("62")) val = val.slice(2);
+                  val = val.slice(0, 13);
+                  setFormData((prev) => ({ ...prev, phone: val ? `0${val}` : "" }));
+                }}
+                placeholder="81234567890"
+                className="h-10 sm:h-11 pl-14 rounded-xl border-slate-200 bg-white text-xs shadow-none focus:border-slate-900 focus:ring-0 font-medium"
+              />
+            </div>
           </div>
         </div>
 

@@ -186,11 +186,26 @@ export default function GatekeeperProfilePage() {
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Nomor Telepon / WhatsApp
               </label>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="h-10 rounded-xl bg-slate-50 dark:bg-slate-800 font-mono border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
-              />
+              <div className="relative flex items-center">
+                <div className="absolute left-0 top-0 bottom-0 px-3 bg-slate-100 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 rounded-l-xl flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-400 select-none">
+                  +62
+                </div>
+                <Input
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={13}
+                  value={phone ? phone.replace(/^(\+?62|0)/, "") : ""}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/\D/g, "");
+                    if (val.startsWith("0")) val = val.slice(1);
+                    if (val.startsWith("62")) val = val.slice(2);
+                    val = val.slice(0, 13);
+                    setPhone(val ? `0${val}` : "");
+                  }}
+                  placeholder="81234567890"
+                  className="h-10 pl-14 rounded-xl bg-slate-50 dark:bg-slate-800 font-mono border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
             </div>
           </div>
 

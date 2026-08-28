@@ -23,8 +23,8 @@ export function BottomRightNotifier() {
   const router = useRouter();
   const [currentNotification, setCurrentNotification] = useState<LiveNotification | null>(null);
 
-  const isGatekeeper = pathname?.startsWith("/gatekeeper");
-  const isSchoolDashboard = pathname?.includes("/dashboard") && !isGatekeeper;
+  const isGatekeeper = pathname?.startsWith("/gatekeeper/dashboard");
+  const isSchoolDashboard = pathname?.includes("/dashboard") && !pathname?.startsWith("/gatekeeper");
 
   useEffect(() => {
     // Check if notifications are relevant for the current role
@@ -55,10 +55,17 @@ export function BottomRightNotifier() {
         }
       } catch (_e) {}
 
-      // 2. Periodic check for recent schools or verifications
+      // 2. Periodic check for recent schools or verifications (ONLY with valid token)
       const checkGatekeeperNotifications = async () => {
         try {
-          const res = await fetch(`/api/gatekeeper/schools?t=${Date.now()}`);
+          const token = typeof window !== "undefined" ? localStorage.getItem("gatekeeper_token") : null;
+          if (!token) return;
+
+          const res = await fetch(`/api/gatekeeper/schools?t=${Date.now()}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           if (res.ok) {
             const json = await res.json();
             if (json && json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -87,9 +94,9 @@ export function BottomRightNotifier() {
         } catch (_e) {}
       };
 
-      // Check after 2 seconds, then every 8 seconds
+      // Check after 2 seconds, then every 15 seconds
       timeoutId = setTimeout(checkGatekeeperNotifications, 2000);
-      const interval = setInterval(checkGatekeeperNotifications, 8000);
+      const interval = setInterval(checkGatekeeperNotifications, 15000);
       return () => {
         clearTimeout(timeoutId);
         clearInterval(interval);

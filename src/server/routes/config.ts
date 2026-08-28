@@ -648,11 +648,24 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
     }
 
-    console.log(`[SAVE-ALL] Saving ${Object.keys(processedConfigs).length} config keys for school_id=${numericSchoolId} (resolved from tenant: ${schoolId})`);
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = (c as any).get('admin');
     const adminName = admin?.nama || admin?.username || 'Administrator';
+
+    // Enforce Pro plan requirement for opening SPMB portal
+    if (processedConfigs.ppdb_portal_status === 'open') {
+      const targetSlug = admin?.school_slug || admin?.slug || c.req.query('school_slug');
+      if (targetSlug !== 'demo') {
+        const { SaasService } = await import('../services/SaasService');
+        const subStatus = await SaasService.getSubscriptionStatus(String(schoolId), targetSlug || undefined);
+        const isPaidPlan = (subStatus.plan === 'PRO_YEARLY' || subStatus.plan === 'PRO' || subStatus.plan === 'ENTERPRISE') && !subStatus.isExpired && subStatus.status === 'ACTIVE';
+        if (!isPaidPlan) {
+          processedConfigs.ppdb_portal_status = 'closed';
+        }
+      }
+    }
+
+    console.log(`[SAVE-ALL] Saving ${Object.keys(processedConfigs).length} config keys for school_id=${numericSchoolId} (resolved from tenant: ${schoolId})`);
 
     // 1. Atomic PostgreSQL Transaction
     const pgClient = await pool.connect();

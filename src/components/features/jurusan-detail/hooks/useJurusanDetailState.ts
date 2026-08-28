@@ -64,7 +64,7 @@ export function useJurusanDetailState() {
   useEffect(() => {
     const loadDynamicConfig = async () => {
       try {
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}&_t=${Date.now()}`);
+        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`);
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;

@@ -1,17 +1,19 @@
-# 🎓 CationGate — Enterprise Multi-Tenant SPMB & School Management SaaS Platform
+# CationGate — Enterprise Multi-Tenant SPMB & School Management SaaS Platform
 
 > **CationGate** adalah platform Software-as-a-Service (SaaS) Multi-Tenant modern untuk sistem Penerimaan Peserta Didik Baru (PPDB/SPMB) dan administrasi sekolah digital di Indonesia. Mendukung routing subdomain dinamis (`https://[school_slug].cationgate.site`), kustomisasi landing page sekolah secara mandiri, formulir pendaftaran 14 langkah, verifikasi berkas otomatis, pembagian rombongan belajar (rombel), hingga portal superadmin pusat (**Gatekeeper**).
 
+**Akses langsung via browser**: [https://cationgate.site](https://cationgate.site)
+
 ---
 
-## 🚀 Fitur Utama & Modul Sistem
+## Fitur Utama & Modul Sistem
 
-### 1. 🌐 Multi-Tenant Subdomain & Dynamic Landing Page
-* **Subdomain Otomatis**: Setiap sekolah memiliki landing page & portal independen (contoh: `smktarunabhakti.cationgate.site`, `aasx.cationgate.site`).
+### 1. Multi-Tenant Subdomain & Dynamic Landing Page
+* **Subdomain Otomatis**: Setiap sekolah memiliki landing page & portal independen (contoh: `smktarunabhakti.cationgate.site`, `smpsegarcimanggis.cationgate.site`).
 * **Kelola UI/Data**: Admin sekolah dapat mengubah judul, logo, hero banner, alur pendaftaran, program keahlian (jurusan), FAQ, rekening bank, dan profil pimpinan secara real-time.
 * **Multi-Tenant Data Isolation**: Seluruh data siswa, pengumuman, dan konfigurasi terisolasi 100% menggunakan identitas UUID sekolah (`school_id`).
 
-### 2. 📝 Formulir Pendaftaran Online 14 Langkah (PPDB Wizard)
+### 2. Formulir Pendaftaran Online 14 Langkah (PPDB Wizard)
 * **14 Langkah Terpadu**:
   1. Data Pribadi Calon Siswa (NISN, NIK, Nama Lengkap)
   2. Data Tempat Tinggal & Koordinat Lokasi
@@ -30,14 +32,14 @@
 * **Invoice & Payment Gateway**: Integrasi gateway pembayaran dan upload bukti transfer manual dengan status real-time.
 * **Auto-Draft & Hydration**: Progres input siswa tersimpan otomatis di browser sehingga tidak hilang jika koneksi terputus.
 
-### 3. 🏫 Dashboard Admin Sekolah
+### 3. Dashboard Admin Sekolah
 * **Manajemen Calon Siswa**: Verifikasi berkas, persetujuan (approve), penolakan (reject) dengan alasan, serta unduh rekap data Excel/PDF.
 * **Kontrol Pendaftaran Publik**: Saklar Buka/Tutup (*Open/Closed*) gelombang pendaftaran secara instan.
 * **Pembagian Kelas / Rombel**: Pengelompokan siswa baru ke dalam rombel secara otomatis atau manual.
 * **Kelola Informasi & Forum**: Publikasi artikel, pengumuman berkas PDF/Video/Foto resmi sekolah.
 * **Profil & Identitas Sekolah**: Manajemen sejarah, visi misi, legalitas NPSN, dan pimpinan sekolah.
 
-### 4. 🛡️ Portal Pusat Superadmin: **Gatekeeper**
+### 4. Portal Pusat Superadmin: Gatekeeper
 * **Verifikasi Legalitas Sekolah**: Menyetujui atau menolak pendaftaran sekolah baru berdasarkan SK Izin Operasional dan data pokok NPSN.
 * **Manajemen Berlangganan (SaaS Subscription)**: Monitoring paket aktif (Starter, Pro, Enterprise), mutasi transaksi, dan invoice.
 * **System Telemetry & Security**: Monitoring kesehatan database, status cache Redis, audit log per aksi, hingga saklar *Maintenance Mode* global.
@@ -45,7 +47,7 @@
 
 ---
 
-## 🛠️ Tech Stack & Arsitektur Sistem
+## Tech Stack & Arsitektur Sistem
 
 | Kategori | Teknologi | Deskripsi |
 | :--- | :--- | :--- |
@@ -63,9 +65,9 @@
 
 ---
 
-## 👥 Hak Akses & Kredensial Pengujian (Testing Accounts)
+## Hak Akses & Kredensial Pengujian (Testing Accounts)
 
-### 1. 🛡️ Akun Superadmin Platform (Gatekeeper)
+### 1. Akun Superadmin Platform (Gatekeeper)
 Akses URL: `https://[domain]/gatekeeper/login` (atau `http://localhost:3000/gatekeeper/login`)
 
 | Username | Email | Role | Catatan |
@@ -78,7 +80,7 @@ Akses URL: `https://[domain]/gatekeeper/login` (atau `http://localhost:3000/gate
 
 ---
 
-### 2. 🧪 Akun Khusus Pengujian Keamanan & QA (Pentester Account)
+### 2. Akun Khusus Pengujian Keamanan & QA (Pentester Account)
 Akun ini disediakan khusus untuk keperluan **Security Audit, QA Testing, dan Penetration Testing**:
 
 * **Login URL**: `/gatekeeper/login`
@@ -89,20 +91,22 @@ Akun ini disediakan khusus untuk keperluan **Security Audit, QA Testing, dan Pen
 
 ---
 
-### 3. 🏫 Akun Admin Sekolah (Tenant Admin)
-Akses URL: `http://localhost:3000/[school_slug]/login` atau subdomain sekolah `https://[school_slug].cationgate.site/login`
+### 3. Akun Admin Sekolah (Tenant Admin)
+Akses URL Subdomain: `https://[school_slug].cationgate.site/login` (atau di lokal `http://[school_slug].localhost:3000/login`)
 
 * **Demo Tenant (SMK Demo Indonesia)**:
-  * URL: `http://localhost:3000/demo/dashboard`
+  * URL Subdomain: `https://demo.cationgate.site` (atau `http://demo.localhost:3000`)
+  * Dashboard: `https://demo.cationgate.site/dashboard` (atau `http://demo.localhost:3000/dashboard`)
   * Sifat: Bebas uji coba, data tersimpan di sesi browser lokal.
 * **Instansi Resmi (SMK Taruna Bhakti)**:
-  * URL: `http://localhost:3000/smktarunabhakti/login`
-  * Email: `admin@smktarunabhakti.sch.id` *(atau `akunalgi62@gmail.com`)*
+  * URL Subdomain: `https://namasekolah.cationgate.site` (atau `http://namasekolah.localhost:3000`)
+  * Login Admin: `https://namasekolah.cationgate.site/login` (atau `http://namasekolah.localhost:3000/login`)
+  * Email: `admin@namasekolah.sch.id` *(atau email yang didaftarkan saat registrasi)*
   * Password: `password123` *(atau `admin123`)*
 
 ---
 
-## 📂 Struktur Direktori Proyek
+## Struktur Direktori Proyek
 
 ```text
 CationGate/
@@ -113,8 +117,8 @@ CationGate/
 │   │   │   ├── login/                     # Gatekeeper Login
 │   │   │   └── dashboard/                 # Verification, Subscriptions, Telemetry
 │   │   ├── [school_slug]/                 # Dynamic School Tenant Route
-│   │   │   ├── page.tsx                   # School Public Landing Page
-│   │   │   ├── profil/                    # Public School Profile & History
+│   │   │   ├── page.tsx                   # School Public Landing Page (Server Component)
+│   │   │   ├── profil/                    # Public School Profile & History (Server Component)
 │   │   │   ├── forum/                     # Public Announcements & School Forum
 │   │   │   ├── daftar/                    # 14-Step Student Registration Wizard
 │   │   │   ├── status/                    # Student Registration Status Tracker
@@ -125,6 +129,7 @@ CationGate/
 │   │   │       ├── informasi/             # School Announcements CRUD
 │   │   │       ├── pendaftar/             # PPDB Applicants Verification
 │   │   │       ├── pembagian-kelas/       # Student Class Allocation
+│   │   │       ├── profile/               # Admin Account & Credentials
 │   │   │       └── subscription/          # SaaS Subscription Plans
 │   │   └── api/                           # Backend Hono API Routes
 │   │       └── [[...route]]/route.ts      # Catch-all Hono Gateway
@@ -144,7 +149,7 @@ CationGate/
 
 ---
 
-## ⚡ Panduan Menjalankan Project (Local Development)
+## Panduan Menjalankan Project (Local Development)
 
 ### 1. Prasyarat Sistem
 * **Node.js**: v18.18.0 atau lebih baru (direkomendasikan v20+)
@@ -187,9 +192,10 @@ TELEGRAM_CHAT_ID=your-chat-id
 npm run dev
 ```
 Buka peramban di:
-* **Beranda Utama**: [http://localhost:3000](http://localhost:3000)
+* **Beranda Utama Platform**: [http://localhost:3000](http://localhost:3000)
 * **Gatekeeper Superadmin**: [http://localhost:3000/gatekeeper/login](http://localhost:3000/gatekeeper/login)
-* **Demo Sekolah**: [http://localhost:3000/demo](http://localhost:3000/demo)
+* **Demo Sekolah Sandbox**: [http://demo.localhost:3000](http://demo.localhost:3000) (atau [http://localhost:3000/dashboard](http://localhost:3000/dashboard))
+* **Tenant Sekolah**: [http://smktarunabhakti.localhost:3000](http://smktarunabhakti.localhost:3000)
 
 ### 5. Validasi Tipe & Keamanan
 ```bash
@@ -202,7 +208,19 @@ npx snyk code test
 
 ---
 
-## 🔒 Kebijakan Keamanan & Multi-Tenancy
+## SEO & Performa
+
+CationGate telah dioptimasi untuk Search Engine Optimization (SEO) dan performa loading yang cepat. Setiap halaman publik sekolah menggunakan Server-Side Rendering (SSR) untuk memastikan konten terindeks sempurna oleh Google, Bing, dan mesin pencari lainnya.
+
+**Hasil audit SEO:**
+
+![SEO Audit Result](public/readme/seo.png)
+
+![SEO Metadata Preview](public/readme/seo2.png)
+
+---
+
+## Kebijakan Keamanan & Multi-Tenancy
 
 1. **Strict Tenant Scoping**: Semua operasi CRUD diverifikasi melalui JWT claims dan UUID sekolah (`school_id`).
 2. **Anti-AI Slop Standards**: Antarmuka dibangun dengan panduan UI/UX B2B yang bersih, fungsional, dan bebas gradien berlebih.
@@ -211,4 +229,4 @@ npx snyk code test
 
 ---
 
-© 2026 **CationGate Platform**. Hak Cipta Dilindungi Undang-Undang.
+(c) 2026 **CationGate Platform**. Hak Cipta Dilindungi Undang-Undang.

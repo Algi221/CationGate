@@ -194,11 +194,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       desc: "Tagihan & Paket",
       href: href("/dashboard/subscription"),
     },
-    {
-      title: "Pengaturan",
-      desc: "Keamanan, Tema, General",
-      href: href("/dashboard/settings"),
-    },
   ];
 
   const searchResults = searchableMenus.filter(

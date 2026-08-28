@@ -60,7 +60,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({ ppdbTitle, ringkasan, 
         >
           <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg font-normal leading-relaxed whitespace-pre-wrap wrap-break-word">
             {ringkasan ||
-              `${ppdbTitle} merupakan institusi pendidikan teknik dan kejuruan yang didirikan dengan misi pengabdian ilmu pengetahuan dan teknologi untuk memajukan bangsa. ${ppdbTitle} hadir untuk mengoptimalkan pembangunan pendidikan yang maju dan bermartabat.`}
+              `Selamat datang di profil resmi ${ppdbTitle}. Halaman ini memuat informasi identitas, sejarah, visi misi, dan kepemimpinan institusi kami.`}
           </p>
         </motion.div>
       </section>

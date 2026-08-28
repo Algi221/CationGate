@@ -50,13 +50,43 @@ storageRouter.post('/upload', async (c) => {
       return c.json({ success: false, error: 'File tidak ditemukan dalam request multipart.' }, 400);
     }
 
-    const contentType = file.type || 'image/png';
-    if (contentType && !ALLOWED_MIME_TYPES.has(contentType.toLowerCase())) {
+    const contentType = (file.type || 'image/png').toLowerCase();
+    if (contentType && !ALLOWED_MIME_TYPES.has(contentType)) {
       return c.json({ error: `Tipe file '${contentType}' tidak diizinkan untuk alasan keamanan.` }, 400);
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const dataBuffer = Buffer.from(arrayBuffer);
+    const fileSize = dataBuffer.length;
+
+    // Enforce size limits
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+    const MAX_DOC_SIZE = 10 * 1024 * 1024;  // 10 MB
+    const MAX_MEDIA_SIZE = 25 * 1024 * 1024; // 25 MB
+
+    if (contentType.startsWith('image/') && contentType !== 'image/svg+xml' && fileSize > MAX_IMAGE_SIZE) {
+      return c.json({ error: 'Ukuran foto melebihi batas maksimal (5 MB).' }, 413);
+    } else if (contentType === 'application/pdf' && fileSize > MAX_DOC_SIZE) {
+      return c.json({ error: 'Ukuran dokumen melebihi batas maksimal (10 MB).' }, 413);
+    } else if (fileSize > MAX_MEDIA_SIZE) {
+      return c.json({ error: 'Ukuran berkas melebihi batas maksimal (25 MB).' }, 413);
+    }
+
+    // Sanitize SVG against Stored XSS
+    if (contentType === 'image/svg+xml') {
+      const svgText = dataBuffer.toString('utf8').toLowerCase();
+      if (
+        svgText.includes('<script') ||
+        svgText.includes('javascript:') ||
+        svgText.includes('onload=') ||
+        svgText.includes('onerror=') ||
+        svgText.includes('onclick=') ||
+        svgText.includes('<iframe')
+      ) {
+        return c.json({ error: 'File SVG ditolak karena terdeteksi mengandung elemen skrip yang tidak aman.' }, 400);
+      }
+    }
+
     const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanPrefix = prefix.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
     const filename = `${cleanPrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;

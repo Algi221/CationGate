@@ -23,10 +23,17 @@ export const adminAuth = createMiddleware(async (c, next) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const decoded = jwt.verify(token, getJwtSecret()) as any;
+    
+    // Strict tenant binding: only gatekeeper superadmins can specify target school_id from query/headers
+    const isPlatformAdmin = decoded.role === 'gatekeeper' || decoded.isGatekeeper === true;
     if (!decoded.school_id) {
-      const fallbackSchool = c.req.query('school_id') || c.req.query('school_slug') || c.req.header('x-school-id') || decoded.school_slug || decoded.slug;
-      if (fallbackSchool) {
-        decoded.school_id = fallbackSchool;
+      if (decoded.school_slug || decoded.slug) {
+        decoded.school_id = decoded.school_slug || decoded.slug;
+      } else if (isPlatformAdmin) {
+        const targetSchool = c.req.query('school_id') || c.req.query('school_slug') || c.req.header('x-school-id');
+        if (targetSchool) {
+          decoded.school_id = targetSchool;
+        }
       }
     }
     c.set('admin', decoded);
@@ -50,7 +57,7 @@ export const superAdminAuth = createMiddleware(async (c, next) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = c.get('admin') as any;
-  if (admin && (admin.role === 'superadmin' || admin.role === 'admin' || !admin.role)) {
+  if (admin && (admin.role === 'superadmin' || admin.role === 'admin' || admin.role === 'gatekeeper')) {
     return await next();
   } else {
     return c.json({
@@ -87,13 +94,25 @@ export const gatekeeperAuth = createMiddleware(async (c, next) => {
 export const requireTenantId = async (c: any): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = c.get('admin') as any;
-  const identifier =
-    admin?.school_id ||
-    admin?.school_slug ||
-    admin?.slug ||
-    c.req.query('school_id') ||
-    c.req.query('school_slug') ||
-    c.req.header('x-school-slug');
+  const isPlatformAdmin = admin?.role === 'gatekeeper' || admin?.isGatekeeper === true;
+
+  let identifier: string | undefined;
+
+  if (admin) {
+    if (isPlatformAdmin) {
+      identifier = c.req.query('school_id') || c.req.query('school_slug') || c.req.header('x-school-slug') || admin.school_id || admin.school_slug;
+    } else {
+      // School admin is strictly locked to their own token school_id / school_slug
+      identifier = admin.school_id || admin.school_slug || admin.slug;
+    }
+  } else {
+    // Public / unauthenticated tenant resolution
+    identifier =
+      c.req.query('school_id') ||
+      c.req.query('school_slug') ||
+      c.req.header('x-school-slug') ||
+      c.req.header('x-school-id');
+  }
 
   if (!identifier) {
     throw new TenantError();

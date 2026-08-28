@@ -5,6 +5,7 @@ import { usePPDB } from "@/context/PPDBContext";
 import { Palette, Save, RefreshCw, Check } from "lucide-react";
 import Swal from 'sweetalert2';
 import { useParams } from "next/navigation";
+import { useSchoolStore } from "@/stores/useSchoolStore";
 
 const PRESET_COLORS = [
   { name: "Ocean Blue", hex: "#2563EB" },
@@ -75,9 +76,8 @@ export default function AppearanceSettingsPage() {
           text: "Tema sekolah berhasil diperbarui.",
           icon: "success",
           confirmButtonColor: themeColor,
-        }).then(() => {
-          window.location.reload();
         });
+        useSchoolStore.getState().applyThemeColor(themeColor);
       } else {
         throw new Error(data.message || "Gagal menyimpan tema.");
       }

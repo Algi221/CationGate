@@ -33,6 +33,8 @@ interface SchoolState {
 
 const SAFE_COLOR_RE = /^(#[0-9a-fA-F]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)|hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*\))$/;
 
+let activeFetchSequence = 0;
+
 export const useSchoolStore = create<SchoolState>((set, get) => ({
   schoolId: "",
   schoolSlug: "",
@@ -48,16 +50,6 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
 
   setSchoolId: (id) => {
     set({ schoolId: id });
-    if (id) {
-      fetch(`/api/config?school_id=${id}`)
-        .then((res) => (res.ok && res.headers.get("content-type")?.includes("application/json") ? res.json() : null))
-        .then((data) => {
-          if (data && data.success && data.data?.ppdb_school_theme_color) {
-            get().applyThemeColor(data.data.ppdb_school_theme_color);
-          }
-        })
-        .catch((err) => console.error("Gagal mengambil config tema sekolah:", err));
-    }
   },
 
   setSchoolSlug: (slugInput) => {
@@ -77,14 +69,25 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
       (typeof window !== "undefined" &&
         (window.location.pathname.startsWith("/demo") ||
           window.location.host.startsWith("demo.")));
-    set({
-      schoolSlug: slug,
-      isDemoMode: isDemo,
-    });
-    if (slug) {
-      get().resolveSchoolBySlug(slug).finally(() => {
-        get().fetchConfigs(slug);
+
+    // If switching to a different school, reset store state to avoid bleeding old school data
+    if (get().schoolSlug !== slug) {
+      set({
+        schoolSlug: slug,
+        isDemoMode: isDemo,
+        isConfigLoaded: false,
+        isSchoolNotFound: false,
+        ppdbLogo: isDemo ? "/assets/logo_sekolah/logo_smktb.png" : "",
+        ppdbTitle: isDemo ? "SMK Demo Indonesia" : "",
+        ppdbFooterDesc: isDemo ? "Portal simulasi dan demonstrasi interaktif sistem SPMB CationGate untuk sekolah kejuruan di Indonesia." : "",
+        profilSekolah: null,
       });
+    } else {
+      set({ schoolSlug: slug, isDemoMode: isDemo });
+    }
+
+    if (slug) {
+      get().resolveSchoolBySlug(slug);
     }
   },
 
@@ -137,11 +140,18 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
       return;
     }
 
+    if (!slug) return;
+
+    const currentSeq = ++activeFetchSequence;
+
     try {
       const [configRes, profileRes] = await Promise.all([
         fetch(`/api/config?school_slug=${encodeURIComponent(slug)}&_t=${Date.now()}`, { cache: "no-store" }),
         fetch(`/api/school-profile?school_slug=${encodeURIComponent(slug)}&_t=${Date.now()}`, { cache: "no-store" }).catch(() => null)
       ]);
+
+      // Discard response if a newer fetch was initiated
+      if (currentSeq !== activeFetchSequence) return;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let configData: any = {};
@@ -157,22 +167,28 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
         if (pJson.success && pJson.data) profileData = pJson.data;
       }
 
-      let profil = profileData || configData.ppdb_profil_sekolah || get().profilSekolah;
+      let profil = profileData || configData.ppdb_profil_sekolah || null;
       if (typeof profil === "string" && (profil.startsWith("{") || profil.startsWith("["))) {
         try { profil = JSON.parse(profil); } catch (_e) {}
       }
 
+      if (configData.ppdb_school_theme_color) {
+        get().applyThemeColor(configData.ppdb_school_theme_color);
+      }
+
       set({
-        ppdbLogo: profileData?.logo_url || configData.ppdb_logo_url || get().ppdbLogo,
-        ppdbTitle: profileData?.nama || profileData?.identitas?.nama || configData.ppdb_title || get().ppdbTitle,
-        ppdbFooterDesc: configData.ppdb_footer_desc || get().ppdbFooterDesc,
+        ppdbLogo: profileData?.logo_url || configData.ppdb_logo_url || "",
+        ppdbTitle: profileData?.nama || profileData?.identitas?.nama || configData.ppdb_title || "",
+        ppdbFooterDesc: configData.ppdb_footer_desc || "",
         profilSekolah: profil,
-        schoolPeriod: configData.ppdb_school_period || get().schoolPeriod,
+        schoolPeriod: configData.ppdb_school_period || "2026-2027",
         isConfigLoaded: true,
       });
     } catch (err) {
-      console.error("Gagal mengambil config:", err);
-      set({ isConfigLoaded: true });
+      if (currentSeq === activeFetchSequence) {
+        console.error("Gagal mengambil config:", err);
+        set({ isConfigLoaded: true });
+      }
     }
   },
 
@@ -184,6 +200,7 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
         schoolStatus: "FULL_VERIFIED",
         ppdbTitle: "SMK Demo Indonesia",
         ppdbLogo: "/assets/logo_sekolah/logo_smktb.png",
+        isConfigLoaded: true
       });
       return;
     }
@@ -194,46 +211,36 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
       const res = await fetch(`/api/saas/school-by-slug/${encodeURIComponent(slug)}?_t=${Date.now()}`, {
         cache: "no-store"
       });
-      if (!res.headers.get("content-type")?.includes("application/json")) return;
+      if (!res.headers.get("content-type")?.includes("application/json")) {
+        await get().fetchConfigs(slug);
+        return;
+      }
       const data = await res.json();
       if (data && data.notFound) {
-        set({ isSchoolNotFound: true });
+        set({ isSchoolNotFound: true, isConfigLoaded: true });
       } else if (data && data.success && data.data) {
         const schoolUuid = data.data.school_uuid || data.data.id;
-        const currentProfil = get().profilSekolah || {};
-        const currentIdentitas = currentProfil.identitas || {};
-        set((state) => ({
+        set({
           isSchoolNotFound: false,
-          schoolId: schoolUuid,
-          schoolStatus: data.data.status || state.schoolStatus,
-          ppdbLogo: state.ppdbLogo || data.data.logo_url || "",
-          ppdbTitle: state.ppdbTitle || data.data.name || "",
-          profilSekolah: {
-            ...currentProfil,
-            identitas: {
-              ...currentIdentitas,
-              nama: currentIdentitas.nama || state.ppdbTitle || data.data.name || "",
-              npsn: currentIdentitas.npsn || data.data.npsn || "",
-              akreditasi: currentIdentitas.akreditasi || data.data.accreditation || "",
-              email: currentIdentitas.email || data.data.official_email || "",
-              telepon: currentIdentitas.telepon || data.data.phone || ""
-            }
-          }
-        }));
-        if (schoolUuid) {
-          get().setSchoolId(schoolUuid);
-        }
+          schoolId: schoolUuid || slug,
+          schoolStatus: data.data.status || "VERIFIED",
+          ppdbLogo: data.data.logo_url || "",
+          ppdbTitle: data.data.name || "",
+        });
+        await get().fetchConfigs(slug);
       } else if (slug !== "smktarunabhakti" && slug !== "demo") {
-        set({ isSchoolNotFound: true });
+        set({ isSchoolNotFound: true, isConfigLoaded: true });
       } else {
         set({
           isSchoolNotFound: false,
           schoolId: slug,
           ppdbTitle: slug === "smktarunabhakti" ? "SMK Taruna Bhakti" : "SMK Demo Indonesia",
         });
+        await get().fetchConfigs(slug);
       }
     } catch (err: unknown) {
       console.warn("Gagal mengambil data sekolah:", err instanceof Error ? err.message : String(err));
+      await get().fetchConfigs(slug);
     }
   },
 }));

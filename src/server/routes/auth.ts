@@ -76,14 +76,19 @@ authRouter.post('/login', authLimiter, async (c) => {
     // 2. Direct PostgreSQL pool fallback (robust against connection/casing issues)
     if (!adminUser) {
       try {
-        const pgRes = await pool.query(
-          `SELECT id, username, email, password_hash, nama_lengkap, role, school_id, is_active
-           FROM admin_users
-           WHERE (LOWER(COALESCE(email, '')) = LOWER($1) OR LOWER(COALESCE(username, '')) = LOWER($1))
-             AND deleted_at IS NULL
-           LIMIT 1`,
-          [cleanEmail]
-        );
+        let pgQuery = `
+          SELECT id, username, email, password_hash, nama_lengkap, role, school_id, is_active
+          FROM admin_users
+          WHERE (LOWER(COALESCE(email, '')) = LOWER($1) OR LOWER(COALESCE(username, '')) = LOWER($1))
+            AND deleted_at IS NULL
+        `;
+        const params: unknown[] = [cleanEmail];
+        if (schoolId && isValidUUID(schoolId)) {
+          pgQuery += ` AND (school_id = $2::uuid OR school_id IS NULL)`;
+          params.push(schoolId);
+        }
+        pgQuery += ` LIMIT 1`;
+        const pgRes = await pool.query(pgQuery, params);
         if (pgRes.rows && pgRes.rows.length > 0) {
           adminUser = pgRes.rows[0];
         }

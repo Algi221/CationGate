@@ -56,7 +56,16 @@ app.use('*', async (c, next) => {
     else if (status >= 400) level = 'warn';
 
     const method = c.req.method;
-    const path = url.pathname + (url.search || '');
+
+    // Sanitize sensitive tokens/passwords from logged URL query parameters
+    const sanitizedUrl = new URL(c.req.url);
+    const sensitiveKeys = ['auth_token', 'token', 'key', 'secret', 'password', 'code'];
+    for (const key of sensitiveKeys) {
+      if (sanitizedUrl.searchParams.has(key)) {
+        sanitizedUrl.searchParams.set(key, '[REDACTED]');
+      }
+    }
+    const path = sanitizedUrl.pathname + (sanitizedUrl.search || '');
 
     systemLogger.addLog({
       method,
@@ -75,14 +84,25 @@ app.use('*', async (c, next) => {
 app.use('*', logger());
 app.use('*', cors({
   origin: (origin) => {
-    if (!origin) return '*';
-    if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.endsWith('cationgate.site')) {
-      return origin;
-    }
-    return origin;
+    if (!origin) return 'https://cationgate.site';
+    try {
+      const parsed = new URL(origin);
+      const hostname = parsed.hostname.toLowerCase();
+      if (
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname.endsWith('.localhost') ||
+        hostname === 'cationgate.site' ||
+        hostname.endsWith('.cationgate.site') ||
+        hostname.endsWith('.vercel.app')
+      ) {
+        return origin;
+      }
+    } catch (_e) {}
+    return 'https://cationgate.site';
   },
   allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-gatekeeper-token', 'x-school-slug', 'x-school-id'],
   exposeHeaders: ['Content-Length'],
   maxAge: 600,
   credentials: true,

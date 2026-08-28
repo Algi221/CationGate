@@ -180,7 +180,7 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
     if (!slug) return;
 
     try {
-      const res = await fetch(`/api/saas/school-by-slug/${encodeURIComponent(slug)}&_t=${Date.now()}`, {
+      const res = await fetch(`/api/saas/school-by-slug/${encodeURIComponent(slug)}?_t=${Date.now()}`, {
         cache: "no-store"
       });
       if (!res.headers.get("content-type")?.includes("application/json")) return;

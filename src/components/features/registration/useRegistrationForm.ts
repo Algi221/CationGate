@@ -174,26 +174,29 @@ export const useRegistrationForm = () => {
 
   const [showPaymentGate, setShowPaymentGate] = useState(false);
 
-  const [majors, setMajors] = useState<Array<{ code: string; title: string; logo?: string }>>(() => {
+  const [majors, setMajors] = useState<Array<{ code: string; title: string; logo?: string; color?: string }>>(() => {
     if (typeof window !== "undefined") {
-      const savedMajors = localStorage.getItem("ppdb_majors_config");
+      const savedMajors = localStorage.getItem(`ppdb_majors_config_${schoolSlug}`) || (schoolSlug === "demo" || schoolSlug === "smktarunabhakti" ? localStorage.getItem("ppdb_majors_config") : null);
       if (savedMajors) {
         try {
           const parsed = JSON.parse(savedMajors);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed)) return parsed;
         } catch (_e) {
           // ignore
         }
       }
     }
-    return [
-      { code: "RPL", title: "Rekayasa Perangkat Lunak" },
-      { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
-      { code: "DKV", title: "Desain Komunikasi Visual" },
-      { code: "ANM", title: "Animasi" },
-      { code: "BC", title: "Broadcasting & Perfilman" },
-      { code: "TE", title: "Teknik Elektronika" }
-    ];
+    if (schoolSlug === "demo" || schoolSlug === "smktarunabhakti") {
+      return [
+        { code: "RPL", title: "Rekayasa Perangkat Lunak" },
+        { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
+        { code: "DKV", title: "Desain Komunikasi Visual" },
+        { code: "ANM", title: "Animasi" },
+        { code: "BC", title: "Broadcasting & Perfilman" },
+        { code: "TE", title: "Teknik Elektronika" }
+      ];
+    }
+    return [];
   });
 
   // SUB-HOOK VALIDATION
@@ -262,13 +265,21 @@ export const useRegistrationForm = () => {
               setFieldsConfig(config.ppdb_fields_config);
               localStorage.setItem("ppdb_fields_config", JSON.stringify(config.ppdb_fields_config));
             }
-            if (
-              config.ppdb_majors_config &&
-              Array.isArray(config.ppdb_majors_config) &&
-              config.ppdb_majors_config.length > 0
-            ) {
-              setMajors(config.ppdb_majors_config);
-              localStorage.setItem("ppdb_majors_config", JSON.stringify(config.ppdb_majors_config));
+            if (config.ppdb_majors_config !== undefined && config.ppdb_majors_config !== null) {
+              let parsedMajors = config.ppdb_majors_config;
+              if (typeof parsedMajors === "string" && (parsedMajors.startsWith("[") || parsedMajors.startsWith("{"))) {
+                try {
+                  parsedMajors = JSON.parse(parsedMajors);
+                } catch (_e) {}
+              }
+              if (Array.isArray(parsedMajors)) {
+                setMajors(parsedMajors);
+                if (typeof window !== "undefined" && schoolSlug) {
+                  localStorage.setItem(`ppdb_majors_config_${schoolSlug}`, JSON.stringify(parsedMajors));
+                }
+              } else if (schoolSlug !== "demo" && schoolSlug !== "smktarunabhakti") {
+                setMajors([]);
+              }
             }
             if (config.ppdb_bank_config) {
               const bankData = config.ppdb_bank_config;

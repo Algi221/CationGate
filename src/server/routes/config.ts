@@ -361,12 +361,24 @@ configRouter.post('/', adminAuth, async (c) => {
 
       // Invalidate Redis cache
       const cacheKeysToInvalidate = new Set<string>();
-      if (schoolId) cacheKeysToInvalidate.add(`config_${schoolId}`);
-      if (admin?.school_slug) cacheKeysToInvalidate.add(`config_${admin.school_slug}`);
-      if (admin?.slug) cacheKeysToInvalidate.add(`config_${admin.slug}`);
+      if (schoolId) {
+        cacheKeysToInvalidate.add(`config_${schoolId}`);
+        cacheKeysToInvalidate.add(`school_profile_${schoolId}`);
+      }
+      if (admin?.school_slug) {
+        cacheKeysToInvalidate.add(`config_${admin.school_slug}`);
+        cacheKeysToInvalidate.add(`school_profile_${admin.school_slug}`);
+      }
+      if (admin?.slug) {
+        cacheKeysToInvalidate.add(`config_${admin.slug}`);
+        cacheKeysToInvalidate.add(`school_profile_${admin.slug}`);
+      }
       cacheKeysToInvalidate.add('config_default');
       const qSlugForCache = c.req.query('school_slug');
-      if (qSlugForCache) cacheKeysToInvalidate.add(`config_${qSlugForCache}`);
+      if (qSlugForCache) {
+        cacheKeysToInvalidate.add(`config_${qSlugForCache}`);
+        cacheKeysToInvalidate.add(`school_profile_${qSlugForCache}`);
+      }
       for (const ck of cacheKeysToInvalidate) {
         await delCached(ck);
       }

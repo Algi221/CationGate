@@ -112,31 +112,33 @@ schoolProfileRouter.get('/', async (c) => {
 
       const defaultSchoolName = String(saasSchool?.name || legacyIdentitas.nama || (schoolSlug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : 'Institusi Pendidikan'));
 
+      const isDemoOrTaruna = schoolSlug === 'smktarunabhakti' || schoolSlug === 'demo';
+
       profileData = {
         school_id: resolvedUUID || targetIdentifier,
         nama: defaultSchoolName,
-        npsn: String(saasSchool?.npsn || legacyIdentitas.npsn || (schoolSlug === 'smktarunabhakti' ? '20229182' : '')),
-        akreditasi: String(saasSchool?.accreditation || legacyIdentitas.akreditasi || (schoolSlug === 'smktarunabhakti' ? 'A (Unggul)' : '-')),
+        npsn: String(saasSchool?.npsn || legacyIdentitas.npsn || (isDemoOrTaruna ? '20229182' : '')),
+        akreditasi: String(saasSchool?.accreditation || legacyIdentitas.akreditasi || (isDemoOrTaruna ? 'A (Unggul)' : '-')),
         status: String(legacyIdentitas.status || 'Swasta'),
         kurikulum: String(legacyIdentitas.kurikulum || 'Kurikulum Merdeka'),
-        tahun_berdiri: String(legacyIdentitas.tahun_berdiri || (schoolSlug === 'smktarunabhakti' ? '1998' : '')),
+        tahun_berdiri: String(legacyIdentitas.tahun_berdiri || (isDemoOrTaruna ? '1998' : '')),
         nis: String(legacyIdentitas.nis || ''),
         nss: String(legacyIdentitas.nss || ''),
-        alamat: String(saasSchool?.address || legacyIdentitas.alamat || (schoolSlug === 'smktarunabhakti' ? 'Jl. Pekapuran RT 02/06 Curug, Cimanggis, Kota Depok' : '')),
+        alamat: String(saasSchool?.address || legacyIdentitas.alamat || (isDemoOrTaruna ? 'Jl. Pekapuran RT 02/06 Curug, Cimanggis, Kota Depok' : '')),
         telepon: String(saasSchool?.phone || legacyIdentitas.telepon || ''),
         email: String(saasSchool?.official_email || legacyIdentitas.email || ''),
         logo_url: String(saasSchool?.logo_url || legacyProfil?.logo_url || ''),
         hero_image: String(legacyProfil?.hero_image || ''),
         video_profil_url: String(legacyProfil?.video_profil_url || ''),
-        sejarah: String(legacyProfil?.sejarah || `${defaultSchoolName} merupakan institusi pendidikan terdepan yang didirikan dengan komitmen tinggi dalam mencerdaskan kehidupan bangsa.`),
+        sejarah: String(legacyProfil?.sejarah || ''),
         ringkasan: String(legacyProfil?.ringkasan || ''),
-        visi: String(legacyVisiMisi.visi || legacyProfil?.visi || `Menjadi institusi pendidikan yang unggul, berkarakter, dan berdaya saing global.`),
-        misi: String(legacyVisiMisi.misi || legacyProfil?.misi || `1. Menyelenggarakan proses pembelajaran yang inovatif dan relevan.\n2. Membangun integritas dan kepemimpinan berakhlak mulia.`),
-        tujuan: String(legacyProfil?.tujuan || `1. Menghasilkan lulusan yang kompeten.\n2. Mewujudkan tata kelola institusi yang transparan dan akuntabel.`),
+        visi: String(legacyVisiMisi.visi || legacyProfil?.visi || ''),
+        misi: String(legacyVisiMisi.misi || legacyProfil?.misi || ''),
+        tujuan: String(legacyProfil?.tujuan || ''),
         pimpinan: legacyPimpinan.nama ? legacyPimpinan : {
-          nama: String(saasSchool?.admin_name || 'Kepala Sekolah'),
+          nama: String(saasSchool?.admin_name || ''),
           jabatan: 'Kepala Sekolah',
-          sambutan: 'Selamat datang di portal resmi institusi pendidikan kami.',
+          sambutan: '',
           foto: ''
         },
         fasilitas: Array.isArray(legacyProfil?.fasilitas) ? legacyProfil?.fasilitas : [],

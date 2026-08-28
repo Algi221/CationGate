@@ -484,6 +484,22 @@ configRouter.post('/', adminAuth, async (c) => {
     const schoolId = await requireTenantId(c);
     const targetSchoolId = String(schoolId);
 
+    if (key === 'ppdb_portal_status' && processedValue === 'open') {
+      const admin = (c.get as (k: string) => unknown)('admin') as { school_slug?: string; slug?: string } | undefined;
+      const targetSlug = admin?.school_slug || admin?.slug || c.req.query('school_slug');
+      if (targetSlug !== 'demo') {
+        const { SaasService } = await import('../services/SaasService');
+        const subStatus = await SaasService.getSubscriptionStatus(String(schoolId), targetSlug || undefined);
+        const isPaidPlan = (subStatus.plan === 'PRO_YEARLY' || subStatus.plan === 'PRO' || subStatus.plan === 'ENTERPRISE') && !subStatus.isExpired && subStatus.status === 'ACTIVE';
+        if (!isPaidPlan) {
+          return c.json({
+            success: false,
+            message: 'Pembukaan pendaftaran publik hanya tersedia untuk instansi dengan paket Pro Tahunan atau Enterprise. Harap aktifkan paket berlangganan terlebih dahulu.'
+          }, 403);
+        }
+      }
+    }
+
     const payload: Record<string, unknown> = {
       config_key: key,
       config_value: processedValue,

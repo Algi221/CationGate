@@ -14,6 +14,7 @@ import { SchoolKemitraan } from "@/components/features/school-landing/components
 import { SchoolFaq } from "@/components/features/school-landing/components/SchoolFaq";
 import { SchoolContact } from "@/components/features/school-landing/components/SchoolContact";
 import { SchoolUnverifiedLandingView } from "@/components/features/school-landing/components/SchoolUnverifiedLandingView";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 interface SchoolLandingClientProps {
   initialData?: Record<string, unknown>;
@@ -50,15 +51,16 @@ export function SchoolLandingClient({ initialData, serverSchoolSlug }: SchoolLan
   } = useSchoolLandingState(initialData);
 
   const schoolSlug = serverSchoolSlug || clientSchoolSlug;
+  const { href } = useSchoolHref(schoolSlug);
 
   if (isPlatformMaintenance) {
     return (
       <ErrorView
         title="Mode Pemeliharaan Platform"
         description="Platform CationGate sedang dalam proses pemeliharaan sistem & peningkatan infrastruktur. Layanan pendaftaran akan segera kembali aktif."
-        urlPath={`/${schoolSlug}`}
+        urlPath={href("/")}
         ctaText="Coba Muat Ulang"
-        ctaHref={`/${schoolSlug}`}
+        ctaHref={href("/")}
       />
     );
   }
@@ -68,7 +70,7 @@ export function SchoolLandingClient({ initialData, serverSchoolSlug }: SchoolLan
       <ErrorView
         title="Halaman Tidak Ditemukan"
         description={`Maaf, halaman instansi '${schoolSlug}' tidak dapat ditemukan atau belum terdaftar di platform CationGate.`}
-        urlPath={`/${schoolSlug}`}
+        urlPath={href("/")}
         ctaText="Kembali ke Beranda CationGate"
         ctaHref="/"
       />

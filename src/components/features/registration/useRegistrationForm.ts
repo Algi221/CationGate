@@ -66,10 +66,10 @@ export const useRegistrationForm = () => {
       return (
         localStorage.getItem(`ppdb_portal_status_${schoolSlug}`) ||
         localStorage.getItem("ppdb_portal_status") ||
-        "open"
+        "closed"
       );
     }
-    return "open";
+    return "closed";
   });
 
   const [fieldsConfig, setFieldsConfig] = useState<

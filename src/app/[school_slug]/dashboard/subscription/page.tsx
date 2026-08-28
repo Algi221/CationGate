@@ -307,12 +307,12 @@ export default function SubscriptionManagementPage() {
       name: "Free Trial",
       price_yearly: 0,
       features: [
-        "Pendaftaran Online PPDB Dasar",
-        "Kelola Data Calon Siswa",
-        "Export Excel",
-        "Landing Page Sekolah",
-        "Maks 100 Pendaftar",
-        "Masa Aktif 30 Hari"
+        "mendapatkan subdomain",
+        "bisa mengumumkan informasi sekolah",
+        "mendapatkan profil sekolah",
+        "bisa atur kelola halaman sekolah",
+        "Masa Aktif 30 Hari",
+        "import/export excel data siswa"
       ]
     },
     {
@@ -320,14 +320,13 @@ export default function SubscriptionManagementPage() {
       name: "Pro Tahunan",
       price_yearly: 1200000,
       features: [
-        "Semua Fitur Free Trial",
+        "Semua Fitur ",
         "Unlimited Pendaftar",
-        "Custom Branding & Logo",
         "Multi-Admin Dashboard",
-        "WhatsApp Notifikasi Otomatis",
         "Prioritas Support 24/7",
-        "Pembagian Kelas Otomatis",
-        "Laporan & Statistik Lengkap"
+        "mengelola data siswa",
+        "Laporan & Statistik Lengkap",
+        "Import/Export excel data siswa"
       ]
     },
     {

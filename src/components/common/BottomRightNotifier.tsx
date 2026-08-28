@@ -7,6 +7,7 @@ import {
   Building2, UserPlus, ShieldAlert, CheckCircle2, 
   X, ArrowRight, BellRing
 } from "lucide-react";
+import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 export interface LiveNotification {
   id: string;
@@ -21,6 +22,7 @@ export interface LiveNotification {
 export function BottomRightNotifier() {
   const pathname = usePathname();
   const router = useRouter();
+  const { href } = useSchoolHref();
   const [currentNotification, setCurrentNotification] = useState<LiveNotification | null>(null);
 
   const isGatekeeper = pathname?.startsWith("/gatekeeper/dashboard");
@@ -136,7 +138,7 @@ export function BottomRightNotifier() {
                     message: "Berkas SK & legalitas Anda sedang diproses oleh Tim Superadmin Gatekeeper.",
                     timestamp: "Baru saja",
                     actionText: "Status Verifikasi",
-                    actionHref: `/${schoolSlug}/dashboard/verification`
+                    actionHref: href("/dashboard/verification")
                   });
                 } else if (status === "FULL_VERIFIED" || status === "VERIFIED") {
                   setCurrentNotification({
@@ -146,7 +148,7 @@ export function BottomRightNotifier() {
                     message: "Portal sekolah dan seluruh fitur dashboard PPDB telah aktif sepenuhnya.",
                     timestamp: "Baru saja",
                     actionText: "Lihat Landing Page",
-                    actionHref: `/${schoolSlug}`
+                    actionHref: href("/")
                   });
                 }
               }
@@ -162,7 +164,7 @@ export function BottomRightNotifier() {
         clearInterval(interval);
       };
     }
-  }, [isGatekeeper, isSchoolDashboard, pathname]);
+  }, [isGatekeeper, isSchoolDashboard, pathname, href]);
 
   // Auto dismiss notification after 8 seconds
   useEffect(() => {

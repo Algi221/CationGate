@@ -26,9 +26,9 @@ export function useDashboardOverviewState() {
 
   useEffect(() => {
     if (schoolSlug && !isVerified) {
-      router.push(`/${schoolSlug}/dashboard/verification`);
+      router.push(href("/dashboard/verification"));
     }
-  }, [schoolSlug, isVerified, router]);
+  }, [schoolSlug, isVerified, router, href]);
 
   const isDemo = isDemoMode || schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
 
@@ -221,7 +221,7 @@ export function useDashboardOverviewState() {
       if (cached === "closed") return false;
       if (cached === "open") return true;
     }
-    return true;
+    return false;
   });
   const [isUpdatingSpmb, setIsUpdatingSpmb] = useState(false);
 
@@ -264,26 +264,32 @@ export function useDashboardOverviewState() {
     const nextStatus = !isSpmbOpen;
 
     // Validate paid subscription before allowing to open public SPMB registration
-    let isSubscribed = isDemo || isVerified;
+    let isSubscribed = isDemo;
     if (!isSubscribed && typeof window !== "undefined") {
       const savedSub = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || 'default'}`);
-      if (savedSub && (savedSub.includes("PRO") || savedSub.includes("ENTERPRISE") || savedSub.includes("ACTIVE"))) {
-        isSubscribed = true;
-      }
-      if (schoolStatus === "FULL_VERIFIED" || schoolStatus === "VERIFIED" || schoolStatus === "verified") {
-        isSubscribed = true;
+      if (savedSub) {
+        try {
+          const parsed = JSON.parse(savedSub);
+          if (parsed && (parsed.plan === "PRO_YEARLY" || parsed.plan === "PRO" || parsed.plan === "ENTERPRISE") && parsed.status === "ACTIVE" && !parsed.isExpired) {
+            isSubscribed = true;
+          }
+        } catch (_e) {
+          if (savedSub.includes("PRO_YEARLY") || savedSub.includes("ENTERPRISE")) {
+            isSubscribed = true;
+          }
+        }
       }
     }
 
     if (nextStatus && !isSubscribed) {
       const result = await Swal.fire({
         title: "Perlu Berlangganan Paket Pro 🔒",
-        text: "Fitur Pembukaan Pendaftaran Publik (SPMB Online) hanya dapat diaktifkan setelah instansi sekolah berlangganan paket Pro atau Enterprise.",
+        text: "Fitur Pembukaan Pendaftaran Publik (SPMB Online) hanya dapat diaktifkan setelah instansi sekolah berlangganan paket Pro Tahunan atau Enterprise. Instansi pada masa Free Trial dapat mengelola UI, mendapatkan subdomain resmi, dan impor/ekspor data siswa.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#2563EB",
         cancelButtonColor: "#64748B",
-        confirmButtonText: "Lihat Paket & Langganan Sekarang",
+        confirmButtonText: "Aktivasi Paket Sekarang",
         cancelButtonText: "Tutup",
         customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
       });

@@ -75,14 +75,11 @@ export default function proxy(request: NextRequest) {
 
   // 4. Handle Subdomain Routing (e.g. smktarunabhakti.cationgate.site or demo.cationgate.site)
   if (subdomain) {
-    // If request already contains the subdomain slug in pathname, rewrite to clean path
-    if (pathname.startsWith(`/${subdomain}`)) {
+    // If request already contains the subdomain slug in pathname, 307 redirect to clean path
+    if (pathname === `/${subdomain}` || pathname.startsWith(`/${subdomain}/`)) {
       const cleanPath = pathname.replace(`/${subdomain}`, "") || "/";
-      const rewriteUrl = new URL(`/${subdomain}${cleanPath}`, request.url);
-      const response = NextResponse.rewrite(rewriteUrl);
-      response.headers.set("x-school-slug", subdomain);
-      response.headers.set("x-is-subdomain", "true");
-      return response;
+      const redirectUrl = new URL(`${cleanPath}${request.nextUrl.search}`, request.url);
+      return NextResponse.redirect(redirectUrl, 307);
     }
 
     // If request is /login or /auth/login on a school subdomain, rewrite to client-side redirect page

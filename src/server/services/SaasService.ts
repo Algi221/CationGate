@@ -313,13 +313,15 @@ export class SaasService {
     school_name: string;
     slug: string;
     email: string;
+    phone?: string;
+    address?: string;
     plan_type?: string;
     admin_name?: string;
     admin_username: string;
     admin_password: string;
     admin_email?: string;
   }) {
-    const { school_name, slug, email, plan_type, admin_name, admin_username, admin_password, admin_email } = data;
+    const { school_name, slug, email, phone, address, plan_type, admin_name, admin_username, admin_password, admin_email } = data;
 
     if (!school_name || !slug || !email || !admin_username || !admin_password) {
       return { success: false as const, statusCode: 400 as const, message: 'Data tidak lengkap' };
@@ -492,6 +494,40 @@ export class SaasService {
         );
       } catch (_e) {}
     }
+    try {
+      const targetSchoolRef = adminSchoolRef || String(insertedSchoolId || cleanSlug);
+      const defaultConfigs = [
+        { school_id: targetSchoolRef, config_key: 'ppdb_portal_status', config_value: 'closed', updated_at: createdAtIso },
+        { school_id: targetSchoolRef, config_key: 'ppdb_title', config_value: cleanSchoolName, updated_at: createdAtIso },
+        { school_id: targetSchoolRef, config_key: 'ppdb_email', config_value: cleanEmail, updated_at: createdAtIso },
+        { school_id: targetSchoolRef, config_key: 'ppdb_phone', config_value: phone || '', updated_at: createdAtIso },
+        { school_id: targetSchoolRef, config_key: 'ppdb_address', config_value: address || '', updated_at: createdAtIso },
+      ];
+      await supabase.from('landing_page_config').upsert(defaultConfigs, { onConflict: 'school_id,config_key' });
+    } catch (_cfgErr) {}
+
+    // Initialize default school_subscriptions (Free Trial 30 days)
+    if (adminSchoolRef) {
+      try {
+        const trialExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        await supabase.from('school_subscriptions').insert({
+          school_id: adminSchoolRef,
+          plan_name: 'FREE',
+          status: 'TRIAL',
+          started_at: createdAtIso,
+          expires_at: trialExpiry,
+          amount_paid: 0
+        });
+      } catch (_subErr) {}
+    }
+
+    newSchoolObj.configs = {
+      ppdb_portal_status: 'closed',
+      ppdb_title: cleanSchoolName,
+      ppdb_email: cleanEmail,
+      ppdb_phone: phone || '',
+      ppdb_address: address || ''
+    };
 
     return { 
       success: true as const, 

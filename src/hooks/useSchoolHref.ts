@@ -16,9 +16,19 @@ export function useSchoolHref(explicitSlug?: string) {
   const pathname = usePathname();
   const schoolSlug = explicitSlug || (params?.school_slug as string) || "";
 
-  // If pathname already starts with /${schoolSlug}, we are in path-based mode.
-  // Otherwise, we are in subdomain mode. This is 100% identical on SSR and Client.
+  const isSubdomain = typeof window !== "undefined"
+    ? (() => {
+        const host = window.location.hostname.toLowerCase();
+        return (
+          (host.endsWith(".cationgate.site") && host !== "cationgate.site" && !host.startsWith("www.")) ||
+          (host.endsWith(".localhost") && host !== "localhost") ||
+          (host.endsWith(".vercel.app") && host !== "cationgate.vercel.app")
+        );
+      })()
+    : false;
+
   const hasSlugInPath = Boolean(
+    !isSubdomain &&
     schoolSlug &&
     pathname &&
     (pathname === `/${schoolSlug}` || pathname.startsWith(`/${schoolSlug}/`))
@@ -27,13 +37,16 @@ export function useSchoolHref(explicitSlug?: string) {
   const href = useCallback(
     (path: string) => {
       const cleanPath = path.startsWith("/") ? path : `/${path}`;
+      if (isSubdomain) {
+        return cleanPath;
+      }
       if (hasSlugInPath) {
         return `/${schoolSlug}${cleanPath}`;
       }
       return cleanPath;
     },
-    [hasSlugInPath, schoolSlug]
+    [isSubdomain, hasSlugInPath, schoolSlug]
   );
 
-  return { href, schoolSlug, isSubdomain: !hasSlugInPath };
+  return { href, schoolSlug, isSubdomain: isSubdomain || !hasSlugInPath };
 }

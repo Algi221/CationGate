@@ -30,12 +30,29 @@ async function getTargets(supabase: any, schoolId: string | null, customOrder: s
   });
 
   if (!schoolId) return baseTargets;
+
+  let resolvedUUID: string | null = null;
+  const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+  if (isUUID(schoolId)) {
+    resolvedUUID = schoolId;
+  } else {
+    try {
+      const { resolveSchoolUUID } = await import('../db/resolve-school');
+      const { fontInMemSchools } = await import('./saas');
+      resolvedUUID = await resolveSchoolUUID(schoolId, fontInMemSchools);
+    } catch (_e) {}
+  }
+
+  const matchIds = [resolvedUUID, schoolId].filter(Boolean) as string[];
+
   try {
     const { data } = await supabase
       .from('landing_page_config')
       .select('config_value')
-      .eq('school_id', schoolId)
+      .in('school_id', matchIds)
       .eq('config_key', 'kuota_targets')
+      .order('updated_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (data && data.config_value) {
@@ -49,8 +66,8 @@ async function getTargets(supabase: any, schoolId: string | null, customOrder: s
   try {
     const { pool } = await import('../db/client');
     const pgRes = await pool.query(
-      `SELECT config_value FROM landing_page_config WHERE school_id::text = $1::text AND config_key = 'kuota_targets'`,
-      [String(schoolId)]
+      `SELECT config_value FROM landing_page_config WHERE school_id::text = ANY($1::text[]) AND config_key = 'kuota_targets' ORDER BY updated_at DESC LIMIT 1`,
+      [matchIds]
     );
     if (pgRes.rows && pgRes.rows.length > 0) {
       const rawVal = pgRes.rows[0].config_value;
@@ -61,11 +78,13 @@ async function getTargets(supabase: any, schoolId: string | null, customOrder: s
 
   try {
     const { fontInMemSchools } = await import('./saas');
-    if (fontInMemSchools.has(String(schoolId))) {
-      const inMem = fontInMemSchools.get(String(schoolId));
-      if (inMem?.configs?.kuota_targets) {
-        const parsed = typeof inMem.configs.kuota_targets === 'string' ? JSON.parse(inMem.configs.kuota_targets) : inMem.configs.kuota_targets;
-        return { ...baseTargets, ...parsed };
+    for (const id of matchIds) {
+      if (fontInMemSchools.has(id)) {
+        const inMem = fontInMemSchools.get(id);
+        if (inMem?.configs?.kuota_targets) {
+          const parsed = typeof inMem.configs.kuota_targets === 'string' ? JSON.parse(inMem.configs.kuota_targets) : inMem.configs.kuota_targets;
+          return { ...baseTargets, ...parsed };
+        }
       }
     }
   } catch (_memErr) {}
@@ -266,7 +285,7 @@ router.post('/targets', adminAuth, async (c) => {
       const { pool } = await import('../db/client');
       await pool.query(
         `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-         VALUES ($1::text, 'kuota_targets', $2, NOW())
+         VALUES ($1::uuid, 'kuota_targets', $2, NOW())
          ON CONFLICT (school_id, config_key)
          DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
         [String(targetSchoolId), JSON.stringify(targets)]

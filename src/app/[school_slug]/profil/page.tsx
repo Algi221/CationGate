@@ -17,29 +17,35 @@ export default async function ProfilSekolahPublicPage({ params }: PageProps) {
     try {
       // 1. Try Redis cache for 0ms ultra-fast hydration
       const cached = await getCached<Record<string, unknown>>(`school_profile_${schoolSlug}`);
-      if (cached && typeof cached === "object") {
+      if (cached && typeof cached === "object" && Object.keys(cached).length > 0) {
         initialProfile = cached;
         const identitasObj = cached.identitas as Record<string, unknown> | undefined;
         schoolName = ((cached.nama as string) || (identitasObj?.nama as string) || "");
       } else {
-        // 2. Query direct from PostgreSQL
-        const profileRes = await pool.query(
-          `SELECT * FROM school_profiles WHERE school_id = $1 LIMIT 1`,
+        // 2. Resolve school from schools table
+        const schoolRes = await pool.query(
+          `SELECT id, name, logo_url FROM schools WHERE slug = $1 LIMIT 1`,
           [schoolSlug]
         );
+        let schoolUUID = "";
+        if (schoolRes.rows && schoolRes.rows.length > 0) {
+          schoolUUID = schoolRes.rows[0].id;
+          schoolName = schoolRes.rows[0].name || "";
+        }
+
+        // 3. Query direct from PostgreSQL with UUID or Slug
+        const profileRes = await pool.query(
+          `SELECT * FROM school_profiles 
+           WHERE school_id = $1 OR school_id = $2 
+           ORDER BY updated_at DESC LIMIT 1`,
+          [schoolUUID || schoolSlug, schoolSlug]
+        );
+
         if (profileRes.rows && profileRes.rows.length > 0) {
           initialProfile = profileRes.rows[0];
-          schoolName = (initialProfile.nama as string) || "";
-        } else {
-          // Check school name in schools table
-          const schoolRes = await pool.query(
-            `SELECT name FROM schools WHERE slug = $1 LIMIT 1`,
-            [schoolSlug]
-          );
-          if (schoolRes.rows && schoolRes.rows.length > 0) {
-            schoolName = schoolRes.rows[0].name;
-            initialProfile = { nama: schoolName };
-          }
+          schoolName = (initialProfile.nama as string) || schoolName;
+        } else if (schoolName) {
+          initialProfile = { nama: schoolName };
         }
       }
     } catch (_err) {

@@ -53,6 +53,8 @@ schoolProfileRouter.get('/', async (c) => {
         .from('school_profiles')
         .select('*')
         .in('school_id', matchIds)
+        .order('updated_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (!error && data) {
@@ -64,7 +66,7 @@ schoolProfileRouter.get('/', async (c) => {
     if (!profileData) {
       try {
         const pgRes = await pool.query(
-          `SELECT * FROM school_profiles WHERE school_id = ANY($1::text[]) LIMIT 1`,
+          `SELECT * FROM school_profiles WHERE school_id = ANY($1::text[]) ORDER BY updated_at DESC LIMIT 1`,
           [matchIds]
         );
         if (pgRes.rows && pgRes.rows.length > 0) {

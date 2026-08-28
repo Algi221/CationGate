@@ -5,7 +5,7 @@ import Lottie from "lottie-react";
 import { ArrowRight, Play, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const keywords = ["SPMB", "PPDB"];
+const keywords = ["SPMB", "PROFIL"];
 
 export default function HeroSPMB() {
   const [animationData, setAnimationData] = useState(null);
@@ -47,7 +47,7 @@ export default function HeroSPMB() {
     <section className="relative min-h-screen w-full bg-white overflow-hidden flex flex-col justify-between px-6 sm:px-12 pt-28 pb-8 font-sans selection:bg-amber-200">
       <div className="w-full max-w-[1550px] mx-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-8 my-auto z-20">
         <div className="lg:col-span-4 text-center lg:text-left space-y-6">
-          <h1 className="text-4xl sm:text-5xl lg:text-[3.8rem] font-black text-gray-900 leading-[1.02] tracking-tight">
+          <h1 className="text-4xl sm:text-5xl lg:text-5xl font-black text-gray-900 leading-[1.02] tracking-tight">
             BIKIN WEBSITE <br />
             {/* Baris ini menggunakan flex agar SEKOLAH aman dan tidak ikut goyang */}
             <span className="inline-flex items-center flex-wrap justify-center lg:justify-start gap-x-3 text-amber-500">
@@ -108,13 +108,13 @@ export default function HeroSPMB() {
         </div>
 
         <div className="lg:col-span-4 text-center lg:text-left space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight tracking-tight">
+          <h2 className="text-2xl sm:text-5xl font-black text-gray-900 leading-tight tracking-tight">
             TAMPILAN MODERN, <br />
             <span className="text-amber-500">FITUR LENGKAP.</span>
           </h2>
 
           <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-sm mx-auto lg:mx-0">
-            Dilengkapi manajemen siswa pendaftar dan siswa aktif, export data,
+            Dilengkapi manajemen siswa pendafxtar dan siswa aktif, export data,
             hingga integrasi pembayaran digital.
           </p>
 

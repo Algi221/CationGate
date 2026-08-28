@@ -96,7 +96,7 @@ function ActivateAdminContent() {
         <div className="text-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-3 shadow-xs">
             {ppdbLogo ? (
-              <Image src={ppdbLogo} alt="Logo" width={36} height={36} className="object-contain" unoptimized />
+              <Image src={ppdbLogo} alt="Logo" width={36} height={36} style={{ width: "auto", height: "auto" }} className="object-contain max-w-9 max-h-9" unoptimized />
             ) : (
               <ShieldCheck size={28} className="text-blue-600 dark:text-blue-400" />
             )}

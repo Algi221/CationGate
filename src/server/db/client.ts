@@ -121,6 +121,35 @@ export async function initDb(): Promise<void> {
           ALTER TABLE informasi ALTER COLUMN school_id TYPE TEXT USING school_id::text;
         EXCEPTION WHEN OTHERS THEN NULL;
         END $$;
+
+        CREATE TABLE IF NOT EXISTS school_profiles (
+          id SERIAL PRIMARY KEY,
+          school_id TEXT UNIQUE NOT NULL,
+          npsn VARCHAR(50),
+          akreditasi VARCHAR(50),
+          nama VARCHAR(255),
+          status VARCHAR(50) DEFAULT 'Swasta',
+          kurikulum VARCHAR(100) DEFAULT 'Kurikulum Merdeka',
+          tahun_berdiri VARCHAR(10),
+          nis VARCHAR(50),
+          nss VARCHAR(50),
+          alamat TEXT,
+          telepon VARCHAR(50),
+          email VARCHAR(255),
+          logo_url TEXT,
+          hero_image TEXT,
+          video_profil_url TEXT,
+          sejarah TEXT,
+          ringkasan TEXT,
+          visi TEXT,
+          misi TEXT,
+          tujuan TEXT,
+          pimpinan JSONB DEFAULT '{"nama": "", "jabatan": "Kepala Sekolah", "sambutan": "", "foto": ""}'::jsonb,
+          fasilitas JSONB DEFAULT '[]'::jsonb,
+          sosial_media JSONB DEFAULT '{}'::jsonb,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
       `);
 
       console.log('PostgreSQL Database tables verified/initialized successfully.');

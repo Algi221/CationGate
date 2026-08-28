@@ -17,7 +17,8 @@ import mailerRouter from './routes/mailer';
 import passwordRouter from './routes/password';
 import chatbotRouter from './routes/chatbot';
 import { secureHeaders } from 'hono/secure-headers';
-import contactRoute from './routes/contact'
+import contactRoute from './routes/contact';
+import { schoolProfileRouter } from './routes/school-profile';
 process.on('uncaughtException', (err) => {
   console.error('FATAL UNCAUGHT EXCEPTION:', err);
 });
@@ -122,7 +123,8 @@ app.route('/storage', storageRouter);
 app.route('/mailer', mailerRouter);
 app.route('/password', passwordRouter);
 app.route('/chatbot', chatbotRouter);
-app.route('/contact', contactRoute)
+app.route('/contact', contactRoute);
+app.route('/school-profile', schoolProfileRouter);
 
 app.get('/health', (c) => c.json({ status: 'OK', service: 'PPDB SMK Taruna Bhakti API Server v1.0.0 (Monolith)' }));
 

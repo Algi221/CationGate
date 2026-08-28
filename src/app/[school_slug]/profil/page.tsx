@@ -30,21 +30,16 @@ export default function ProfilSekolahPublicPage() {
 
   useEffect(() => {
     if (schoolSlug) {
-      fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`, {
+      fetch(`/api/school-profile?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`, {
         cache: "no-store"
       })
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.data) {
-            const c = data.data;
-            if (c.ppdb_title) setLiveTitle(c.ppdb_title);
-            let p = c.ppdb_profil_sekolah;
-            if (typeof p === "string" && (p.startsWith("{") || p.startsWith("["))) {
-              try { p = JSON.parse(p); } catch (_e) {}
-            }
-            if (p && typeof p === "object") {
-              setLiveProfil(p);
-            }
+            const p = data.data;
+            if (p.nama) setLiveTitle(p.nama);
+            if (p.identitas?.nama) setLiveTitle(p.identitas.nama);
+            setLiveProfil(p);
           }
         })
         .catch(console.error);

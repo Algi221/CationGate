@@ -262,6 +262,45 @@ export function useSchoolLandingState(initialData?: Record<string, unknown>) {
     }
   }, [schoolSlug]);
 
+  // Realtime multi-tab synchronization via BroadcastChannel
+  useEffect(() => {
+    if (typeof window === "undefined" || !("BroadcastChannel" in window)) return;
+    const channel = new BroadcastChannel("cationgate_landing_sync");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    channel.onmessage = (event: MessageEvent<any>) => {
+      if (event.data && event.data.type === "CONFIG_UPDATED") {
+        if (!event.data.slug || event.data.slug === schoolSlug) {
+          const cfg = event.data.data;
+          if (cfg) {
+            if (cfg.ppdb_title) setCustomSchoolName(cfg.ppdb_title);
+            if (cfg.ppdb_hero_title) setHeroTitle(cfg.ppdb_hero_title);
+            if (cfg.ppdb_hero_title_sub) setHeroTitleSub(cfg.ppdb_hero_title_sub);
+            if (cfg.ppdb_hero_subtitle) setHeroSubtitle(cfg.ppdb_hero_subtitle);
+            if (cfg.ppdb_hero_bg_image !== undefined) setHeroBgImage(cfg.ppdb_hero_bg_image);
+            if (cfg.ppdb_address || cfg.ppdb_alamat) setAddress(cfg.ppdb_address || cfg.ppdb_alamat);
+            if (cfg.ppdb_map_url || cfg.ppdb_maps_embed) setMapUrl(cfg.ppdb_map_url || cfg.ppdb_maps_embed);
+            if (cfg.ppdb_map_title) setMapTitle(cfg.ppdb_map_title);
+            if (cfg.ppdb_wa_admin) setWaAdmin(cfg.ppdb_wa_admin);
+            if (cfg.ppdb_school_period) setSchoolPeriod(cfg.ppdb_school_period);
+            if (cfg.ppdb_faq_title) setFaqTitle(cfg.ppdb_faq_title);
+            if (cfg.ppdb_faq_subtitle) setFaqSubtitle(cfg.ppdb_faq_subtitle);
+            const parsedFaq = parseConfigArray<FaqItem>(cfg.ppdb_faq_config);
+            if (parsedFaq && parsedFaq.length > 0) setFaqList(parsedFaq);
+            const parsedMajors = parseConfigArray<MajorItem>(cfg.ppdb_majors_config);
+            if (parsedMajors && parsedMajors.length > 0) setMajors(parsedMajors);
+            const parsedPartners = parseConfigArray<PartnerItem>(cfg.ppdb_partners_config);
+            if (parsedPartners && parsedPartners.length > 0) setPartnersList(parsedPartners);
+            const parsedAlur = parseConfigArray<AlurItem>(cfg.ppdb_alur_config);
+            if (parsedAlur && parsedAlur.length > 0) setAlurList(parsedAlur);
+          }
+        }
+      }
+    };
+    return () => {
+      channel.close();
+    };
+  }, [schoolSlug]);
+
   useEffect(() => {
     const loadDynamicConfig = async () => {
       try {

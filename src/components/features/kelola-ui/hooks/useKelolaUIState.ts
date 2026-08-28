@@ -668,7 +668,8 @@ export function useKelolaUIState() {
         showToastMsg("Semua perubahan UI berhasil disimpan dan tercatat.");
         setChangeDescription("");
         localStorage.removeItem(draftKey);
-        fetchCurrentConfig().catch(console.error);
+
+        const savedData = json.data || configsPayload;
 
         try {
           if (slug) {
@@ -699,9 +700,27 @@ export function useKelolaUIState() {
           console.warn("Storage sync bypassed.", storageErr);
         }
 
-        if (slug) {
-          useSchoolStore.getState().fetchConfigs(slug).catch(console.error);
+        // Direct store sync without duplicate network request
+        if (savedData.ppdb_title) {
+          useSchoolStore.getState().setPpdbTitle(savedData.ppdb_title);
         }
+        if (savedData.ppdb_logo_url) {
+          useSchoolStore.getState().setPpdbLogo(savedData.ppdb_logo_url);
+        }
+
+        // Realtime Broadcast to open landing page tabs
+        try {
+          if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+            const channel = new BroadcastChannel("cationgate_landing_sync");
+            channel.postMessage({
+              type: "CONFIG_UPDATED",
+              slug: slug || "",
+              data: savedData,
+              version: json.configVersion || Date.now()
+            });
+            channel.close();
+          }
+        } catch (_bcErr) {}
 
         await fetchRevisions();
       } else {

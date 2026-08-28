@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { getSupabaseClient } from '../db/supabase';
+import { adminAuth, requireTenantId } from '../middleware/auth';
 
 const storageRouter = new Hono();
 
@@ -11,7 +12,6 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/png',
   'image/webp',
   'image/gif',
-  'image/svg+xml',
   'application/pdf',
   'video/mp4',
   'video/webm',
@@ -196,9 +196,12 @@ storageRouter.post('/upload', async (c) => {
   }
 });
 
-// 2. Pre-Signed URL for direct client-to-cloud upload (optional cloud fallback)
-storageRouter.post('/presigned-url', async (c) => {
+// 2. Pre-Signed URL for direct client-to-cloud upload (Admin only)
+storageRouter.post('/presigned-url', adminAuth, async (c) => {
   try {
+    const schoolId = await requireTenantId(c);
+    const cleanTenant = String(schoolId).replace(/[^a-zA-Z0-9_-]/g, '_');
+
     const body = await c.req.json();
     const { fileName, contentType, bucketName = 'cationgate-media' } = body;
 
@@ -228,7 +231,7 @@ storageRouter.post('/presigned-url', async (c) => {
 
     const ext = (fileName.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
-    const safePath = `uploads/${Date.now()}_${crypto.randomBytes(4).toString('hex')}_${baseName}.${ext}`;
+    const safePath = `tenants/${cleanTenant}/uploads/${Date.now()}_${crypto.randomBytes(4).toString('hex')}_${baseName}.${ext}`;
 
     // Create a signed upload URL valid for 300 seconds (5 minutes)
     const { data, error } = await supabase.storage.from(bucketName).createSignedUploadUrl(safePath, {

@@ -42,7 +42,7 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
     }
 
     const allowedTypes = [
-      'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/svg+xml', 'image/webp',
+      'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp',
       'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'application/pdf'
     ];
     if (!allowedTypes.includes(contentType)) {
@@ -55,7 +55,7 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
     }
 
     // IMAGE OPTIMIZATION (Sharp)
-    if (contentType.startsWith('image/') && !contentType.includes('svg') && !contentType.includes('gif')) {
+    if (contentType.startsWith('image/') && !contentType.includes('gif')) {
       const filename = `${prefix}_${Date.now()}.webp`;
       const targetPath = path.join(targetDir, filename);
       const optimizedBuffer = await sharp(dataBuffer).rotate().webp({ quality: 90, effort: 4 }).toBuffer();
@@ -309,56 +309,51 @@ configRouter.post('/', adminAuth, async (c) => {
       }
 
       const targetSchoolId = String(schoolId);
+      const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
 
-      const upsertRows = Object.entries(processedConfigs).map(([key, val]) => ({
-        config_key: key,
-        config_value: val,
-        updated_at: new Date().toISOString(),
-        school_id: targetSchoolId
-      }));
-
-      const { error } = await supabase
-        .from('landing_page_config')
-        .upsert(upsertRows, { onConflict: 'school_id,config_key' });
-
-      if (error) {
-        console.warn('Supabase upsert with compound key failed, attempting direct pool query:', error.message);
-        for (const row of upsertRows) {
-          try {
-            await pool.query(
-              `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-               VALUES ($1::uuid, $2, $3, NOW())
-               ON CONFLICT (school_id, config_key)
-               DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-              [row.school_id, row.config_key, JSON.stringify(row.config_value)]
-            );
-          } catch (_poolErr) {
-            console.warn('Fallback pool query error:', _poolErr);
-          }
-        }
-      }
-
-      // Log UI Revision
       const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string; school_slug?: string; slug?: string } | undefined;
       const adminName = admin?.nama || admin?.username || 'Administrator';
 
-      const revPayload: Record<string, unknown> = {
-        config_values: processedConfigs,
-        changed_by: adminName,
-        description: description || 'Pembaruan Tampilan Sistem'
-      };
-      if (schoolId) revPayload.school_id = targetSchoolId;
-
-      const { error: revErr } = await supabase.from('ui_revisions').insert(revPayload);
-      if (revErr) {
-        try {
-          await pool.query(
-            `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
-             VALUES ($1::uuid, $2, $3, $4, NOW())`,
-            [targetSchoolId, JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
+      // 1. Atomic PostgreSQL Transaction
+      const pgClient = await pool.connect();
+      try {
+        await pgClient.query('BEGIN');
+        for (const [key, val] of Object.entries(processedConfigs)) {
+          await pgClient.query(
+            `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (school_id, config_key)
+             DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+            [numericSchoolId, key, JSON.stringify(val)]
           );
-        } catch (_revPoolErr) {}
+        }
+        await pgClient.query(
+          `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
+           VALUES ($1, $2, $3, $4, NOW())`,
+          [String(numericSchoolId), JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
+        );
+        await pgClient.query('COMMIT');
+      } catch (txErr) {
+        await pgClient.query('ROLLBACK');
+        console.error('[PUT /api/config] Transaction failed and rolled back:', txErr);
+        return c.json({
+          success: false,
+          message: 'Gagal memperbarui konfigurasi ke basis data.'
+        }, 500);
+      } finally {
+        pgClient.release();
       }
+
+      // 2. Best-effort Supabase cloud sync
+      try {
+        const upsertRows = Object.entries(processedConfigs).map(([key, val]) => ({
+          config_key: key,
+          config_value: val,
+          updated_at: new Date().toISOString(),
+          school_id: targetSchoolId
+        }));
+        await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'school_id,config_key' });
+      } catch (_sbErr) {}
 
       // Invalidate Redis cache
       const cacheKeysToInvalidate = new Set<string>();
@@ -755,7 +750,9 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     console.log('[SUCCESS] Configurations successfully saved to PostgreSQL database.');
     return c.json({
       success: true,
-      message: 'Semua konfigurasi berhasil disimpan dan tercatat dalam riwayat perubahan.'
+      message: 'Semua konfigurasi berhasil disimpan dan tercatat dalam riwayat perubahan.',
+      data: processedConfigs,
+      configVersion: Date.now()
     });
   } catch (err: unknown) {
     console.error('[ERROR] Failed to parse/save configurations:', err);

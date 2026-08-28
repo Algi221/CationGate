@@ -25,7 +25,9 @@ const GATEKEEPER_ACCOUNTS = [
   { id: 2, username: 'farel', nama_lengkap: 'Farel', email: 'farel@cationgate.id' },
   { id: 3, username: 'jepan', nama_lengkap: 'Jepan', email: 'jepan@cationgate.id' },
   { id: 4, username: 'husein', nama_lengkap: 'Husein', email: 'husein@cationgate.id' },
-  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id' }
+  { id: 5, username: GATEKEEPER_USERNAME, nama_lengkap: 'Gatekeeper CationGate Platform', email: 'uno@cationgate.id' },
+  { id: 6, username: 'pentester', nama_lengkap: 'Security Pentester / QA Audit', email: 'pentester@cationgate.id' },
+  { id: 9999, username: 'gatekeeper_test', nama_lengkap: 'Gatekeeper QA Test Account', email: 'gatekeeper@cationgate.id' }
 ];
 
 export let globalIsMaintenanceMode = false;
@@ -938,6 +940,32 @@ gatekeeperRouter.post('/change-password', gatekeeperAuth, async (c) => {
     return c.json({ success: true, message: 'Kata sandi Gatekeeper berhasil diperbarui.' });
   } catch (_err: unknown) {
     return c.json({ success: false, message: 'Gagal memperbarui kata sandi' }, 500);
+  }
+});
+
+// POST /api/gatekeeper/test-telegram
+gatekeeperRouter.post('/test-telegram', gatekeeperAuth, async (c) => {
+  try {
+    const admin = (c.get as (k: string) => unknown)('gatekeeper') as { username?: string; nama?: string } | undefined;
+    const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || '127.0.0.1';
+    const userAgent = c.req.header('user-agent') || 'Web Browser';
+
+    const result = await notifyGatekeeperLogin({
+      username: admin?.username || 'algi',
+      nama: admin?.nama || 'Algi',
+      ip,
+      userAgent
+    });
+
+    return c.json({
+      success: result.success,
+      message: result.message
+    });
+  } catch (err: unknown) {
+    return c.json({
+      success: false,
+      message: err instanceof Error ? err.message : 'Gagal menguji bot telegram'
+    }, 500);
   }
 });
 

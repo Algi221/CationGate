@@ -51,103 +51,7 @@ authRouter.post('/login', authLimiter, async (c) => {
       schoolId = resolvedUUID;
     }
 
-    let ysboAuthenticated = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let ysboUser: any = null;
-    let ysbmoToken: string | null = null;
-
     const supabase = getSupabaseClient();
-
-    const YSBO_API_URL = process.env.YSBO_API_URL;
-    if (YSBO_API_URL) {
-      try {
-        const response = await fetch(YSBO_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            version: 'v1',
-            apps_name: 'PPDB SMK Taruna Bhakti',
-            username: cleanEmail,
-            password
-          })
-        });
-
-        if (response.ok) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const result: any = await response.json();
-          if (result.status_code === 200 && result.data) {
-            ysboAuthenticated = true;
-            ysboUser = result.data;
-            ysbmoToken = result.token || result.data.token || result.access_token || result.data.access_token || result.token_akses || result.data.token_akses || null;
-          }
-        }
-      } catch (fetchErr: unknown) {
-        console.warn('Koneksi API YSBMO gagal, beralih ke kredensial lokal:', fetchErr instanceof Error ? fetchErr.message : String(fetchErr));
-      }
-    }
-
-    if (ysboAuthenticated && ysboUser) {
-      const mappedRole = Number(ysboUser.level_akses) === 4 ? 'superadmin' : 'admin';
-      const name = ysboUser.full_name || ysboUser.text || ysboUser.username || ysboUser.id || cleanEmail;
-      const hashedPassword = bcrypt.hashSync(password, 10);
-      const usernameKey = ysboUser.username || ysboUser.id || cleanEmail;
-
-      let checkQuery = supabase.from('admin_users').select('*').eq('username', usernameKey);
-      if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-      const { data: existingUser } = await checkQuery.maybeSingle();
-
-      if (existingUser) {
-        let updateQuery = supabase.from('admin_users').update({
-          password_hash: hashedPassword,
-          nama_lengkap: name,
-          role: mappedRole,
-          updated_at: new Date().toISOString()
-        }).eq('id', existingUser.id);
-        if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
-        await updateQuery;
-      } else {
-        const payload: Record<string, unknown> = {
-          username: usernameKey,
-          password_hash: hashedPassword,
-          nama_lengkap: name,
-          role: mappedRole
-        };
-        if (schoolId) payload.school_id = schoolId;
-        await supabase.from('admin_users').insert(payload);
-      }
-
-      let fetchQuery = supabase.from('admin_users').select('*').eq('username', usernameKey);
-      if (schoolId) fetchQuery = fetchQuery.eq('school_id', schoolId);
-      const { data: finalUser } = await fetchQuery.single();
-
-      const token = jwt.sign(
-        {
-          id: finalUser?.id || ysboUser.id || 1,
-          username: finalUser?.username || usernameKey,
-          nama: finalUser?.nama_lengkap || name,
-          role: finalUser?.role || mappedRole,
-          school_id: schoolId || undefined,
-          isYSBMO: true
-        },
-        getJwtSecret(),
-        { expiresIn: rememberMe ? '30d' : '7d' }
-      );
-
-      return c.json({
-        success: true,
-        token,
-        admin: {
-          id: finalUser?.id || ysboUser.id || 1,
-          username: finalUser?.username || usernameKey,
-          nama_lengkap: finalUser?.nama_lengkap || name,
-          role: finalUser?.role || mappedRole,
-          school_id: schoolId || undefined
-        },
-        ysbmoToken
-      });
-    }
 
     // Check if this is a Gatekeeper platform account trying to login on school portal
     if (cleanEmail.endsWith('@cationgate.id')) {
@@ -157,23 +61,17 @@ authRouter.post('/login', authLimiter, async (c) => {
       }, 403);
     }
 
-    // 1. Try Supabase query matching email OR username (case-insensitive)
+    // 1. Try Supabase query matching email OR username (case-insensitive) scoped to school
     let query = supabase
       .from('admin_users')
       .select('*')
-      .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`);
-    if (schoolId) query = query.eq('school_id', schoolId);
-    let { data: adminUser } = await query.maybeSingle();
+      .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`)
+      .is('deleted_at', null);
 
-    // If query with schoolId returned nothing, retry without schoolId constraint
-    if (!adminUser && schoolId) {
-      const { data: userWithoutSchool } = await supabase
-        .from('admin_users')
-        .select('*')
-        .or(`email.ilike.${cleanEmail},username.ilike.${cleanEmail}`)
-        .maybeSingle();
-      if (userWithoutSchool) adminUser = userWithoutSchool;
+    if (schoolId && isValidUUID(schoolId)) {
+      query = query.eq('school_id', schoolId);
     }
+    let { data: adminUser } = await query.maybeSingle();
 
     // 2. Direct PostgreSQL pool fallback (robust against connection/casing issues)
     if (!adminUser) {
@@ -500,21 +398,44 @@ authRouter.patch('/profile', adminAuth, async (c) => {
     };
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    const schoolId = await requireTenantId(c);
+    let schoolId: string | null = null;
+    try {
+      schoolId = await requireTenantId(c);
+    } catch (_e) {
+      schoolId = admin?.school_id || null;
+    }
 
-    const query = supabase.from('admin_users').select('*').eq('id', admin.id)
-      .eq('school_id', schoolId);
-    const { data: existing } = await query.single();
+    // 1. Find existing admin user
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let existing: any = null;
+    let findQuery = supabase.from('admin_users').select('*').eq('id', admin.id);
+    if (schoolId) {
+      findQuery = findQuery.eq('school_id', schoolId);
+    }
+    const { data: exData } = await findQuery.maybeSingle();
+    existing = exData;
+
+    if (!existing) {
+      // Direct Postgres fallback
+      try {
+        const pgRes = await pool.query('SELECT * FROM admin_users WHERE id = $1 LIMIT 1', [admin.id]);
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          existing = pgRes.rows[0];
+        }
+      } catch (_e) {}
+    }
 
     if (!existing) {
       return c.json({ success: false, message: 'Akun tidak ditemukan.' }, 404);
     }
 
     if (username && username !== existing.username) {
-      const duplicateQuery = supabase.from('admin_users').select('id').eq('username', username)
-        .eq('school_id', schoolId);
+      let duplicateQuery = supabase.from('admin_users').select('id').eq('username', username);
+      if (schoolId) {
+        duplicateQuery = duplicateQuery.eq('school_id', schoolId);
+      }
       const { data: duplicate } = await duplicateQuery.maybeSingle();
-      if (duplicate) {
+      if (duplicate && duplicate.id !== admin.id) {
         return c.json({ success: false, message: 'Username sudah digunakan akun lain.' }, 400);
       }
     }
@@ -525,20 +446,60 @@ authRouter.patch('/profile', adminAuth, async (c) => {
     if (username && username.trim()) dataToUpdate.username = username.trim();
     if (foto_profil !== undefined) dataToUpdate.foto_profil = foto_profil;
 
-    const updateQuery = supabase.from('admin_users').update(dataToUpdate).eq('id', admin.id)
-      .eq('school_id', schoolId);
-    const { data: updated, error } = await updateQuery.select('id, username, nama_lengkap, role, foto_profil').single();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let updatedAdmin: any = null;
+    try {
+      const updateQuery = supabase.from('admin_users').update(dataToUpdate).eq('id', admin.id);
+      const { data: updated, error } = await updateQuery.select('id, username, nama_lengkap, role, foto_profil').maybeSingle();
+      if (!error && updated) {
+        updatedAdmin = updated;
+      }
+    } catch (_e) {}
 
-    if (error) throw error;
+    if (!updatedAdmin) {
+      // Postgres pool fallback
+      const setClauses: string[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const values: any[] = [];
+      let valIdx = 1;
+
+      if (dataToUpdate.nama_lengkap !== undefined) {
+        setClauses.push(`nama_lengkap = $${valIdx++}`);
+        values.push(dataToUpdate.nama_lengkap);
+      }
+      if (dataToUpdate.username !== undefined) {
+        setClauses.push(`username = $${valIdx++}`);
+        values.push(dataToUpdate.username);
+      }
+      if (dataToUpdate.foto_profil !== undefined) {
+        setClauses.push(`foto_profil = $${valIdx++}`);
+        values.push(dataToUpdate.foto_profil);
+      }
+      setClauses.push(`updated_at = NOW()`);
+      values.push(admin.id);
+
+      const pgUpdate = await pool.query(
+        `UPDATE admin_users SET ${setClauses.join(', ')} WHERE id = $${valIdx} RETURNING id, username, nama_lengkap, role, foto_profil`,
+        values
+      );
+      if (pgUpdate.rows && pgUpdate.rows.length > 0) {
+        updatedAdmin = pgUpdate.rows[0];
+      }
+    }
+
+    if (!updatedAdmin) {
+      return c.json({ success: false, message: 'Gagal memperbarui profil di database.' }, 500);
+    }
 
     return c.json({
       success: true,
       message: 'Profil berhasil diperbarui.',
       admin: {
-        username: updated.username,
-        nama: updated.nama_lengkap,
-        role: updated.role,
-        foto_profil: updated.foto_profil
+        id: updatedAdmin.id,
+        username: updatedAdmin.username,
+        nama: updatedAdmin.nama_lengkap,
+        role: updatedAdmin.role,
+        foto_profil: updatedAdmin.foto_profil
       }
     });
   } catch (err) {

@@ -372,25 +372,14 @@ export const HeroTab: React.FC<HeroTabProps> = ({
           />
         </div>
 
-        <div className="space-y-2 md:col-span-1">
-          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">No. WhatsApp Helpdesk Panitia</label>
+        <div className="space-y-2 md:col-span-2">
+          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nomor WhatsApp Panitia PPDB (Helpdesk &amp; Konsultasi)</label>
           <input
             type="text"
             maxLength={20}
             value={waAdmin}
             onChange={(e) => setWaAdmin(formatPhoneNumber(e.target.value))}
             placeholder="Contoh: 6281292244456"
-            className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
-          />
-        </div>
-
-        <div className="space-y-2 md:col-span-1">
-          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nomor WhatsApp Tim PPDB (Konsultasi)</label>
-          <input
-            type="text"
-            value={waAdmin}
-            onChange={(e) => setWaAdmin(formatPhoneNumber(e.target.value))}
-            placeholder="Contoh: +6281292244456"
             className="w-full px-4 py-3 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
           />
         </div>

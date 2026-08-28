@@ -50,36 +50,34 @@ export function SchoolFooter({ schoolSlug, isPreview = false }: SchoolFooterProp
   const schoolDisplayName = ppdbTitle || (isDemo ? "SMK Demo Indonesia" : schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
 
   React.useEffect(() => {
-    fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) {
-          const c = data.data;
-          let majorsConfig = c.ppdb_majors_config;
-          if (typeof majorsConfig === "string" && (majorsConfig.startsWith("[") || majorsConfig.startsWith("{"))) {
-            try { majorsConfig = JSON.parse(majorsConfig); } catch (_e) {}
-          }
-          if (Array.isArray(majorsConfig) && majorsConfig.length > 0) {
-            setMajors(majorsConfig);
-          } else if (isDemo) {
-            setMajors([
-              { code: "RPL", title: "Rekayasa Perangkat Lunak" },
-              { code: "TJKT", title: "Teknik Jaringan Komputer" },
-              { code: "DKV", title: "Desain Komunikasi Visual" },
-              { code: "BC", title: "Broadcasting & Perfilman" }
-            ]);
-          } else {
-            setMajors([]);
-          }
+    Promise.all([
+      fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`).then(r => r.json()).catch(() => null),
+      fetch(`/api/school-profile?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`).then(r => r.json()).catch(() => null)
+    ]).then(([configRes, profileRes]) => {
+      const c = configRes?.success ? configRes.data : {};
+      const p = profileRes?.success ? profileRes.data : {};
 
-          setSchoolContact({
-            address: c.ppdb_address || (isDemo ? "Jl. Pendidikan No. 1, Jakarta" : ""),
-            phone: c.ppdb_phone || (isDemo ? "(021) 1234567" : ""),
-            email: c.ppdb_email || (isDemo ? "info@demo.cationgate.site" : "")
-          });
-        }
-      })
-      .catch(() => {});
+      let majorsConfig = c.ppdb_majors_config;
+      if (typeof majorsConfig === "string" && (majorsConfig.startsWith("[") || majorsConfig.startsWith("{"))) {
+        try { majorsConfig = JSON.parse(majorsConfig); } catch (_e) {}
+      }
+      if (Array.isArray(majorsConfig) && majorsConfig.length > 0) {
+        setMajors(majorsConfig);
+      } else {
+        setMajors([
+          { code: "RPL", title: "Rekayasa Perangkat Lunak" },
+          { code: "TJKT", title: "Teknik Jaringan Komputer" },
+          { code: "DKV", title: "Desain Komunikasi Visual" },
+          { code: "BC", title: "Broadcasting & Perfilman" }
+        ]);
+      }
+
+      setSchoolContact({
+        address: p.alamat || p.identitas?.alamat || c.ppdb_address || (isDemo ? "Jl. Pendidikan No. 1, Jakarta" : ""),
+        phone: p.telepon || p.identitas?.telepon || c.ppdb_phone || (isDemo ? "(021) 1234567" : ""),
+        email: p.email || p.identitas?.email || c.ppdb_email || (isDemo ? "info@demo.cationgate.site" : "")
+      });
+    }).catch(() => {});
   }, [schoolSlug, isDemo]);
 
   let rawProfil = profilSekolah;
@@ -87,9 +85,9 @@ export function SchoolFooter({ schoolSlug, isPreview = false }: SchoolFooterProp
     try { rawProfil = JSON.parse(rawProfil); } catch (_e) {}
   }
   const identitas = (rawProfil && typeof rawProfil === "object") ? rawProfil.identitas || {} : {};
-  const displayAddress = schoolContact.address || identitas.alamat || (isDemo ? "Jl. Pendidikan No. 1, Jakarta" : "");
-  const displayPhone = schoolContact.phone || identitas.telepon || (isDemo ? "(021) 1234567" : "");
-  const displayEmail = schoolContact.email || identitas.email || (isDemo ? "info@demo.cationgate.site" : "");
+  const displayAddress = schoolContact.address || identitas.alamat || (isDemo ? "Jl. Pendidikan No. 1, Jakarta" : "-");
+  const displayPhone = schoolContact.phone || identitas.telepon || (isDemo ? "(021) 1234567" : "-");
+  const displayEmail = schoolContact.email || identitas.email || (isDemo ? "info@demo.cationgate.site" : "-");
 
   return (
     <footer className="bg-slate-50 text-slate-600 dark:bg-[#0a0a0a] dark:text-slate-500 py-16 sm:py-24 relative overflow-hidden border-t border-slate-200 dark:border-slate-800">

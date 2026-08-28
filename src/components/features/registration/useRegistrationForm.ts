@@ -12,8 +12,22 @@ export { createInitialFormData };
 
 export const useRegistrationForm = () => {
   const params = useParams();
-  const schoolSlug = (params?.school_slug as string) || "smk";
-  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, ppdbLogo, ppdbTitle, schoolStatus, isConfigLoaded } = usePPDB();
+  const ppdbContext = usePPDB();
+  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, ppdbLogo, ppdbTitle, schoolStatus, isConfigLoaded } = ppdbContext;
+
+  const rawSlug = (params?.school_slug as string) || (ppdbContext as unknown as { schoolSlug?: string })?.schoolSlug || "";
+  let resolvedSlug = rawSlug;
+  if (!resolvedSlug && typeof window !== "undefined") {
+    const host = window.location.host.split(":")[0].toLowerCase();
+    if (host.endsWith(".cationgate.site")) {
+      const sub = host.replace(".cationgate.site", "");
+      if (!["www", "api", "admin", "app", "mail", "gatekeeper"].includes(sub)) resolvedSlug = sub;
+    } else if (host.endsWith(".localhost")) {
+      const sub = host.replace(".localhost", "");
+      if (!["www", "api", "admin", "app", "mail", "gatekeeper"].includes(sub)) resolvedSlug = sub;
+    }
+  }
+  const schoolSlug = resolvedSlug || "demo";
 
   const { formData, setFormData, wizardStep, setWizardStep, furthestStep, setFurthestStep } =
     useRegistrationDraft();
@@ -174,9 +188,9 @@ export const useRegistrationForm = () => {
 
   const [showPaymentGate, setShowPaymentGate] = useState(false);
 
-  const [majors, setMajors] = useState<Array<{ code: string; title: string; logo?: string }>>(() => {
+  const [majors, setMajors] = useState<Array<{ code: string; title: string; logo?: string; color?: string }>>(() => {
     if (typeof window !== "undefined") {
-      const savedMajors = localStorage.getItem("ppdb_majors_config");
+      const savedMajors = localStorage.getItem(`ppdb_majors_config_${schoolSlug}`);
       if (savedMajors) {
         try {
           const parsed = JSON.parse(savedMajors);
@@ -186,14 +200,7 @@ export const useRegistrationForm = () => {
         }
       }
     }
-    return [
-      { code: "RPL", title: "Rekayasa Perangkat Lunak" },
-      { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
-      { code: "DKV", title: "Desain Komunikasi Visual" },
-      { code: "ANM", title: "Animasi" },
-      { code: "BC", title: "Broadcasting & Perfilman" },
-      { code: "TE", title: "Teknik Elektronika" }
-    ];
+    return [];
   });
 
   // SUB-HOOK VALIDATION
@@ -224,7 +231,7 @@ export const useRegistrationForm = () => {
 
     const loadLiveConfig = async () => {
       try {
-        const res = await fetch(`/api/config?school_slug=${schoolSlug}&t=${Date.now()}`);
+        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`);
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
@@ -262,13 +269,23 @@ export const useRegistrationForm = () => {
               setFieldsConfig(config.ppdb_fields_config);
               localStorage.setItem("ppdb_fields_config", JSON.stringify(config.ppdb_fields_config));
             }
-            if (
-              config.ppdb_majors_config &&
-              Array.isArray(config.ppdb_majors_config) &&
-              config.ppdb_majors_config.length > 0
-            ) {
-              setMajors(config.ppdb_majors_config);
-              localStorage.setItem("ppdb_majors_config", JSON.stringify(config.ppdb_majors_config));
+            if (config.ppdb_majors_config !== undefined && config.ppdb_majors_config !== null) {
+              let parsedMajors = config.ppdb_majors_config;
+              if (typeof parsedMajors === "string" && (parsedMajors.startsWith("[") || parsedMajors.startsWith("{"))) {
+                try {
+                  parsedMajors = JSON.parse(parsedMajors);
+                } catch (_e) {}
+              }
+              if (Array.isArray(parsedMajors)) {
+                setMajors(parsedMajors);
+                if (typeof window !== "undefined" && schoolSlug) {
+                  localStorage.setItem(`ppdb_majors_config_${schoolSlug}`, JSON.stringify(parsedMajors));
+                }
+              } else {
+                setMajors([]);
+              }
+            } else {
+              setMajors([]);
             }
             if (config.ppdb_bank_config) {
               const bankData = config.ppdb_bank_config;

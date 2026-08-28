@@ -2,6 +2,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
+import { FileText } from "lucide-react";
 import { AlurItem } from "../types";
 import { getAlurIconComponent } from "@/utils/alurIcons";
 
@@ -17,10 +18,6 @@ interface SchoolAlurProps {
 }
 
 export const SchoolAlur: React.FC<SchoolAlurProps> = ({ schoolPeriod, alurList }) => {
-  if (!alurList || alurList.length === 0) {
-    return null;
-  }
-
   const styles = [
     { color: "blue", bg: "bg-blue-600", text: "text-blue-700 dark:text-blue-300", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20" },
     { color: "amber", bg: "bg-amber-500", text: "text-amber-800 dark:text-amber-300", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20" },
@@ -30,10 +27,12 @@ export const SchoolAlur: React.FC<SchoolAlurProps> = ({ schoolPeriod, alurList }
     { color: "emerald", bg: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-300", bgLight: "bg-emerald-50 dark:bg-emerald-950/60", shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]", borderHover: "hover:border-emerald-500/20" },
   ];
 
+  const hasAlur = Boolean(alurList && alurList.length > 0);
+
   return (
     <section id="alur" className="py-24 relative z-10 border-b border-slate-200 dark:border-slate-800 text-left">
       <div className="max-w-5xl mx-auto px-6">
-        <div className="text-center mb-20">
+        <div className="text-center mb-16">
           <ScrollFloat
             key={schoolPeriod || "default-period"}
             containerClassName="inline-block mb-2"
@@ -44,7 +43,7 @@ export const SchoolAlur: React.FC<SchoolAlurProps> = ({ schoolPeriod, alurList }
             scrollEnd="bottom bottom-=40%"
             stagger={0.02}
           >
-            Proses Mudah &amp; Transparan · TP. {schoolPeriod || "2026-2027"}
+            Proses Mudah &amp; Transparan{schoolPeriod ? ` · TP. ${schoolPeriod}` : ""}
           </ScrollFloat>
           <ScrollFloat
             containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-xs pb-2"
@@ -65,10 +64,23 @@ export const SchoolAlur: React.FC<SchoolAlurProps> = ({ schoolPeriod, alurList }
             stagger={0.01}
             textMode={false}
           >
-            Ikuti 6 langkah sederhana berikut untuk menjadi bagian dari calon peserta didik baru.
+            Ikuti langkah pendaftaran berikut untuk menjadi bagian dari calon peserta didik baru.
           </ScrollFloat>
         </div>
 
+        {!hasAlur ? (
+          <div className="max-w-2xl mx-auto bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 text-center shadow-xs">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
+              <FileText size={22} />
+            </div>
+            <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1.5">
+              Alur Pendaftaran Belum Dikonfigurasikan
+            </h3>
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+              Tahapan dan tata cara pendaftaran resmi sedang dipersiapkan oleh panitia PPDB. Silakan periksa kembali dalam waktu dekat atau hubungi panitia.
+            </p>
+          </div>
+        ) : (
         <div className="relative">
           <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-1 bg-linear-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
           <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
@@ -139,6 +151,7 @@ export const SchoolAlur: React.FC<SchoolAlurProps> = ({ schoolPeriod, alurList }
             })}
           </div>
         </div>
+        )}
       </div>
     </section>
   );

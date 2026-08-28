@@ -20,32 +20,29 @@ const getJwtSecret = () => {
   return secret;
 };
 
-// PUBLIC: Activate Admin Account via Email Activation Link & Token
+// PUBLIC: Activate Admin Account via Email Activation OTP or Token
 adminUsersRouter.post('/activate', async (c) => {
   try {
     const body = await c.req.json();
-    const { token, password, school_slug } = body;
+    const { token, otp, email, password, school_slug } = body;
+    const cleanToken = String(otp || token || '').trim();
 
-    if (!token || typeof token !== 'string' || token.trim() === '') {
-      return c.json({ success: false, message: 'Token aktivasi wajib disertakan.' }, 400);
-    }
-    if (!password || typeof password !== 'string' || password.length < 6) {
-      return c.json({ success: false, message: 'Kata sandi minimal harus 6 karakter.' }, 400);
+    if (!cleanToken) {
+      return c.json({ success: false, message: 'Kode OTP atau token aktivasi wajib disertakan.' }, 400);
     }
 
-    const cleanToken = token.trim();
     let adminRecord: Record<string, unknown> | null = null;
+    const supabase = getSupabaseClient();
 
     // 1. Check direct PostgreSQL
     try {
-      const pgRes = await pool.query(
-        `SELECT * FROM admin_users 
-         WHERE activation_token = $1 
-           AND deleted_at IS NULL
-           AND (activation_expires_at IS NULL OR activation_expires_at > NOW())
-         LIMIT 1`,
-        [cleanToken]
-      );
+      let query = `SELECT * FROM admin_users WHERE activation_token = $1 AND deleted_at IS NULL LIMIT 1`;
+      const params: unknown[] = [cleanToken];
+      if (email) {
+        query = `SELECT * FROM admin_users WHERE (activation_token = $1 OR activation_token = $2) AND LOWER(email) = LOWER($3) AND deleted_at IS NULL LIMIT 1`;
+        params.push(cleanToken, String(email).trim());
+      }
+      const pgRes = await pool.query(query, params);
       if (pgRes.rows && pgRes.rows.length > 0) {
         adminRecord = pgRes.rows[0];
       }
@@ -54,17 +51,17 @@ adminUsersRouter.post('/activate', async (c) => {
     // 2. Check Supabase
     if (!adminRecord) {
       try {
-        const supabase = getSupabaseClient();
-        const { data, error } = await supabase
+        let sbQuery = supabase
           .from('admin_users')
           .select('*')
           .eq('activation_token', cleanToken)
-          .is('deleted_at', null)
-          .maybeSingle();
+          .is('deleted_at', null);
+        if (email) {
+          sbQuery = sbQuery.ilike('email', String(email).trim());
+        }
+        const { data, error } = await sbQuery.maybeSingle();
         if (!error && data) {
-          if (!data.activation_expires_at || new Date(data.activation_expires_at).getTime() > Date.now()) {
-            adminRecord = data;
-          }
+          adminRecord = data;
         }
       } catch (_sbErr) {}
     }
@@ -72,13 +69,23 @@ adminUsersRouter.post('/activate', async (c) => {
     if (!adminRecord) {
       return c.json({
         success: false,
-        message: 'Tautan aktivasi tidak valid atau telah kedaluwarsa. Harap minta admin sekolah untuk mengirimkan ulang tautan aktivasi.'
+        message: 'Kode OTP atau tautan aktivasi tidak valid atau telah kedaluwarsa.'
       }, 400);
     }
 
-    // Hash password & update active status
-    const passwordHash = bcrypt.hashSync(password, 10);
+    // Check expiration
+    if (adminRecord.activation_expires_at && new Date(adminRecord.activation_expires_at as string).getTime() < Date.now()) {
+      return c.json({
+        success: false,
+        message: 'Kode OTP telah kedaluwarsa. Silakan minta admin sekolah untuk mengirimkan ulang kode verifikasi.'
+      }, 400);
+    }
+
     const nowIso = new Date().toISOString();
+    let passwordHash = adminRecord.password_hash as string;
+    if (password && typeof password === 'string' && password.length >= 6) {
+      passwordHash = bcrypt.hashSync(password, 10);
+    }
 
     // 1. Update in PostgreSQL
     try {
@@ -96,7 +103,6 @@ adminUsersRouter.post('/activate', async (c) => {
 
     // 2. Update in Supabase
     try {
-      const supabase = getSupabaseClient();
       await supabase
         .from('admin_users')
         .update({
@@ -190,17 +196,38 @@ adminUsersRouter.get('/', async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await getSchoolId(c);
     if (!schoolId) {
-      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+      return c.json({ success: true, data: [] });
     }
+
+    if (schoolId === 'demo') {
+      const demoUsers = [
+        {
+          id: 1,
+          username: 'admin_demo',
+          email: 'demo@smkindonesia.sch.id',
+          nama_lengkap: 'Admin Demo Utama',
+          role: 'superadmin',
+          is_active: true,
+          is_online: true,
+          status: 'online',
+          last_active: 'Aktif Sekarang',
+          created_at: new Date().toISOString()
+        }
+      ];
+      return c.json({ success: true, data: demoUsers });
+    }
+
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(str).trim());
+    const schoolUuid = isUUID(schoolId) ? schoolId : null;
 
     let query = supabase
       .from('admin_users')
-      .select('id, username, email, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at')
+      .select('id, username, email, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at, foto_profil')
       .is('deleted_at', null)
       .order('id', { ascending: true });
 
-    if (schoolId) {
-      query = query.eq('school_id', schoolId);
+    if (schoolUuid) {
+      query = query.eq('school_id', schoolUuid);
     }
 
     const { data: adminUsers, error } = await query;
@@ -211,11 +238,11 @@ adminUsersRouter.get('/', async (c) => {
       // Fallback: query via direct PostgreSQL
       try {
         const pgRes = await pool.query(
-          `SELECT id, username, email, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at
+          `SELECT id, username, email, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at, foto_profil
            FROM admin_users
            WHERE deleted_at IS NULL AND (school_id::text = $1 OR school_id IS NULL)
            ORDER BY id ASC`,
-          [String(schoolId)]
+          [String(schoolUuid || schoolId)]
         );
         userList = pgRes.rows || [];
       } catch (_pgErr) {
@@ -250,9 +277,12 @@ adminUsersRouter.get('/trashed', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await getSchoolId(c);
-    if (!schoolId) {
-      return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
+    if (!schoolId || schoolId === 'demo') {
+      return c.json({ success: true, data: [] });
     }
+
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(str).trim());
+    const schoolUuid = isUUID(schoolId) ? schoolId : null;
 
     let query = supabase
       .from('admin_users')
@@ -260,8 +290,8 @@ adminUsersRouter.get('/trashed', async (c) => {
       .not('deleted_at', 'is', null)
       .order('deleted_at', { ascending: false });
 
-    if (schoolId) {
-      query = query.eq('school_id', schoolId);
+    if (schoolUuid) {
+      query = query.eq('school_id', schoolUuid);
     }
 
     const { data: trashedUsers, error } = await query;
@@ -365,12 +395,12 @@ adminUsersRouter.post('/', async (c) => {
       }
     }
 
-    // Generate secure activation token and 7-day expiration
-    const activationToken = crypto.randomUUID();
-    const activationExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    // Generate secure 6-digit OTP code and 24-hour expiration
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const activationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
     const passwordHash = password ? bcrypt.hashSync(password, 10) : bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
-    const isActive = false; // Requires email link activation
+    const isActive = false; // Requires email OTP activation
 
     const payload: Record<string, unknown> = {
       username,
@@ -379,7 +409,7 @@ adminUsersRouter.post('/', async (c) => {
       nama_lengkap,
       role: role || 'admin',
       is_active: isActive,
-      activation_token: activationToken,
+      activation_token: otpCode,
       activation_expires_at: activationExpiresAt,
       school_id: schoolId
     };
@@ -397,7 +427,7 @@ adminUsersRouter.post('/', async (c) => {
           `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, is_active, activation_token, activation_expires_at, school_id, created_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::text, NOW())
            RETURNING *`,
-          [username, email || null, passwordHash, nama_lengkap, role || 'admin', isActive, activationToken, activationExpiresAt, String(schoolId)]
+          [username, email || null, passwordHash, nama_lengkap, role || 'admin', isActive, otpCode, activationExpiresAt, String(schoolId)]
         );
         if (pgRes.rows && pgRes.rows.length > 0) {
           newAdmin = pgRes.rows[0];
@@ -408,7 +438,7 @@ adminUsersRouter.post('/', async (c) => {
           `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, is_active, activation_token, activation_expires_at, created_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
            RETURNING *`,
-          [username, email || null, passwordHash, nama_lengkap, role || 'admin', isActive, activationToken, activationExpiresAt]
+          [username, email || null, passwordHash, nama_lengkap, role || 'admin', isActive, otpCode, activationExpiresAt]
         );
         if (pgRes2.rows && pgRes2.rows.length > 0) {
           newAdmin = pgRes2.rows[0];
@@ -425,7 +455,7 @@ adminUsersRouter.post('/', async (c) => {
     } catch (_) {}
 
     const schoolSlug = (c.req.query('school_slug') || c.req.header('x-school-slug') || schoolId || 'demo') as string;
-    const activationLink = `${baseHost}/${schoolSlug}/admin/activate?token=${activationToken}`;
+    const activationLink = `${baseHost}/${schoolSlug}/admin/activate?email=${encodeURIComponent(email || '')}&token=${otpCode}`;
 
     // Send invitation / activation email if email provided
     if (email) {
@@ -439,6 +469,7 @@ adminUsersRouter.post('/', async (c) => {
         toEmail: email,
         staffName: nama_lengkap,
         schoolName,
+        otpCode,
         activationLink,
         username,
         role: role || 'admin'
@@ -448,11 +479,12 @@ adminUsersRouter.post('/', async (c) => {
     return c.json({
       success: true,
       data: newAdmin,
-      activation_token: activationToken,
+      activation_token: otpCode,
+      otp_code: otpCode,
       activation_link: activationLink,
       message: email
-        ? `Akun admin berhasil dibuat. Tautan aktivasi telah dikirimkan ke ${email}.`
-        : 'Akun admin berhasil dibuat. Silakan salin tautan aktivasi untuk mengaktifkan akun.'
+        ? `Akun admin berhasil dibuat. Kode OTP verifikasi telah dikirimkan ke ${email}.`
+        : 'Akun admin berhasil dibuat. Silakan gunakan kode OTP untuk mengaktifkan akun.'
     }, 201);
   } catch (error: unknown) {
     return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);
@@ -484,12 +516,12 @@ adminUsersRouter.post('/:id/resend-activation', async (c) => {
       return c.json({ success: false, message: 'Admin tidak ditemukan.' }, 404);
     }
 
-    const newActivationToken = crypto.randomUUID();
-    const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const newOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const newExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
     try {
       await supabase.from('admin_users').update({
-        activation_token: newActivationToken,
+        activation_token: newOtpCode,
         activation_expires_at: newExpiresAt,
         is_active: false
       }).eq('id', id);
@@ -497,7 +529,7 @@ adminUsersRouter.post('/:id/resend-activation', async (c) => {
         `UPDATE admin_users 
          SET activation_token = $1, activation_expires_at = $2, is_active = FALSE 
          WHERE id = $3`,
-        [newActivationToken, newExpiresAt, id]
+        [newOtpCode, newExpiresAt, id]
       );
     } catch (_upErr) {}
 
@@ -509,7 +541,7 @@ adminUsersRouter.post('/:id/resend-activation', async (c) => {
     } catch (_) {}
 
     const schoolSlug = (c.req.query('school_slug') || c.req.header('x-school-slug') || schoolId || 'demo') as string;
-    const activationLink = `${baseHost}/${schoolSlug}/admin/activate?token=${newActivationToken}`;
+    const activationLink = `${baseHost}/${schoolSlug}/admin/activate?email=${encodeURIComponent(admin.email || '')}&token=${newOtpCode}`;
 
     if (admin.email) {
       let schoolName = schoolSlug.toUpperCase();
@@ -522,6 +554,7 @@ adminUsersRouter.post('/:id/resend-activation', async (c) => {
         toEmail: admin.email,
         staffName: admin.nama_lengkap,
         schoolName,
+        otpCode: newOtpCode,
         activationLink,
         username: admin.username,
         role: admin.role || 'admin'
@@ -530,11 +563,9 @@ adminUsersRouter.post('/:id/resend-activation', async (c) => {
 
     return c.json({
       success: true,
-      activation_link: activationLink,
-      activation_token: newActivationToken,
-      message: admin.email
-        ? `Tautan aktivasi baru berhasil dikirimkan ke ${admin.email}.`
-        : 'Tautan aktivasi baru berhasil dibuat.'
+      activation_token: newOtpCode,
+      otp_code: newOtpCode,
+      message: `Kode OTP verifikasi baru telah dikirimkan ke ${admin.email}.`
     });
   } catch (error: unknown) {
     return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);

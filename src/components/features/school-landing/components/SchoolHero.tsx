@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { ArrowRight, MapPin } from "lucide-react";
-import ShinyText from "@/components/ShinyText";
 import { MajorItem } from "../types";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
 
@@ -32,7 +31,7 @@ interface SchoolHeroProps {
 
 export const SchoolHero: React.FC<SchoolHeroProps> = ({
   schoolSlug,
-  schoolDisplayName: _schoolDisplayName,
+  schoolDisplayName,
   heroTitle,
   heroTitleSub,
   heroSubtitle,
@@ -73,28 +72,21 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
           </div>
 
           {/* Hero Titles */}
-          <h1 className="hero-title relative z-10 text-center mt-6 text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {heroTitle} <br />
-            <ShinyText
-              text={heroTitleSub}
-              speed={3}
-              delay={1}
-              color="var(--heading)"
-              shineColor="#0ea5e9"
-              spread={135}
-            />
+          <h1 className="hero-title relative z-10 text-center mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white">
+            <span>{heroTitle || "Penerimaan Peserta Didik Baru"}</span>
+            <span className="block mt-2 bg-linear-to-r from-blue-600 via-sky-500 to-blue-700 bg-clip-text text-transparent">
+              {heroTitleSub || (schoolDisplayName ? `SPMB ${schoolDisplayName}` : "Tahun Ajaran 2026/2027")}
+            </span>
           </h1>
 
-          {heroSubtitle && (
-            <p className="hero-subtitle relative z-10 text-center mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium drop-shadow-sm wrap-break-word">
-              {heroSubtitle}
-            </p>
-          )}
+          <p className="hero-subtitle relative z-10 text-center mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-sm md:text-base font-medium leading-relaxed drop-shadow-sm wrap-break-word">
+            {heroSubtitle || "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."}
+          </p>
 
           <div className="hero-action flex justify-center mt-8">
             <Link
               href={href("/daftar")}
-              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 px-7 py-3 rounded-full font-semibold transition-all shadow-md active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 px-8 py-3.5 rounded-full font-bold text-sm transition-all shadow-lg active:scale-95 cursor-pointer"
             >
               Daftar Sekarang <ArrowRight size={18} />
             </Link>

@@ -15,4 +15,5 @@ export interface AdminItem {
   status?: 'online' | 'offline' | 'away';
   is_online?: boolean;
   last_active?: string;
+  foto_profil?: string | null;
 }

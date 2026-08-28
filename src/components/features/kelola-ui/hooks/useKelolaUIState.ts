@@ -212,6 +212,7 @@ export function useKelolaUIState() {
     footerDesc,
     fieldsConfigUI,
     draftKey,
+    isInitialLoaded,
   ]);
 
   const showToastMsg = (message: string, type: "success" | "error" | "info" = "success") => {
@@ -578,6 +579,14 @@ export function useKelolaUIState() {
         fetchCurrentConfig().catch(console.error);
 
         try {
+          if (slug) {
+            localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(finalMajors));
+            localStorage.setItem(`ppdb_alur_config_${slug}`, JSON.stringify(alurList));
+            localStorage.setItem(`ppdb_faq_config_${slug}`, JSON.stringify(faqList));
+            localStorage.setItem(`ppdb_partners_config_${slug}`, JSON.stringify(partnersList));
+            localStorage.setItem(`ppdb_bank_config_${slug}`, JSON.stringify(bankConfigList));
+            localStorage.setItem(`ppdb_fields_config_${slug}`, JSON.stringify(fieldsConfigUI));
+          }
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
           localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));
           localStorage.setItem("ppdb_faq_config", JSON.stringify(faqList));

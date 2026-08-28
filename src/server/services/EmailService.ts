@@ -509,12 +509,13 @@ export const EmailService = {
   },
 
   /**
-   * Send staff admin activation email with unique activation token link
+   * Send staff admin activation email with 6-digit OTP code and activation link
    */
   async sendAdminActivationEmail({
     toEmail,
     staffName,
     schoolName,
+    otpCode,
     activationLink,
     username,
     role = "admin"
@@ -522,13 +523,14 @@ export const EmailService = {
     toEmail: string;
     staffName: string;
     schoolName: string;
-    activationLink: string;
+    otpCode: string;
+    activationLink?: string;
     username: string;
     role?: string;
   }): Promise<{ success: boolean; message?: string }> {
     const transporter = createTransporter();
     const fromAddress = process.env.SMTP_FROM || `"CationGate Platform" <${process.env.SMTP_USER || process.env.EMAIL_USER || "noreply@cationgate.site"}>`;
-    const roleLabel = role === "superadmin" ? "Superadmin Instansi" : role === "panitia" ? "Panitia PPDB / SPMB" : "Admin Sekolah";
+    const roleLabel = role === "superadmin" ? "Superadmin Instansi" : role === "panitia" ? "Panitia Verifikator PPDB" : "Admin Sekolah (Lengkap)";
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -536,7 +538,7 @@ export const EmailService = {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aktivasi Akun Admin Sekolah - CationGate</title>
+  <title>Kode Verifikasi Akun Admin Sekolah - CationGate</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8fafc; padding: 40px 15px;">
@@ -550,7 +552,7 @@ export const EmailService = {
               </span>
               <div style="margin-top: 8px;">
                 <span style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; padding: 4px 14px; border-radius: 9999px;">
-                  UNDANGAN ADMIN INSTANSI
+                  VERIFIKASI AKUN ADMIN
                 </span>
               </div>
             </td>
@@ -561,7 +563,7 @@ export const EmailService = {
                 Halo, ${staffName}!
               </h2>
               <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;">
-                Anda telah didaftarkan sebagai <strong>${roleLabel}</strong> untuk portal resmi <strong>${schoolName}</strong> di platform CationGate.
+                Anda telah ditambahkan sebagai <strong>${roleLabel}</strong> untuk portal resmi <strong>${schoolName}</strong> di platform CationGate.
               </p>
               
               <div style="background-color: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px 20px; margin-bottom: 24px;">
@@ -581,22 +583,28 @@ export const EmailService = {
                 </table>
               </div>
 
-              <p style="margin: 0 0 24px 0; font-size: 14px; color: #475569; line-height: 1.6;">
-                Untuk mengaktifkan akun dan mengatur kata sandi login Anda, silakan klik tombol di bawah ini:
-              </p>
-
-              <div style="text-align: center; margin-bottom: 30px;">
-                <a href="${activationLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 14px 32px; border-radius: 14px; box-shadow: 0 4px 14px rgba(37,99,235,0.3);">
-                  Aktivasi Akun Admin Sekarang &rarr;
-                </a>
+              <!-- OTP Display Box -->
+              <div style="text-align: center; margin: 28px 0; background: #0f172a; border-radius: 20px; padding: 24px 20px; border: 1px solid #1e293b;">
+                <span style="display: block; font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;">KODE VERIFIKASI OTP</span>
+                <span style="font-size: 34px; font-weight: 900; letter-spacing: 10px; color: #38bdf8; font-family: monospace; display: block; padding-left: 10px;">${otpCode}</span>
+                <span style="display: block; font-size: 11px; color: #64748b; margin-top: 10px;">Kode berlaku selama 24 jam</span>
               </div>
 
-              <p style="margin: 0 0 8px 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
-                Atau salin tautan berikut ke peramban Anda:<br />
-                <a href="${activationLink}" style="color: #2563eb; word-break: break-all;">${activationLink}</a>
+              <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                Silakan masukkan kode OTP di atas pada halaman verifikasi atau saat pertama kali login ke dashboard sekolah.
               </p>
-              <p style="margin: 16px 0 0 0; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px;">
-                * Tautan aktivasi ini berlaku selama 7 hari dan hanya dapat digunakan untuk instansi ${schoolName}.
+
+              ${activationLink ? `
+              <div style="text-align: center; margin-bottom: 28px;">
+                <a href="${activationLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 14px; font-weight: 800; text-decoration: none; padding: 14px 32px; border-radius: 14px; box-shadow: 0 4px 14px rgba(37,99,235,0.3);">
+                  Buka Halaman Verifikasi Akun &rarr;
+                </a>
+              </div>
+              ` : ''}
+
+              <p style="margin: 16px 0 0 0; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px; line-height: 1.5;">
+                * Gunakan Email Anda dan Password yang telah dibuat oleh Admin Sekolah untuk masuk ke portal setelah verifikasi selesai.<br />
+                * Jangan berikan kode OTP ini kepada siapapun demi keamanan instansi sekolah Anda.
               </p>
             </td>
           </tr>
@@ -613,7 +621,7 @@ export const EmailService = {
         await resend.emails.send({
           from: fromAddress,
           to: toEmail,
-          subject: `Aktivasi Akun Admin Sekolah: ${schoolName} - CationGate`,
+          subject: `🔐 Kode OTP Verifikasi Akun Admin: ${schoolName} - CationGate`,
           html: htmlContent,
         });
         return { success: true };
@@ -623,13 +631,13 @@ export const EmailService = {
         await transporter.sendMail({
           from: fromAddress,
           to: toEmail,
-          subject: `Aktivasi Akun Admin Sekolah: ${schoolName} - CationGate`,
+          subject: `🔐 Kode OTP Verifikasi Akun Admin: ${schoolName} - CationGate`,
           html: htmlContent,
         });
         return { success: true };
       }
 
-      console.log(`[EmailService] Simulated Activation Email to ${toEmail}: ${activationLink}`);
+      console.log(`[EmailService] Simulated OTP ${otpCode} to ${toEmail}`);
       return { success: true };
     } catch (err: unknown) {
       console.warn("Failed to send admin activation email:", err);

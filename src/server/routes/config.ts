@@ -240,6 +240,25 @@ configRouter.get('/', async (c) => {
       }
     }
 
+    // Merge from schools table if missing essential fields
+    if (!configMap.ppdb_title || !configMap.ppdb_address || !configMap.ppdb_logo_url) {
+      try {
+        const targetSearch = isUUID(resolvedUUID || '') ? resolvedUUID : (isUUID(String(schoolId)) ? schoolId : '00000000-0000-0000-0000-000000000000');
+        const { data: sch } = await supabase
+          .from('schools')
+          .select('*')
+          .or(`id.eq.${targetSearch},slug.eq.${schoolSlug || schoolId}`)
+          .maybeSingle();
+        if (sch) {
+          if (!configMap.ppdb_title) configMap.ppdb_title = sch.name;
+          if (!configMap.ppdb_logo_url && sch.logo_url) configMap.ppdb_logo_url = sch.logo_url;
+          if (!configMap.ppdb_address && sch.address) configMap.ppdb_address = sch.address;
+          if (!configMap.ppdb_phone && sch.phone) configMap.ppdb_phone = sch.phone;
+          if (!configMap.ppdb_email && sch.official_email) configMap.ppdb_email = sch.official_email;
+        }
+      } catch (_) {}
+    }
+
     // 3. Save to Redis Cache (expire in 1 hour)
     await setCached(cacheKey, configMap, 3600);
     if (schoolSlug) await setCached(`config_${schoolSlug}`, configMap, 3600);
@@ -289,11 +308,13 @@ configRouter.post('/', adminAuth, async (c) => {
         processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
       }
 
+      const targetSchoolId = String(schoolId);
+
       const upsertRows = Object.entries(processedConfigs).map(([key, val]) => ({
         config_key: key,
         config_value: val,
         updated_at: new Date().toISOString(),
-        school_id: !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId
+        school_id: targetSchoolId
       }));
 
       const { error } = await supabase
@@ -306,7 +327,7 @@ configRouter.post('/', adminAuth, async (c) => {
           try {
             await pool.query(
               `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-               VALUES ($1, $2, $3, NOW())
+               VALUES ($1::uuid, $2, $3, NOW())
                ON CONFLICT (school_id, config_key)
                DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
               [row.school_id, row.config_key, JSON.stringify(row.config_value)]
@@ -320,34 +341,45 @@ configRouter.post('/', adminAuth, async (c) => {
       // Log UI Revision
       const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string; school_slug?: string; slug?: string } | undefined;
       const adminName = admin?.nama || admin?.username || 'Administrator';
-      const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
 
       const revPayload: Record<string, unknown> = {
         config_values: processedConfigs,
         changed_by: adminName,
         description: description || 'Pembaruan Tampilan Sistem'
       };
-      if (schoolId) revPayload.school_id = numericSchoolId;
+      if (schoolId) revPayload.school_id = targetSchoolId;
 
       const { error: revErr } = await supabase.from('ui_revisions').insert(revPayload);
       if (revErr) {
         try {
           await pool.query(
             `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
-             VALUES ($1, $2, $3, $4, NOW())`,
-            [numericSchoolId, JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
+             VALUES ($1::uuid, $2, $3, $4, NOW())`,
+            [targetSchoolId, JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
           );
         } catch (_revPoolErr) {}
       }
 
       // Invalidate Redis cache
       const cacheKeysToInvalidate = new Set<string>();
-      if (schoolId) cacheKeysToInvalidate.add(`config_${schoolId}`);
-      if (admin?.school_slug) cacheKeysToInvalidate.add(`config_${admin.school_slug}`);
-      if (admin?.slug) cacheKeysToInvalidate.add(`config_${admin.slug}`);
+      if (schoolId) {
+        cacheKeysToInvalidate.add(`config_${schoolId}`);
+        cacheKeysToInvalidate.add(`school_profile_${schoolId}`);
+      }
+      if (admin?.school_slug) {
+        cacheKeysToInvalidate.add(`config_${admin.school_slug}`);
+        cacheKeysToInvalidate.add(`school_profile_${admin.school_slug}`);
+      }
+      if (admin?.slug) {
+        cacheKeysToInvalidate.add(`config_${admin.slug}`);
+        cacheKeysToInvalidate.add(`school_profile_${admin.slug}`);
+      }
       cacheKeysToInvalidate.add('config_default');
       const qSlugForCache = c.req.query('school_slug');
-      if (qSlugForCache) cacheKeysToInvalidate.add(`config_${qSlugForCache}`);
+      if (qSlugForCache) {
+        cacheKeysToInvalidate.add(`config_${qSlugForCache}`);
+        cacheKeysToInvalidate.add(`school_profile_${qSlugForCache}`);
+      }
       for (const ck of cacheKeysToInvalidate) {
         await delCached(ck);
       }
@@ -409,7 +441,7 @@ configRouter.post('/', adminAuth, async (c) => {
 
       const revEntry = {
         id: Date.now(),
-        school_id: numericSchoolId,
+        school_id: targetSchoolId,
         config_values: processedConfigs,
         changed_by: adminName,
         description: description || 'Pembaruan Tampilan Sistem',
@@ -450,13 +482,13 @@ configRouter.post('/', adminAuth, async (c) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
-    const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
+    const targetSchoolId = String(schoolId);
 
     const payload: Record<string, unknown> = {
       config_key: key,
       config_value: processedValue,
       updated_at: new Date().toISOString(),
-      school_id: numericSchoolId
+      school_id: targetSchoolId
     };
 
     const { error } = await supabase
@@ -467,10 +499,10 @@ configRouter.post('/', adminAuth, async (c) => {
       try {
         await pool.query(
           `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-           VALUES ($1, $2, $3, NOW())
+           VALUES ($1::uuid, $2, $3, NOW())
            ON CONFLICT (school_id, config_key)
            DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-          [numericSchoolId, key, JSON.stringify(processedValue)]
+          [targetSchoolId, key, JSON.stringify(processedValue)]
         );
       } catch (_poolErr) {
         console.warn('Fallback pool query for single config error:', _poolErr);

@@ -138,27 +138,38 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
     }
 
     try {
-      const res = await fetch(`/api/config?school_slug=${encodeURIComponent(slug)}&_t=${Date.now()}`, {
-        cache: "no-store"
-      });
-      if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
-      const data = await res.json();
-      if (data.success && data.data) {
-        let profil = data.data.ppdb_profil_sekolah || get().profilSekolah;
-        if (typeof profil === "string" && (profil.startsWith("{") || profil.startsWith("["))) {
-          try { profil = JSON.parse(profil); } catch (_e) {}
-        }
-        set({
-          ppdbLogo: data.data.ppdb_logo_url || get().ppdbLogo,
-          ppdbTitle: data.data.ppdb_title || get().ppdbTitle,
-          ppdbFooterDesc: data.data.ppdb_footer_desc || get().ppdbFooterDesc,
-          profilSekolah: profil,
-          schoolPeriod: data.data.ppdb_school_period || get().schoolPeriod,
-          isConfigLoaded: true,
-        });
-      } else {
-        set({ isConfigLoaded: true });
+      const [configRes, profileRes] = await Promise.all([
+        fetch(`/api/config?school_slug=${encodeURIComponent(slug)}&_t=${Date.now()}`, { cache: "no-store" }),
+        fetch(`/api/school-profile?school_slug=${encodeURIComponent(slug)}&_t=${Date.now()}`, { cache: "no-store" }).catch(() => null)
+      ]);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let configData: any = {};
+      if (configRes.ok && configRes.headers.get("content-type")?.includes("application/json")) {
+        const cJson = await configRes.json();
+        if (cJson.success && cJson.data) configData = cJson.data;
       }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let profileData: any = null;
+      if (profileRes && profileRes.ok && profileRes.headers.get("content-type")?.includes("application/json")) {
+        const pJson = await profileRes.json();
+        if (pJson.success && pJson.data) profileData = pJson.data;
+      }
+
+      let profil = profileData || configData.ppdb_profil_sekolah || get().profilSekolah;
+      if (typeof profil === "string" && (profil.startsWith("{") || profil.startsWith("["))) {
+        try { profil = JSON.parse(profil); } catch (_e) {}
+      }
+
+      set({
+        ppdbLogo: profileData?.logo_url || configData.ppdb_logo_url || get().ppdbLogo,
+        ppdbTitle: profileData?.nama || profileData?.identitas?.nama || configData.ppdb_title || get().ppdbTitle,
+        ppdbFooterDesc: configData.ppdb_footer_desc || get().ppdbFooterDesc,
+        profilSekolah: profil,
+        schoolPeriod: configData.ppdb_school_period || get().schoolPeriod,
+        isConfigLoaded: true,
+      });
     } catch (err) {
       console.error("Gagal mengambil config:", err);
       set({ isConfigLoaded: true });

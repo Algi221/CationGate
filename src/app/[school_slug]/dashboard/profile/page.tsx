@@ -1,5 +1,7 @@
 "use client";
 
+import { useParams } from "next/navigation";
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import NextImage from "next/image";
 import { usePPDB } from "@/context/PPDBContext";
@@ -17,10 +19,7 @@ import {
   X,
   Save,
   Lock,
-  User,
-  Mail,
-  Building2,
-  Shield
+  User
 } from "lucide-react";
 
 // --- Utility Functions untuk Crop Gambar ---
@@ -62,7 +61,9 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<string>
 }
 
 export default function ProfilePage() {
-  const { adminUser, setAdminUser, profilSekolah } = usePPDB();
+  const { adminUser, setAdminUser, profilSekolah, ppdbTitle } = usePPDB();
+  const params = useParams();
+  const schoolSlug = (params?.school_slug as string) || "";
   const mounted = React.useSyncExternalStore(
     () => () => {},
     () => true,
@@ -161,8 +162,37 @@ export default function ProfilePage() {
       setFotoProfil(croppedBase64);
       setCropModalOpen(false);
       setCropImageSrc(null);
-    } catch (err) {
-      Swal.fire("Error", "Gagal memotong foto.", "error");
+
+      // Auto save cropped photo to server
+      const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+      const res = await fetch(`/api/auth/profile`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(schoolSlug ? { "x-school-slug": schoolSlug } : {})
+        },
+        body: JSON.stringify({
+          foto_profil: croppedBase64
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (setAdminUser) {
+          setAdminUser((prev) => (prev ? { ...prev, foto_profil: croppedBase64 } : null));
+        }
+        Swal.fire({
+          icon: "success",
+          title: "Foto Profil Disimpan",
+          text: "Foto profil berhasil diperbarui!",
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        Swal.fire("Gagal", data.message || "Gagal menyimpan foto profil.", "error");
+      }
+    } catch (_err) {
+      Swal.fire("Error", "Gagal memotong foto profil.", "error");
     }
   };
 
@@ -173,19 +203,50 @@ export default function ProfilePage() {
     }
 
     setProfileSaving(true);
-    
-    setTimeout(() => {
-      setNamaLengkap(tempNama);
-      setUsername(tempUsername);
-      setEmail(tempEmail);
 
-      Swal.fire({ icon: "success", title: "Berhasil", text: "Biodata berhasil diperbarui!", confirmButtonColor: "#2563EB" });
-      if (setAdminUser) {
-        setAdminUser((prev: any) => ({ ...prev, nama: tempNama, username: tempUsername, email: tempEmail, foto_profil: fotoProfil }));
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+      const res = await fetch(`/api/auth/profile`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(schoolSlug ? { "x-school-slug": schoolSlug } : {})
+        },
+        body: JSON.stringify({
+          nama_lengkap: tempNama.trim(),
+          username: tempUsername.trim(),
+          foto_profil: fotoProfil
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setNamaLengkap(tempNama);
+        setUsername(tempUsername);
+        setEmail(tempEmail);
+
+        if (setAdminUser) {
+          setAdminUser((prev) => (prev ? {
+            ...prev,
+            nama: tempNama,
+            nama_lengkap: tempNama,
+            username: tempUsername,
+            email: tempEmail,
+            foto_profil: fotoProfil
+          } : null));
+        }
+
+        Swal.fire({ icon: "success", title: "Berhasil", text: "Biodata berhasil diperbarui!", confirmButtonColor: "#2563EB" });
+        setIsEditProfileOpen(false);
+      } else {
+        Swal.fire("Gagal", data.message || "Gagal memperbarui profil.", "error");
       }
+    } catch (_err) {
+      Swal.fire("Error", "Terjadi kesalahan saat memperbarui profil.", "error");
+    } finally {
       setProfileSaving(false);
-      setIsEditProfileOpen(false);
-    }, 1000);
+    }
   };
 
   // --- Handlers Password ---
@@ -205,21 +266,43 @@ export default function ProfilePage() {
 
     setIsChangingPassword(true);
 
-    setTimeout(() => {
-      setCurrentPassword(""); 
-      setNewPassword(""); 
-      setConfirmPassword("");
-      Swal.fire({ icon: "success", title: "Berhasil", text: "Password berhasil diubah.", confirmButtonColor: "#2563EB" });
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null;
+      const res = await fetch(`/api/auth/change-password`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(schoolSlug ? { "x-school-slug": schoolSlug } : {})
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        Swal.fire({ icon: "success", title: "Berhasil", text: "Password berhasil diubah.", confirmButtonColor: "#2563EB" });
+        setIsEditPasswordOpen(false);
+      } else {
+        Swal.fire("Gagal", data.message || "Gagal mengubah password.", "error");
+      }
+    } catch (_err) {
+      Swal.fire("Error", "Terjadi kesalahan saat mengubah password.", "error");
+    } finally {
       setIsChangingPassword(false);
-      setIsEditPasswordOpen(false);
-    }, 1000);
+    }
   };
 
   if (!mounted) return null;
 
   const displayNama = namaLengkap || adminUser?.nama || "Admin Sekolah";
   const displayRole = adminUser?.role || "Superadmin";
-  const displaySchool = profilSekolah?.nama_sekolah || "SMP Segar Cimanggis";
+  const displaySchool = profilSekolah?.nama_sekolah || ppdbTitle || "-";
 
   const inputClass = "flex h-11 w-full rounded-xl border border-slate-300 bg-transparent px-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition-all";
   const labelClass = "mb-2 block text-sm font-medium text-slate-800";
@@ -324,7 +407,7 @@ export default function ProfilePage() {
 
 
       {isEditProfileOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
             
             {/* Header Modal */}
@@ -399,7 +482,7 @@ export default function ProfilePage() {
       )}
 
       {isEditPasswordOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
             
             {/* Header Modal */}
@@ -474,7 +557,7 @@ export default function ProfilePage() {
       )}
 
       {cropModalOpen && cropImageSrc && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
               <h2 className="text-sm font-bold text-slate-800">Sesuaikan Foto</h2>

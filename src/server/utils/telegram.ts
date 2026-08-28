@@ -35,11 +35,11 @@ async function discoverChatId(token: string): Promise<string | null> {
   }
 }
 
-export async function sendTelegramNotification(message: string): Promise<boolean> {
+export async function sendTelegramNotification(message: string): Promise<{ success: boolean; message: string }> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
-    console.warn('[Telegram Bot] TELEGRAM_BOT_TOKEN is not configured in .env. Skipping notification.');
-    return false;
+    console.warn('[Telegram Bot] TELEGRAM_BOT_TOKEN is not configured in .env.');
+    return { success: false, message: 'TELEGRAM_BOT_TOKEN belum dikonfigurasi di file .env' };
   }
 
   let chatId = cachedChatId || process.env.TELEGRAM_CHAT_ID;
@@ -51,7 +51,7 @@ export async function sendTelegramNotification(message: string): Promise<boolean
       cachedChatId = discovered;
     } else {
       console.warn('[Telegram Bot] Notification skipped because no Chat ID could be found.');
-      return false;
+      return { success: false, message: 'Chat ID tidak ditemukan. Kirim pesan ke bot terlebih dahulu.' };
     }
   }
 
@@ -71,7 +71,7 @@ export async function sendTelegramNotification(message: string): Promise<boolean
 
     if (response.ok) {
       console.log(`[Telegram Bot] Notification sent successfully to Chat ID ${chatId}`);
-      return true;
+      return { success: true, message: `Pesan berhasil dikirim ke Chat ID: ${chatId}` };
     } else {
       const errorText = await response.text();
       // Auto-heal if Chat ID is invalid ("chat not found")
@@ -88,16 +88,16 @@ export async function sendTelegramNotification(message: string): Promise<boolean
           });
           if (retryRes.ok) {
             console.log(`[Telegram Bot] Notification sent successfully to rediscovered Chat ID ${discovered}`);
-            return true;
+            return { success: true, message: `Pesan berhasil dikirim ke Chat ID baru: ${discovered}` };
           }
         }
       }
       console.warn(`[Telegram Bot] Failed to send message: ${response.status} - ${errorText}`);
-      return false;
+      return { success: false, message: `Gagal mengirim: ${response.status} - ${errorText}` };
     }
   } catch (error: unknown) {
     console.warn(`[Telegram Bot] Network error sending notification: ${error instanceof Error ? error.message : String(error)}`);
-    return false;
+    return { success: false, message: `Network error: ${error instanceof Error ? error.message : String(error)}` };
   }
 }
 
@@ -106,22 +106,20 @@ export async function notifyGatekeeperLogin(params: {
   nama: string;
   ip?: string;
   userAgent?: string;
-}): Promise<boolean> {
+}): Promise<{ success: boolean; message: string }> {
   const now = new Date().toLocaleString('id-ID', {
     timeZone: 'Asia/Jakarta',
     dateStyle: 'full',
     timeStyle: 'medium'
   });
 
-  const text = `🚨 <b>GATEKEEPER LOGIN DETECTED</b> 🚨\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `👤 <b>Nama:</b> ${params.nama}\n` +
-    `🔑 <b>Username:</b> <code>${params.username}</code>\n` +
-    `🕒 <b>Waktu:</b> ${now} WIB\n` +
-    `🌐 <b>IP Address:</b> <code>${params.ip || 'Unknown'}</code>\n` +
-    `📱 <b>Perangkat:</b> <code>${params.userAgent || 'Web Browser'}</code>\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `🛡️ <i>Status: Login Berhasil</i>`;
+  const text = `<b>[GATEKEEPER LOGIN]</b>\n` +
+    `Nama: ${params.nama}\n` +
+    `Username: <code>${params.username}</code>\n` +
+    `Waktu: ${now} WIB\n` +
+    `IP Address: <code>${params.ip || '-'}</code>\n` +
+    `Perangkat: <code>${params.userAgent || '-'}</code>\n` +
+    `Status: Autentikasi Berhasil`;
 
   return sendTelegramNotification(text);
 }

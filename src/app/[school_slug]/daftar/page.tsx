@@ -421,7 +421,7 @@ export default function DaftarPage() {
               </button>
             )}
             <button
-              className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl px-7 py-3.5 shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
+              className="bg-slate-900 hover:bg-black active:scale-95 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 font-bold rounded-2xl px-7 py-3.5 shadow-md shadow-slate-900/20 dark:shadow-none flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
               onClick={nextStep}
               disabled={
                 isSubmitting ||

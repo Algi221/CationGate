@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, BookOpen } from "lucide-react";
 import { MajorItem } from "../types";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
 
@@ -26,9 +26,7 @@ export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
   isMajorsVisible = true
 }) => {
   const { href } = useSchoolHref();
-  if (!majors || majors.length === 0) {
-    return null;
-  }
+  const hasMajors = Boolean(majors && majors.length > 0);
 
   return (
     <section id="majors" className="py-24 max-w-6xl mx-auto px-6 relative z-10 text-left">
@@ -60,6 +58,19 @@ export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
         </ScrollFloat>
       </div>
 
+      {!hasMajors ? (
+        <div className="max-w-2xl mx-auto bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 text-center shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
+            <BookOpen size={22} />
+          </div>
+          <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1.5">
+            Belum Ada Program Keahlian / Jurusan Ditambahkan
+          </h3>
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+            Daftar kompetensi keahlian dan program pendidikan akan segera dipublikasikan oleh pihak sekolah.
+          </p>
+        </div>
+      ) : (
       <ScrollFloat containerClassName="w-full" textClassName="w-full" textMode={false}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {majors.map((major, index) => {
@@ -127,6 +138,7 @@ export const SchoolMajors: React.FC<SchoolMajorsProps> = ({
           })}
         </div>
       </ScrollFloat>
+      )}
     </section>
   );
 };

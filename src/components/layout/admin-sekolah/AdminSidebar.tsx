@@ -6,7 +6,7 @@ import { usePathname, useSearchParams, useParams, useRouter } from "next/navigat
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
 import {
-  LayoutDashboard, Users, Settings,
+  LayoutDashboard, Users,
   Megaphone, GraduationCap, ChevronLeft, ChevronRight,
   Palette, Layers, Shield, ChevronDown, ShieldCheck, CreditCard
 } from "lucide-react";
@@ -131,8 +131,12 @@ export function AdminSidebar({
           category: "Pengaturan Sistem",
           items: [
             { href: href("/dashboard/subscription"), icon: <CreditCard size={18} />, label: "Kelola Subscription", lockedIfUnverified: true },
+<<<<<<< HEAD
             { href: href("/dashboard/admin"), icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true },
             // { href: href("/dashboard/settings"), icon: <Settings size={18} />, label: "Pengaturan Akun", lockedIfUnverified: true }
+=======
+            { href: href("/dashboard/admin"), icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true, lockedIfUnverified: true }
+>>>>>>> 3d8d933376ece96863107b39057f19e3806a2461
           ]
         }
       ];

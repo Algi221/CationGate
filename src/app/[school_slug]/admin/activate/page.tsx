@@ -16,8 +16,10 @@ function ActivateAdminContent() {
   const { ppdbTitle, ppdbLogo } = usePPDB();
 
   const schoolSlug = (params?.school_slug as string) || "";
+  const emailParam = searchParams.get("email") || "";
   const tokenParam = searchParams.get("token") || "";
 
+  const [email, setEmail] = useState(emailParam);
   const [token, setToken] = useState(tokenParam);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -29,14 +31,14 @@ function ActivateAdminContent() {
   const handleActivate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token.trim()) {
-      setErrorMessage("Token aktivasi tidak boleh kosong.");
+      setErrorMessage("Kode OTP atau Token aktivasi tidak boleh kosong.");
       return;
     }
-    if (password.length < 6) {
-      setErrorMessage("Kata sandi minimal harus 6 karakter.");
+    if (password && password.length < 6) {
+      setErrorMessage("Kata sandi minimal harus 6 karakter jika ingin diubah.");
       return;
     }
-    if (password !== confirmPassword) {
+    if (password && password !== confirmPassword) {
       setErrorMessage("Konfirmasi kata sandi tidak cocok.");
       return;
     }
@@ -50,7 +52,9 @@ function ActivateAdminContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token: token.trim(),
-          password,
+          otp: token.trim(),
+          email: email.trim() || undefined,
+          password: password || undefined,
           school_slug: schoolSlug
         })
       });
@@ -64,16 +68,16 @@ function ActivateAdminContent() {
         setActivatedSuccess(true);
         Swal.fire({
           icon: "success",
-          title: "Aktivasi Berhasil! 🎉",
-          text: "Akun admin Anda telah aktif. Mengalihkan ke dashboard...",
+          title: "Verifikasi Berhasil! 🎉",
+          text: "Akun admin Anda telah aktif. Mengalihkan ke halaman login...",
           timer: 2000,
           showConfirmButton: false
         });
         setTimeout(() => {
-          router.push(href("/dashboard"));
+          router.push(href("/login"));
         }, 1500);
       } else {
-        setErrorMessage(data.message || "Gagal mengaktivasi akun admin.");
+        setErrorMessage(data.message || "Gagal memverifikasi akun admin.");
       }
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Terjadi kesalahan koneksi ke server.");
@@ -92,7 +96,7 @@ function ActivateAdminContent() {
         <div className="text-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-3 shadow-xs">
             {ppdbLogo ? (
-              <Image src={ppdbLogo} alt="Logo" width={36} height={36} className="object-contain" />
+              <Image src={ppdbLogo} alt="Logo" width={36} height={36} style={{ width: "auto", height: "auto" }} className="object-contain max-w-9 max-h-9" unoptimized />
             ) : (
               <ShieldCheck size={28} className="text-blue-600 dark:text-blue-400" />
             )}
@@ -102,10 +106,10 @@ function ActivateAdminContent() {
             {ppdbTitle || schoolSlug.toUpperCase()}
           </span>
           <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
-            Aktivasi Akun Admin
+            Verifikasi Akun Admin
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Atur kata sandi akun panitia Anda untuk mulai mengelola dashboard sekolah.
+            Masukkan kode OTP verifikasi 6 digit yang dikirimkan ke Gmail Anda.
           </p>
         </div>
 
@@ -121,26 +125,38 @@ function ActivateAdminContent() {
             <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 size={28} />
             </div>
-            <h3 className="text-sm font-black text-slate-900 dark:text-white">Akun Berhasil Diaktifkan!</h3>
-            <p className="text-xs text-slate-500">Anda sedang dialihkan ke dashboard portal admin...</p>
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">Akun Berhasil Diverifikasi!</h3>
+            <p className="text-xs text-slate-500">Anda sedang dialihkan ke halaman login...</p>
           </div>
         ) : (
           <form onSubmit={handleActivate} className="space-y-4">
-            {!tokenParam && (
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                  Token Aktivasi Gmail
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Tempel token aktivasi dari email"
-                  className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs font-mono text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                Alamat Email Gmail Staf
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="nama@gmail.com"
+                className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                Kode OTP Verifikasi Gmail <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={token}
+                onChange={(e) => setToken(e.target.value.replace(/\s+/g, ""))}
+                placeholder="Contoh: 849201"
+                maxLength={36}
+                className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-sm font-mono text-center font-bold tracking-widest text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-1.5">

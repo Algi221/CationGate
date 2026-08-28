@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, HelpCircle } from "lucide-react";
 import { FaqItem } from "../types";
 
 const ScrollFloat = dynamic(() => import("@/components/ScrollFloat"), {
@@ -23,10 +23,7 @@ export const SchoolFaq: React.FC<SchoolFaqProps> = ({
   faqList
 }) => {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
-
-  if (!faqList || faqList.length === 0) {
-    return null;
-  }
+  const hasFaq = Boolean(faqList && faqList.length > 0);
 
   const toggleFaq = (idx: number) => {
     setActiveFaq(activeFaq === idx ? null : idx);
@@ -70,6 +67,20 @@ export const SchoolFaq: React.FC<SchoolFaqProps> = ({
           </ScrollFloat>
         </div>
 
+        {!hasFaq ? (
+          <div className="max-w-2xl mx-auto bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 text-center shadow-xs">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
+              <HelpCircle size={22} />
+            </div>
+            <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1.5">
+              Belum Ada FAQ yang Ditambahkan
+            </h3>
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+              Pertanyaan umum seputar proses pendaftaran siswa baru akan segera diperbarui oleh panitia.
+            </p>
+          </div>
+        ) : (
+
         <div className="space-y-6 w-full">
           {faqList.map((faq, idx) => {
             const isOpen = activeFaq === idx;
@@ -110,6 +121,7 @@ export const SchoolFaq: React.FC<SchoolFaqProps> = ({
             );
           })}
         </div>
+        )}
       </div>
     </section>
   );

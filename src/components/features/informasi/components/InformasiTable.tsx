@@ -9,8 +9,7 @@ import {
   Edit3, 
   Trash2, 
   ArrowRight, 
-  Loader2, 
-  Plus 
+  Loader2 
 } from "lucide-react";
 import { Informasi } from "../types";
 import { parseMedia, formatDate, sanitizeSrc } from "../utils/mediaHelper";
@@ -19,7 +18,7 @@ interface InformasiTableProps {
   informasiList: Informasi[];
   loading: boolean;
   loadingDetailId: number | null;
-  onOpenCreateModal: () => void;
+  onOpenCreateModal?: () => void;
   onOpenEditModal: (item: Informasi) => void;
   onOpenPreview: (item: Informasi) => void;
   onDeleteConfirm: (id: number) => void;
@@ -29,7 +28,6 @@ export const InformasiTable: React.FC<InformasiTableProps> = ({
   informasiList,
   loading,
   loadingDetailId,
-  onOpenCreateModal,
   onOpenEditModal,
   onOpenPreview,
   onDeleteConfirm

@@ -4,15 +4,13 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Menu,
-  X,
   Cpu,
   Layers,
   BookOpen,
   Video,
   Palette,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { CurvedNavbar, HamburgerButton } from "./CurvedMobileMenu";
 

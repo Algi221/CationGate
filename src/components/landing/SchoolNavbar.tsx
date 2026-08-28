@@ -4,15 +4,13 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Menu,
-  X,
   Cpu,
   Layers,
   BookOpen,
   Video,
   Palette,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { ToggleTheme } from "@/components/lightswind/toggle-theme";
 import { CurvedNavbar, HamburgerButton } from "./CurvedMobileMenu";
 
@@ -276,7 +274,7 @@ export function SchoolNavbar({
             <Link
               href={schoolSlug === 'demo' ? href("/dashboard") : href("/daftar")}
               onClick={(e) => handleLinkClick(e, schoolSlug === 'demo' ? href("/dashboard") : href("/daftar"))}
-              className={`${forceMobile ? "hidden" : "hidden md:inline-flex"} items-center justify-center px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors whitespace-nowrap`}
+              className={`${forceMobile ? "hidden" : "hidden md:inline-flex"} items-center justify-center px-5 py-2 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 rounded-full transition-colors whitespace-nowrap shadow-sm`}
             >
               {schoolSlug === 'demo' ? "Dashboard Demo" : "Daftar"}
             </Link>

@@ -94,7 +94,7 @@ export const SchoolHero: React.FC<SchoolHeroProps> = ({
           <div className="hero-action flex justify-center mt-8">
             <Link
               href={href("/daftar")}
-              className="inline-flex items-center gap-2 bg-[#93c5fd] hover:bg-[#60a5fa] text-blue-950 px-7 py-3 rounded-full font-medium transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 px-7 py-3 rounded-full font-semibold transition-all shadow-md active:scale-95 cursor-pointer"
             >
               Daftar Sekarang <ArrowRight size={18} />
             </Link>

@@ -30,7 +30,7 @@ import {
 export default function ProfilSekolahPage() {
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "";
-  const { adminToken, profilSekolah, fetchConfigs, schoolId, isDemoMode, ppdbTitle, ppdbLogo } = usePPDB();
+  const { adminToken, fetchConfigs, schoolId, isDemoMode } = usePPDB();
 
   const [loading, setLoading] = useState(false);
   const [logoInput, setLogoInput] = useState("");
@@ -90,25 +90,60 @@ export default function ProfilSekolahPage() {
 
     try {
       const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null);
-      const res = await fetch(`/api/config?school_slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        cache: "no-store"
-      });
-      const json = await res.json();
+      const [configRes, saasRes] = await Promise.all([
+        fetch(`/api/config?school_slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          cache: "no-store"
+        }),
+        fetch(`/api/saas/school-by-slug/${encodeURIComponent(targetSlug)}?_t=${Date.now()}`, {
+          cache: "no-store"
+        }).catch(() => null)
+      ]);
+
+      const json = await configRes.json();
+      const saasJson = saasRes ? await saasRes.json().catch(() => null) : null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const saasSchool: any = saasJson?.success && saasJson.data ? saasJson.data : null;
+
       if (json.success && json.data) {
         const c = json.data;
-        if (c.ppdb_title) setIdentitas(prev => ({ ...prev, nama: c.ppdb_title }));
-        if (c.ppdb_logo_url) setLogoInput(c.ppdb_logo_url);
-        if (c.ppdb_address) setIdentitas(prev => ({ ...prev, alamat: c.ppdb_address }));
-        if (c.ppdb_phone) setIdentitas(prev => ({ ...prev, telepon: c.ppdb_phone }));
-        if (c.ppdb_email) setIdentitas(prev => ({ ...prev, email: c.ppdb_email }));
+        const initialNama = c.ppdb_title || saasSchool?.name || "";
+        const initialLogo = c.ppdb_logo_url || saasSchool?.logo_url || "";
+        const initialAddress = c.ppdb_address || saasSchool?.address || "";
+        const initialPhone = c.ppdb_phone || saasSchool?.phone || "";
+        const initialEmail = c.ppdb_email || saasSchool?.official_email || "";
+        const initialNpsn = saasSchool?.npsn || "";
+        const initialAkreditasi = saasSchool?.accreditation || "";
+
+        if (initialLogo) setLogoInput(initialLogo);
+
+        setIdentitas(prev => ({
+          ...prev,
+          nama: initialNama || prev.nama,
+          alamat: initialAddress || prev.alamat,
+          telepon: initialPhone || prev.telepon,
+          email: initialEmail || prev.email,
+          npsn: prev.npsn || initialNpsn,
+          akreditasi: prev.akreditasi || initialAkreditasi
+        }));
 
         let p = c.ppdb_profil_sekolah;
         if (typeof p === "string" && (p.startsWith("{") || p.startsWith("["))) {
           try { p = JSON.parse(p); } catch (_e) {}
         }
         if (p && typeof p === "object") {
-          if (p.identitas) setIdentitas(prev => ({ ...prev, ...p.identitas, nama: c.ppdb_title || p.identitas.nama || prev.nama }));
+          if (p.identitas) {
+            setIdentitas(prev => ({
+              ...prev,
+              ...p.identitas,
+              nama: c.ppdb_title || p.identitas.nama || initialNama || prev.nama,
+              npsn: p.identitas.npsn || initialNpsn || prev.npsn,
+              akreditasi: p.identitas.akreditasi || initialAkreditasi || prev.akreditasi,
+              alamat: c.ppdb_address || p.identitas.alamat || initialAddress || prev.alamat,
+              telepon: c.ppdb_phone || p.identitas.telepon || initialPhone || prev.telepon,
+              email: c.ppdb_email || p.identitas.email || initialEmail || prev.email
+            }));
+          }
           if (p.sejarah) setSejarah(p.sejarah);
           if (p.ringkasan) setRingkasan(p.ringkasan);
           if (p.video_profil_url !== undefined && p.video_profil_url !== null) setVideoProfilUrl(p.video_profil_url);
@@ -124,6 +159,17 @@ export default function ProfilSekolahPage() {
             localStorage.setItem(`ppdb_profil_sekolah_${targetSlug}`, JSON.stringify(p));
           }
         }
+      } else if (saasSchool) {
+        if (saasSchool.logo_url) setLogoInput(saasSchool.logo_url);
+        setIdentitas(prev => ({
+          ...prev,
+          nama: saasSchool.name || prev.nama,
+          npsn: saasSchool.npsn || prev.npsn,
+          akreditasi: saasSchool.accreditation || prev.akreditasi,
+          alamat: saasSchool.address || prev.alamat,
+          telepon: saasSchool.phone || prev.telepon,
+          email: saasSchool.official_email || prev.email
+        }));
       }
     } catch (err) {
       console.warn("Gagal memuat konfigurasi profil sekolah:", err);
@@ -133,6 +179,28 @@ export default function ProfilSekolahPage() {
   useEffect(() => {
     loadConfigData();
   }, [loadConfigData]);
+
+  // Real-time automatic draft persistence
+  useEffect(() => {
+    const targetSlug = schoolSlug || schoolId;
+    if (!targetSlug || typeof window === "undefined") return;
+    const payload = {
+      identitas,
+      sejarah,
+      ringkasan,
+      video_profil_url: videoProfilUrl,
+      hero_image: heroImage,
+      pimpinan,
+      visi_misi: { visi, misi },
+      tujuan
+    };
+    const timer = setTimeout(() => {
+      localStorage.setItem(`ppdb_profil_sekolah_${targetSlug}`, JSON.stringify(payload));
+      if (identitas.nama) localStorage.setItem(`ppdb_title_${targetSlug}`, identitas.nama);
+      if (logoInput) localStorage.setItem(`ppdb_logo_${targetSlug}`, logoInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [identitas, sejarah, ringkasan, videoProfilUrl, heroImage, pimpinan, visi, misi, tujuan, logoInput, schoolSlug, schoolId]);
 
   const handleSaveAll = async () => {
     if (isDemoMode) {
@@ -168,6 +236,7 @@ export default function ProfilSekolahPage() {
     if (typeof window !== "undefined" && targetSlug) {
       localStorage.setItem(`ppdb_profil_sekolah_${targetSlug}`, JSON.stringify(payload));
       if (identitas.nama) localStorage.setItem(`ppdb_title_${targetSlug}`, identitas.nama);
+      if (logoInput) localStorage.setItem(`ppdb_logo_${targetSlug}`, logoInput);
     }
 
     try {
@@ -220,6 +289,9 @@ export default function ProfilSekolahPage() {
       const compressedFile = base64ToFile(result.base64, file.name);
       const publicUrl = await uploadFileDirect(compressedFile, 'school_logo');
       setLogoInput(publicUrl);
+      if (typeof window !== "undefined" && (schoolSlug || schoolId)) {
+        localStorage.setItem(`ppdb_logo_${schoolSlug || schoolId}`, publicUrl);
+      }
     } catch (e) {
       console.error(e);
       Swal.fire("Gagal", "Gagal mengunggah logo.", "error");

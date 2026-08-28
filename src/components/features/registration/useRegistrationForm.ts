@@ -49,7 +49,11 @@ export const useRegistrationForm = () => {
 
   const [portalStatus, setPortalStatus] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("ppdb_portal_status") || "open";
+      return (
+        localStorage.getItem(`ppdb_portal_status_${schoolSlug}`) ||
+        localStorage.getItem("ppdb_portal_status") ||
+        "open"
+      );
     }
     return "open";
   });
@@ -245,17 +249,9 @@ export const useRegistrationForm = () => {
               setWaAdmin(config.ppdb_wa_admin);
               localStorage.setItem("ppdb_wa_admin", config.ppdb_wa_admin);
             }
-            if (config.ppdb_landing_active !== undefined) {
-              const isLandingActive = config.ppdb_landing_active === true || config.ppdb_landing_active === "true" || config.ppdb_landing_active === 1 || config.ppdb_landing_active === "1";
-              if (!isLandingActive) {
-                setPortalStatus("closed");
-                localStorage.setItem("ppdb_portal_status", "closed");
-              } else if (config.ppdb_portal_status) {
-                setPortalStatus(config.ppdb_portal_status);
-                localStorage.setItem("ppdb_portal_status", config.ppdb_portal_status);
-              }
-            } else if (config.ppdb_portal_status) {
+            if (config.ppdb_portal_status) {
               setPortalStatus(config.ppdb_portal_status);
+              localStorage.setItem(`ppdb_portal_status_${schoolSlug}`, config.ppdb_portal_status);
               localStorage.setItem("ppdb_portal_status", config.ppdb_portal_status);
             }
             if (config.ppdb_form_guideline) {

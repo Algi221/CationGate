@@ -103,7 +103,7 @@ export function useKelolaUIState() {
   const [g1Error, setG1Error] = useState<string | null>(null);
   const [g2Error, setG2Error] = useState<string | null>(null);
 
-  // Modal & Edit State
+  const [isInitialLoaded, setIsInitialLoaded] = useState(false);
   const [editingMajor, setEditingMajor] = useState<MajorItem | null>(null);
   const [isNewMajor, setIsNewMajor] = useState(false);
   const [revisions, setRevisions] = useState<RevisionLog[]>([]);
@@ -118,9 +118,9 @@ export function useKelolaUIState() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync draft to localStorage
+  // Sync draft to localStorage only AFTER initial config is fully loaded
   useEffect(() => {
-    if (!mounted || loading) return;
+    if (!mounted || loading || !isInitialLoaded) return;
 
     const draft = {
       ppdb_landing_active: isLandingPageActive,
@@ -374,6 +374,7 @@ export function useKelolaUIState() {
       showToastMsg("Koneksi gagal, memuat konfigurasi cadangan.", "info");
     } finally {
       setLoading(false);
+      setIsInitialLoaded(true);
     }
   }
 

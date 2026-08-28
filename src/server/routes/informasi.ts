@@ -285,14 +285,21 @@ router.post('/', adminAuth, async (c: Context) => {
     };
 
     try {
-      const { data, error } = await supabase.from('informasi').insert(insertData).select().maybeSingle();
+      const { data, error } = await supabase.from('school_announcements').insert(insertData).select().maybeSingle();
       if (!error && data) savedRecord = data;
-    } catch (_sbErr) {}
+    } catch (_sbErr1) {}
+
+    if (!savedRecord) {
+      try {
+        const { data, error } = await supabase.from('informasi').insert(insertData).select().maybeSingle();
+        if (!error && data) savedRecord = data;
+      } catch (_sbErr2) {}
+    }
 
     if (!savedRecord) {
       try {
         const pgRes = await pool.query(
-          `INSERT INTO informasi (school_id, judul, konten, tanggal, foto_url, created_at)
+          `INSERT INTO school_announcements (school_id, judul, konten, tanggal, foto_url, created_at)
            VALUES ($1::text, $2, $3, $4, $5, NOW())
            RETURNING *`,
           [String(numSchoolId), judul, konten, insertData.tanggal, processedFotoUrl]
@@ -300,8 +307,20 @@ router.post('/', adminAuth, async (c: Context) => {
         if (pgRes.rows && pgRes.rows.length > 0) {
           savedRecord = pgRes.rows[0];
         }
-      } catch (pgErr) {
-        console.error('Pool insert to informasi failed:', pgErr);
+      } catch (_pgErr1) {
+        try {
+          const pgRes2 = await pool.query(
+            `INSERT INTO informasi (school_id, judul, konten, tanggal, foto_url, created_at)
+             VALUES ($1::text, $2, $3, $4, $5, NOW())
+             RETURNING *`,
+            [String(numSchoolId), judul, konten, insertData.tanggal, processedFotoUrl]
+          );
+          if (pgRes2.rows && pgRes2.rows.length > 0) {
+            savedRecord = pgRes2.rows[0];
+          }
+        } catch (pgErr2) {
+          console.error('Pool insert to school_announcements/informasi failed:', pgErr2);
+        }
       }
     }
 
@@ -355,6 +374,11 @@ router.put('/:id', adminAuth, async (c: Context) => {
     }
     const { judul, konten, tanggal, foto_url } = result.data;
 
+    const rawSchoolId = getAdminSchoolId(c);
+    const resolved = rawSchoolId ? await resolveSchoolUUID(String(rawSchoolId), fontInMemSchools) : null;
+    const targetSchoolId = resolved || String(rawSchoolId || '');
+    const numSchoolId = !isNaN(Number(targetSchoolId)) ? Number(targetSchoolId) : null;
+
     const dataToUpdate: Record<string, unknown> = {};
     if (judul !== undefined) dataToUpdate.judul = judul;
     if (konten !== undefined) dataToUpdate.konten = konten;
@@ -368,9 +392,28 @@ router.put('/:id', adminAuth, async (c: Context) => {
     let updatedRecord: any = null;
 
     try {
-      const { data, error } = await supabase.from('informasi').update(dataToUpdate).eq('id', id).select().maybeSingle();
+      let query = supabase.from('school_announcements').update(dataToUpdate).eq('id', id);
+      if (numSchoolId !== null) {
+        query = query.or(`school_id.eq.${numSchoolId},school_id.eq.${rawSchoolId}`);
+      } else if (targetSchoolId) {
+        query = query.eq('school_id', targetSchoolId);
+      }
+      const { data, error } = await query.select().maybeSingle();
       if (!error && data) updatedRecord = data;
-    } catch (_sbErr) {}
+    } catch (_sbErr1) {}
+
+    if (!updatedRecord) {
+      try {
+        let query = supabase.from('informasi').update(dataToUpdate).eq('id', id);
+        if (numSchoolId !== null) {
+          query = query.or(`school_id.eq.${numSchoolId},school_id.eq.${rawSchoolId}`);
+        } else if (targetSchoolId) {
+          query = query.eq('school_id', targetSchoolId);
+        }
+        const { data, error } = await query.select().maybeSingle();
+        if (!error && data) updatedRecord = data;
+      } catch (_sbErr2) {}
+    }
 
     if (!updatedRecord) {
       try {
@@ -383,23 +426,39 @@ router.put('/:id', adminAuth, async (c: Context) => {
         if (dataToUpdate.foto_url !== undefined) { fields.push(`foto_url = $${idx++}`); values.push(dataToUpdate.foto_url ? String(dataToUpdate.foto_url) : null); }
 
         if (fields.length > 0) {
-          const pgRes = await pool.query(
-            `UPDATE informasi SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,
-            values
-          );
-          if (pgRes.rows && pgRes.rows.length > 0) updatedRecord = pgRes.rows[0];
+          try {
+            const pgRes1 = await pool.query(
+              `UPDATE school_announcements SET ${fields.join(', ')} 
+               WHERE id = $1 AND (school_id::text = $${idx} OR school_id::text = $${idx + 1}) 
+               RETURNING *`,
+              [...values, String(numSchoolId || ''), String(rawSchoolId || '')]
+            );
+            if (pgRes1.rows && pgRes1.rows.length > 0) updatedRecord = pgRes1.rows[0];
+          } catch (_pgErr1) {
+            const pgRes2 = await pool.query(
+              `UPDATE informasi SET ${fields.join(', ')} 
+               WHERE id = $1 AND (school_id::text = $${idx} OR school_id::text = $${idx + 1}) 
+               RETURNING *`,
+              [...values, String(numSchoolId || ''), String(rawSchoolId || '')]
+            );
+            if (pgRes2.rows && pgRes2.rows.length > 0) updatedRecord = pgRes2.rows[0];
+          }
         }
       } catch (pgErr) {
-        console.error('Pool update to informasi failed:', pgErr);
+        console.error('Pool update to school_announcements/informasi failed:', pgErr);
       }
     }
 
-    // Update in-memory stores
-    for (const list of fontInMemInformasi.values()) {
-      const idx = list.findIndex((item) => item.id === id);
-      if (idx !== -1) {
-        list[idx] = { ...list[idx], ...dataToUpdate, ...updatedRecord };
-        if (!updatedRecord) updatedRecord = list[idx];
+    // Update in-memory stores safely per tenant
+    const memKeys = [String(rawSchoolId || ''), String(targetSchoolId || ''), String(numSchoolId || '')].filter(Boolean);
+    for (const key of memKeys) {
+      const list = fontInMemInformasi.get(key);
+      if (list) {
+        const idx = list.findIndex((item) => item.id === id);
+        if (idx !== -1) {
+          list[idx] = { ...list[idx], ...dataToUpdate, ...updatedRecord };
+          if (!updatedRecord) updatedRecord = list[idx];
+        }
       }
     }
 
@@ -422,19 +481,56 @@ router.put('/:id', adminAuth, async (c: Context) => {
 router.delete('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
+    const rawSchoolId = getAdminSchoolId(c);
+    const resolved = rawSchoolId ? await resolveSchoolUUID(String(rawSchoolId), fontInMemSchools) : null;
+    const targetSchoolId = resolved || String(rawSchoolId || '');
+    const numSchoolId = !isNaN(Number(targetSchoolId)) ? Number(targetSchoolId) : null;
+
     const supabase = getSupabaseClient(c.req.header('Authorization'));
 
     try {
-      await supabase.from('informasi').delete().eq('id', id);
-    } catch (_sbErr) {}
+      let query = supabase.from('school_announcements').delete().eq('id', id);
+      if (numSchoolId !== null) {
+        query = query.or(`school_id.eq.${numSchoolId},school_id.eq.${rawSchoolId}`);
+      } else if (targetSchoolId) {
+        query = query.eq('school_id', targetSchoolId);
+      }
+      await query;
+    } catch (_sbErr1) {}
 
     try {
-      await pool.query('DELETE FROM informasi WHERE id = $1', [id]);
-    } catch (_pgErr) {}
+      let query = supabase.from('informasi').delete().eq('id', id);
+      if (numSchoolId !== null) {
+        query = query.or(`school_id.eq.${numSchoolId},school_id.eq.${rawSchoolId}`);
+      } else if (targetSchoolId) {
+        query = query.eq('school_id', targetSchoolId);
+      }
+      await query;
+    } catch (_sbErr2) {}
 
-    // Remove from in-memory stores
-    for (const [key, list] of fontInMemInformasi.entries()) {
-      fontInMemInformasi.set(key, list.filter((item) => item.id !== id));
+    try {
+      await pool.query(
+        `DELETE FROM school_announcements 
+         WHERE id = $1 AND (school_id::text = $2 OR school_id::text = $3)`,
+        [id, String(numSchoolId || ''), String(rawSchoolId || '')]
+      );
+    } catch (_pgErr1) {}
+
+    try {
+      await pool.query(
+        `DELETE FROM informasi 
+         WHERE id = $1 AND (school_id::text = $2 OR school_id::text = $3)`,
+        [id, String(numSchoolId || ''), String(rawSchoolId || '')]
+      );
+    } catch (_pgErr2) {}
+
+    // Remove from in-memory stores safely per tenant
+    const memKeys = [String(rawSchoolId || ''), String(targetSchoolId || ''), String(numSchoolId || '')].filter(Boolean);
+    for (const key of memKeys) {
+      const list = fontInMemInformasi.get(key);
+      if (list) {
+        fontInMemInformasi.set(key, list.filter((item) => item.id !== id));
+      }
     }
 
     return c.json({

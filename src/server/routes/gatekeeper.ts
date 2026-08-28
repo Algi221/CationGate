@@ -943,6 +943,32 @@ gatekeeperRouter.post('/change-password', gatekeeperAuth, async (c) => {
   }
 });
 
+// POST /api/gatekeeper/test-telegram
+gatekeeperRouter.post('/test-telegram', gatekeeperAuth, async (c) => {
+  try {
+    const admin = (c.get as (k: string) => unknown)('gatekeeper') as { username?: string; nama?: string } | undefined;
+    const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || '127.0.0.1';
+    const userAgent = c.req.header('user-agent') || 'Web Browser';
+
+    const result = await notifyGatekeeperLogin({
+      username: admin?.username || 'algi',
+      nama: admin?.nama || 'Algi',
+      ip,
+      userAgent
+    });
+
+    return c.json({
+      success: result.success,
+      message: result.message
+    });
+  } catch (err: unknown) {
+    return c.json({
+      success: false,
+      message: err instanceof Error ? err.message : 'Gagal menguji bot telegram'
+    }, 500);
+  }
+});
+
 // GET /api/gatekeeper/sessions
 gatekeeperRouter.get('/sessions', gatekeeperAuth, async (c) => {
   const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || '103.144.18.24';

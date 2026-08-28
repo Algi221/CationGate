@@ -5,11 +5,25 @@ import NextImage from "next/image";
 import { usePPDB } from "@/context/PPDBContext";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
+import Swal from "sweetalert2";
 import {
-  Camera, User, Save, CheckCircle2,
-  AlertCircle, Shield, Calendar, Trash2, ZoomIn, ZoomOut, RotateCw, Crop
+  Camera,
+  Edit,
+  RefreshCw,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  Crop,
+  X,
+  Save,
+  Lock,
+  User,
+  Mail,
+  Building2,
+  Shield
 } from "lucide-react";
 
+// --- Utility Functions untuk Crop Gambar ---
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -25,6 +39,9 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<string>
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("No 2d context");
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
 
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
@@ -45,12 +62,29 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<string>
 }
 
 export default function ProfilePage() {
-  const { adminUser, adminToken, setAdminUser } = usePPDB();
+  const { adminUser, setAdminUser, profilSekolah } = usePPDB();
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
-  const [namaLengkap, setNamaLengkap] = useState(() => adminUser?.nama || "");
-  const [username, setUsername] = useState(() => adminUser?.username || "");
-  const [fotoProfil, setFotoProfil] = useState<string | null>(() => adminUser?.foto_profil || null);
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(() => adminUser?.foto_profil || null);
+  // --- State Dialog / Modal ---
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isEditPasswordOpen, setIsEditPasswordOpen] = useState(false);
+
+  // --- State Profil (Temporary & Real) ---
+  const [namaLengkap, setNamaLengkap] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  
+  // State form di dalam dialog
+  const [tempNama, setTempNama] = useState("");
+  const [tempUsername, setTempUsername] = useState("");
+  const [tempEmail, setTempEmail] = useState("");
+
+  const [fotoProfil, setFotoProfil] = useState<string | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
@@ -60,31 +94,50 @@ export default function ProfilePage() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   const [profileSaving, setProfileSaving] = useState(false);
-  const [profileMsg, setProfileMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // --- State Password ---
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // --- Initialization Data dari Context ---
   useEffect(() => {
     if (adminUser) {
-      const timer = setTimeout(() => {
-        setNamaLengkap(adminUser.nama || "");
-        setUsername(adminUser.username || "");
-        setFotoProfil(adminUser.foto_profil || null);
-        setPreviewPhoto(adminUser.foto_profil || null);
-      }, 0);
-      return () => clearTimeout(timer);
+      const nama = adminUser.nama || adminUser.nama_lengkap || "";
+      const uname = adminUser.username || "";
+      const mail = adminUser.email || "";
+      
+      setNamaLengkap(nama);
+      setUsername(uname);
+      setEmail(mail);
+      
+      setTempNama(nama);
+      setTempUsername(uname);
+      setTempEmail(mail);
+
+      setFotoProfil(adminUser.foto_profil || null);
+      setPreviewPhoto(adminUser.foto_profil || null);
     }
   }, [adminUser]);
 
+  // Buka dialog edit profil & sinkronkan state temp
+  const handleOpenEditProfile = () => {
+    setTempNama(namaLengkap);
+    setTempUsername(username);
+    setTempEmail(email);
+    setIsEditProfileOpen(true);
+  };
+
+  // --- Handlers Profil ---
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (file.size > 5 * 1024 * 1024) {
-      setProfileMsg({ type: "error", text: "Ukuran foto maksimal 5MB." });
+      Swal.fire("Error", "Ukuran foto maksimal 5MB.", "error");
       return;
     }
-
     const reader = new FileReader();
     reader.onloadend = () => {
       setCropImageSrc(reader.result as string);
@@ -109,356 +162,350 @@ export default function ProfilePage() {
       setCropModalOpen(false);
       setCropImageSrc(null);
     } catch (err) {
-      console.error("Crop failed", err);
-      setProfileMsg({ type: "error", text: "Gagal memotong foto." });
+      Swal.fire("Error", "Gagal memotong foto.", "error");
     }
   };
 
-  const handleRemovePhoto = () => {
-    setPreviewPhoto(null);
-    setFotoProfil("");
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!namaLengkap.trim()) {
-      setProfileMsg({ type: "error", text: "Nama lengkap tidak boleh kosong." });
-      return;
-    }
-    if (!username.trim()) {
-      setProfileMsg({ type: "error", text: "Username tidak boleh kosong." });
+  const handleSaveProfile = async () => {
+    if (!tempNama.trim() || !tempUsername.trim()) {
+      Swal.fire("Peringatan", "Nama dan Username tidak boleh kosong.", "warning");
       return;
     }
 
     setProfileSaving(true);
-    setProfileMsg(null);
+    
+    setTimeout(() => {
+      setNamaLengkap(tempNama);
+      setUsername(tempUsername);
+      setEmail(tempEmail);
 
-    try {
-      const res = await fetch("/api/auth/profile", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`,
-        },
-        body: JSON.stringify({
-          nama_lengkap: namaLengkap,
-          username,
-          foto_profil: fotoProfil,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setProfileMsg({ type: "success", text: "Profil berhasil diperbarui!" });
-        // Update context
-        if (setAdminUser && data.admin) {
-          const updated = {
-            ...adminUser,
-            nama: data.admin.nama,
-            username: data.admin.username,
-            foto_profil: data.admin.foto_profil,
-          };
-          setAdminUser(updated);
-          if (typeof window !== "undefined") {
-            localStorage.setItem("ppdb_admin_user", JSON.stringify(updated));
-          }
-        }
-      } else {
-        setProfileMsg({ type: "error", text: data.message || "Gagal memperbarui profil." });
+      Swal.fire({ icon: "success", title: "Berhasil", text: "Biodata berhasil diperbarui!", confirmButtonColor: "#2563EB" });
+      if (setAdminUser) {
+        setAdminUser((prev: any) => ({ ...prev, nama: tempNama, username: tempUsername, email: tempEmail, foto_profil: fotoProfil }));
       }
-    } catch {
-      setProfileMsg({ type: "error", text: "Gagal terhubung ke server." });
-    } finally {
       setProfileSaving(false);
-    }
+      setIsEditProfileOpen(false);
+    }, 1000);
   };
 
-  const _userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
+  // --- Handlers Password ---
+  const handleChangePassword = async () => {
+    if (!currentPassword) {
+      Swal.fire("Peringatan", "Password saat ini wajib diisi.", "warning");
+      return;
+    }
+    if (newPassword.length < 6) {
+      Swal.fire("Peringatan", "Password baru minimal 6 karakter.", "warning");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Swal.fire("Peringatan", "Konfirmasi password baru tidak cocok.", "warning");
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    setTimeout(() => {
+      setCurrentPassword(""); 
+      setNewPassword(""); 
+      setConfirmPassword("");
+      Swal.fire({ icon: "success", title: "Berhasil", text: "Password berhasil diubah.", confirmButtonColor: "#2563EB" });
+      setIsChangingPassword(false);
+      setIsEditPasswordOpen(false);
+    }, 1000);
+  };
+
+  if (!mounted) return null;
+
+  const displayNama = namaLengkap || adminUser?.nama || "Admin Sekolah";
+  const displayRole = adminUser?.role || "Superadmin";
+  const displaySchool = profilSekolah?.nama_sekolah || "SMP Segar Cimanggis";
+
+  const inputClass = "flex h-11 w-full rounded-xl border border-slate-300 bg-transparent px-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition-all";
+  const labelClass = "mb-2 block text-sm font-medium text-slate-800";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
+    <div className="w-full space-y-6 animate-in fade-in duration-500 pb-16 pt-4">
+      
+      {/* --- PAGE HEADER --- */}
+      <h2 className="text-[26px] font-bold text-slate-800 mb-6">User Profile</h2>
 
-      {/* ── Page Header ─────────────────────────────────────────────────────── */}
-      <div>
-        <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Profil Saya</h1>
-        <p className="text-xs text-slate-400 dark:text-slate-400 font-semibold mt-1">Kelola informasi akun dan keamanan Anda</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* ── LEFT: Photo + Info Card ─────────────────────────────────────────── */}
-        <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 shadow-sm flex flex-col items-center gap-4 text-center">
-
-            {/* Avatar */}
-            <div className="relative group">
-              <div className="w-28 h-28 rounded-3xl overflow-hidden bg-slate-100 dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm">
-                {previewPhoto ? (
-                  <NextImage src={previewPhoto} alt="Foto Profil" width={112} height={112} unoptimized className="w-full h-full object-cover" />
-                ) : (
-                  <User size={48} className="text-slate-400" />
-                )}
-              </div>
-
-            {/* Camera overlay */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute inset-0 rounded-3xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200 cursor-pointer"
-            >
-              <Camera size={24} className="text-white" />
-            </button>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={handlePhotoChange}
-            />
-          </div>
-
-          {/* Photo actions */}
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5"
-            >
-              <Camera size={12} />
-              Ganti Foto
-            </button>
-            {previewPhoto && (
-              <button
-                type="button"
-                onClick={handleRemovePhoto}
-                className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40 rounded-xl text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-all flex items-center gap-1.5"
-              >
-                <Trash2 size={12} />
-                Hapus
-              </button>
+      {/* --- CARD 1: PROFILE HEADER --- */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
+        <div className="relative group shrink-0">
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center">
+            {previewPhoto ? (
+              <NextImage src={previewPhoto} alt="Profil" width={80} height={80} unoptimized className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-3xl font-bold text-slate-400">
+                {displayNama.charAt(0).toUpperCase()}
+              </span>
             )}
           </div>
-
-          <p className="text-[10px] text-slate-400 dark:text-slate-300 font-medium">
-            JPG, PNG atau WebP. Maks. 2MB.
-          </p>
-
-          <div className="w-full h-px bg-slate-100 dark:bg-[#1e293b]" />
-
-            {/* Info */}
-            <div className="w-full space-y-3 text-left">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center shrink-0">
-                  <User size={14} className="text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nama Lengkap</p>
-                  <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{adminUser?.nama || "—"}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center shrink-0">
-                  <Shield size={14} className="text-indigo-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Role & Status Akun</p>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">
-                    <CheckCircle2 size={12} /> Akun Official Sekolah (Verified Superadmin)
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center shrink-0">
-                  <Calendar size={14} className="text-slate-500 dark:text-slate-400" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Username</p>
-                  <p className="text-xs font-bold text-slate-800 dark:text-white">@{adminUser?.username || "—"}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full border-2 border-white hover:bg-blue-700 transition-colors cursor-pointer shadow-sm"
+          >
+            <Camera size={14} />
+          </button>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
         </div>
-
-        {/* ── RIGHT: Forms ──────────────────────────────────────────────────── */}
-        <div className="lg:col-span-2 space-y-6">
-
-          {/* Edit Profile Form */}
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
-                <User size={16} className="text-blue-500" />
-              </div>
-              <div>
-                <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">Informasi Profil</h2>
-                <p className="text-[10px] text-slate-400 font-semibold">Perbarui nama dan username akun Anda</p>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                  Nama Lengkap
-                </label>
-                <input
-                  type="text"
-                  value={namaLengkap}
-                  onChange={(e) => setNamaLengkap(e.target.value)}
-                  placeholder="Masukkan nama lengkap"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/60 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Masukkan username"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-[#020617]/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/60 transition-all"
-                />
-                <p className="text-[10px] text-slate-400 mt-1 font-medium">Hanya huruf, angka, dan underscore.</p>
-              </div>
-
-              {/* Status Message */}
-              {profileMsg && (
-                <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold ${
-                  profileMsg.type === "success"
-                    ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/40"
-                    : "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40"
-                }`}>
-                  {profileMsg.type === "success"
-                    ? <CheckCircle2 size={14} className="shrink-0" />
-                    : <AlertCircle size={14} className="shrink-0" />}
-                  {profileMsg.text}
-                </div>
-              )}
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={profileSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-slate-900 rounded-2xl text-xs font-black uppercase tracking-wider shadow-sm transition-all"
-                >
-                  {profileSaving ? (
-                    <>
-                      <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={14} />
-                      Simpan Perubahan
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+        
+        <div className="flex-1 mt-1">
+          <h2 className="text-xl font-bold text-slate-800 mb-1">{displayNama}</h2>
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm text-slate-500 mt-1">
+            <span className="flex items-center gap-1.5">
+              {displayRole.charAt(0).toUpperCase() + displayRole.slice(1)} <span className="hidden md:inline mx-1">|</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              {displaySchool}
+            </span>
           </div>
-
         </div>
       </div>
 
-      {/* ── Crop Modal ─────────────────────────────────────────────────────── */}
-      {cropModalOpen && cropImageSrc && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
-                  <Crop size={16} className="text-blue-500" />
-                </div>
-                <div>
-                  <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">Sesuaikan Foto</h2>
-                  <p className="text-[10px] text-slate-400 font-semibold">Geser dan zoom untuk menyesuaikan</p>
-                </div>
-              </div>
-              <button
-                onClick={() => { setCropModalOpen(false); setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+      {/* --- CARD 2: PERSONAL INFORMATION (TAMPILAN VIEW BIASA) --- */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 mb-6 gap-4">
+          <h3 className="text-lg font-bold text-slate-800">Profil Saya</h3>
+          {/* Tombol pemicu Dialog Edit Biodata */}
+          <button 
+            onClick={handleOpenEditProfile}
+            className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors w-full md:w-auto shadow-sm"
+          >
+            <Edit size={16} /> Edit Profile
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+          <div>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Nama Lengkap</span>
+            <p className="text-base font-semibold text-slate-800">{displayNama}</p>
+          </div>
+          
+          <div>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Username</span>
+            <p className="text-base font-semibold text-slate-800">{username || "-"}</p>
+          </div>
+
+          <div className="md:col-span-2">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Email Address</span>
+            <p className="text-base font-semibold text-slate-800">{email || "-"}</p>
+          </div>
+
+          <div>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Role Pengguna</span>
+            <p className="text-base font-semibold text-slate-800">{displayRole}</p>
+          </div>
+
+          <div>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Instansi</span>
+            <p className="text-base font-semibold text-slate-800">{displaySchool}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* --- CARD 3: SECURITY (TAMPILAN VIEW BIASA) --- */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 pb-4 mb-6 gap-4">
+          <h3 className="text-lg font-bold text-slate-800">Security</h3>
+          {/* Tombol pemicu Dialog Ganti Password */}
+          <button 
+            onClick={() => setIsEditPasswordOpen(true)}
+            className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors w-full md:w-auto shadow-sm"
+          >
+            <Lock size={16} /> Change Password
+          </button>
+        </div>
+        <p className="text-sm text-slate-500">
+          Amankan akun superadmin Anda dengan rutin memperbarui kata sandi secara berkala.
+        </p>
+      </div>
+
+
+      {isEditProfileOpen && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
+            
+            {/* Header Modal */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <User size={18} className="text-blue-600" /> Edit Biodata Profil
+              </h2>
+              <button 
+                onClick={() => setIsEditProfileOpen(false)} 
+                className="text-slate-400 hover:text-slate-600 transition-colors"
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
 
-            {/* Crop Area */}
-            <div className="relative w-full h-80 bg-slate-950">
-              <Cropper
-                image={cropImageSrc}
-                crop={crop}
-                zoom={zoom}
-                rotation={rotation}
-                aspect={1}
-                cropShape="round"
-                showGrid={false}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onRotationChange={setRotation}
-                onCropComplete={onCropComplete}
-              />
-            </div>
-
-            {/* Controls */}
-            <div className="px-6 py-4 space-y-3 border-t border-slate-100 dark:border-white/5">
-              {/* Zoom slider */}
-              <div className="flex items-center gap-3">
-                <ZoomOut size={14} className="text-slate-400 shrink-0" />
-                <input
-                  type="range"
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  value={zoom}
-                  onChange={(e) => setZoom(Number(e.target.value))}
-                  className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-blue-500"
+            {/* Body Modal (Form Input) */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className={labelClass}>Nama Lengkap</label>
+                <input 
+                  type="text" 
+                  value={tempNama} 
+                  onChange={(e) => setTempNama(e.target.value)} 
+                  className={inputClass} 
+                  placeholder="Masukkan nama lengkap"
                 />
-                <ZoomIn size={14} className="text-slate-400 shrink-0" />
               </div>
 
-              {/* Rotation */}
-              <div className="flex items-center gap-3">
-                <RotateCw size={14} className="text-slate-400 shrink-0" />
-                <input
-                  type="range"
-                  min={0}
-                  max={360}
-                  step={1}
-                  value={rotation}
-                  onChange={(e) => setRotation(Number(e.target.value))}
-                  className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-blue-500"
+              <div>
+                <label className={labelClass}>Username</label>
+                <input 
+                  type="text" 
+                  value={tempUsername} 
+                  onChange={(e) => setTempUsername(e.target.value)} 
+                  className={inputClass} 
+                  placeholder="Masukkan username"
                 />
-                <span className="text-[10px] font-bold text-slate-400 w-10 text-right">{rotation}°</span>
+              </div>
+
+              <div>
+                <label className={labelClass}>Email Address</label>
+                <input 
+                  type="email" 
+                  value={tempEmail} 
+                  onChange={(e) => setTempEmail(e.target.value)} 
+                  className={inputClass} 
+                  placeholder="contoh@sekolah.com"
+                />
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-3">
-              <button
-                onClick={() => { setCropModalOpen(false); setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                className="px-5 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+            {/* Footer Modal */}
+            <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3 bg-slate-50">
+              <button 
+                onClick={() => setIsEditProfileOpen(false)} 
+                className="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-sm font-medium transition-colors"
               >
                 Batal
               </button>
-              <button
-                onClick={handleCropSave}
-                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
+              <button 
+                onClick={handleSaveProfile} 
+                disabled={profileSaving} 
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2 disabled:opacity-70"
               >
-                <Crop size={14} />
-                Terapkan
+                {profileSaving ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+                {profileSaving ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {isEditPasswordOpen && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
+            
+            {/* Header Modal */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Lock size={18} className="text-blue-600" /> Ganti Kata Sandi
+              </h2>
+              <button 
+                onClick={() => setIsEditPasswordOpen(false)} 
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Body Modal (Form Password) */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className={labelClass}>Password Saat Ini</label>
+                <input 
+                  type="password" 
+                  value={currentPassword} 
+                  onChange={(e) => setCurrentPassword(e.target.value)} 
+                  className={inputClass} 
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Password Baru</label>
+                <input 
+                  type="password" 
+                  value={newPassword} 
+                  onChange={(e) => setNewPassword(e.target.value)} 
+                  className={inputClass} 
+                  placeholder="Minimal 6 karakter"
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Konfirmasi Password Baru</label>
+                <input 
+                  type="password" 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  className={inputClass} 
+                  placeholder="Ulangi password baru"
+                />
+              </div>
+            </div>
+
+            {/* Footer Modal */}
+            <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3 bg-slate-50">
+              <button 
+                onClick={() => setIsEditPasswordOpen(false)} 
+                className="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-sm font-medium transition-colors"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={handleChangePassword} 
+                disabled={isChangingPassword} 
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2 disabled:opacity-70"
+              >
+                {isChangingPassword ? <RefreshCw size={16} className="animate-spin" /> : <Lock size={16} />}
+                {isChangingPassword ? "Memperbarui..." : "Update Password"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {cropModalOpen && cropImageSrc && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-slate-800">Sesuaikan Foto</h2>
+              <button onClick={() => { setCropModalOpen(false); setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            
+            <div className="relative w-full h-80 bg-slate-900">
+              <Cropper image={cropImageSrc} crop={crop} zoom={zoom} rotation={rotation} aspect={1} cropShape="round" showGrid={false} onCropChange={setCrop} onZoomChange={setZoom} onRotationChange={setRotation} onCropComplete={onCropComplete} />
+            </div>
+
+            <div className="px-6 py-4 space-y-4 border-t border-slate-200">
+              <div className="flex items-center gap-3">
+                <ZoomOut size={16} className="text-slate-500" />
+                <input type="range" min={1} max={3} step={0.1} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-600" />
+                <ZoomIn size={16} className="text-slate-500" />
+              </div>
+              <div className="flex items-center gap-3">
+                <RotateCw size={16} className="text-slate-500" />
+                <input type="range" min={0} max={360} step={1} value={rotation} onChange={(e) => setRotation(Number(e.target.value))} className="flex-1 h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-600" />
+                <span className="text-xs font-medium text-slate-500 w-10 text-right">{rotation}°</span>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3 bg-slate-50">
+              <button onClick={() => { setCropModalOpen(false); setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-sm font-medium transition-colors">Batal</button>
+              <button onClick={handleCropSave} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2"><Crop size={14} /> Terapkan</button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

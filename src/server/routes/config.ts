@@ -308,11 +308,13 @@ configRouter.post('/', adminAuth, async (c) => {
         processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
       }
 
+      const targetSchoolId = String(schoolId);
+
       const upsertRows = Object.entries(processedConfigs).map(([key, val]) => ({
         config_key: key,
         config_value: val,
         updated_at: new Date().toISOString(),
-        school_id: !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId
+        school_id: targetSchoolId
       }));
 
       const { error } = await supabase
@@ -325,7 +327,7 @@ configRouter.post('/', adminAuth, async (c) => {
           try {
             await pool.query(
               `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-               VALUES ($1, $2, $3, NOW())
+               VALUES ($1::uuid, $2, $3, NOW())
                ON CONFLICT (school_id, config_key)
                DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
               [row.school_id, row.config_key, JSON.stringify(row.config_value)]
@@ -339,22 +341,21 @@ configRouter.post('/', adminAuth, async (c) => {
       // Log UI Revision
       const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string; school_slug?: string; slug?: string } | undefined;
       const adminName = admin?.nama || admin?.username || 'Administrator';
-      const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
 
       const revPayload: Record<string, unknown> = {
         config_values: processedConfigs,
         changed_by: adminName,
         description: description || 'Pembaruan Tampilan Sistem'
       };
-      if (schoolId) revPayload.school_id = numericSchoolId;
+      if (schoolId) revPayload.school_id = targetSchoolId;
 
       const { error: revErr } = await supabase.from('ui_revisions').insert(revPayload);
       if (revErr) {
         try {
           await pool.query(
             `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
-             VALUES ($1, $2, $3, $4, NOW())`,
-            [numericSchoolId, JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
+             VALUES ($1::uuid, $2, $3, $4, NOW())`,
+            [targetSchoolId, JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
           );
         } catch (_revPoolErr) {}
       }
@@ -440,7 +441,7 @@ configRouter.post('/', adminAuth, async (c) => {
 
       const revEntry = {
         id: Date.now(),
-        school_id: numericSchoolId,
+        school_id: targetSchoolId,
         config_values: processedConfigs,
         changed_by: adminName,
         description: description || 'Pembaruan Tampilan Sistem',
@@ -481,13 +482,13 @@ configRouter.post('/', adminAuth, async (c) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
-    const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
+    const targetSchoolId = String(schoolId);
 
     const payload: Record<string, unknown> = {
       config_key: key,
       config_value: processedValue,
       updated_at: new Date().toISOString(),
-      school_id: numericSchoolId
+      school_id: targetSchoolId
     };
 
     const { error } = await supabase
@@ -498,10 +499,10 @@ configRouter.post('/', adminAuth, async (c) => {
       try {
         await pool.query(
           `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-           VALUES ($1, $2, $3, NOW())
+           VALUES ($1::uuid, $2, $3, NOW())
            ON CONFLICT (school_id, config_key)
            DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-          [numericSchoolId, key, JSON.stringify(processedValue)]
+          [targetSchoolId, key, JSON.stringify(processedValue)]
         );
       } catch (_poolErr) {
         console.warn('Fallback pool query for single config error:', _poolErr);

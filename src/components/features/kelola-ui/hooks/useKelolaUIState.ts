@@ -212,6 +212,7 @@ export function useKelolaUIState() {
     footerDesc,
     fieldsConfigUI,
     draftKey,
+    isInitialLoaded,
   ]);
 
   const showToastMsg = (message: string, type: "success" | "error" | "info" = "success") => {

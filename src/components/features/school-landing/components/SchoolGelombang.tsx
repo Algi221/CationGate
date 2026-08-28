@@ -52,15 +52,15 @@ export const SchoolGelombang: React.FC<SchoolGelombangProps> = ({
     }
   };
 
-  const hasGelombang1 = Boolean(gelombangConfig?.gelombang1?.start && gelombangConfig?.gelombang1?.end);
-  const hasGelombang2 = Boolean(gelombangConfig?.gelombang2?.start && gelombangConfig?.gelombang2?.end);
+  const effectiveGelombang1 = (gelombangConfig?.gelombang1?.start && gelombangConfig?.gelombang1?.end)
+    ? gelombangConfig.gelombang1
+    : { start: "2026-01-01", end: "2026-06-30" };
+  const effectiveGelombang2 = (gelombangConfig?.gelombang2?.start && gelombangConfig?.gelombang2?.end)
+    ? gelombangConfig.gelombang2
+    : { start: "2026-07-01", end: "2026-08-31" };
 
-  if (!hasGelombang1 && !hasGelombang2) {
-    return null;
-  }
-
-  const status1 = getGelombangStatus(gelombangConfig.gelombang1.start, gelombangConfig.gelombang1.end);
-  const status2 = getGelombangStatus(gelombangConfig.gelombang2.start, gelombangConfig.gelombang2.end);
+  const status1 = getGelombangStatus(effectiveGelombang1.start, effectiveGelombang1.end);
+  const status2 = getGelombangStatus(effectiveGelombang2.start, effectiveGelombang2.end);
 
   return (
     <section id="gelombang" className="py-20 max-w-6xl mx-auto px-6 relative z-10 text-left">

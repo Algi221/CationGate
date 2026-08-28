@@ -240,6 +240,25 @@ configRouter.get('/', async (c) => {
       }
     }
 
+    // Merge from schools table if missing essential fields
+    if (!configMap.ppdb_title || !configMap.ppdb_address || !configMap.ppdb_logo_url) {
+      try {
+        const targetSearch = isUUID(resolvedUUID || '') ? resolvedUUID : (isUUID(String(schoolId)) ? schoolId : '00000000-0000-0000-0000-000000000000');
+        const { data: sch } = await supabase
+          .from('schools')
+          .select('*')
+          .or(`id.eq.${targetSearch},slug.eq.${schoolSlug || schoolId}`)
+          .maybeSingle();
+        if (sch) {
+          if (!configMap.ppdb_title) configMap.ppdb_title = sch.name;
+          if (!configMap.ppdb_logo_url && sch.logo_url) configMap.ppdb_logo_url = sch.logo_url;
+          if (!configMap.ppdb_address && sch.address) configMap.ppdb_address = sch.address;
+          if (!configMap.ppdb_phone && sch.phone) configMap.ppdb_phone = sch.phone;
+          if (!configMap.ppdb_email && sch.official_email) configMap.ppdb_email = sch.official_email;
+        }
+      } catch (_) {}
+    }
+
     // 3. Save to Redis Cache (expire in 1 hour)
     await setCached(cacheKey, configMap, 3600);
     if (schoolSlug) await setCached(`config_${schoolSlug}`, configMap, 3600);

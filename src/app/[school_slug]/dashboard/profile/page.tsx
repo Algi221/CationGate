@@ -17,10 +17,7 @@ import {
   X,
   Save,
   Lock,
-  User,
-  Mail,
-  Building2,
-  Shield
+  User
 } from "lucide-react";
 
 // --- Utility Functions untuk Crop Gambar ---
@@ -161,7 +158,7 @@ export default function ProfilePage() {
       setFotoProfil(croppedBase64);
       setCropModalOpen(false);
       setCropImageSrc(null);
-    } catch (err) {
+    } catch (_err) {
       Swal.fire("Error", "Gagal memotong foto.", "error");
     }
   };
@@ -181,7 +178,7 @@ export default function ProfilePage() {
 
       Swal.fire({ icon: "success", title: "Berhasil", text: "Biodata berhasil diperbarui!", confirmButtonColor: "#2563EB" });
       if (setAdminUser) {
-        setAdminUser((prev: any) => ({ ...prev, nama: tempNama, username: tempUsername, email: tempEmail, foto_profil: fotoProfil }));
+        setAdminUser((prev) => (prev ? { ...prev, nama: tempNama, username: tempUsername, email: tempEmail, foto_profil: fotoProfil } : null));
       }
       setProfileSaving(false);
       setIsEditProfileOpen(false);
@@ -324,7 +321,7 @@ export default function ProfilePage() {
 
 
       {isEditProfileOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
             
             {/* Header Modal */}
@@ -399,7 +396,7 @@ export default function ProfilePage() {
       )}
 
       {isEditPasswordOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
             
             {/* Header Modal */}
@@ -474,7 +471,7 @@ export default function ProfilePage() {
       )}
 
       {cropModalOpen && cropImageSrc && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
               <h2 className="text-sm font-bold text-slate-800">Sesuaikan Foto</h2>

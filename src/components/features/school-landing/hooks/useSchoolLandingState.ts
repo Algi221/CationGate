@@ -135,8 +135,6 @@ export function useSchoolLandingState() {
       : "sekolah");
   const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
 
-  const initialCache = getLocalLandingCache(schoolSlug) || {};
-
   const [customSchoolName, setCustomSchoolName] = useState<string>("");
 
   const schoolDisplayName =
@@ -153,12 +151,10 @@ export function useSchoolLandingState() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroTitle, setHeroTitle] = useState<string>("Penerimaan Peserta Didik Baru");
   const [heroTitleSub, setHeroTitleSub] = useState<string>(
-    isDemo ? `SPMB SMK Demo` : `SPMB ${schoolDisplayName}`
+    isDemo ? `SPMB SMK Demo` : (schoolDisplayName ? `SPMB ${schoolDisplayName}` : "Tahun Ajaran 2026/2027")
   );
   const [heroSubtitle, setHeroSubtitle] = useState<string>(
-    isDemo
-      ? "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
-      : ""
+    "Mulai langkah awal wujudkan masa depan cemerlang. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh."
   );
   const [heroBgImage, setHeroBgImage] = useState<string>("");
 
@@ -168,23 +164,23 @@ export function useSchoolLandingState() {
   const [waAdmin, setWaAdmin] = useState<string>("");
   const [schoolPeriod, setSchoolPeriod] = useState<string>("2026-2027");
 
-  const [faqList, setFaqList] = useState<FaqItem[]>(isDemo ? DEFAULT_FAQ : []);
-  const [faqTitle, setFaqTitle] = useState<string>(isDemo ? "Pertanyaan yang Sering Diajukan" : "");
+  const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
+  const [faqTitle, setFaqTitle] = useState<string>("Pertanyaan yang Sering Diajukan");
   const [faqSubtitle, setFaqSubtitle] = useState<string>(
-    isDemo ? "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru." : ""
+    "Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru."
   );
 
-  const [alurList, setAlurList] = useState<AlurItem[]>(isDemo ? DEFAULT_ALUR : []);
-  const [majors, setMajors] = useState<MajorItem[]>(isDemo ? DEFAULT_MAJORS : []);
+  const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
+  const [majors, setMajors] = useState<MajorItem[]>(DEFAULT_MAJORS);
   const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
   const [isPlatformMaintenance, setIsPlatformMaintenance] = useState<boolean>(false);
   const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>(
-    isDemo ? DEFAULT_PARTNERS : []
+    DEFAULT_PARTNERS
   );
 
   const [gelombangConfig, setGelombangConfig] = useState<GelombangConfig>({
-    gelombang1: { start: "", end: "" },
-    gelombang2: { start: "", end: "" }
+    gelombang1: { start: "2026-01-01", end: "2026-06-30" },
+    gelombang2: { start: "2026-07-01", end: "2026-08-31" }
   });
 
   const formatDate = (dateString: string | null | undefined) => {
@@ -271,16 +267,16 @@ export function useSchoolLandingState() {
               cfg.ppdb_landing_active === "1"
             );
           }
-          if (cfg.ppdb_hero_title !== undefined && cfg.ppdb_hero_title !== null) {
+          if (cfg.ppdb_hero_title) {
             setHeroTitle(cfg.ppdb_hero_title);
           }
-          if (cfg.ppdb_hero_title_sub !== undefined && cfg.ppdb_hero_title_sub !== null) {
+          if (cfg.ppdb_hero_title_sub) {
             setHeroTitleSub(cfg.ppdb_hero_title_sub);
           }
-          if (cfg.ppdb_hero_subtitle !== undefined && cfg.ppdb_hero_subtitle !== null) {
+          if (cfg.ppdb_hero_subtitle) {
             setHeroSubtitle(cfg.ppdb_hero_subtitle);
           }
-          if (cfg.ppdb_hero_bg_image !== undefined && cfg.ppdb_hero_bg_image !== null) {
+          if (cfg.ppdb_hero_bg_image) {
             setHeroBgImage(cfg.ppdb_hero_bg_image);
           }
           if (cfg.ppdb_address || cfg.ppdb_alamat) setAddress(cfg.ppdb_address || cfg.ppdb_alamat);
@@ -293,30 +289,30 @@ export function useSchoolLandingState() {
           if (cfg.ppdb_faq_subtitle) setFaqSubtitle(cfg.ppdb_faq_subtitle);
 
           const parsedFaq = parseConfigArray<FaqItem>(cfg.ppdb_faq_config);
-          if (parsedFaq) {
+          if (parsedFaq && parsedFaq.length > 0) {
             setFaqList(parsedFaq);
-          } else if (isDemo) {
+          } else {
             setFaqList(DEFAULT_FAQ);
           }
 
           const parsedAlur = parseConfigArray<AlurItem>(cfg.ppdb_alur_config);
-          if (parsedAlur) {
+          if (parsedAlur && parsedAlur.length > 0) {
             setAlurList(parsedAlur);
-          } else if (isDemo) {
+          } else {
             setAlurList(DEFAULT_ALUR);
           }
 
           const parsedMajors = parseConfigArray<MajorItem>(cfg.ppdb_majors_config);
-          if (parsedMajors) {
+          if (parsedMajors && parsedMajors.length > 0) {
             setMajors(parsedMajors);
-          } else if (isDemo) {
+          } else {
             setMajors(DEFAULT_MAJORS);
           }
 
           const parsedPartners = parseConfigArray<PartnerItem>(cfg.ppdb_partners_config);
-          if (parsedPartners) {
+          if (parsedPartners && parsedPartners.length > 0) {
             setPartnersList(parsedPartners);
-          } else if (isDemo) {
+          } else {
             setPartnersList(DEFAULT_PARTNERS);
           }
 
@@ -324,7 +320,7 @@ export function useSchoolLandingState() {
           if (typeof g === "string" && g.trim().startsWith("{")) {
             try { g = JSON.parse(g); } catch (_e) {}
           }
-          if (g && typeof g === "object") {
+          if (g && typeof g === "object" && (g.gelombang1?.start || g.gelombang2?.start)) {
             setGelombangConfig(g);
           }
         }

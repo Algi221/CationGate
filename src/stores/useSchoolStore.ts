@@ -82,8 +82,9 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
       isDemoMode: isDemo,
     });
     if (slug) {
-      get().resolveSchoolBySlug(slug);
-      get().fetchConfigs(slug);
+      get().resolveSchoolBySlug(slug).finally(() => {
+        get().fetchConfigs(slug);
+      });
     }
   },
 
@@ -137,7 +138,9 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
     }
 
     try {
-      const res = await fetch(`/api/config?school_slug=${slug}&t=${Date.now()}`);
+      const res = await fetch(`/api/config?school_slug=${encodeURIComponent(slug)}&_t=${Date.now()}`, {
+        cache: "no-store"
+      });
       if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) return;
       const data = await res.json();
       if (data.success && data.data) {
@@ -177,7 +180,9 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
     if (!slug) return;
 
     try {
-      const res = await fetch(`/api/saas/school-by-slug/${slug}?t=${Date.now()}`);
+      const res = await fetch(`/api/saas/school-by-slug/${encodeURIComponent(slug)}&_t=${Date.now()}`, {
+        cache: "no-store"
+      });
       if (!res.headers.get("content-type")?.includes("application/json")) return;
       const data = await res.json();
       if (data && data.notFound) {
@@ -186,24 +191,24 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
         const schoolUuid = data.data.school_uuid || data.data.id;
         const currentProfil = get().profilSekolah || {};
         const currentIdentitas = currentProfil.identitas || {};
-        set({
+        set((state) => ({
           isSchoolNotFound: false,
           schoolId: schoolUuid,
-          schoolStatus: data.data.status || get().schoolStatus,
-          ppdbLogo: data.data.logo_url || get().ppdbLogo,
-          ppdbTitle: data.data.name || get().ppdbTitle,
+          schoolStatus: data.data.status || state.schoolStatus,
+          ppdbLogo: state.ppdbLogo || data.data.logo_url || "",
+          ppdbTitle: state.ppdbTitle || data.data.name || "",
           profilSekolah: {
             ...currentProfil,
             identitas: {
               ...currentIdentitas,
-              nama: data.data.name || currentIdentitas.nama || get().ppdbTitle,
-              npsn: data.data.npsn || currentIdentitas.npsn || "",
-              akreditasi: data.data.accreditation || currentIdentitas.akreditasi || "",
-              email: data.data.official_email || currentIdentitas.email || "",
-              telepon: data.data.phone || currentIdentitas.telepon || ""
+              nama: currentIdentitas.nama || state.ppdbTitle || data.data.name || "",
+              npsn: currentIdentitas.npsn || data.data.npsn || "",
+              akreditasi: currentIdentitas.akreditasi || data.data.accreditation || "",
+              email: currentIdentitas.email || data.data.official_email || "",
+              telepon: currentIdentitas.telepon || data.data.phone || ""
             }
           }
-        });
+        }));
         if (schoolUuid) {
           get().setSchoolId(schoolUuid);
         }

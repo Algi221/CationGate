@@ -103,7 +103,9 @@ router.get('/', async (c: Context) => {
       return c.json({ success: true, data: [] });
     }
 
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(str).trim());
     const resolved = await resolveSchoolUUID(rawSchoolId, fontInMemSchools);
+    const targetUUID = resolved && isUUID(resolved) ? resolved : (isUUID(String(rawSchoolId)) ? String(rawSchoolId) : null);
     const numId = !isNaN(Number(resolved)) ? Number(resolved) : (!isNaN(Number(rawSchoolId)) ? Number(rawSchoolId) : null);
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
@@ -121,28 +123,13 @@ router.get('/', async (c: Context) => {
       }
     };
 
-    // 1. Supabase (check 'informasi' and 'school_announcements')
-    try {
-      let query = supabase.from('informasi').select('*');
-      if (numId !== null) {
-        query = query.or(`school_id.eq.${numId},school_id.eq.${rawSchoolId}`);
-      } else if (resolved) {
-        query = query.or(`school_id.eq.${resolved},school_id.eq.${rawSchoolId}`);
-      } else {
-        query = query.eq('school_id', rawSchoolId);
-      }
-      const { data: sbData, error } = await query.order('tanggal', { ascending: false }).order('created_at', { ascending: false });
-      if (!error && sbData && Array.isArray(sbData)) {
-        sbData.forEach(addRow);
-      }
-    } catch (_sbErr) {}
-
+    // 1. Supabase (primary 'school_announcements')
     try {
       let query2 = supabase.from('school_announcements').select('*');
-      if (numId !== null) {
-        query2 = query2.or(`school_id.eq.${numId},school_id.eq.${rawSchoolId}`);
-      } else if (resolved) {
-        query2 = query2.or(`school_id.eq.${resolved},school_id.eq.${rawSchoolId}`);
+      if (targetUUID) {
+        query2 = query2.eq('school_id', targetUUID);
+      } else if (numId !== null) {
+        query2 = query2.eq('school_id', numId);
       } else {
         query2 = query2.eq('school_id', rawSchoolId);
       }
@@ -151,6 +138,22 @@ router.get('/', async (c: Context) => {
         sbData2.forEach(addRow);
       }
     } catch (_sbErr2) {}
+
+    // Fallback Supabase 'informasi'
+    try {
+      let query = supabase.from('informasi').select('*');
+      if (targetUUID) {
+        query = query.eq('school_id', targetUUID);
+      } else if (numId !== null) {
+        query = query.eq('school_id', numId);
+      } else {
+        query = query.eq('school_id', rawSchoolId);
+      }
+      const { data: sbData, error } = await query.order('tanggal', { ascending: false }).order('created_at', { ascending: false });
+      if (!error && sbData && Array.isArray(sbData)) {
+        sbData.forEach(addRow);
+      }
+    } catch (_sbErr) {}
 
     // 2. Direct PostgreSQL
     try {

@@ -136,12 +136,12 @@ export default function ProfilSekolahPage() {
             setIdentitas(prev => ({
               ...prev,
               ...p.identitas,
-              nama: c.ppdb_title || p.identitas.nama || initialNama || prev.nama,
+              nama: p.identitas.nama || c.ppdb_title || initialNama || prev.nama,
               npsn: p.identitas.npsn || initialNpsn || prev.npsn,
               akreditasi: p.identitas.akreditasi || initialAkreditasi || prev.akreditasi,
-              alamat: c.ppdb_address || p.identitas.alamat || initialAddress || prev.alamat,
-              telepon: c.ppdb_phone || p.identitas.telepon || initialPhone || prev.telepon,
-              email: c.ppdb_email || p.identitas.email || initialEmail || prev.email
+              alamat: p.identitas.alamat || c.ppdb_address || initialAddress || prev.alamat,
+              telepon: p.identitas.telepon || c.ppdb_phone || initialPhone || prev.telepon,
+              email: p.identitas.email || c.ppdb_email || initialEmail || prev.email
             }));
           }
           if (p.sejarah) setSejarah(p.sejarah);

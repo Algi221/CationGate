@@ -14,42 +14,47 @@ export type Applicant = {
   [key: string]: any;
 };
 
-const fetchApplicants = async (schoolId: string): Promise<Applicant[]> => {
+const fetchApplicants = async (schoolId: string, isPublic: boolean = false): Promise<Applicant[]> => {
   if (!schoolId) return [];
-  const token = typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "";
+  const token = !isPublic && typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : "";
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
   const endpoint = token ? `/api/applicants?school_id=${encodeURIComponent(schoolId)}` : `/api/applicants/public?school_slug=${encodeURIComponent(schoolId)}`;
   try {
     const res = await fetch(endpoint, { headers });
     if (!res.ok) {
-      // Fallback to public if admin 401/403/500
-      if (token) {
-        const publicRes = await fetch(`/api/applicants/public?school_slug=${encodeURIComponent(schoolId)}`);
-        if (publicRes.ok) {
-          const publicData = await publicRes.json();
-          return publicData.data || [];
-        }
+      // Fallback to public if admin fails
+      const publicRes = await fetch(`/api/applicants/public?school_slug=${encodeURIComponent(schoolId)}`);
+      if (publicRes.ok) {
+        const publicData = await publicRes.json();
+        return publicData.data || [];
       }
       return [];
     }
     const data = await res.json();
     return data.data || [];
   } catch (_err) {
+    try {
+      const publicRes = await fetch(`/api/applicants/public?school_slug=${encodeURIComponent(schoolId)}`);
+      if (publicRes.ok) {
+        const publicData = await publicRes.json();
+        return publicData.data || [];
+      }
+    } catch (_fallbackErr) {}
     return [];
   }
 };
 
 // Hook for fetching data with Supabase Realtime (no polling)
-export const useApplicants = (schoolId: string) => {
+export const useApplicants = (schoolId: string, isPublic: boolean = false) => {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["applicants", schoolId],
-    queryFn: () => fetchApplicants(schoolId),
+    queryKey: ["applicants", schoolId, isPublic ? "public" : "admin"],
+    queryFn: () => fetchApplicants(schoolId, isPublic),
     enabled: !!schoolId,
-    // Removed refetchInterval — Supabase Realtime handles updates
     refetchOnWindowFocus: true,
+    staleTime: 30000,
   });
 
   // Subscribe to Supabase Realtime changes on student_applicants table

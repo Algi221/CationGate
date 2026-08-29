@@ -247,28 +247,6 @@ export default function SubscriptionManagementPage() {
     }
   };
 
-  const handleSimulateSuccess = async (planName: string, amount: number) => {
-    const simOrderId = `SIM-${Date.now()}`;
-    try {
-      setIsPaying(true);
-      await fetch("/api/saas/simulate-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          school_slug: schoolSlug || schoolId || "smktarunabhakti",
-          plan_name: planName,
-          amount: amount,
-          order_id: simOrderId
-        })
-      });
-      await activateSubscription(simOrderId);
-    } catch (_err) {
-      await activateSubscription(simOrderId);
-    } finally {
-      setIsPaying(false);
-    }
-  };
-
   const handleUpgradePlan = async (planName: string) => {
     if (!isVerified) {
       Swal.fire({
@@ -468,7 +446,6 @@ export default function SubscriptionManagementPage() {
                 isExpired={Boolean(subscription?.isExpired)}
                 isPaying={isPaying}
                 onUpgrade={handleUpgradePlan}
-                onSimulateSuccess={handleSimulateSuccess}
               />
             ))}
           </div>

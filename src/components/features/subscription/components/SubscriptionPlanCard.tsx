@@ -18,7 +18,6 @@ interface SubscriptionPlanCardProps {
   isExpired: boolean;
   isPaying: boolean;
   onUpgrade: (planName: string) => void;
-  onSimulateSuccess: (planName: string, amount: number) => void;
 }
 
 const formatPrice = (val: number | string) => {
@@ -32,8 +31,7 @@ export const SubscriptionPlanCard: React.FC<SubscriptionPlanCardProps> = ({
   isPro,
   isExpired,
   isPaying,
-  onUpgrade,
-  onSimulateSuccess
+  onUpgrade
 }) => {
   const isFree = pkg.price_yearly === 0;
   const isCard1 = index === 0;
@@ -186,17 +184,6 @@ export const SubscriptionPlanCard: React.FC<SubscriptionPlanCardProps> = ({
               </>
             )}
           </Button>
-
-          {!isCurrentlyActive && (
-            <button
-              type="button"
-              onClick={() => onSimulateSuccess(pkg.name, pkg.price_yearly)}
-              className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
-            >
-              <Sparkles size={14} className="text-emerald-400" />
-              <span>Simulasi Pembayaran Berhasil (Sandbox)</span>
-            </button>
-          )}
         </div>
       </div>
     );
@@ -271,17 +258,6 @@ export const SubscriptionPlanCard: React.FC<SubscriptionPlanCardProps> = ({
             </>
           )}
         </Button>
-
-        {!isCurrentlyActive && (
-          <button
-            type="button"
-            onClick={() => onSimulateSuccess(pkg.name, pkg.price_yearly)}
-            className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
-          >
-            <Sparkles size={14} className="text-emerald-500" />
-            <span>Simulasi Pembayaran Berhasil (Sandbox)</span>
-          </button>
-        )}
       </div>
     </div>
   );

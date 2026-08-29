@@ -149,7 +149,7 @@ export function SchoolLandingClient({ initialData, serverSchoolSlug }: SchoolLan
       </main>
 
       {/* FOOTER */}
-      <SchoolFooter schoolSlug={schoolSlug} />
+      <SchoolFooter schoolSlug={schoolSlug} majors={majors} />
     </div>
   );
 }

@@ -8,15 +8,34 @@ import { useSchoolHref } from "@/hooks/useSchoolHref";
 
 import Swal from "sweetalert2";
 
+export type FooterMajorItem = {
+  code?: string;
+  title?: string;
+  nama?: string;
+  nama_jurusan?: string;
+  name?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+};
+
 interface SchoolFooterProps {
   schoolSlug: string;
   isPreview?: boolean;
+  majors?: FooterMajorItem[];
 }
 
-export function SchoolFooter({ schoolSlug, isPreview = false }: SchoolFooterProps) {
+export function SchoolFooter({ schoolSlug, isPreview = false, majors: initialMajorsProp }: SchoolFooterProps) {
   const { ppdbLogo, ppdbTitle, ppdbFooterDesc, profilSekolah } = usePPDB();
   const { href } = useSchoolHref(schoolSlug);
-  const [majors, setMajors] = React.useState<Array<{ code: string; title: string }>>([]);
+  const [majors, setMajors] = React.useState<Array<{ code: string; title: string }>>(() => {
+    if (initialMajorsProp && initialMajorsProp.length > 0) {
+      return initialMajorsProp.map((m) => ({
+        code: m.code || "",
+        title: m.title || m.nama || m.nama_jurusan || m.name || m.code || ""
+      }));
+    }
+    return [];
+  });
   const [schoolContact, setSchoolContact] = React.useState<{ address: string; phone: string; email: string }>({
     address: "",
     phone: "",
@@ -49,7 +68,69 @@ export function SchoolFooter({ schoolSlug, isPreview = false }: SchoolFooterProp
   const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
   const schoolDisplayName = ppdbTitle || (isDemo ? "SMK Demo Indonesia" : schoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
 
+  // Synchronize when initialMajorsProp changes
   React.useEffect(() => {
+    if (initialMajorsProp && initialMajorsProp.length > 0) {
+      setMajors(
+        initialMajorsProp.map((m) => ({
+          code: m.code || "",
+          title: m.title || m.nama || m.nama_jurusan || m.name || m.code || ""
+        }))
+      );
+    }
+  }, [initialMajorsProp]);
+
+  // Realtime multi-tab synchronization via BroadcastChannel
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !("BroadcastChannel" in window)) return;
+    const channel = new BroadcastChannel("cationgate_landing_sync");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    channel.onmessage = (event: MessageEvent<any>) => {
+      if (event.data && event.data.type === "CONFIG_UPDATED") {
+        if (!event.data.slug || event.data.slug === schoolSlug) {
+          const cfg = event.data.data;
+          if (cfg && cfg.ppdb_majors_config) {
+            let mConfig = cfg.ppdb_majors_config;
+            if (typeof mConfig === "string" && mConfig.trim().startsWith("[")) {
+              try { mConfig = JSON.parse(mConfig); } catch (_e) {}
+            }
+            if (Array.isArray(mConfig)) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              setMajors(mConfig.map((m: any) => ({
+                code: m.code || m.kode || "",
+                title: m.title || m.nama || m.nama_jurusan || m.name || m.code || ""
+              })));
+            }
+          }
+        }
+      }
+    };
+    return () => {
+      channel.close();
+    };
+  }, [schoolSlug]);
+
+  React.useEffect(() => {
+    // 1. Check local storage cache first for instant dynamic render
+    if (typeof window !== "undefined" && schoolSlug) {
+      const rawLocalMajors = localStorage.getItem(`ppdb_majors_config_${schoolSlug}`) || localStorage.getItem(`cation_landing_cache_${schoolSlug}`);
+      if (rawLocalMajors) {
+        try {
+          let parsed = JSON.parse(rawLocalMajors);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.ppdb_majors_config) {
+            parsed = typeof parsed.ppdb_majors_config === "string" ? JSON.parse(parsed.ppdb_majors_config) : parsed.ppdb_majors_config;
+          }
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setMajors(parsed.map((m: any) => ({
+              code: m.code || m.kode || "",
+              title: m.title || m.nama || m.nama_jurusan || m.name || m.code || ""
+            })));
+          }
+        } catch (_e) {}
+      }
+    }
+
     Promise.all([
       fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`).then(r => r.json()).catch(() => null),
       fetch(`/api/school-profile?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`).then(r => r.json()).catch(() => null)
@@ -57,19 +138,27 @@ export function SchoolFooter({ schoolSlug, isPreview = false }: SchoolFooterProp
       const c = configRes?.success ? configRes.data : {};
       const p = profileRes?.success ? profileRes.data : {};
 
-      let majorsConfig = c.ppdb_majors_config;
+      let majorsConfig = c.ppdb_majors_config || c.majors;
       if (typeof majorsConfig === "string" && (majorsConfig.startsWith("[") || majorsConfig.startsWith("{"))) {
         try { majorsConfig = JSON.parse(majorsConfig); } catch (_e) {}
       }
       if (Array.isArray(majorsConfig) && majorsConfig.length > 0) {
-        setMajors(majorsConfig);
-      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setMajors(majorsConfig.map((m: any) => ({
+          code: m.code || m.kode || "",
+          title: m.title || m.nama || m.nama_jurusan || m.name || m.code || ""
+        })));
+      } else if (isDemo) {
         setMajors([
           { code: "RPL", title: "Rekayasa Perangkat Lunak" },
           { code: "TJKT", title: "Teknik Jaringan Komputer" },
           { code: "DKV", title: "Desain Komunikasi Visual" },
           { code: "BC", title: "Broadcasting & Perfilman" }
         ]);
+      } else {
+        if (!initialMajorsProp || initialMajorsProp.length === 0) {
+          setMajors([]);
+        }
       }
 
       setSchoolContact({
@@ -78,7 +167,7 @@ export function SchoolFooter({ schoolSlug, isPreview = false }: SchoolFooterProp
         email: p.email || p.identitas?.email || c.ppdb_email || (isDemo ? "info@demo.cationgate.site" : "")
       });
     }).catch(() => {});
-  }, [schoolSlug, isDemo]);
+  }, [schoolSlug, isDemo, initialMajorsProp]);
 
   let rawProfil = profilSekolah;
   if (typeof rawProfil === "string" && (rawProfil.startsWith("{") || rawProfil.startsWith("["))) {

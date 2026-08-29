@@ -225,7 +225,7 @@ export default function DemoPage() {
       </main>
 
       {/* FOOTER */}
-      <SchoolFooter schoolSlug={schoolSlug} />
+      <SchoolFooter schoolSlug={schoolSlug} majors={DEMO_MAJORS} />
     </div>
   );
 }

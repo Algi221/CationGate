@@ -27,40 +27,44 @@ export const Step6Beasiswa: React.FC<StepProps> = ({
         Isi data beasiswa yang pernah atau sedang diterima. Klik &quot;Lewati&quot; jika tidak ada.
       </p>
 
-      <div className="form-group mb-5">
-        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">1. Jenis Beasiswa</label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {["Prestasi", "Kemiskinan", "Pendidikan", "Unggulan", "Lainnya"].map((option) => {
-            const isChecked = formData.jenisBeasiswa?.includes(option) || false;
-            return (
-              <label
-                key={option}
-                className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                  isChecked
-                    ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
-                    : "bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-background hover:border-slate-400 shadow-sm"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
-                  onChange={() =>
-                    setFormData((prev) => {
-                      const cur = prev.jenisBeasiswa || [];
-                      return {
-                        ...prev,
-                        jenisBeasiswa: cur.includes(option) ? cur.filter((i) => i !== option) : [...cur, option],
-                      };
-                    })
-                  }
-                />
-                <span className="text-xs font-bold">{option}</span>
-              </label>
-            );
-          })}
+      {isFieldActive("jenisBeasiswa") && (
+        <div className="form-group mb-5">
+          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
+            {getFieldLabel("jenisBeasiswa", "1. Jenis Beasiswa")} {isFieldRequired("jenisBeasiswa") && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {["Prestasi", "Kemiskinan", "Pendidikan", "Unggulan", "Lainnya"].map((option) => {
+              const isChecked = formData.jenisBeasiswa?.includes(option) || false;
+              return (
+                <label
+                  key={option}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    isChecked
+                      ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
+                      : "bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-background hover:border-slate-400 shadow-sm"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                    onChange={() =>
+                      setFormData((prev) => {
+                        const cur = prev.jenisBeasiswa || [];
+                        return {
+                          ...prev,
+                          jenisBeasiswa: cur.includes(option) ? cur.filter((i) => i !== option) : [...cur, option],
+                        };
+                      })
+                    }
+                  />
+                  <span className="text-xs font-bold">{option}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {isFieldActive("uraianBeasiswa") && (
         <div className="form-group mb-4">

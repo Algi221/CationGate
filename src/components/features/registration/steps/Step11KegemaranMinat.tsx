@@ -44,40 +44,44 @@ export const Step11KegemaranMinat: React.FC<StepProps> = ({
           <span className="bg-purple-100 text-purple-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">K</span>
           Data Kegemaran Peserta Didik
         </h4>
-        <div className="form-group mb-5">
-          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">1. Hobi</label>
-          <div className="flex flex-wrap gap-3">
-            {["Olahraga", "Kesenian", "Membaca", "Menulis", "Travelling", "Lainnya"].map((option) => {
-              const isChecked = formData.hobi?.includes(option) || false;
-              return (
-                <label
-                  key={option}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                    isChecked
-                      ? "bg-primary/5 border-blue-400 text-primary shadow-sm"
-                      : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-[#1e293b]"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
-                    onChange={() =>
-                      setFormData((prev) => {
-                        const cur = prev.hobi || [];
-                        return {
-                          ...prev,
-                          hobi: cur.includes(option) ? cur.filter((i) => i !== option) : [...cur, option],
-                        };
-                      })
-                    }
-                  />
-                  <span className="text-xs font-bold">{option}</span>
-                </label>
-              );
-            })}
+        {isFieldActive("hobi") && (
+          <div className="form-group mb-5">
+            <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
+              {getFieldLabel("hobi", "1. Hobi")} {isFieldRequired("hobi") && <span className="text-red-500 ml-1">*</span>}
+            </label>
+            <div className="flex flex-wrap gap-3">
+              {["Olahraga", "Kesenian", "Membaca", "Menulis", "Travelling", "Lainnya"].map((option) => {
+                const isChecked = formData.hobi?.includes(option) || false;
+                return (
+                  <label
+                    key={option}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                      isChecked
+                        ? "bg-primary/5 border-blue-400 text-primary shadow-sm"
+                        : "bg-background border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-[#1e293b]"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                      onChange={() =>
+                        setFormData((prev) => {
+                          const cur = prev.hobi || [];
+                          return {
+                            ...prev,
+                            hobi: cur.includes(option) ? cur.filter((i) => i !== option) : [...cur, option],
+                          };
+                        })
+                      }
+                    />
+                    <span className="text-xs font-bold">{option}</span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
         {isFieldActive("citaCita") && (
           <div className="form-group">
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
@@ -157,7 +161,7 @@ export const Step11KegemaranMinat: React.FC<StepProps> = ({
         {isFieldActive("alasanMemilih") && (
           <div className="form-group mb-4">
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
-              {getFieldLabel("alasanMemilih", "3. Memilih SMK Taruna Bhakti Karena")} {isFieldRequired("alasanMemilih") && <span className="text-red-500 ml-1">*</span>}
+              {getFieldLabel("alasanMemilih", "3. Memilih Sekolah Ini Karena")} {isFieldRequired("alasanMemilih") && <span className="text-red-500 ml-1">*</span>}
             </label>
             <div className="flex gap-4">
               {["Diri Sendiri", "Orang Tua/Wali"].map((option) => (

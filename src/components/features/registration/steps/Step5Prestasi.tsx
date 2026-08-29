@@ -27,75 +27,83 @@ export const Step5Prestasi: React.FC<StepProps> = ({
         Isi data prestasi yang pernah diraih. Klik &quot;Lewati&quot; jika tidak ada.
       </p>
 
-      <div className="form-group mb-5">
-        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">1. Jenis Prestasi</label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {["Sains", "Seni", "Olahraga", "Lainnya"].map((option) => {
-            const isChecked = formData.jenisPrestasi?.includes(option) || false;
-            return (
-              <label
-                key={option}
-                className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                  isChecked
-                    ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
-                    : "bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-background hover:border-slate-400 shadow-sm"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
-                  onChange={() =>
-                    setFormData((prev) => {
-                      const cur = prev.jenisPrestasi || [];
-                      return {
-                        ...prev,
-                        jenisPrestasi: cur.includes(option) ? cur.filter((i) => i !== option) : [...cur, option],
-                      };
-                    })
-                  }
-                />
-                <span className="text-xs font-bold">{option}</span>
-              </label>
-            );
-          })}
+      {isFieldActive("jenisPrestasi") && (
+        <div className="form-group mb-5">
+          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
+            {getFieldLabel("jenisPrestasi", "1. Jenis Prestasi")} {isFieldRequired("jenisPrestasi") && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {["Sains", "Seni", "Olahraga", "Lainnya"].map((option) => {
+              const isChecked = formData.jenisPrestasi?.includes(option) || false;
+              return (
+                <label
+                  key={option}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    isChecked
+                      ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
+                      : "bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-background hover:border-slate-400 shadow-sm"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                    onChange={() =>
+                      setFormData((prev) => {
+                        const cur = prev.jenisPrestasi || [];
+                        return {
+                          ...prev,
+                          jenisPrestasi: cur.includes(option) ? cur.filter((i) => i !== option) : [...cur, option],
+                        };
+                      })
+                    }
+                  />
+                  <span className="text-xs font-bold">{option}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="form-group mb-5">
-        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">2. Tingkat</label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {["Sekolah", "Kecamatan", "Kab/Kota", "Propinsi", "Nasional", "Internasional", "Lainnya"].map((option) => {
-            const isChecked = formData.tingkatPrestasi?.includes(option) || false;
-            return (
-              <label
-                key={option}
-                className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                  isChecked
-                    ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
-                    : "bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-background hover:border-slate-400 shadow-sm"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
-                  onChange={() =>
-                    setFormData((prev) => {
-                      const cur = prev.tingkatPrestasi || [];
-                      return {
-                        ...prev,
-                        tingkatPrestasi: cur.includes(option) ? cur.filter((i) => i !== option) : [...cur, option],
-                      };
-                    })
-                  }
-                />
-                <span className="text-xs font-bold">{option}</span>
-              </label>
-            );
-          })}
+      {isFieldActive("tingkatPrestasi") && (
+        <div className="form-group mb-5">
+          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
+            {getFieldLabel("tingkatPrestasi", "2. Tingkat")} {isFieldRequired("tingkatPrestasi") && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {["Sekolah", "Kecamatan", "Kab/Kota", "Propinsi", "Nasional", "Internasional", "Lainnya"].map((option) => {
+              const isChecked = formData.tingkatPrestasi?.includes(option) || false;
+              return (
+                <label
+                  key={option}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    isChecked
+                      ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
+                      : "bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-background hover:border-slate-400 shadow-sm"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                    onChange={() =>
+                      setFormData((prev) => {
+                        const cur = prev.tingkatPrestasi || [];
+                        return {
+                          ...prev,
+                          tingkatPrestasi: cur.includes(option) ? cur.filter((i) => i !== option) : [...cur, option],
+                        };
+                      })
+                    }
+                  />
+                  <span className="text-xs font-bold">{option}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         {isFieldActive("uraianPrestasi") && (
@@ -148,22 +156,26 @@ export const Step5Prestasi: React.FC<StepProps> = ({
         </div>
       )}
 
-      <div className="form-group">
-        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">6. Bukti Prestasi</label>
-        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
-          <div className="shrink-0 mt-0.5">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-amber-700 mb-1">Himbauan Sertifikat Prestasi</p>
-            <p className="text-xs text-amber-600 leading-relaxed">
-              Jika Anda memiliki sertifikat, piagam, atau bukti prestasi lainnya, harap <strong>membawa dokumen fisik asli ke sekolah</strong> pada saat daftar ulang. Dokumen akan diverifikasi oleh panitia PPDB secara langsung.
-            </p>
+      {isFieldActive("berkasPrestasi") && (
+        <div className="form-group">
+          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
+            {getFieldLabel("berkasPrestasi", "6. Bukti Prestasi")} {isFieldRequired("berkasPrestasi") && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
+            <div className="shrink-0 mt-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-amber-700 mb-1">Himbauan Sertifikat Prestasi</p>
+              <p className="text-xs text-amber-600 leading-relaxed">
+                Jika Anda memiliki sertifikat, piagam, atau bukti prestasi lainnya, harap <strong>membawa dokumen fisik asli ke sekolah</strong> pada saat daftar ulang. Dokumen akan diverifikasi oleh panitia PPDB secara langsung.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

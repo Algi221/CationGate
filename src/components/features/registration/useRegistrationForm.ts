@@ -76,7 +76,9 @@ export const useRegistrationForm = () => {
     Record<string, { label: string; required: boolean; active: boolean }>
   >(() => {
     if (typeof window !== "undefined") {
-      const savedFieldsConfig = localStorage.getItem("ppdb_fields_config");
+      const savedFieldsConfig =
+        localStorage.getItem(`ppdb_fields_config_${schoolSlug}`) ||
+        localStorage.getItem("ppdb_fields_config");
       if (savedFieldsConfig) {
         try {
           const parsed = JSON.parse(savedFieldsConfig);
@@ -266,8 +268,19 @@ export const useRegistrationForm = () => {
               localStorage.setItem("ppdb_form_guideline", config.ppdb_form_guideline);
             }
             if (config.ppdb_fields_config) {
-              setFieldsConfig(config.ppdb_fields_config);
-              localStorage.setItem("ppdb_fields_config", JSON.stringify(config.ppdb_fields_config));
+              let parsedFields = config.ppdb_fields_config;
+              if (typeof parsedFields === "string" && (parsedFields.startsWith("{") || parsedFields.startsWith("["))) {
+                try {
+                  parsedFields = JSON.parse(parsedFields);
+                } catch (_e) {}
+              }
+              if (parsedFields && typeof parsedFields === "object") {
+                setFieldsConfig(parsedFields);
+                if (typeof window !== "undefined" && schoolSlug) {
+                  localStorage.setItem(`ppdb_fields_config_${schoolSlug}`, JSON.stringify(parsedFields));
+                  localStorage.setItem("ppdb_fields_config", JSON.stringify(parsedFields));
+                }
+              }
             }
             if (config.ppdb_majors_config !== undefined && config.ppdb_majors_config !== null) {
               let parsedMajors = config.ppdb_majors_config;
@@ -355,6 +368,62 @@ export const useRegistrationForm = () => {
       }
     };
     loadKuota();
+
+    // Realtime Broadcast listener for multi-tab updates
+    let channel: BroadcastChannel | null = null;
+    try {
+      if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+        channel = new BroadcastChannel("cationgate_landing_sync");
+        channel.onmessage = (event) => {
+          if (event.data?.type === "CONFIG_UPDATED") {
+            const payload = event.data.data;
+            if (!payload) return;
+            if (event.data.slug && schoolSlug && event.data.slug !== schoolSlug) return;
+
+            if (payload.ppdb_fields_config) {
+              let parsedFields = payload.ppdb_fields_config;
+              if (typeof parsedFields === "string" && (parsedFields.startsWith("{") || parsedFields.startsWith("["))) {
+                try {
+                  parsedFields = JSON.parse(parsedFields);
+                } catch (_e) {}
+              }
+              if (parsedFields && typeof parsedFields === "object") {
+                setFieldsConfig(parsedFields);
+                localStorage.setItem(`ppdb_fields_config_${schoolSlug}`, JSON.stringify(parsedFields));
+                localStorage.setItem("ppdb_fields_config", JSON.stringify(parsedFields));
+              }
+            }
+            if (payload.ppdb_form_guideline !== undefined) {
+              setFormGuideline(payload.ppdb_form_guideline);
+              localStorage.setItem("ppdb_form_guideline", payload.ppdb_form_guideline);
+            }
+            if (payload.ppdb_portal_status !== undefined) {
+              setPortalStatus(payload.ppdb_portal_status);
+              localStorage.setItem(`ppdb_portal_status_${schoolSlug}`, payload.ppdb_portal_status);
+              localStorage.setItem("ppdb_portal_status", payload.ppdb_portal_status);
+            }
+            if (payload.ppdb_majors_config !== undefined) {
+              let parsedMajors = payload.ppdb_majors_config;
+              if (typeof parsedMajors === "string" && (parsedMajors.startsWith("[") || parsedMajors.startsWith("{"))) {
+                try {
+                  parsedMajors = JSON.parse(parsedMajors);
+                } catch (_e) {}
+              }
+              if (Array.isArray(parsedMajors)) {
+                setMajors(parsedMajors);
+                localStorage.setItem(`ppdb_majors_config_${schoolSlug}`, JSON.stringify(parsedMajors));
+              }
+            }
+          }
+        };
+      }
+    } catch (_bcErr) {}
+
+    return () => {
+      if (channel) {
+        channel.close();
+      }
+    };
   }, [schoolSlug, setFormData]);
 
   useEffect(() => {

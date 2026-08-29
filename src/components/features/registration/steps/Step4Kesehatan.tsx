@@ -79,50 +79,54 @@ export const Step4Kesehatan: React.FC<StepProps> = ({
         )}
       </div>
 
-      <div className="form-group">
-        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">Berkebutuhan Khusus / Kelainan</label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            "Netra",
-            "Rungu",
-            "Grahita Sedang",
-            "Grahita Ringan",
-            "Laras",
-            "Wicara",
-            "Daksa Sedang",
-            "Daksa Ringan",
-            "Autis",
-            "Indigo",
-            "Hyper Aktif",
-            "Bakat Istimewa",
-            "Cerdas Istimewa",
-            "Down Syndrome",
-            "Narkoba",
-            "Kesulitan Belajar",
-            "Lainnya"
-          ].map((option) => {
-            const isChecked = formData.kebutuhanKhusus?.includes(option) || false;
-            return (
-              <label
-                key={option}
-                className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                  isChecked
-                    ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
-                    : "bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-background hover:border-slate-400 shadow-sm"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() => handleCheckboxChange(option)}
-                  className="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300 dark:border-slate-700 accent-blue-600"
-                />
-                <span className="text-xs font-bold">{option}</span>
-              </label>
-            );
-          })}
+      {isFieldActive("kebutuhanKhusus") && (
+        <div className="form-group">
+          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
+            {getFieldLabel("kebutuhanKhusus", "Berkebutuhan Khusus / Kelainan")} {isFieldRequired("kebutuhanKhusus") && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              "Netra",
+              "Rungu",
+              "Grahita Sedang",
+              "Grahita Ringan",
+              "Laras",
+              "Wicara",
+              "Daksa Sedang",
+              "Daksa Ringan",
+              "Autis",
+              "Indigo",
+              "Hyper Aktif",
+              "Bakat Istimewa",
+              "Cerdas Istimewa",
+              "Down Syndrome",
+              "Narkoba",
+              "Kesulitan Belajar",
+              "Lainnya"
+            ].map((option) => {
+              const isChecked = formData.kebutuhanKhusus?.includes(option) || false;
+              return (
+                <label
+                  key={option}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    isChecked
+                      ? "bg-primary/5 border-blue-300 text-primary shadow-sm"
+                      : "bg-white dark:bg-[#0f172a] border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-background hover:border-slate-400 shadow-sm"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => handleCheckboxChange(option)}
+                    className="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300 dark:border-slate-700 accent-blue-600"
+                  />
+                  <span className="text-xs font-bold">{option}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

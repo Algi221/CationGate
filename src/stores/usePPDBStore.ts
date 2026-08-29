@@ -267,7 +267,8 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
     if (!token) return;
 
     try {
-      const res = await fetch(`${BACKEND_URL}/applicants`, { headers: { Authorization: `Bearer ${token}` } });
+      const url = schoolSlug ? `${BACKEND_URL}/applicants?school_slug=${encodeURIComponent(schoolSlug)}` : `${BACKEND_URL}/applicants`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (res.status === 401) {
         console.warn("Token is invalid or expired. Logging out admin.");
         logoutAdmin();
@@ -312,7 +313,8 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
     if (!token) return;
 
     try {
-      const res = await fetch(`${BACKEND_URL}/applicants`, { headers: { Authorization: `Bearer ${token}` } });
+      const url = schoolSlug ? `${BACKEND_URL}/applicants?school_slug=${encodeURIComponent(schoolSlug)}` : `${BACKEND_URL}/applicants`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (res.status === 401) {
         console.warn("Token is invalid or expired. Logging out admin.");
         logoutAdmin();

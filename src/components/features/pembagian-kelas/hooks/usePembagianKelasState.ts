@@ -198,9 +198,25 @@ export function usePembagianKelasState() {
     [schoolPeriod]
   );
 
-  const getStudentCurrentClass = (student: Applicant): string | null => {
-    return student.diterima_kelas || student.diterimaKelas || null;
-  };
+  const getStudentCurrentClass = useCallback((student: Applicant): string | null => {
+    const cls = student.diterima_kelas || student.diterimaKelas;
+    if (!cls) return null;
+    const clean = String(cls).trim();
+    if (
+      clean === "X (Sepuluh)" ||
+      clean === "XI (Sebelas)" ||
+      clean === "XII (Dua Belas)" ||
+      clean === "X" ||
+      clean === "XI" ||
+      clean === "XII" ||
+      clean === "-" ||
+      clean.toLowerCase() === "belum ada kelas" ||
+      clean.toLowerCase() === "belum diatur"
+    ) {
+      return null;
+    }
+    return clean;
+  }, []);
 
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
     setToast({ message, type });
@@ -235,54 +251,70 @@ export function usePembagianKelasState() {
 
   const approvedApplicantsOfMajor = useMemo(() => {
     return applicants.filter((a: Applicant) => {
-      if (a.status === "Rejected") return false;
-      const maj1 = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toUpperCase();
+      const statusUpper = (a.status || "").toUpperCase();
+      if (statusUpper === "REJECTED" || statusUpper === "DITOLAK") return false;
 
-      const majorNameMap: Record<string, string> = {
-        RPL: "REKAYASA PERANGKAT LUNAK",
-        TJKT: "TEKNIK JARINGAN KOMPUTER & TELEKOMUNIKASI",
-        DKV: "DESAIN KOMUNIKASI VISUAL",
-        BC: "BROADCASTING & PERFILMAN",
-        ANM: "ANIMASI",
-        TE: "TEKNIK ELEKTRONIKA"
-      };
+      const maj1 = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toUpperCase().trim();
+      const selCode = (selectedMajor || "").toUpperCase().trim();
 
-      const selectedMajorName = majorNameMap[selectedMajor] || selectedMajor;
+      const foundMajor = dynamicMajorsList.find(
+        (m) => (m.code || "").toUpperCase() === selCode || (m.name || m.title || "").toUpperCase() === selCode
+      );
+      const selName = (foundMajor?.name || foundMajor?.title || selectedMajor || "").toUpperCase().trim();
 
-      let isMajorMatch = false;
-      if (selectedMajor === "RPL") {
-        isMajorMatch =
+      if (!selCode) return true;
+
+      if (selCode === "RPL") {
+        return (
           maj1 === "RPL" ||
           maj1 === "PPLG" ||
           maj1.includes("REKAYASA PERANGKAT LUNAK") ||
-          maj1.includes("PENGEMBANGAN PERANGKAT LUNAK");
-      } else if (selectedMajor === "TJKT") {
-        isMajorMatch =
+          maj1.includes("PENGEMBANGAN PERANGKAT LUNAK") ||
+          maj1.includes("RPL") ||
+          maj1.includes("PPLG")
+        );
+      }
+      if (selCode === "TJKT") {
+        return (
           maj1 === "TJKT" ||
           maj1 === "TKJ" ||
           maj1.includes("JARINGAN") ||
           maj1.includes("TELEKOMUNIKASI") ||
-          maj1.includes("TJKT");
-      } else if (selectedMajor === "DKV") {
-        isMajorMatch = maj1 === "DKV" || maj1.includes("DESAIN KOMUNIKASI VISUAL");
-      } else if (selectedMajor === "BC") {
-        isMajorMatch = maj1 === "BC" || maj1.includes("BROADCASTING") || maj1.includes("PERFILMAN");
-      } else if (selectedMajor === "ANM") {
-        isMajorMatch = maj1 === "ANM" || maj1.includes("ANIMASI");
-      } else if (selectedMajor === "TE") {
-        isMajorMatch =
+          maj1.includes("TJKT") ||
+          maj1.includes("TKJ")
+        );
+      }
+      if (selCode === "DKV") {
+        return maj1 === "DKV" || maj1.includes("DESAIN KOMUNIKASI VISUAL") || maj1.includes("DKV");
+      }
+      if (selCode === "BC") {
+        return maj1 === "BC" || maj1.includes("BROADCASTING") || maj1.includes("PERFILMAN") || maj1.includes("BC");
+      }
+      if (selCode === "ANM") {
+        return maj1 === "ANM" || maj1.includes("ANIMASI") || maj1.includes("ANM");
+      }
+      if (selCode === "TE") {
+        return (
           maj1 === "TE" ||
           maj1 === "TEI" ||
           maj1 === "TEKNIK ELEKTRONIKA" ||
           maj1.includes("ELEKTRONIKA") ||
-          maj1.includes("TEI");
-      } else {
-        isMajorMatch = maj1 === selectedMajor || maj1 === selectedMajorName;
+          maj1.includes("TEI") ||
+          maj1.includes("TE")
+        );
       }
 
-      return isMajorMatch;
+      // Dynamic / custom school majors (e.g. DSA, TKRO, TBSM, AKL, OTKP, etc.)
+      return (
+        maj1 === selCode ||
+        maj1 === selName ||
+        maj1.includes(selCode) ||
+        (selName && maj1.includes(selName)) ||
+        selCode.includes(maj1) ||
+        (selName && selName.includes(maj1))
+      );
     });
-  }, [applicants, selectedMajor]);
+  }, [applicants, selectedMajor, dynamicMajorsList]);
 
   const filteredStudents = useMemo(() => {
     return approvedApplicantsOfMajor.filter((a: Applicant) => {
@@ -309,10 +341,14 @@ export function usePembagianKelasState() {
       }
       return searchMatch;
     });
-  }, [approvedApplicantsOfMajor, searchTerm, assignmentFilter, genderFilter, selectedGrade, getStudentGrade]);
+  }, [approvedApplicantsOfMajor, searchTerm, assignmentFilter, genderFilter, selectedGrade, getStudentGrade, getStudentCurrentClass]);
 
   const classesOfSelectedMajor = useMemo(() => {
-    return classes.filter((c) => c.majorCode === selectedMajor && getClassGrade(c.name) === selectedGrade);
+    return classes.filter((c) => {
+      const matchMajor = (c.majorCode || "").toUpperCase() === (selectedMajor || "").toUpperCase();
+      const matchGrade = getClassGrade(c.name) === selectedGrade;
+      return matchMajor && matchGrade;
+    });
   }, [classes, selectedMajor, selectedGrade]);
 
   const classEnrollments = useMemo(() => {
@@ -334,7 +370,7 @@ export function usePembagianKelasState() {
     });
 
     return enrollmentCounts;
-  }, [applicants, classesOfSelectedMajor]);
+  }, [applicants, classesOfSelectedMajor, getStudentCurrentClass]);
 
   const nipdMap = useMemo(() => generateNipdMap(applicants), [applicants]);
 
@@ -353,7 +389,7 @@ export function usePembagianKelasState() {
     });
 
     return filtered.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
-  }, [applicants, selectedClassDetail, classSearchTerm]);
+  }, [applicants, selectedClassDetail, classSearchTerm, getStudentCurrentClass]);
 
   const handleSelectAll = () => {
     if (selectedStudentIds.length === filteredStudents.length) {

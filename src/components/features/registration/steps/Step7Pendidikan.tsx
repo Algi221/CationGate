@@ -224,8 +224,10 @@ export const Step7Pendidikan: React.FC<Step7Props> = ({
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {majors.map((major) => {
-                  const option = `${major.title} (${major.code})`;
-                  const majorDetails = getMajorDetails(major.title || major.code);
+                  const majorTitle = major.title || (major as unknown as { name?: string }).name || major.code;
+                  const majorCode = major.code || majorTitle;
+                  const option = `${majorTitle} (${majorCode})`;
+                  const majorDetails = getMajorDetails(majorTitle || majorCode);
 
                   let isFull = false;
                   if (kuotaData && Array.isArray(kuotaData)) {

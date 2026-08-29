@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { usePPDB } from "@/context/PPDBContext";
+import { DEFAULT_MAJORS } from "@/components/features/kelola-ui/defaultData";
 import { useRegistrationDraft, createInitialFormData } from "./hooks/useRegistrationDraft";
 import { useRegistrationValidation } from "./hooks/useRegistrationValidation";
 import { useRegistrationSubmit } from "./hooks/useRegistrationSubmit";
@@ -192,7 +193,9 @@ export const useRegistrationForm = () => {
 
   const [majors, setMajors] = useState<Array<{ code: string; title: string; logo?: string; color?: string }>>(() => {
     if (typeof window !== "undefined") {
-      const savedMajors = localStorage.getItem(`ppdb_majors_config_${schoolSlug}`);
+      const savedMajors =
+        localStorage.getItem(`ppdb_majors_config_${schoolSlug}`) ||
+        localStorage.getItem("ppdb_majors_config");
       if (savedMajors) {
         try {
           const parsed = JSON.parse(savedMajors);
@@ -202,7 +205,8 @@ export const useRegistrationForm = () => {
         }
       }
     }
-    return [];
+    const isDemo = schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
+    return isDemo ? (DEFAULT_MAJORS as Array<{ code: string; title: string; logo?: string; color?: string }>) : [];
   });
 
   // SUB-HOOK VALIDATION
@@ -289,16 +293,13 @@ export const useRegistrationForm = () => {
                   parsedMajors = JSON.parse(parsedMajors);
                 } catch (_e) {}
               }
-              if (Array.isArray(parsedMajors)) {
+              if (Array.isArray(parsedMajors) && parsedMajors.length > 0) {
                 setMajors(parsedMajors);
                 if (typeof window !== "undefined" && schoolSlug) {
                   localStorage.setItem(`ppdb_majors_config_${schoolSlug}`, JSON.stringify(parsedMajors));
+                  localStorage.setItem("ppdb_majors_config", JSON.stringify(parsedMajors));
                 }
-              } else {
-                setMajors([]);
               }
-            } else {
-              setMajors([]);
             }
             if (config.ppdb_bank_config) {
               const bankData = config.ppdb_bank_config;
@@ -409,9 +410,10 @@ export const useRegistrationForm = () => {
                   parsedMajors = JSON.parse(parsedMajors);
                 } catch (_e) {}
               }
-              if (Array.isArray(parsedMajors)) {
+              if (Array.isArray(parsedMajors) && parsedMajors.length > 0) {
                 setMajors(parsedMajors);
                 localStorage.setItem(`ppdb_majors_config_${schoolSlug}`, JSON.stringify(parsedMajors));
+                localStorage.setItem("ppdb_majors_config", JSON.stringify(parsedMajors));
               }
             }
           }

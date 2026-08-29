@@ -389,22 +389,22 @@ export function useKelolaUIState() {
       const parsedAlur = parseConfigArray<AlurItem>(activeConfig.ppdb_alur_config);
       if (parsedAlur && parsedAlur.length > 0) {
         setAlurList(parsedAlur);
-      } else {
-        setAlurList(isDemo ? DEFAULT_ALUR : []);
+      } else if (isDemo) {
+        setAlurList(DEFAULT_ALUR);
       }
 
       const parsedFaq = parseConfigArray<FaqItem>(activeConfig.ppdb_faq_config);
       if (parsedFaq && parsedFaq.length > 0) {
         setFaqList(parsedFaq);
-      } else {
-        setFaqList(isDemo ? DEFAULT_FAQ : []);
+      } else if (isDemo) {
+        setFaqList(DEFAULT_FAQ);
       }
 
       const parsedPartners = parseConfigArray<PartnerItem>(activeConfig.ppdb_partners_config);
       if (parsedPartners && parsedPartners.length > 0) {
         setPartnersList(parsedPartners);
-      } else {
-        setPartnersList(isDemo ? DEFAULT_PARTNERS : []);
+      } else if (isDemo) {
+        setPartnersList(DEFAULT_PARTNERS);
       }
 
       if (isDemo) {
@@ -429,8 +429,6 @@ export function useKelolaUIState() {
             };
           });
           setMajorsList(mergedMajors);
-        } else {
-          setMajorsList([]);
         }
       }
 
@@ -741,15 +739,32 @@ export function useKelolaUIState() {
       if (json.success) {
         showToastMsg("Semua perubahan UI berhasil disimpan dan tercatat.");
         setChangeDescription("");
-        localStorage.removeItem(draftKey);
 
         const savedData = json.data || configsPayload;
+
+        // Keep local draft & cache updated with the saved data so nothing disappears on reload
+        try {
+          localStorage.setItem(draftKey, JSON.stringify(savedData));
+          if (slug) {
+            localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(savedData.ppdb_majors_config || finalMajors));
+            localStorage.setItem(`ppdb_majors_config`, JSON.stringify(savedData.ppdb_majors_config || finalMajors));
+            localStorage.setItem(`ppdb_alur_config_${slug}`, JSON.stringify(savedData.ppdb_alur_config || alurList));
+            localStorage.setItem(`ppdb_faq_config_${slug}`, JSON.stringify(savedData.ppdb_faq_config || faqList));
+            localStorage.setItem(`ppdb_partners_config_${slug}`, JSON.stringify(savedData.ppdb_partners_config || partnersList));
+            localStorage.setItem(`ppdb_bank_config_${slug}`, JSON.stringify(savedData.ppdb_bank_config || bankConfigList));
+            localStorage.setItem(`ppdb_fields_config_${slug}`, JSON.stringify(fieldsConfigUI));
+            localStorage.setItem(`ppdb_gelombang_config_${slug}`, JSON.stringify(gelombangConfig));
+            localStorage.setItem(`cation_landing_cache_${slug}`, JSON.stringify(savedData));
+          }
+        } catch (storageErr) {
+          console.warn("Storage sync bypassed.", storageErr);
+        }
 
         // If server processed media and converted base64 to URLs, sync them into state
         if (savedData.ppdb_majors_config && Array.isArray(savedData.ppdb_majors_config)) {
           setMajorsList(savedData.ppdb_majors_config);
         }
-        if (savedData.ppdb_hero_bg_image) {
+        if (savedData.ppdb_hero_bg_image !== undefined) {
           setHeroBgImage(savedData.ppdb_hero_bg_image);
         }
         if (savedData.ppdb_logo_url) {
@@ -768,20 +783,36 @@ export function useKelolaUIState() {
           setBankConfigList(savedData.ppdb_bank_config);
         }
 
-        try {
-          if (slug) {
-            localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(savedData.ppdb_majors_config || finalMajors));
-            localStorage.setItem(`ppdb_alur_config_${slug}`, JSON.stringify(savedData.ppdb_alur_config || alurList));
-            localStorage.setItem(`ppdb_faq_config_${slug}`, JSON.stringify(savedData.ppdb_faq_config || faqList));
-            localStorage.setItem(`ppdb_partners_config_${slug}`, JSON.stringify(savedData.ppdb_partners_config || partnersList));
-            localStorage.setItem(`ppdb_bank_config_${slug}`, JSON.stringify(savedData.ppdb_bank_config || bankConfigList));
-            localStorage.setItem(`ppdb_fields_config_${slug}`, JSON.stringify(fieldsConfigUI));
-            localStorage.setItem(`ppdb_gelombang_config_${slug}`, JSON.stringify(gelombangConfig));
-            localStorage.setItem(`cation_landing_cache_${slug}`, JSON.stringify(savedData));
-          }
-        } catch (storageErr) {
-          console.warn("Storage sync bypassed.", storageErr);
-        }
+        // Update initialSnapshot to reflect current saved state (clearing dirty indicator)
+        const updatedSnap = JSON.stringify({
+          ppdb_landing_active: savedData.ppdb_landing_active !== undefined ? (savedData.ppdb_landing_active === true || savedData.ppdb_landing_active === "true") : true,
+          ppdb_hero_title: savedData.ppdb_hero_title || heroTitle || "",
+          ppdb_hero_title_sub: savedData.ppdb_hero_title_sub || heroTitleSub || "",
+          ppdb_hero_subtitle: savedData.ppdb_hero_subtitle || heroSubtitle || "",
+          ppdb_hero_bg_image: savedData.ppdb_hero_bg_image || heroBgImage || "",
+          ppdb_phone: formatPhoneNumber(savedData.ppdb_phone || phone || ""),
+          ppdb_email: savedData.ppdb_email || email || "",
+          ppdb_address: savedData.ppdb_address || address || "",
+          ppdb_map_title: savedData.ppdb_map_title || mapTitle || "",
+          ppdb_map_url: savedData.ppdb_map_url || mapUrl || "",
+          ppdb_school_period: savedData.ppdb_school_period || schoolPeriod || "",
+          ppdb_wa_group_url: savedData.ppdb_wa_group_url || waGroupUrl || "",
+          ppdb_wa_admin: formatPhoneNumber(savedData.ppdb_wa_admin || waAdmin || ""),
+          ppdb_form_guideline: savedData.ppdb_form_guideline || formGuideline || "",
+          ppdb_form_fee: savedData.ppdb_form_fee || formFee || "",
+          ppdb_logo_url: savedData.ppdb_logo_url || schoolLogo || "",
+          ppdb_title: savedData.ppdb_title || schoolTitle || "",
+          ppdb_footer_desc: savedData.ppdb_footer_desc || footerDesc || "",
+          ppdb_alur_config: Array.isArray(savedData.ppdb_alur_config) ? savedData.ppdb_alur_config : alurList,
+          ppdb_majors_config: Array.isArray(savedData.ppdb_majors_config) ? savedData.ppdb_majors_config : finalMajors,
+          ppdb_faq_config: Array.isArray(savedData.ppdb_faq_config) ? savedData.ppdb_faq_config : faqList,
+          ppdb_faq_title: savedData.ppdb_faq_title || faqTitle || "",
+          ppdb_faq_subtitle: savedData.ppdb_faq_subtitle || faqSubtitle || "",
+          ppdb_partners_config: Array.isArray(savedData.ppdb_partners_config) ? savedData.ppdb_partners_config : partnersList,
+          ppdb_gelombang_config: savedData.ppdb_gelombang_config || gelombangConfig,
+          ppdb_fields_config: (savedData.ppdb_fields_config && typeof savedData.ppdb_fields_config === "object") ? { ...DEFAULT_FIELDS_CONFIG_UI, ...savedData.ppdb_fields_config } : fieldsConfigUI
+        });
+        setInitialSnapshot(updatedSnap);
 
         // Direct store sync without duplicate network request
         if (savedData.ppdb_title) {

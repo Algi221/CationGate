@@ -29,12 +29,12 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   const [manualReceiptBase64, setManualReceiptBase64] = useState("");
   const [manualReceiptName, setManualReceiptName] = useState("");
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
-  const handleCopy = (text: string) => {
+  const handleCopy = (text: string, idx: number) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2000);
     if (typeof addToast === "function") {
       addToast("Nomor Rekening Disalin", "Nomor rekening berhasil disalin ke clipboard.", "success");
     }
@@ -336,52 +336,69 @@ export const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Premium Bank Cards List */}
-                  <div className="flex flex-wrap gap-4 w-full">
-                    {bankConfigList.map((bank, index) => (
-                      <div 
-                        key={index} 
-                        className="relative overflow-hidden rounded-3xl bg-linear-to-br from-blue-700 via-blue-800 to-blue-950 p-4 text-white shadow-md border border-white/10 w-full max-w-xs transition-all duration-300 hover:scale-[1.02]"
-                      >
-                        <div className="absolute right-[-10%] top-[-20%] w-32 h-32 rounded-full bg-linear-to-tr from-sky-400/20 to-blue-400/10 blur-2xl pointer-events-none"></div>
+                  {/* Compact & Elegant Bank Accounts Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full">
+                    {bankConfigList.map((bank, index) => {
+                      const isCopied = copiedIdx === index;
+                      const accountNo = bank.accountNumber || "157-00-0174092-2";
+                      const bankName = bank.bankName || "BANK TRANSFER";
+                      const accountHolder = bank.accountHolder || "YAYASAN TARUNA BHAKTI";
 
-                        {/* Header Kartu */}
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="space-y-1">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-sky-300">Pilihan #{index + 1}</span>
-                            <h4 className="text-sm font-black tracking-wider uppercase text-slate-100">{bank.bankName || "BANK TRANSFER"}</h4>
-                          </div>
-                        </div>
-
-                        {/* Nomor Rekening */}
-                        <div className="space-y-1 mb-4">
-                          <span className="text-[7px] font-black uppercase tracking-widest text-blue-200/70">Nomor Rekening</span>
-                          <div className="flex items-center justify-between gap-2 bg-white/10 border border-white/10 rounded-full py-1.5 pl-3 pr-1.5 backdrop-blur-sm">
-                            <span className="font-mono text-xs font-black tracking-wider text-slate-100 select-all">
-                              {bank.accountNumber || "157-00-0174092-2"}
+                      return (
+                        <div
+                          key={index}
+                          className="relative rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-3.5 flex flex-col justify-between gap-2.5 transition-all duration-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs"
+                        >
+                          {/* Header Bank & Badge */}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <Building size={14} />
+                              </div>
+                              <h4 className="text-xs font-black tracking-tight text-slate-800 dark:text-white uppercase truncate">
+                                {bankName}
+                              </h4>
+                            </div>
+                            <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/60 px-2 py-0.5 rounded-full shrink-0">
+                              Pilihan #{index + 1}
                             </span>
+                          </div>
+
+                          {/* No. Rekening & Copy Button */}
+                          <div className="flex items-center justify-between gap-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 shadow-2xs">
+                            <div className="min-w-0">
+                              <span className="block text-[8px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 leading-none mb-0.5">
+                                No. Rekening
+                              </span>
+                              <span className="font-mono text-xs font-black tracking-wide text-slate-900 dark:text-slate-100 select-all block truncate">
+                                {accountNo}
+                              </span>
+                            </div>
                             <button
                               type="button"
-                              onClick={() => handleCopy(bank.accountNumber || "157-00-0174092-2")}
-                              className="p-1.5 bg-white/10 border border-white/15 text-slate-300 hover:text-white rounded-full transition duration-150 active:scale-95 cursor-pointer"
+                              onClick={() => handleCopy(accountNo, index)}
+                              className={`p-1.5 rounded-lg border transition-all duration-150 active:scale-90 cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                                isCopied
+                                  ? "bg-emerald-500 text-white border-emerald-600"
+                                  : "bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-600 dark:text-slate-300 hover:text-blue-600 border-slate-200 dark:border-slate-700"
+                              }`}
                               title="Salin Nomor Rekening"
                             >
-                              {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                              {isCopied ? <Check size={12} className="text-white" /> : <Copy size={12} />}
+                              <span className="text-[10px] font-bold hidden xs:inline">{isCopied ? "Tersalin" : "Salin"}</span>
                             </button>
                           </div>
-                        </div>
 
-                        {/* Footer Kartu */}
-                        <div className="flex justify-between items-end">
-                          <div className="space-y-0.5">
-                            <span className="text-[7px] font-black uppercase tracking-widest text-blue-200/70">Atas Nama (A.N.)</span>
-                            <p className="text-[9px] font-extrabold tracking-wide uppercase text-slate-100">
-                              {bank.accountHolder || "YAYASAN TARUNA BHAKTI"}
-                            </p>
+                          {/* Atas Nama */}
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            <span>Atas Nama (A.N.): </span>
+                            <strong className="font-bold text-slate-700 dark:text-slate-200 uppercase">
+                              {accountHolder}
+                            </strong>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Upload Receipt Section */}

@@ -270,6 +270,22 @@ function GatekeeperSchoolManagementContent() {
     });
   };
 
+  // Helper to categorize school status accurately matching StatusBadge
+  const getSchoolCategory = (s: SchoolTenant): "VERIFIED" | "SUSPENDED" | "UNVERIFIED" | "PENDING" => {
+    const norm = (s.status || "").toLowerCase().trim();
+    if (s.is_verified === true || norm === "full_verified" || norm === "verified" || norm === "success") {
+      return "VERIFIED";
+    }
+    if (norm === "suspended" || norm === "takedown" || norm === "dibekukan" || norm === "expired") {
+      return "SUSPENDED";
+    }
+    if (norm === "unverified" || norm === "belum_verifikasi") {
+      return "UNVERIFIED";
+    }
+    // All other schools waiting for Gatekeeper review (pending, pending_verification, submitted, etc.)
+    return "PENDING";
+  };
+
   // Filtered List
   const filteredSchools = schools.filter((s) => {
     const matchesSearch =
@@ -281,11 +297,12 @@ function GatekeeperSchoolManagementContent() {
     if (!matchesSearch) return false;
 
     if (statusFilter === "ALL") return true;
-    if (statusFilter === "VERIFIED") return s.status === "FULL_VERIFIED" || s.is_verified === true;
-    if (statusFilter === "PENDING") return s.status === "PENDING_VERIFICATION";
-    if (statusFilter === "UNVERIFIED") return s.status === "UNVERIFIED";
-    if (statusFilter === "SUSPENDED" || statusFilter === "TAKEDOWN") return s.status === "SUSPENDED";
-    return s.status === statusFilter;
+    const cat = getSchoolCategory(s);
+    if (statusFilter === "PENDING") return cat === "PENDING";
+    if (statusFilter === "VERIFIED") return cat === "VERIFIED";
+    if (statusFilter === "UNVERIFIED") return cat === "UNVERIFIED";
+    if (statusFilter === "SUSPENDED" || statusFilter === "TAKEDOWN") return cat === "SUSPENDED";
+    return cat === statusFilter;
   });
 
   return (

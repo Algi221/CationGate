@@ -106,17 +106,47 @@ export default function SubscriptionManagementPage() {
         const res = await fetch(`/api/saas/subscription-status?${query}&_t=${Date.now()}`);
         const data = await res.json();
         if (data.success && data.data) {
-          setSubscription(data.data);
-          if (typeof window !== "undefined") {
-            localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify(data.data));
-            localStorage.setItem(`ppdb_school_subscription_default`, JSON.stringify(data.data));
+          const isServerPro = data.data.plan === "PRO_YEARLY" || data.data.plan === "PRO" || data.data.plan === "ENTERPRISE";
+          if (isServerPro) {
+            setSubscription(data.data);
+            if (typeof window !== "undefined") {
+              localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify(data.data));
+              localStorage.setItem("ppdb_school_subscription_default", JSON.stringify(data.data));
+            }
+          } else {
+            let localSub: SubscriptionData | null = null;
+            if (typeof window !== "undefined") {
+              const cached = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || "default"}`) || localStorage.getItem("ppdb_school_subscription_default");
+              if (cached) {
+                try {
+                  const parsed = JSON.parse(cached);
+                  if (parsed && (parsed.plan === "PRO_YEARLY" || parsed.plan === "PRO" || parsed.plan === "ENTERPRISE") && parsed.status === "ACTIVE" && !parsed.isExpired) {
+                    localSub = parsed;
+                  }
+                } catch (_e) {}
+              }
+            }
+            if (localSub) {
+              setSubscription(localSub);
+            } else {
+              setSubscription(data.data);
+              if (typeof window !== "undefined") {
+                localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify(data.data));
+                localStorage.setItem("ppdb_school_subscription_default", JSON.stringify(data.data));
+              }
+            }
           }
         } else {
           let localSub: SubscriptionData | null = null;
           if (typeof window !== "undefined") {
             const cached = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || "default"}`) || localStorage.getItem("ppdb_school_subscription_default");
             if (cached) {
-              try { localSub = JSON.parse(cached); } catch (_e) {}
+              try {
+                const parsed = JSON.parse(cached);
+                if (parsed && (parsed.plan === "PRO_YEARLY" || parsed.plan === "PRO" || parsed.plan === "ENTERPRISE") && parsed.status === "ACTIVE" && !parsed.isExpired) {
+                  localSub = parsed;
+                }
+              } catch (_e) {}
             }
           }
           setSubscription(localSub || {
@@ -132,7 +162,12 @@ export default function SubscriptionManagementPage() {
         if (typeof window !== "undefined") {
           const cached = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || "default"}`) || localStorage.getItem("ppdb_school_subscription_default");
           if (cached) {
-            try { localSub = JSON.parse(cached); } catch (_e) {}
+            try {
+              const parsed = JSON.parse(cached);
+              if (parsed && (parsed.plan === "PRO_YEARLY" || parsed.plan === "PRO" || parsed.plan === "ENTERPRISE") && parsed.status === "ACTIVE" && !parsed.isExpired) {
+                localSub = parsed;
+              }
+            } catch (_e) {}
           }
         }
         setSubscription(localSub || {

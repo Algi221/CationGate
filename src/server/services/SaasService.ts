@@ -892,7 +892,32 @@ export class SaasService {
       }
     } catch (_sbErr) {}
 
-    // 2. Check PostgreSQL pool
+    // 2. Check schools / prospective_schools table
+    try {
+      const supabase = getSupabaseClient();
+      let sQuery = supabase.from('schools').select('subscription_plan, subscription_end_date, plan_type');
+      if (resolvedUUID) {
+        sQuery = sQuery.eq('id', resolvedUUID);
+      } else if (slug) {
+        sQuery = sQuery.eq('slug', slug);
+      }
+      const { data: sc } = await sQuery.maybeSingle();
+      const plan = sc?.subscription_plan || sc?.plan_type;
+      if (plan && (plan === 'PRO_YEARLY' || plan === 'PRO' || plan === 'ENTERPRISE')) {
+        const expiresAt = sc?.subscription_end_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+        const daysLeft = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+        const isExpired = daysLeft <= 0;
+        return {
+          plan: plan === 'PRO' ? 'PRO_YEARLY' : plan,
+          status: isExpired ? 'EXPIRED' : 'ACTIVE',
+          daysLeft,
+          isExpired,
+          expiresAt
+        };
+      }
+    } catch (_scErr) {}
+
+    // 3. Check PostgreSQL pool
     try {
       const pgRes = await pool.query(
         `SELECT config_value FROM landing_page_config WHERE school_id::text = ANY($1::text[]) AND config_key = 'subscription_data' ORDER BY updated_at DESC LIMIT 1`,
@@ -915,7 +940,7 @@ export class SaasService {
       }
     } catch (_pgErr) {}
 
-    // 3. Check in-memory store
+    // 4. Check in-memory store
     for (const id of matchIds) {
       if (fontInMemSchools.has(id)) {
         const mem = fontInMemSchools.get(id);
@@ -1000,6 +1025,24 @@ export class SaasService {
           }
         ], { onConflict: 'school_id,config_key' });
       }
+
+      // Update schools table & prospective_schools table
+      if (resolvedUUID) {
+        await supabase.from('schools').update({
+          subscription_plan: plan_name,
+          subscription_end_date: oneYearExpiry
+        }).eq('id', resolvedUUID);
+      }
+      if (targetSlug) {
+        await supabase.from('schools').update({
+          subscription_plan: plan_name,
+          subscription_end_date: oneYearExpiry
+        }).eq('slug', targetSlug);
+
+        await supabase.from('prospective_schools').update({
+          plan_type: plan_name === 'PRO_YEARLY' ? 'PRO' : plan_name
+        }).eq('slug', targetSlug);
+      }
     } catch (_sbErr) {}
 
     // 2. Save to landing_page_config in PostgreSQL pool
@@ -1020,6 +1063,12 @@ export class SaasService {
           [targetSlug, JSON.stringify(subRecord)]
         );
       }
+      if (targetSlug) {
+        await pool.query(
+          `UPDATE prospective_schools SET plan_type = $1, updated_at = NOW() WHERE slug = $2`,
+          [plan_name === 'PRO_YEARLY' ? 'PRO' : plan_name, targetSlug]
+        );
+      }
     } catch (_pgErr) {}
 
     // 3. Update in-memory store
@@ -1031,7 +1080,7 @@ export class SaasService {
         fontInMemSchools.set(k, mem);
       }
       mem.subscription = subRecord;
-      mem.plan_type = plan_name;
+      mem.plan_type = plan_name === 'PRO_YEARLY' ? 'PRO' : plan_name;
     });
 
     // 4. Record Transaction History
@@ -1069,9 +1118,10 @@ export class SaasService {
     order_id?: string;
   }) {
     const { school_slug, plan_name, order_id } = data;
+    const normalizedPlan = (plan_name || 'PRO_YEARLY').toUpperCase().includes('ENTERPRISE') ? 'ENTERPRISE' : 'PRO_YEARLY';
     return await this.activateSubscription({
       slug: school_slug,
-      plan_name: plan_name || 'PRO_YEARLY',
+      plan_name: normalizedPlan,
       order_id: order_id || `SIM-${Date.now()}`
     });
   }

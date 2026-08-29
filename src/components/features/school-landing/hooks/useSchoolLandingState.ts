@@ -202,7 +202,7 @@ export function useSchoolLandingState(initialData?: Record<string, unknown>) {
 
   const initialFaq = parseConfigArray<FaqItem>(initialCfg.ppdb_faq_config);
   const [faqList, setFaqList] = useState<FaqItem[]>(
-    initialFaq && initialFaq.length > 0 ? initialFaq : DEFAULT_FAQ
+    initialFaq && initialFaq.length > 0 ? initialFaq : (isDemo ? DEFAULT_FAQ : [])
   );
   const [faqTitle, setFaqTitle] = useState<string>((initialCfg.ppdb_faq_title as string) || "Pertanyaan yang Sering Diajukan");
   const [faqSubtitle, setFaqSubtitle] = useState<string>(
@@ -211,25 +211,30 @@ export function useSchoolLandingState(initialData?: Record<string, unknown>) {
 
   const initialAlur = parseConfigArray<AlurItem>(initialCfg.ppdb_alur_config);
   const [alurList, setAlurList] = useState<AlurItem[]>(
-    initialAlur && initialAlur.length > 0 ? initialAlur : DEFAULT_ALUR
+    initialAlur && initialAlur.length > 0 ? initialAlur : (isDemo ? DEFAULT_ALUR : [])
   );
 
   const initialMajors = parseConfigArray<MajorItem>(initialCfg.ppdb_majors_config);
   const [majors, setMajors] = useState<MajorItem[]>(
-    initialMajors && initialMajors.length > 0 ? initialMajors : DEFAULT_MAJORS
+    initialMajors && initialMajors.length > 0 ? initialMajors : (isDemo ? DEFAULT_MAJORS : [])
   );
   const [isLandingPageActive, setIsLandingPageActive] = useState<boolean>(true);
   const [isPlatformMaintenance, setIsPlatformMaintenance] = useState<boolean>(false);
 
   const initialPartners = parseConfigArray<PartnerItem>(initialCfg.ppdb_partners_config);
   const [partnersList, setPartnersList] = useState<Array<PartnerItem & { id?: number; url?: string; h?: string }>>(
-    initialPartners && initialPartners.length > 0 ? initialPartners : DEFAULT_PARTNERS
+    initialPartners && initialPartners.length > 0 ? initialPartners : (isDemo ? DEFAULT_PARTNERS : [])
   );
 
-  const DEFAULT_GELOMBANG: GelombangConfig = {
-    gelombang1: { start: "2026-01-05", end: "2026-04-30" },
-    gelombang2: { start: "2026-05-01", end: "2026-07-15" }
-  };
+  const DEFAULT_GELOMBANG: GelombangConfig = isDemo
+    ? {
+        gelombang1: { start: "2026-01-05", end: "2026-04-30" },
+        gelombang2: { start: "2026-05-01", end: "2026-07-15" }
+      }
+    : {
+        gelombang1: { start: "", end: "" },
+        gelombang2: { start: "", end: "" }
+      };
 
   let initialG: GelombangConfig = DEFAULT_GELOMBANG;
   if (initialCfg.ppdb_gelombang_config) {

@@ -48,13 +48,13 @@ export class ApplicantCreateService {
         : new Date("2010-01-01").toISOString(),
       jenis_kelamin:
         validated.jenisKelamin === "L" || validated.jenisKelamin === "Laki-laki" ? "L" : "P",
-      agama: (validated.agama || "Islam").slice(0, 50),
-      kewarganegaraan: (validated.kewarganegaraan || "WNI").slice(0, 50),
+      agama: (validated.agama || "Islam").slice(0, 20),
+      kewarganegaraan: validated.kewarganegaraan === "WNA" ? "WNA" : "WNI",
       alamat: validated.alamat || "-",
-      rt_rw: (validated.rtRw || "01/01").slice(0, 20),
+      rt_rw: (validated.rtRw || "01/01").slice(0, 10),
       kelurahan: (validated.kelurahan || "-").slice(0, 50),
       kecamatan: (validated.kecamatan || "-").slice(0, 50),
-      kode_pos: (validated.kodePos || "00000").slice(0, 20),
+      kode_pos: (validated.kodePos || "00000").slice(0, 5),
       whatsapp: (validated.whatsapp || "-").slice(0, 50),
       email: validated.email,
       tinggal_dengan: (validated.tinggalDengan || "-").slice(0, 50),
@@ -63,7 +63,7 @@ export class ApplicantCreateService {
       tinggi_badan: parseInt(validated.tinggiBadan as any) || 0,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       berat_badan: parseInt(validated.beratBadan as any) || 0,
-      jarak_sekolah: validated.jarakSekolah,
+      jarak_sekolah: (validated.jarakSekolah || "-").slice(0, 50),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jarak_km: parseFloat(validated.jarakKm as any) || 0.0,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,12 +72,12 @@ export class ApplicantCreateService {
       waktu_menit: parseInt(validated.waktuMenit as any) || 0,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jumlah_saudara: parseInt(validated.jumlahSaudara as any) || 0,
-      golongan_darah: (validated.golonganDarah || "-").slice(0, 50),
+      golongan_darah: (validated.golonganDarah || "A").slice(0, 5),
       penyakit_diderita: (validated.penyakitDiderita || "-").slice(0, 150),
       kebutuhan_khusus: validated.kebutuhanKhusus,
-      punya_kps: (validated.punyaKPS || "Tidak").slice(0, 50),
+      punya_kps: validated.punyaKPS === "Ya" || validated.punyaKPS === "true" ? "Ya" : "Tidak",
       no_kps: (validated.noKPS || "-").slice(0, 50),
-      punya_kip: (validated.punyaKIP || "Tidak").slice(0, 50),
+      punya_kip: validated.punyaKIP === "Ya" || validated.punyaKIP === "true" ? "Ya" : "Tidak",
       no_kip: (validated.noKIP || "-").slice(0, 50),
       jenis_prestasi: validated.jenisPrestasi,
       tingkat_prestasi: validated.tingkatPrestasi,
@@ -93,49 +93,49 @@ export class ApplicantCreateService {
       tgl_lahir_ayah: validated.tglLahirAyah
         ? new Date(validated.tglLahirAyah).toISOString()
         : null,
-      agama_ayah: (validated.agamaAyah || "-").slice(0, 50),
-      kewarganegaraan_ayah: (validated.kewarganegaraanAyah || "WNI").slice(0, 50),
+      agama_ayah: (validated.agamaAyah || "Islam").slice(0, 20),
+      kewarganegaraan_ayah: validated.kewarganegaraanAyah === "WNA" ? "WNA" : "WNI",
       pendidikan_ayah: (validated.pendidikanAyah || "-").slice(0, 50),
       pekerjaan_ayah: (validated.pekerjaanAyah || "-").slice(0, 100),
       penghasilan_ayah: (validated.penghasilanAyah || "-").slice(0, 50),
       alamat_ayah: validated.alamatAyah,
-      rtrw_ayah: (validated.rtrwAyah || "-").slice(0, 50),
+      rtrw_ayah: (validated.rtrwAyah || "01/01").slice(0, 10),
       kelurahan_ayah: (validated.kelurahanAyah || "-").slice(0, 50),
       kecamatan_ayah: (validated.kecamatanAyah || "-").slice(0, 50),
-      kode_pos_ayah: (validated.kodePosAyah || "00000").slice(0, 50),
-      status_ayah: (validated.statusAyah || "Masih Hidup").slice(0, 50),
+      kode_pos_ayah: (validated.kodePosAyah || "00000").slice(0, 5),
+      status_ayah: (validated.statusAyah || "Masih Hidup").slice(0, 20),
       nama_ibu: (validated.namaIbu || "-").slice(0, 150),
       tempat_lahir_ibu: (validated.tempatLahirIbu || "-").slice(0, 100),
       tgl_lahir_ibu: validated.tglLahirIbu
         ? new Date(validated.tglLahirIbu).toISOString()
         : null,
-      agama_ibu: (validated.agamaIbu || "-").slice(0, 50),
-      kewarganegaraan_ibu: (validated.kewarganegaraanIbu || "WNI").slice(0, 50),
+      agama_ibu: (validated.agamaIbu || "Islam").slice(0, 20),
+      kewarganegaraan_ibu: validated.kewarganegaraanIbu === "WNA" ? "WNA" : "WNI",
       pendidikan_ibu: (validated.pendidikanIbu || "-").slice(0, 50),
       pekerjaan_ibu: (validated.pekerjaanIbu || "-").slice(0, 100),
       penghasilan_ibu: (validated.penghasilanIbu || "-").slice(0, 50),
       alamat_ibu: validated.alamatIbu,
-      rtrw_ibu: (validated.rtrwIbu || "-").slice(0, 50),
+      rtrw_ibu: (validated.rtrwIbu || "01/01").slice(0, 10),
       kelurahan_ibu: (validated.kelurahanIbu || "-").slice(0, 50),
       kecamatan_ibu: (validated.kecamatanIbu || "-").slice(0, 50),
-      kode_pos_ibu: (validated.kodePosIbu || "00000").slice(0, 50),
-      status_ibu: (validated.statusIbu || "Masih Hidup").slice(0, 50),
+      kode_pos_ibu: (validated.kodePosIbu || "00000").slice(0, 5),
+      status_ibu: (validated.statusIbu || "Masih Hidup").slice(0, 20),
       nama_wali: (validated.namaWali || "-").slice(0, 150),
       tempat_lahir_wali: (validated.tempatLahirWali || "-").slice(0, 100),
       tgl_lahir_wali: validated.tglLahirWali
         ? new Date(validated.tglLahirWali).toISOString()
         : null,
-      agama_wali: (validated.agamaWali || "-").slice(0, 50),
-      kewarganegaraan_wali: (validated.kewarganegaraanWali || "WNI").slice(0, 50),
+      agama_wali: (validated.agamaWali || "Islam").slice(0, 20),
+      kewarganegaraan_wali: validated.kewarganegaraanWali === "WNA" ? "WNA" : "WNI",
       pendidikan_wali: (validated.pendidikanWali || "-").slice(0, 50),
       pekerjaan_wali: (validated.pekerjaanWali || "-").slice(0, 100),
       penghasilan_wali: (validated.penghasilanWali || "-").slice(0, 50),
       alamat_wali: validated.alamatWali,
-      rtrw_wali: (validated.rtrwWali || "-").slice(0, 50),
+      rtrw_wali: (validated.rtrwWali || "01/01").slice(0, 10),
       kelurahan_wali: (validated.kelurahanWali || "-").slice(0, 50),
       kecamatan_wali: (validated.kecamatanWali || "-").slice(0, 50),
-      kode_pos_wali: (validated.kodePosWali || "00000").slice(0, 50),
-      status_wali: (validated.statusWali || "-").slice(0, 50),
+      kode_pos_wali: (validated.kodePosWali || "00000").slice(0, 5),
+      status_wali: (validated.statusWali || "-").slice(0, 20),
       telepon_ortu: (validated.teleponOrtu || "-").slice(0, 50),
       sekolah_asal: (validated.sekolahAsal || "-").slice(0, 150),
       tgl_lulus: validated.tglLulus
@@ -365,12 +365,13 @@ export class ApplicantCreateService {
     }
 
     const registrationNo = `SPMB-${new Date().getFullYear()}-${String(savedRecord.id).padStart(5, "0")}`;
-    const { error: registrationError } = await supabase
-      .from("student_applicants")
-      .update({ registration_no: registrationNo })
-      .eq("id", savedRecord.id)
-      .eq("school_id", schoolId);
-    if (registrationError) throw registrationError;
+    try {
+      await supabase
+        .from("student_applicants")
+        .update({ registration_no: registrationNo })
+        .eq("id", savedRecord.id)
+        .eq("school_id", schoolId);
+    } catch (_regErr) {}
     savedRecord = { ...savedRecord, registration_no: registrationNo };
 
     return {

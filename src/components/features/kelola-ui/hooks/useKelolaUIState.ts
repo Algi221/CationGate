@@ -390,50 +390,59 @@ export function useKelolaUIState() {
       if (parsedAlur && parsedAlur.length > 0) {
         setAlurList(parsedAlur);
       } else {
-        setAlurList(DEFAULT_ALUR);
+        setAlurList(isDemo ? DEFAULT_ALUR : []);
       }
 
       const parsedFaq = parseConfigArray<FaqItem>(activeConfig.ppdb_faq_config);
       if (parsedFaq && parsedFaq.length > 0) {
         setFaqList(parsedFaq);
       } else {
-        setFaqList(DEFAULT_FAQ);
+        setFaqList(isDemo ? DEFAULT_FAQ : []);
       }
 
       const parsedPartners = parseConfigArray<PartnerItem>(activeConfig.ppdb_partners_config);
       if (parsedPartners && parsedPartners.length > 0) {
         setPartnersList(parsedPartners);
       } else {
-        setPartnersList(DEFAULT_PARTNERS);
+        setPartnersList(isDemo ? DEFAULT_PARTNERS : []);
       }
 
-      const parsedMajors = parseConfigArray<MajorItem>(activeConfig.ppdb_majors_config);
-      if (parsedMajors && parsedMajors.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mergedMajors = parsedMajors.map((dbMajor: any) => {
-          const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
-          return {
-            code: dbMajor.code,
-            title: dbMajor.title || "",
-            desc: dbMajor.desc || "",
-            color: dbMajor.color || (defMajor?.color || "#0066ff"),
-            careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : (typeof dbMajor.careers === 'string' ? dbMajor.careers.split(',').map((s: string) => s.trim()) : []),
-            facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : (typeof dbMajor.facilities === 'string' ? dbMajor.facilities.split(',').map((s: string) => s.trim()) : []),
-            logo: dbMajor.logo || "",
-            banner: dbMajor.banner || "",
-            video: dbMajor.video || "",
-            gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : []
-          };
-        });
-        setMajorsList(mergedMajors);
-      } else {
+      if (isDemo) {
         setMajorsList(DEFAULT_MAJORS);
+      } else {
+        const parsedMajors = parseConfigArray<MajorItem>(activeConfig.ppdb_majors_config);
+        if (parsedMajors && parsedMajors.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mergedMajors = parsedMajors.map((dbMajor: any) => {
+            const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
+            return {
+              code: dbMajor.code,
+              title: dbMajor.title || "",
+              desc: dbMajor.desc || "",
+              color: dbMajor.color || (defMajor?.color || "#0066ff"),
+              careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : (typeof dbMajor.careers === 'string' ? dbMajor.careers.split(',').map((s: string) => s.trim()) : []),
+              facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : (typeof dbMajor.facilities === 'string' ? dbMajor.facilities.split(',').map((s: string) => s.trim()) : []),
+              logo: dbMajor.logo || "",
+              banner: dbMajor.banner || "",
+              video: dbMajor.video || "",
+              gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : []
+            };
+          });
+          setMajorsList(mergedMajors);
+        } else {
+          setMajorsList([]);
+        }
       }
 
-      const DEFAULT_GELOMBANG_UI = {
-        gelombang1: { start: "2026-01-05", end: "2026-04-30" },
-        gelombang2: { start: "2026-05-01", end: "2026-07-15" }
-      };
+      const DEFAULT_GELOMBANG_UI = isDemo
+        ? {
+            gelombang1: { start: "2026-01-05", end: "2026-04-30" },
+            gelombang2: { start: "2026-05-01", end: "2026-07-15" }
+          }
+        : {
+            gelombang1: { start: "", end: "" },
+            gelombang2: { start: "", end: "" }
+          };
 
       if (activeConfig.ppdb_gelombang_config) {
         let g = activeConfig.ppdb_gelombang_config;

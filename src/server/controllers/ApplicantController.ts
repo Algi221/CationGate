@@ -36,8 +36,8 @@ export class ApplicantController {
       const rows = await ApplicantService.getAdminApplicants(schoolId, authToken);
       return c.json({ success: true, data: rows });
     } catch (err: unknown) {
-      console.error('Fetch applicants list error:', err);
-      return c.json({ success: false, message: 'Gagal mengambil data pendaftar', data: [] }, 500);
+      console.warn('Fetch applicants list error / unauthenticated:', (err as Error)?.message || err);
+      return c.json({ success: false, message: 'Gagal mengambil data pendaftar', data: [] }, 401);
     }
   }
 

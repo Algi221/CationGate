@@ -666,7 +666,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
         await pgClient.query(
           `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
            VALUES ($1, $2, $3, $4, NOW())`,
-          [String(numericSchoolId), JSON.stringify(configs), adminName, description || 'Melakukan pembaruan massal UI']
+          [String(numericSchoolId), JSON.stringify(processedConfigs), adminName, description || 'Melakukan pembaruan massal UI']
         );
         await pgClient.query('COMMIT');
         _savedToDb = true;
@@ -698,7 +698,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
 
       // Also record revision in Supabase
       const revPayload = {
-        config_values: configs,
+        config_values: processedConfigs,
         changed_by: adminName,
         description: description || 'Melakukan pembaruan massal UI',
         school_id: numericSchoolId
@@ -714,7 +714,7 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       changed_by: adminName,
       description: description || 'Melakukan pembaruan massal UI',
       created_at: new Date().toISOString(),
-      config_values: configs
+      config_values: processedConfigs
     };
     const sKey = String(numericSchoolId);
     if (!fontInMemRevisions.has(sKey)) fontInMemRevisions.set(sKey, []);

@@ -1,5 +1,9 @@
 
 export async function uploadFileDirect(file: File, prefix: string = 'media'): Promise<string> {
+  if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+    throw new Error('Format berkas SVG tidak diizinkan demi keamanan. Harap gunakan format PNG, JPEG, atau WebP.');
+  }
+
   const token = typeof window !== 'undefined' ? (localStorage.getItem('ppdb_admin_token') || localStorage.getItem('token')) : null;
   const headers: Record<string, string> = {};
   if (token) {

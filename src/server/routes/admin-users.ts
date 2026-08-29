@@ -330,12 +330,21 @@ adminUsersRouter.post('/:id/restore', async (c) => {
 
     const { data: existing } = await checkQuery.maybeSingle();
     if (!existing) {
-      await pool.query('UPDATE admin_users SET deleted_at = NULL WHERE id = $1', [id]);
+      const pgRes = await pool.query(
+        'UPDATE admin_users SET deleted_at = NULL WHERE id = $1 AND (school_id::text = $2 OR school_id IS NULL) RETURNING id',
+        [id, String(schoolId)]
+      );
+      if (!pgRes.rows || pgRes.rows.length === 0) {
+        return c.json({ success: false, message: 'Admin tidak ditemukan atau tidak memiliki izin.' }, 404);
+      }
     } else {
       let updateQuery = supabase.from('admin_users').update({ deleted_at: null }).eq('id', id);
       if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
       await updateQuery;
-      await pool.query('UPDATE admin_users SET deleted_at = NULL WHERE id = $1', [id]);
+      await pool.query(
+        'UPDATE admin_users SET deleted_at = NULL WHERE id = $1 AND (school_id::text = $2 OR school_id IS NULL)',
+        [id, String(schoolId)]
+      );
     }
 
     return c.json({ success: true, message: 'Admin berhasil dipulihkan.' });
@@ -564,7 +573,10 @@ adminUsersRouter.put('/:id', async (c) => {
 
     if (!existing) {
       try {
-        const pgRes = await pool.query('SELECT * FROM admin_users WHERE id = $1 LIMIT 1', [id]);
+        const pgRes = await pool.query(
+          'SELECT * FROM admin_users WHERE id = $1 AND (school_id::text = $2 OR school_id IS NULL) LIMIT 1',
+          [id, String(schoolId)]
+        );
         if (pgRes.rows && pgRes.rows.length > 0) existing = pgRes.rows[0];
       } catch (_) {}
     }
@@ -610,8 +622,9 @@ adminUsersRouter.put('/:id', async (c) => {
         values.push(dataToUpdate.password_hash as string);
       }
       values.push(id);
+      values.push(String(schoolId));
       await pool.query(
-        `UPDATE admin_users SET ${setClauses.join(', ')} WHERE id = $${values.length}`,
+        `UPDATE admin_users SET ${setClauses.join(', ')} WHERE id = $${values.length - 1} AND (school_id::text = $${values.length} OR school_id IS NULL)`,
         values
       );
     } catch (_pgErr) {}
@@ -643,7 +656,10 @@ adminUsersRouter.delete('/:id', async (c) => {
 
     if (!existing) {
       try {
-        const pgRes = await pool.query('SELECT id FROM admin_users WHERE id = $1 LIMIT 1', [id]);
+        const pgRes = await pool.query(
+          'SELECT id FROM admin_users WHERE id = $1 AND (school_id::text = $2 OR school_id IS NULL) LIMIT 1',
+          [id, String(schoolId)]
+        );
         if (pgRes.rows && pgRes.rows.length > 0) existing = pgRes.rows[0];
       } catch (_) {}
     }
@@ -658,14 +674,20 @@ adminUsersRouter.delete('/:id', async (c) => {
       let delQuery = supabase.from('admin_users').delete().eq('id', id);
       if (schoolId) delQuery = delQuery.eq('school_id', schoolId);
       await delQuery;
-      await pool.query('DELETE FROM admin_users WHERE id = $1', [id]);
+      await pool.query(
+        'DELETE FROM admin_users WHERE id = $1 AND (school_id::text = $2 OR school_id IS NULL)',
+        [id, String(schoolId)]
+      );
       return c.json({ success: true, message: 'Admin berhasil dihapus secara permanen.' });
     } else {
       const nowIso = new Date().toISOString();
       let softQuery = supabase.from('admin_users').update({ deleted_at: nowIso }).eq('id', id);
       if (schoolId) softQuery = softQuery.eq('school_id', schoolId);
       await softQuery;
-      await pool.query('UPDATE admin_users SET deleted_at = NOW() WHERE id = $1', [id]);
+      await pool.query(
+        'UPDATE admin_users SET deleted_at = NOW() WHERE id = $1 AND (school_id::text = $2 OR school_id IS NULL)',
+        [id, String(schoolId)]
+      );
       return c.json({ success: true, message: 'Admin berhasil dipindahkan ke tempat sampah.' });
     }
   } catch (error: unknown) {

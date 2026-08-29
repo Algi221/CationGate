@@ -521,7 +521,11 @@ export function useKelolaUIState() {
         return;
       }
     } else {
-      const allowedImgExts = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'];
+      if (file.type === "image/svg+xml" || fileExt === "svg") {
+        showToastMsg("Format SVG tidak diizinkan demi keamanan. Harap gunakan format PNG, JPEG, atau WebP.", "error");
+        return;
+      }
+      const allowedImgExts = ['jpg', 'jpeg', 'png', 'webp'];
       if (!file.type.startsWith("image/") && !allowedImgExts.includes(fileExt)) {
         showToastMsg("Hanya file gambar (JPG/PNG/WEBP) yang diperbolehkan.", "error");
         return;
@@ -671,9 +675,14 @@ export function useKelolaUIState() {
 
         const savedData = json.data || configsPayload;
 
+        // If server processed media and converted base64 to URLs, sync them into state
+        if (savedData.ppdb_majors_config && Array.isArray(savedData.ppdb_majors_config)) {
+          setMajorsList(savedData.ppdb_majors_config);
+        }
+
         try {
           if (slug) {
-            localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(finalMajors));
+            localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(savedData.ppdb_majors_config || finalMajors));
             localStorage.setItem(`ppdb_alur_config_${slug}`, JSON.stringify(alurList));
             localStorage.setItem(`ppdb_faq_config_${slug}`, JSON.stringify(faqList));
             localStorage.setItem(`ppdb_partners_config_${slug}`, JSON.stringify(partnersList));
@@ -682,22 +691,6 @@ export function useKelolaUIState() {
             localStorage.setItem(`ppdb_gelombang_config_${slug}`, JSON.stringify(gelombangConfig));
             localStorage.setItem(`cation_landing_cache_${slug}`, JSON.stringify(savedData));
           }
-          localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
-          localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));
-          localStorage.setItem("ppdb_faq_config", JSON.stringify(faqList));
-          localStorage.setItem("ppdb_faq_title", faqTitle);
-          localStorage.setItem("ppdb_faq_subtitle", faqSubtitle);
-          localStorage.setItem("ppdb_partners_config", JSON.stringify(partnersList));
-          localStorage.setItem("ppdb_reg_cost", formFee);
-          localStorage.setItem("ppdb_school_period", schoolPeriod);
-          localStorage.setItem("ppdb_map_title", mapTitle);
-          localStorage.setItem("ppdb_map_url", mapUrl);
-          localStorage.setItem("ppdb_wa_group_url", waGroupUrl);
-          localStorage.setItem("ppdb_wa_admin", waAdmin);
-          localStorage.setItem("ppdb_bank_config", JSON.stringify(bankConfigList));
-          localStorage.setItem("ppdb_gelombang_config", JSON.stringify(gelombangConfig));
-          localStorage.setItem("ppdb_hero_bg_image", heroBgImage);
-          localStorage.setItem("ppdb_fields_config", JSON.stringify(fieldsConfigUI));
         } catch (storageErr) {
           console.warn("Storage sync bypassed.", storageErr);
         }
@@ -710,7 +703,7 @@ export function useKelolaUIState() {
           useSchoolStore.getState().setPpdbLogo(savedData.ppdb_logo_url);
         }
 
-        // Realtime Broadcast to open landing page tabs
+        // Realtime Broadcast to open landing page tabs with school slug validation
         try {
           if (typeof window !== "undefined" && "BroadcastChannel" in window) {
             const channel = new BroadcastChannel("cationgate_landing_sync");

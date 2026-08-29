@@ -34,6 +34,7 @@ interface SchoolState {
 const SAFE_COLOR_RE = /^(#[0-9a-fA-F]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)|hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*\))$/;
 
 let activeFetchSequence = 0;
+let activeResolveSequence = 0;
 
 export const useSchoolStore = create<SchoolState>((set, get) => ({
   schoolId: "",
@@ -207,15 +208,23 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
 
     if (!slug) return;
 
+    const currentSeq = ++activeResolveSequence;
+
     try {
       const res = await fetch(`/api/saas/school-by-slug/${encodeURIComponent(slug)}?_t=${Date.now()}`, {
         cache: "no-store"
       });
+
+      // Discard response if a newer resolve was initiated
+      if (currentSeq !== activeResolveSequence || get().schoolSlug !== slug) return;
+
       if (!res.headers.get("content-type")?.includes("application/json")) {
         await get().fetchConfigs(slug);
         return;
       }
       const data = await res.json();
+      if (currentSeq !== activeResolveSequence || get().schoolSlug !== slug) return;
+
       if (data && data.notFound) {
         set({ isSchoolNotFound: true, isConfigLoaded: true });
       } else if (data && data.success && data.data) {
@@ -239,8 +248,10 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
         await get().fetchConfigs(slug);
       }
     } catch (err: unknown) {
-      console.warn("Gagal mengambil data sekolah:", err instanceof Error ? err.message : String(err));
-      await get().fetchConfigs(slug);
+      if (currentSeq === activeResolveSequence && get().schoolSlug === slug) {
+        console.warn("Gagal mengambil data sekolah:", err instanceof Error ? err.message : String(err));
+        await get().fetchConfigs(slug);
+      }
     }
   },
 }));

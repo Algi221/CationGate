@@ -11,7 +11,6 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'image/webp',
-  'image/gif',
   'application/pdf',
   'video/mp4',
   'video/webm',
@@ -44,14 +43,17 @@ function checkUploadRateLimit(ip: string): boolean {
   return true;
 }
 
-// 1. Direct Server Multipart File Upload
-storageRouter.post('/upload', async (c) => {
+// 1. Direct Server Multipart File Upload (Protected Admin)
+storageRouter.post('/upload', adminAuth, async (c) => {
   const clientIp = c.req.header('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
   if (!checkUploadRateLimit(clientIp)) {
     return c.json({ success: false, error: 'Terlalu banyak permintaan unggah berkas. Silakan coba beberapa saat lagi.' }, 429);
   }
 
   try {
+    const schoolId = await requireTenantId(c);
+    const cleanTenant = String(schoolId).replace(/[^a-zA-Z0-9_-]/g, '_');
+
     let file: File | null = null;
     let prefix = 'upload';
 
@@ -73,48 +75,26 @@ storageRouter.post('/upload', async (c) => {
     }
 
     const contentType = (file.type || 'image/png').toLowerCase();
+    
+    // Explicitly reject SVG format to prevent Stored XSS
+    if (contentType === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+      return c.json({ error: 'Format SVG tidak diizinkan demi keamanan. Harap gunakan format PNG, JPEG, atau WebP.' }, 400);
+    }
+
     if (contentType && !ALLOWED_MIME_TYPES.has(contentType)) {
       return c.json({ error: `Tipe file '${contentType}' tidak diizinkan untuk alasan keamanan.` }, 400);
-    }
-
-    const isAdminAsset = prefix.startsWith('school_logo') || prefix.startsWith('hero_bg') || prefix.startsWith('major_') || prefix.startsWith('pimpinan_photo');
-    const authHeader = c.req.header('Authorization');
-
-    let tenantFolder = 'general';
-
-    // Verify token for admin assets
-    if (isAdminAsset && authHeader && authHeader.startsWith('Bearer ')) {
-      try {
-        const jwt = await import('jsonwebtoken');
-        const token = authHeader.split(' ')[1];
-        const secret = process.env.JWT_SECRET;
-        if (secret) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded = jwt.default.verify(token, secret) as any;
-          if (decoded.school_id || decoded.school_slug) {
-            tenantFolder = String(decoded.school_id || decoded.school_slug).replace(/[^a-zA-Z0-9_-]/g, '_');
-          }
-        }
-      } catch (_jwtErr) {}
-    }
-
-    // Block SVG files from unauthenticated or public uploads
-    if (contentType === 'image/svg+xml') {
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return c.json({ error: 'Format SVG hanya diizinkan untuk administrator terotentikasi.' }, 403);
-      }
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const dataBuffer = Buffer.from(arrayBuffer);
     const fileSize = dataBuffer.length;
 
-    // Enforce size limits
+    // Enforce strict size limits
     const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
     const MAX_DOC_SIZE = 10 * 1024 * 1024;  // 10 MB
     const MAX_MEDIA_SIZE = 25 * 1024 * 1024; // 25 MB
 
-    if (contentType.startsWith('image/') && contentType !== 'image/svg+xml' && fileSize > MAX_IMAGE_SIZE) {
+    if (contentType.startsWith('image/') && fileSize > MAX_IMAGE_SIZE) {
       return c.json({ error: 'Ukuran foto melebihi batas maksimal (5 MB).' }, 413);
     } else if (contentType === 'application/pdf' && fileSize > MAX_DOC_SIZE) {
       return c.json({ error: 'Ukuran dokumen melebihi batas maksimal (10 MB).' }, 413);
@@ -122,24 +102,9 @@ storageRouter.post('/upload', async (c) => {
       return c.json({ error: 'Ukuran berkas melebihi batas maksimal (25 MB).' }, 413);
     }
 
-    // Sanitize SVG against Stored XSS
-    if (contentType === 'image/svg+xml') {
-      const svgText = dataBuffer.toString('utf8').toLowerCase();
-      if (
-        svgText.includes('<script') ||
-        svgText.includes('javascript:') ||
-        svgText.includes('onload=') ||
-        svgText.includes('onerror=') ||
-        svgText.includes('onclick=') ||
-        svgText.includes('<iframe')
-      ) {
-        return c.json({ error: 'File SVG ditolak karena terdeteksi mengandung elemen skrip yang tidak aman.' }, 400);
-      }
-    }
-
     const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanPrefix = prefix.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
-    const filename = `${tenantFolder}/${cleanPrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+    const filename = `tenants/${cleanTenant}/${cleanPrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
 
     // Tier 1: Try Supabase Cloud Storage
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
@@ -207,6 +172,10 @@ storageRouter.post('/presigned-url', adminAuth, async (c) => {
 
     if (!fileName || !contentType) {
       return c.json({ error: 'Parameter fileName dan contentType wajib disertakan.' }, 400);
+    }
+
+    if (contentType.toLowerCase() === 'image/svg+xml' || fileName.toLowerCase().endsWith('.svg')) {
+      return c.json({ error: 'Format SVG tidak diizinkan demi keamanan. Harap gunakan format PNG, JPEG, atau WebP.' }, 400);
     }
 
     if (!ALLOWED_MIME_TYPES.has(contentType.toLowerCase())) {

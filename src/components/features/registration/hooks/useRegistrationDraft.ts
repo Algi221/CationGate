@@ -88,7 +88,7 @@ export const createInitialFormData = (): RegistrationFormData => ({
   noIjazah: "",
   noSKHUN: "",
   noPesertaUN: "",
-  lamaBelajar: "",
+  lamaBelajar: "3",
   pindahanDari: "",
   alasanPindah: "",
   diterimaKelas: "",

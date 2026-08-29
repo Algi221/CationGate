@@ -113,19 +113,19 @@ export const Step7Pendidikan: React.FC<Step7Props> = ({
           {isFieldActive("lamaBelajar") && (
             <div className="form-group">
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
-                {getFieldLabel("lamaBelajar", "f. Lama Belajar (Tahun)")} {isFieldRequired("lamaBelajar") && <span className="text-red-500 ml-1">*</span>}
+                {getFieldLabel("lamaBelajar", "f. Lama Belajar")} {isFieldRequired("lamaBelajar") && <span className="text-red-500 ml-1">*</span>}
               </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  name="lamaBelajar"
-                  className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  placeholder="Contoh: 3"
-                  value={formData.lamaBelajar}
-                  onChange={handleInputChange}
-                />
-                <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Tahun</span>
-              </div>
+              <select
+                name="lamaBelajar"
+                className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-slate-800 dark:text-slate-100 cursor-pointer"
+                value={formData.lamaBelajar || "3"}
+                onChange={handleInputChange}
+              >
+                <option value="3">3 Tahun (Standar SMP / MTs)</option>
+                <option value="2">2 Tahun (Program Akselerasi / Cepat)</option>
+                <option value="4">4 Tahun</option>
+                <option value="1">1 Tahun</option>
+              </select>
             </div>
           )}
         </div>

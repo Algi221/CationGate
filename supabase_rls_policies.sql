@@ -4,32 +4,40 @@
 -- Run this SQL in your Supabase SQL Editor to enforce strict tenant-level isolation
 -- at the PostgreSQL database engine level.
 
--- Helper functions for JWT claims extraction
-CREATE OR REPLACE FUNCTION auth.get_jwt_school_id()
+-- ------------------------------------------------------------------------------
+-- Helper functions in `public` schema (avoids auth schema permission errors)
+-- ------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_jwt_school_id()
 RETURNS TEXT AS $$
   SELECT COALESCE(
     nullif(current_setting('request.jwt.claim.school_id', true), ''),
     nullif(current_setting('request.jwt.claim.school_slug', true), ''),
-    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'school_id')
+    ((auth.jwt() -> 'app_metadata' ->> 'school_id')),
+    ((auth.jwt() -> 'user_metadata' ->> 'school_id')),
+    ((auth.jwt() ->> 'school_id')),
+    ((auth.jwt() ->> 'school_slug'))
   );
-$$ LANGUAGE SQL STABLE;
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
 
-CREATE OR REPLACE FUNCTION auth.get_jwt_role()
+CREATE OR REPLACE FUNCTION public.get_jwt_role()
 RETURNS TEXT AS $$
   SELECT COALESCE(
     nullif(current_setting('request.jwt.claim.role', true), ''),
-    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role')
+    ((auth.jwt() -> 'app_metadata' ->> 'role')),
+    ((auth.jwt() -> 'user_metadata' ->> 'role')),
+    ((auth.jwt() ->> 'role'))
   );
-$$ LANGUAGE SQL STABLE;
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
 
-CREATE OR REPLACE FUNCTION auth.is_platform_admin()
+CREATE OR REPLACE FUNCTION public.is_platform_admin()
 RETURNS BOOLEAN AS $$
   SELECT COALESCE(
-    auth.get_jwt_role() IN ('gatekeeper', 'superadmin') OR
-    ((nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'isGatekeeper')::boolean IS TRUE),
+    public.get_jwt_role() IN ('gatekeeper', 'superadmin') OR
+    ((auth.jwt() -> 'app_metadata' ->> 'isGatekeeper')::boolean IS TRUE) OR
+    ((auth.jwt() ->> 'isGatekeeper')::boolean IS TRUE),
     false
   );
-$$ LANGUAGE SQL STABLE;
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
 
 -- ------------------------------------------------------------------------------
 -- 1. Table: landing_page_config
@@ -47,12 +55,12 @@ CREATE POLICY "Admins can manage their school landing configs"
   ON landing_page_config FOR ALL
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   )
   WITH CHECK (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   );
 
 -- ------------------------------------------------------------------------------
@@ -71,12 +79,12 @@ CREATE POLICY "Admins can manage their school profile"
   ON school_profiles FOR ALL
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   )
   WITH CHECK (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   );
 
 -- ------------------------------------------------------------------------------
@@ -95,8 +103,8 @@ CREATE POLICY "School admin can view only own school applicants"
   ON student_applicants FOR SELECT
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   );
 
 DROP POLICY IF EXISTS "School admin can update only own school applicants" ON student_applicants;
@@ -104,12 +112,12 @@ CREATE POLICY "School admin can update only own school applicants"
   ON student_applicants FOR UPDATE
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   )
   WITH CHECK (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   );
 
 DROP POLICY IF EXISTS "School admin can delete only own school applicants" ON student_applicants;
@@ -117,8 +125,8 @@ CREATE POLICY "School admin can delete only own school applicants"
   ON student_applicants FOR DELETE
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   );
 
 -- ------------------------------------------------------------------------------
@@ -132,12 +140,12 @@ CREATE POLICY "School admin can manage only own active students"
   ON active_students FOR ALL
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   )
   WITH CHECK (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   );
 
 -- ------------------------------------------------------------------------------
@@ -151,12 +159,12 @@ CREATE POLICY "Superadmins and school admins can manage their admins"
   ON admin_users FOR ALL
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    (school_id IS NOT NULL AND school_id::text = auth.get_jwt_school_id())
+    public.is_platform_admin() OR
+    (school_id IS NOT NULL AND school_id::text = public.get_jwt_school_id())
   )
   WITH CHECK (
-    auth.is_platform_admin() OR
-    (school_id IS NOT NULL AND school_id::text = auth.get_jwt_school_id())
+    public.is_platform_admin() OR
+    (school_id IS NOT NULL AND school_id::text = public.get_jwt_school_id())
   );
 
 -- ------------------------------------------------------------------------------
@@ -175,12 +183,12 @@ CREATE POLICY "Admins can manage school announcements"
   ON school_announcements FOR ALL
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   )
   WITH CHECK (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   );
 
 -- ------------------------------------------------------------------------------
@@ -194,10 +202,10 @@ CREATE POLICY "Admins can view and create revisions for their school"
   ON ui_revisions FOR ALL
   TO authenticated
   USING (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   )
   WITH CHECK (
-    auth.is_platform_admin() OR
-    school_id::text = auth.get_jwt_school_id()
+    public.is_platform_admin() OR
+    school_id::text = public.get_jwt_school_id()
   );

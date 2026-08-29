@@ -8,33 +8,69 @@ import { fileURLToPath } from 'url';
 import { configSaveSchema, singleConfigSchema } from '../validations/config';
 import { getCached, setCached, delCached } from '../db/redis';
 import sharp from 'sharp';
-import { exec } from 'child_process';
-import util from 'util';
-
-const execPromise = util.promisify(exec);
 
 const configRouter = new Hono();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function saveBase64File(base64Str: string, prefix: string, subfolder: string = 'jurusan'): Promise<string> {
+export function safeUnwrapConfigValue(val: unknown): unknown {
+  if (val === null || val === undefined) return val;
+  if (typeof val === 'string') {
+    let curr: string = val.trim();
+    let depth = 0;
+    while (depth < 5) {
+      if ((curr.startsWith('{') && curr.endsWith('}')) || (curr.startsWith('[') && curr.endsWith(']'))) {
+        try {
+          const parsed = JSON.parse(curr);
+          if (typeof parsed === 'string') {
+            curr = parsed.trim();
+            depth++;
+            continue;
+          }
+          return parsed;
+        } catch (_e) {
+          break;
+        }
+      } else if (curr.startsWith('"') && curr.endsWith('"')) {
+        try {
+          const unquoted = JSON.parse(curr);
+          if (typeof unquoted === 'string') {
+            curr = unquoted.trim();
+            depth++;
+            continue;
+          }
+          return unquoted;
+        } catch (_e) {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+    return curr;
+  }
+  return val;
+}
+
+async function saveBase64File(base64Str: unknown, prefix: string, subfolder: string = 'jurusan', tenant?: string): Promise<string> {
   if (typeof base64Str !== 'string' || !base64Str.startsWith('data:')) {
-    return base64Str;
+    return typeof base64Str === 'string' ? base64Str : '';
   }
   try {
     const matches = base64Str.match(/^data:([A-Za-z0-9-+\/.]+);base64,(.+)$/);
     if (!matches || matches.length !== 3) {
       return base64Str;
     }
-    const contentType = matches[1];
+    const contentType = matches[1].toLowerCase();
     const dataBuffer = Buffer.from(matches[2], 'base64');
+    const cleanTenant = (tenant || 'general').replace(/[^a-zA-Z0-9_-]/g, '_');
     const targetDir = path.join(process.cwd(), 'public', 'assets', subfolder, 'uploads');
 
     const sizeInBytes = dataBuffer.length;
     const isVideo = contentType.startsWith('video/');
 
-    const limitBytes = isVideo ? 100 * 1024 * 1024 : 8 * 1024 * 1024;
+    const limitBytes = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
 
     if (sizeInBytes > limitBytes) {
       console.warn(`File upload rejected: ${prefix} melebihi batas ${(limitBytes/1024/1024).toFixed(0)}MB`);
@@ -50,61 +86,65 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
       return '';
     }
 
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
-    }
+    let finalBuffer = dataBuffer;
+    let ext = 'png';
+    let mimeType = contentType;
 
     // IMAGE OPTIMIZATION (Sharp)
     if (contentType.startsWith('image/') && !contentType.includes('gif')) {
-      const filename = `${prefix}_${Date.now()}.webp`;
-      const targetPath = path.join(targetDir, filename);
-      const optimizedBuffer = await sharp(dataBuffer).rotate().webp({ quality: 90, effort: 4 }).toBuffer();
-      fs.writeFileSync(targetPath, optimizedBuffer);
-      console.info("Image optimized", { prefix, from: contentType, to: 'webp', originalBytes: sizeInBytes, optimizedBytes: optimizedBuffer.length });
-      return `/assets/jurusan/uploads/${filename}`;
+      try {
+        finalBuffer = await sharp(dataBuffer).rotate().webp({ quality: 90, effort: 4 }).toBuffer();
+        ext = 'webp';
+        mimeType = 'image/webp';
+      } catch (_imgErr) {
+        ext = 'png';
+      }
+    } else if (isVideo) {
+      ext = 'mp4';
+      mimeType = 'video/mp4';
+    } else if (contentType.includes('gif')) {
+      ext = 'gif';
+    } else if (contentType.includes('pdf')) {
+      ext = 'pdf';
     }
 
-    // VIDEO OPTIMIZATION (FFmpeg)
-    if (isVideo) {
-      const tempExt = contentType.includes('mp4') ? 'mp4' : contentType.includes('webm') ? 'webm' : contentType.includes('ogg') ? 'ogg' : 'mov';
-      const tempFilename = `temp_${prefix}_${Date.now()}.${tempExt}`;
-      const tempPath = path.join(targetDir, tempFilename);
-      fs.writeFileSync(tempPath, dataBuffer);
+    const filename = `${prefix}_${Date.now()}.${ext}`;
+    const cloudStoragePath = `tenants/${cleanTenant}/${subfolder}/${filename}`;
 
-      const filename = `${prefix}_${Date.now()}.mp4`;
-      const targetPath = path.join(targetDir, filename);
-
+    // 1. Try Uploading to Supabase Cloud Storage (Persistent across all serverless & container instances)
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+    if (serviceRoleKey) {
       try {
-        await execPromise(`ffmpeg -i "${tempPath}" -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k "${targetPath}"`);
-        fs.unlinkSync(tempPath); // delete temp
-        const stats = fs.statSync(targetPath);
-        console.info("Video optimized", { prefix, from: contentType, to: 'mp4', originalBytes: sizeInBytes, optimizedBytes: stats.size });
-        return `/assets/jurusan/uploads/${filename}`;
-      } catch (err) {
-        console.warn(`FFmpeg optimization failed for ${prefix}, falling back to original file`, err);
-        try { fs.unlinkSync(tempPath); } catch (_e) {} // ignore error if temp file already removed
+        const supabase = getSupabaseClient(serviceRoleKey);
+        const bucketName = 'cationgate-media';
+        const { error: sbErr } = await supabase.storage.from(bucketName).upload(cloudStoragePath, finalBuffer, {
+          contentType: mimeType,
+          upsert: true
+        });
+
+        if (!sbErr) {
+          const { data: publicUrlData } = supabase.storage.from(bucketName).getPublicUrl(cloudStoragePath);
+          if (publicUrlData?.publicUrl) {
+            return publicUrlData.publicUrl;
+          }
+        }
+      } catch (cloudErr) {
+        console.warn('Supabase storage direct upload notice:', cloudErr);
       }
     }
 
-    // FALLBACK / OTHER FILES
-    let ext = 'png';
-    if (contentType.includes('svg')) ext = 'svg';
-    else if (contentType.includes('gif')) ext = 'gif';
-    else if (contentType.includes('pdf')) ext = 'pdf';
-    else if (contentType.includes('mp4')) ext = 'mp4';
-    else if (contentType.includes('webm')) ext = 'webm';
-    else if (contentType.includes('ogg')) ext = 'ogg';
-    else if (contentType.includes('quicktime') || contentType.includes('mov')) ext = 'mov';
-
-    const filename = `${prefix}_${Date.now()}.${ext}`;
-
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
+    // 2. Fallback: Save to Local Filesystem
+    try {
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+      const targetPath = path.join(targetDir, filename);
+      fs.writeFileSync(targetPath, finalBuffer);
+      return `/assets/${subfolder}/uploads/${filename}`;
+    } catch (_fsErr) {
+      // 3. Fallback: Return optimized base64
+      return `data:${mimeType};base64,${finalBuffer.toString('base64')}`;
     }
-    const targetPath = path.join(targetDir, filename);
-    fs.writeFileSync(targetPath, dataBuffer);
-
-    return `/assets/${subfolder}/uploads/${filename}`;
   } catch (err) {
     console.error(`Failed to save base64 for ${prefix}:`, err);
     return base64Str;
@@ -112,18 +152,18 @@ async function saveBase64File(base64Str: string, prefix: string, subfolder: stri
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function processMajorsConfig(majors: any[]): Promise<any[]> {
+async function processMajorsConfig(majors: any[], tenant?: string): Promise<any[]> {
   if (!Array.isArray(majors)) return majors;
   return Promise.all(majors.map(async (major) => {
     const updatedMajor = { ...major };
     if (updatedMajor.logo) {
-      updatedMajor.logo = await saveBase64File(updatedMajor.logo, `${major.code}_logo`);
+      updatedMajor.logo = await saveBase64File(updatedMajor.logo, `${major.code}_logo`, 'jurusan', tenant);
     }
     if (updatedMajor.banner) {
-      updatedMajor.banner = await saveBase64File(updatedMajor.banner, `${major.code}_banner`);
+      updatedMajor.banner = await saveBase64File(updatedMajor.banner, `${major.code}_banner`, 'jurusan', tenant);
     }
     if (updatedMajor.video) {
-      updatedMajor.video = await saveBase64File(updatedMajor.video, `${major.code}_video`);
+      updatedMajor.video = await saveBase64File(updatedMajor.video, `${major.code}_video`, 'jurusan', tenant);
     }
     if (updatedMajor.gallery && Array.isArray(updatedMajor.gallery)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,7 +171,7 @@ async function processMajorsConfig(majors: any[]): Promise<any[]> {
         if (item.url) {
           return {
             ...item,
-            url: await saveBase64File(item.url, `${major.code}_gallery_${idx}`)
+            url: await saveBase64File(item.url, `${major.code}_gallery_${idx}`, 'jurusan', tenant)
           };
         }
         return item;
@@ -220,11 +260,7 @@ configRouter.get('/', async (c) => {
 
     const configMap: Record<string, unknown> = {};
     (configs || []).forEach((row: { config_key: string; config_value: unknown }) => {
-      let val = row.config_value;
-      if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
-        try { val = JSON.parse(val); } catch (_e) {}
-      }
-      configMap[row.config_key] = val;
+      configMap[row.config_key] = safeUnwrapConfigValue(row.config_value);
     });
 
     // Merge from in-memory store if available (in-memory has latest saved updates)
@@ -301,15 +337,27 @@ configRouter.post('/', adminAuth, async (c) => {
       const schoolId = await requireTenantId(c);
 
       const processedConfigs = { ...configs };
-      if (processedConfigs.ppdb_majors_config) {
-        processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config);
-      }
-      if (processedConfigs.ppdb_logo_url) {
-        processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
-      }
-
       const targetSchoolId = String(schoolId);
       const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
+
+      if (processedConfigs.ppdb_majors_config) {
+        processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config, targetSchoolId);
+      }
+      if (processedConfigs.ppdb_logo_url) {
+        processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah', targetSchoolId);
+      }
+      if (processedConfigs.ppdb_hero_bg_image) {
+        processedConfigs.ppdb_hero_bg_image = await saveBase64File(processedConfigs.ppdb_hero_bg_image, 'hero_bg', 'hero', targetSchoolId);
+      }
+      if (Array.isArray(processedConfigs.ppdb_partners_config)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        processedConfigs.ppdb_partners_config = await Promise.all(processedConfigs.ppdb_partners_config.map(async (p: any, idx: number) => {
+          if (p && p.logo && typeof p.logo === 'string' && p.logo.startsWith('data:')) {
+            return { ...p, logo: await saveBase64File(p.logo, `partner_${idx}`, 'partners', targetSchoolId) };
+          }
+          return p;
+        }));
+      }
 
       const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string; school_slug?: string; slug?: string } | undefined;
       const adminName = admin?.nama || admin?.username || 'Administrator';
@@ -634,11 +682,24 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     const numericSchoolId = !isNaN(Number(schoolId)) ? Number(schoolId) : schoolId;
 
     const processedConfigs = { ...configs };
+    const targetSchoolId = String(schoolId);
     if (processedConfigs.ppdb_majors_config) {
-      processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config);
+      processedConfigs.ppdb_majors_config = await processMajorsConfig(processedConfigs.ppdb_majors_config, targetSchoolId);
     }
     if (processedConfigs.ppdb_logo_url) {
-      processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah');
+      processedConfigs.ppdb_logo_url = await saveBase64File(processedConfigs.ppdb_logo_url, 'school_logo', 'sekolah', targetSchoolId);
+    }
+    if (processedConfigs.ppdb_hero_bg_image) {
+      processedConfigs.ppdb_hero_bg_image = await saveBase64File(processedConfigs.ppdb_hero_bg_image, 'hero_bg', 'hero', targetSchoolId);
+    }
+    if (Array.isArray(processedConfigs.ppdb_partners_config)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      processedConfigs.ppdb_partners_config = await Promise.all(processedConfigs.ppdb_partners_config.map(async (p: any, idx: number) => {
+        if (p && p.logo && typeof p.logo === 'string' && p.logo.startsWith('data:')) {
+          return { ...p, logo: await saveBase64File(p.logo, `partner_${idx}`, 'partners', targetSchoolId) };
+        }
+        return p;
+      }));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

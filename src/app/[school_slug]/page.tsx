@@ -67,12 +67,9 @@ export default async function SchoolLandingPage({ params }: PageProps) {
         [schoolSlug]
       );
       if (pgRes.rows && pgRes.rows.length > 0) {
+        const { safeUnwrapConfigValue } = await import("@/server/routes/config");
         pgRes.rows.forEach((r: { config_key: string; config_value: unknown }) => {
-          let val = r.config_value;
-          if (typeof val === "string" && (val.startsWith("{") || val.startsWith("["))) {
-            try { val = JSON.parse(val); } catch (_) {}
-          }
-          initialConfig[r.config_key] = val;
+          initialConfig[r.config_key] = safeUnwrapConfigValue(r.config_value);
         });
       }
     } catch (_err) {

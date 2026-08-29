@@ -116,11 +116,38 @@ const setLocalLandingCache = (slug: string, data: Record<string, unknown>) => {
 
 const parseConfigArray = <T>(val: unknown): T[] | null => {
   if (Array.isArray(val)) return val as T[];
-  if (typeof val === "string" && val.trim().startsWith("[")) {
-    try {
-      const parsed = JSON.parse(val);
-      if (Array.isArray(parsed)) return parsed as T[];
-    } catch (_e) {}
+  if (typeof val === "string") {
+    let curr = val.trim();
+    let depth = 0;
+    while (depth < 4) {
+      if (curr.startsWith("[") && curr.endsWith("]")) {
+        try {
+          const parsed = JSON.parse(curr);
+          if (Array.isArray(parsed)) return parsed as T[];
+          if (typeof parsed === "string") {
+            curr = parsed.trim();
+            depth++;
+            continue;
+          }
+        } catch (_e) {
+          break;
+        }
+      } else if (curr.startsWith('"') && curr.endsWith('"')) {
+        try {
+          const unquoted = JSON.parse(curr);
+          if (typeof unquoted === "string") {
+            curr = unquoted.trim();
+            depth++;
+            continue;
+          }
+          if (Array.isArray(unquoted)) return unquoted as T[];
+        } catch (_e) {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
   }
   return null;
 };
@@ -135,7 +162,7 @@ export function useSchoolLandingState(initialData?: Record<string, unknown>) {
       : "sekolah");
   const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
 
-  const initialCfg = initialData || getLocalLandingCache(schoolSlug) || {};
+  const initialCfg = initialData || {};
 
   const [customSchoolName, setCustomSchoolName] = useState<string>(
     (initialCfg.ppdb_title as string) || ""
@@ -367,37 +394,42 @@ export function useSchoolLandingState(initialData?: Record<string, unknown>) {
           const parsedFaq = parseConfigArray<FaqItem>(cfg.ppdb_faq_config);
           if (parsedFaq && parsedFaq.length > 0) {
             setFaqList(parsedFaq);
-          } else {
-            setFaqList(isDemo ? DEFAULT_FAQ : []);
+          } else if (isDemo) {
+            setFaqList(DEFAULT_FAQ);
           }
 
           const parsedAlur = parseConfigArray<AlurItem>(cfg.ppdb_alur_config);
           if (parsedAlur && parsedAlur.length > 0) {
             setAlurList(parsedAlur);
-          } else {
-            setAlurList(isDemo ? DEFAULT_ALUR : []);
+          } else if (isDemo) {
+            setAlurList(DEFAULT_ALUR);
           }
 
           const parsedMajors = parseConfigArray<MajorItem>(cfg.ppdb_majors_config);
           if (parsedMajors && parsedMajors.length > 0) {
             setMajors(parsedMajors);
-          } else {
-            setMajors(isDemo ? DEFAULT_MAJORS : []);
+          } else if (isDemo) {
+            setMajors(DEFAULT_MAJORS);
           }
 
           const parsedPartners = parseConfigArray<PartnerItem>(cfg.ppdb_partners_config);
           if (parsedPartners && parsedPartners.length > 0) {
             setPartnersList(parsedPartners);
-          } else {
-            setPartnersList(isDemo ? DEFAULT_PARTNERS : []);
+          } else if (isDemo) {
+            setPartnersList(DEFAULT_PARTNERS);
           }
 
-          let g = cfg.ppdb_gelombang_config;
-          if (typeof g === "string" && g.trim().startsWith("{")) {
-            try { g = JSON.parse(g); } catch (_e) {}
-          }
-          if (g && typeof g === "object") {
-            setGelombangConfig(g);
+          if (cfg.ppdb_gelombang_config) {
+            let g = cfg.ppdb_gelombang_config;
+            if (typeof g === "string") {
+              try { g = JSON.parse(g); } catch (_e) {}
+            }
+            if (typeof g === "string") {
+              try { g = JSON.parse(g); } catch (_e) {}
+            }
+            if (g && typeof g === "object" && (g.gelombang1 || g.gelombang2)) {
+              setGelombangConfig(g);
+            }
           }
 
           setLocalLandingCache(schoolSlug, cfg);

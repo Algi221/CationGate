@@ -348,80 +348,132 @@ export function useKelolaUIState() {
       if (activeConfig.ppdb_footer_desc) setFooterDesc(activeConfig.ppdb_footer_desc);
       else if (!draft && isDemo) setSchoolTitle(`PPDB ${ppdbTitle || 'Sekolah'}`);
 
-      if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
-        setAlurList(activeConfig.ppdb_alur_config);
-      } else if (!isDemo) {
-        setAlurList([]);
+      const parseConfigArray = <T>(val: unknown): T[] | null => {
+        if (Array.isArray(val)) return val as T[];
+        if (typeof val === "string") {
+          let curr = val.trim();
+          let depth = 0;
+          while (depth < 4) {
+            if (curr.startsWith("[") && curr.endsWith("]")) {
+              try {
+                const parsed = JSON.parse(curr);
+                if (Array.isArray(parsed)) return parsed as T[];
+                if (typeof parsed === "string") {
+                  curr = parsed.trim();
+                  depth++;
+                  continue;
+                }
+              } catch (_e) {
+                break;
+              }
+            } else if (curr.startsWith('"') && curr.endsWith('"')) {
+              try {
+                const unquoted = JSON.parse(curr);
+                if (typeof unquoted === "string") {
+                  curr = unquoted.trim();
+                  depth++;
+                  continue;
+                }
+                if (Array.isArray(unquoted)) return unquoted as T[];
+              } catch (_e) {
+                break;
+              }
+            } else {
+              break;
+            }
+          }
+        }
+        return null;
+      };
+
+      const parsedAlur = parseConfigArray<AlurItem>(activeConfig.ppdb_alur_config);
+      if (parsedAlur && parsedAlur.length > 0) {
+        setAlurList(parsedAlur);
+      } else if (isDemo) {
+        setAlurList(DEFAULT_ALUR);
       }
-      if (activeConfig.ppdb_faq_config && Array.isArray(activeConfig.ppdb_faq_config)) {
-        setFaqList(activeConfig.ppdb_faq_config);
-      } else {
-        setFaqList(isDemo ? DEFAULT_FAQ : []);
+
+      const parsedFaq = parseConfigArray<FaqItem>(activeConfig.ppdb_faq_config);
+      if (parsedFaq && parsedFaq.length > 0) {
+        setFaqList(parsedFaq);
+      } else if (isDemo) {
+        setFaqList(DEFAULT_FAQ);
       }
-      if (activeConfig.ppdb_partners_config && Array.isArray(activeConfig.ppdb_partners_config)) {
-        setPartnersList(activeConfig.ppdb_partners_config);
-      } else {
-        setPartnersList(isDemo ? DEFAULT_PARTNERS : []);
+
+      const parsedPartners = parseConfigArray<PartnerItem>(activeConfig.ppdb_partners_config);
+      if (parsedPartners && parsedPartners.length > 0) {
+        setPartnersList(parsedPartners);
+      } else if (isDemo) {
+        setPartnersList(DEFAULT_PARTNERS);
       }
+
       if (isDemo) {
         setMajorsList(DEFAULT_MAJORS);
-      } else if (activeConfig.ppdb_majors_config && Array.isArray(activeConfig.ppdb_majors_config)) {
-        const dbMajors = activeConfig.ppdb_majors_config;
-        const mergedMajors: MajorItem[] = [];
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dbMajors.forEach((dbMajor: any) => {
-          const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
-          mergedMajors.push({
-            code: dbMajor.code,
-            title: dbMajor.title || "",
-            desc: dbMajor.desc || "",
-            color: dbMajor.color || (defMajor?.color || "#0066ff"),
-            careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : [],
-            facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : [],
-            logo: dbMajor.logo || "",
-            banner: dbMajor.banner || "",
-            video: dbMajor.video || "",
-            gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : []
-          });
-        });
-        setMajorsList(mergedMajors);
       } else {
-        setMajorsList([]);
+        const parsedMajors = parseConfigArray<MajorItem>(activeConfig.ppdb_majors_config);
+        if (parsedMajors && parsedMajors.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mergedMajors = parsedMajors.map((dbMajor: any) => {
+            const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
+            return {
+              code: dbMajor.code,
+              title: dbMajor.title || "",
+              desc: dbMajor.desc || "",
+              color: dbMajor.color || (defMajor?.color || "#0066ff"),
+              careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : (typeof dbMajor.careers === 'string' ? dbMajor.careers.split(',').map((s: string) => s.trim()) : []),
+              facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : (typeof dbMajor.facilities === 'string' ? dbMajor.facilities.split(',').map((s: string) => s.trim()) : []),
+              logo: dbMajor.logo || "",
+              banner: dbMajor.banner || "",
+              video: dbMajor.video || "",
+              gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : []
+            };
+          });
+          setMajorsList(mergedMajors);
+        }
       }
+
       if (activeConfig.ppdb_gelombang_config) {
         let g = activeConfig.ppdb_gelombang_config;
-        if (typeof g === "string" && g.trim().startsWith("{")) {
+        if (typeof g === "string") {
+          try { g = JSON.parse(g); } catch (_e) {}
+        }
+        if (typeof g === "string") {
           try { g = JSON.parse(g); } catch (_e) {}
         }
         if (g && typeof g === "object") {
-          setGelombangConfig({
-            gelombang1: {
-              start: g.gelombang1?.start || "",
-              end: g.gelombang1?.end || ""
-            },
-            gelombang2: {
-              start: g.gelombang2?.start || "",
-              end: g.gelombang2?.end || ""
-            }
-          });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const gObj = g as any;
+          if (gObj.gelombang1?.start || gObj.gelombang1?.end || gObj.gelombang2?.start || gObj.gelombang2?.end) {
+            setGelombangConfig({
+              gelombang1: {
+                start: gObj.gelombang1?.start || "",
+                end: gObj.gelombang1?.end || ""
+              },
+              gelombang2: {
+                start: gObj.gelombang2?.start || "",
+                end: gObj.gelombang2?.end || ""
+              }
+            });
+          }
         }
-      } else if (!isDemo) {
-        setGelombangConfig({
-          gelombang1: { start: "", end: "" },
-          gelombang2: { start: "", end: "" }
-        });
       }
+
       if (activeConfig.ppdb_bank_config) {
-        const bankData = activeConfig.ppdb_bank_config;
-        if (Array.isArray(bankData)) {
+        let bankData = activeConfig.ppdb_bank_config;
+        if (typeof bankData === "string") {
+          try { bankData = JSON.parse(bankData); } catch (_e) {}
+        }
+        if (Array.isArray(bankData) && bankData.length > 0) {
           setBankConfigList(bankData);
         } else if (bankData && typeof bankData === "object") {
-          setBankConfigList([bankData]);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if ((bankData as any).bankName) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setBankConfigList([bankData as any]);
+          }
         }
-      } else if (!isDemo) {
-        setBankConfigList([]);
       }
+
       if (activeConfig.ppdb_landing_active !== undefined) {
         setIsLandingPageActive(activeConfig.ppdb_landing_active === true || activeConfig.ppdb_landing_active === "true");
       }
@@ -679,14 +731,32 @@ export function useKelolaUIState() {
         if (savedData.ppdb_majors_config && Array.isArray(savedData.ppdb_majors_config)) {
           setMajorsList(savedData.ppdb_majors_config);
         }
+        if (savedData.ppdb_hero_bg_image) {
+          setHeroBgImage(savedData.ppdb_hero_bg_image);
+        }
+        if (savedData.ppdb_logo_url) {
+          setSchoolLogo(savedData.ppdb_logo_url);
+        }
+        if (savedData.ppdb_partners_config && Array.isArray(savedData.ppdb_partners_config)) {
+          setPartnersList(savedData.ppdb_partners_config);
+        }
+        if (savedData.ppdb_alur_config && Array.isArray(savedData.ppdb_alur_config)) {
+          setAlurList(savedData.ppdb_alur_config);
+        }
+        if (savedData.ppdb_faq_config && Array.isArray(savedData.ppdb_faq_config)) {
+          setFaqList(savedData.ppdb_faq_config);
+        }
+        if (savedData.ppdb_bank_config && Array.isArray(savedData.ppdb_bank_config)) {
+          setBankConfigList(savedData.ppdb_bank_config);
+        }
 
         try {
           if (slug) {
             localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(savedData.ppdb_majors_config || finalMajors));
-            localStorage.setItem(`ppdb_alur_config_${slug}`, JSON.stringify(alurList));
-            localStorage.setItem(`ppdb_faq_config_${slug}`, JSON.stringify(faqList));
-            localStorage.setItem(`ppdb_partners_config_${slug}`, JSON.stringify(partnersList));
-            localStorage.setItem(`ppdb_bank_config_${slug}`, JSON.stringify(bankConfigList));
+            localStorage.setItem(`ppdb_alur_config_${slug}`, JSON.stringify(savedData.ppdb_alur_config || alurList));
+            localStorage.setItem(`ppdb_faq_config_${slug}`, JSON.stringify(savedData.ppdb_faq_config || faqList));
+            localStorage.setItem(`ppdb_partners_config_${slug}`, JSON.stringify(savedData.ppdb_partners_config || partnersList));
+            localStorage.setItem(`ppdb_bank_config_${slug}`, JSON.stringify(savedData.ppdb_bank_config || bankConfigList));
             localStorage.setItem(`ppdb_fields_config_${slug}`, JSON.stringify(fieldsConfigUI));
             localStorage.setItem(`ppdb_gelombang_config_${slug}`, JSON.stringify(gelombangConfig));
             localStorage.setItem(`cation_landing_cache_${slug}`, JSON.stringify(savedData));

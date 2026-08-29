@@ -106,6 +106,7 @@ export const SchoolGelombang: React.FC<SchoolGelombangProps> = ({
                   <h3 className="text-xl font-black text-slate-800 dark:text-white mt-1">Gelombang 1</h3>
                 </div>
                 <span
+                  suppressHydrationWarning
                   className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${status1.color}`}
                 >
                   {status1.active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
@@ -120,7 +121,7 @@ export const SchoolGelombang: React.FC<SchoolGelombangProps> = ({
                     <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
                       Tanggal Pendaftaran
                     </span>
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                    <span suppressHydrationWarning className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
                       {formatDate(gelombangConfig.gelombang1.start)} - {formatDate(gelombangConfig.gelombang1.end)}
                     </span>
                   </div>
@@ -148,6 +149,7 @@ export const SchoolGelombang: React.FC<SchoolGelombangProps> = ({
                   <h3 className="text-xl font-black text-slate-800 dark:text-white mt-1">Gelombang 2</h3>
                 </div>
                 <span
+                  suppressHydrationWarning
                   className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${status2.color}`}
                 >
                   {status2.active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
@@ -162,7 +164,7 @@ export const SchoolGelombang: React.FC<SchoolGelombangProps> = ({
                     <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
                       Tanggal Pendaftaran
                     </span>
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                    <span suppressHydrationWarning className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
                       {formatDate(gelombangConfig.gelombang2.start)} - {formatDate(gelombangConfig.gelombang2.end)}
                     </span>
                   </div>

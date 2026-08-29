@@ -19,6 +19,22 @@ import {
   exportAllClassesToExcel 
 } from "../utils/classDistribution";
 
+function parseConfigArray<T>(val: unknown): T[] | null {
+  if (!val) return null;
+  if (Array.isArray(val)) return val as T[];
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return parsed as T[];
+      if (typeof parsed === "string") {
+        const doubleParsed = JSON.parse(parsed);
+        if (Array.isArray(doubleParsed)) return doubleParsed as T[];
+      }
+    } catch (_e) {}
+  }
+  return null;
+}
+
 export function usePembagianKelasState() {
   const { applicants, updateActiveStudent, fetchActiveStudents, fetchAdminApplicants } = usePPDB();
   const params = useParams();
@@ -84,16 +100,16 @@ export function usePembagianKelasState() {
           if (json.data.ppdb_school_period) {
             setSchoolPeriod(json.data.ppdb_school_period);
           }
-          if (
-            json.data.ppdb_majors_config &&
-            Array.isArray(json.data.ppdb_majors_config)
-          ) {
-            setDynamicMajorsList(json.data.ppdb_majors_config);
-            if (json.data.ppdb_majors_config.length > 0) {
-              setSelectedMajor(prev => prev || json.data.ppdb_majors_config[0].code || json.data.ppdb_majors_config[0].title || "");
-            }
-          } else if (!isDemo) {
-            setDynamicMajorsList([]);
+          const parsedMajors = parseConfigArray<MajorConfigItem>(json.data.ppdb_majors_config);
+          if (parsedMajors && parsedMajors.length > 0) {
+            setDynamicMajorsList(parsedMajors);
+            try {
+              localStorage.setItem("ppdb_majors_config", JSON.stringify(parsedMajors));
+            } catch (_) {}
+            setSelectedMajor(prev => {
+              if (prev && parsedMajors.some(m => (m.code || m.name || m.title) === prev)) return prev;
+              return parsedMajors[0].code || parsedMajors[0].title || parsedMajors[0].name || "";
+            });
           }
         }
       } catch (e) {
@@ -104,9 +120,33 @@ export function usePembagianKelasState() {
   }, [schoolSlug, isDemo]);
 
   const activeMajors = useMemo(() => {
-    const list = dynamicMajorsList && dynamicMajorsList.length > 0
-      ? dynamicMajorsList
-      : (isDemo ? DEFAULT_MAJORS : []);
+    let list: MajorConfigItem[] = [];
+    if (dynamicMajorsList && dynamicMajorsList.length > 0) {
+      list = dynamicMajorsList;
+    } else if (isDemo) {
+      list = DEFAULT_MAJORS;
+    } else {
+      // Fallback: derive from applicants if config hasn't loaded
+      const unique = new Map<string, string>();
+      applicants.forEach((a: Applicant) => {
+        const m = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").trim();
+        if (m) {
+          const match = m.match(/\(([A-Z0-9_-]+)\)/i);
+          const code = (match ? match[1] : m.split(" ")[0] || m).toUpperCase();
+          if (!unique.has(code)) {
+            unique.set(code, m);
+          }
+        }
+      });
+      if (unique.size > 0) {
+        list = Array.from(unique.entries()).map(([code, name]) => ({
+          code,
+          name,
+          title: name
+        }));
+      }
+    }
+
     return list.map((m) => {
       let logo = m.logo || getMajorLogoUrl(m.code);
       if (logo && logo.startsWith("/jurusan/")) {
@@ -117,7 +157,15 @@ export function usePembagianKelasState() {
         logo
       };
     });
-  }, [dynamicMajorsList, isDemo]);
+  }, [dynamicMajorsList, isDemo, applicants]);
+
+  useEffect(() => {
+    if (activeMajors.length > 0) {
+      if (!selectedMajor || !activeMajors.some(m => (m.code || m.title || m.name) === selectedMajor)) {
+        setSelectedMajor(activeMajors[0].code || activeMajors[0].title || activeMajors[0].name || "");
+      }
+    }
+  }, [activeMajors, selectedMajor]);
 
   const generateDefaultClasses = useCallback((): ClassItem[] => {
     const defaultList: ClassItem[] = [];

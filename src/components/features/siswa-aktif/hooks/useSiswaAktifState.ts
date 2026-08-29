@@ -6,6 +6,22 @@ import { generateNipdMap } from "@/utils/nipd";
 import { exportActiveStudentsToExcel } from "../utils/excelHelper";
 import { ActiveStudent } from "../types";
 
+function parseConfigArray<T>(val: unknown): T[] | null {
+  if (!val) return null;
+  if (Array.isArray(val)) return val as T[];
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return parsed as T[];
+      if (typeof parsed === "string") {
+        const doubleParsed = JSON.parse(parsed);
+        if (Array.isArray(doubleParsed)) return doubleParsed as T[];
+      }
+    } catch (_e) {}
+  }
+  return null;
+}
+
 export function useSiswaAktifState() {
   const { 
     activeStudents, 
@@ -37,7 +53,7 @@ export function useSiswaAktifState() {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.map((m: { title?: string; name?: string }) => m.title || m.name || "").filter(Boolean);
+            return parsed.map((m: { title?: string; name?: string; code?: string }) => m.title || m.name || m.code || "").filter(Boolean);
           }
         } catch (_) {}
       }
@@ -63,13 +79,17 @@ export function useSiswaAktifState() {
     })
       .then((r) => r.json())
       .then((json) => {
-        if (json.success && json.data?.ppdb_majors_config && Array.isArray(json.data.ppdb_majors_config)) {
-          const list = json.data.ppdb_majors_config
-            .map((m: { title?: string; name?: string }) => m.title || m.name || "")
-            .filter(Boolean);
-          setMajorsList(list);
-        } else if (!isDemoMode) {
-          setMajorsList([]);
+        if (json.success && json.data?.ppdb_majors_config) {
+          const parsed = parseConfigArray<{ title?: string; name?: string; code?: string }>(json.data.ppdb_majors_config);
+          if (parsed && parsed.length > 0) {
+            const list = parsed
+              .map((m) => m.title || m.name || m.code || "")
+              .filter(Boolean);
+            setMajorsList(list);
+            try {
+              localStorage.setItem("ppdb_majors_config", JSON.stringify(parsed));
+            } catch (_) {}
+          }
         }
       })
       .catch(() => {});

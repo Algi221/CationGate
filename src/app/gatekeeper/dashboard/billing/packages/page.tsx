@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, X, CheckCircle2, AlertTriangle, Box, Sparkles, Shield, Crown } from "lucide-react";
+import { Plus, Pencil, Trash2, X, CheckCircle2, Box, Sparkles, Shield, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Swal from "sweetalert2";
 
@@ -111,18 +111,7 @@ export default function GatekeeperPackagesPage() {
     if (!formName.trim() || formPriceYearly < 0) {
       Swal.fire({
         title: "Data Belum Lengkap",
-        text: "Mohon lengkapi nama paket dan harga tahunan.",
-        icon: "warning",
-        confirmButtonColor: "#2563EB",
-        customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
-      });
-      return;
-    }
-
-    if (formPriceYearly > 0 && formPriceYearly < 10_000_000) {
-      Swal.fire({
-        title: "Harga Minimal Puluhan Juta",
-        text: "Harga tahunan paket berbayar minimal adalah Rp 10.000.000.",
+        text: "Mohon lengkapi nama paket dan harga tahunan (minimal 0 untuk Free Trial).",
         icon: "warning",
         confirmButtonColor: "#2563EB",
         customClass: { popup: "rounded-3xl dark:bg-slate-900 dark:text-white" }
@@ -599,20 +588,10 @@ export default function GatekeeperPackagesPage() {
                     inputMode="numeric"
                     value={priceYearlyDisplay}
                     onChange={(e) => handlePriceChange(e.target.value)}
-                    placeholder="15.000.000 (Min. Rp 10.000.000 untuk paket berbayar, atau 0 untuk Free Trial)"
-                    className={`w-full pl-12 pr-4 py-2.5 rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none text-xs font-mono font-bold transition-all ${
-                      formPriceYearly > 0 && formPriceYearly < 10_000_000
-                        ? "border-rose-400 focus:ring-2 focus:ring-rose-400/20"
-                        : "border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B]"
-                    }`}
+                    placeholder="1.200.000 (atau 0 untuk Free Trial)"
+                    className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none text-xs font-mono font-bold transition-all focus:ring-2 focus:ring-[#FFD33B]/20 focus:border-[#FFD33B]"
                   />
                 </div>
-                {formPriceYearly > 0 && formPriceYearly < 10_000_000 && (
-                  <p className="mt-1.5 text-xs font-semibold text-rose-500 flex items-center gap-1">
-                    <AlertTriangle size={12} />
-                    <span>Harga paket berbayar minimal Rp 10.000.000 (puluhan juta)</span>
-                  </p>
-                )}
               </div>
 
               <div>
@@ -623,7 +602,7 @@ export default function GatekeeperPackagesPage() {
                   rows={6}
                   value={formFeatures}
                   onChange={(e) => setFormFeatures(e.target.value)}
-                  placeholder={`Pendaftaran Online PPDB Unlimited\nCustom Branding & Logo\nMulti-Admin Dashboard\nWhatsApp Notifikasi Otomatis\nPrioritas Support 24/7\nPembagian Kelas Otomatis`}
+                  placeholder={`Mendapatkan subdomain\nLanding page sekolah\nProfil sekolah\nExport & import excel data siswa aktif\nMasa aktif 30 hari\nBelum bisa membuka SPMB`}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 text-xs font-medium outline-none focus:border-[#FFD33B] focus:ring-2 focus:ring-[#FFD33B]/20"
                 />
               </div>

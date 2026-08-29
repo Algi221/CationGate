@@ -356,12 +356,12 @@ export default function SubscriptionManagementPage() {
       name: "Free Trial",
       price_yearly: 0,
       features: [
-        "mendapatkan subdomain",
-        "bisa mengumumkan informasi sekolah",
-        "mendapatkan profil sekolah",
-        "bisa atur kelola halaman sekolah",
-        "Masa Aktif 30 Hari",
-        "import/export excel data siswa"
+        "Mendapatkan subdomain",
+        "Landing page sekolah",
+        "Profil sekolah",
+        "Export & import excel data siswa aktif",
+        "Masa aktif 30 hari",
+        "Belum bisa membuka SPMB"
       ]
     },
     {
@@ -369,13 +369,12 @@ export default function SubscriptionManagementPage() {
       name: "Pro Tahunan",
       price_yearly: 1200000,
       features: [
-        "Semua Fitur ",
+        "Semua fitur Free Trial",
+        "Semua data Dinamis",
+        "Bisa membuat akun admin baru",
         "Unlimited Pendaftar",
-        "Multi-Admin Dashboard",
-        "Prioritas Support 24/7",
-        "mengelola data siswa",
-        "Laporan & Statistik Lengkap",
-        "Import/Export excel data siswa"
+        "Custom Tampilan profil sekolah",
+        "Masa aktif 365 hari/setahun"
       ]
     },
     {

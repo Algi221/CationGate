@@ -86,7 +86,7 @@ export default function ContactPage() {
           <div className="absolute bottom-6 right-8 sm:right-16 w-6 h-6 border-4 border-[#2e3749]/30 rounded-full border-b-transparent border-l-transparent rotate-45 pointer-events-none" />
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#2e3749] mb-6">
-            Let&apos;s Connect With Us
+            Mari terhubung dengan kami
           </h1>
           
           <p className="text-slate-500 max-w-2xl text-sm sm:text-base leading-relaxed mb-8">

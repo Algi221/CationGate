@@ -622,8 +622,8 @@ gatekeeperRouter.post('/plans', gatekeeperAuth, async (c) => {
       return c.json({ success: false, message: 'Nama, harga bulanan, dan harga tahunan wajib diisi' }, 400);
     }
 
-    if (Number(price_yearly) < 10_000_000) {
-      return c.json({ success: false, message: 'Harga tahunan paket minimal Rp 10.000.000 (puluhan juta)' }, 400);
+    if (Number(price_yearly) < 0) {
+      return c.json({ success: false, message: 'Harga tahunan paket tidak boleh negatif' }, 400);
     }
 
     const supabase = getSupabaseClient();
@@ -647,8 +647,8 @@ gatekeeperRouter.put('/plans/:id', gatekeeperAuth, async (c) => {
     const planId = Number(c.req.param('id'));
     const updates = await c.req.json();
 
-    if (updates.price_yearly != null && Number(updates.price_yearly) < 10_000_000) {
-      return c.json({ success: false, message: 'Harga tahunan paket minimal Rp 10.000.000 (puluhan juta)' }, 400);
+    if (updates.price_yearly != null && Number(updates.price_yearly) < 0) {
+      return c.json({ success: false, message: 'Harga tahunan paket tidak boleh negatif' }, 400);
     }
 
     const supabase = getSupabaseClient();

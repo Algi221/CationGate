@@ -15,32 +15,30 @@ interface SaaSPlan {
 }
 
 const DEFAULT_FREE_FEATURES = [
-  "Pendaftaran Online PPDB",
-  "Kelola Data Calon Siswa",
-  "Export Excel",
-  "Landing Page Sekolah",
-  "Maks 100 Pendaftar",
-  "Masa Aktif 30 Hari",
+  "Mendapatkan subdomain",
+  "Landing page sekolah",
+  "Profil sekolah",
+  "Export & import excel data siswa aktif",
+  "Masa aktif 30 hari",
+  "Belum bisa membuka SPMB",
 ];
 
 const DEFAULT_STARTER_FEATURES = [
-  "Pendaftaran Online PPDB",
-  "Kelola Data Calon Siswa",
-  "Export Excel",
-  "Landing Page Sekolah",
+  "Mendapatkan subdomain",
+  "Landing page sekolah",
+  "Profil sekolah",
+  "Export & import excel data siswa aktif",
   "Notifikasi Email Sistem",
   "Dukungan Teknis Standar",
 ];
 
 const DEFAULT_PRO_FEATURES = [
-  "Semua Fitur Free Trial",
+  "Semua fitur Free Trial",
+  "Semua data Dinamis",
+  "Bisa membuat akun admin baru",
   "Unlimited Pendaftar",
-  "Custom Branding & Logo",
-  "Multi-Admin Dashboard",
-  "WhatsApp Notifikasi",
-  "Prioritas Support 24/7",
-  "Pembagian Kelas Otomatis",
-  "Laporan & Statistik Lengkap",
+  "Custom Tampilan profil sekolah",
+  "Masa aktif 365 hari/setahun",
 ];
 
 const formatRupiahNumber = (val: number | string) => {
@@ -51,7 +49,6 @@ const formatRupiahNumber = (val: number | string) => {
 export const ProductPacks = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
   const [plans, setPlans] = useState<SaaSPlan[]>([]);
-  const [proPrice, setProPrice] = useState("Rp 1.200.000");
 
   useEffect(() => {
     fetch("/api/saas/plans")
@@ -62,14 +59,6 @@ export const ProductPacks = () => {
             (p: SaaSPlan) => p.is_active !== false
           );
           setPlans(activeList.slice(0, 3));
-
-          const proPlan = activeList.find(
-            (p: SaaSPlan) =>
-              p.name?.toLowerCase().includes("pro") || p.id === 2
-          );
-          if (proPlan && typeof proPlan.price_yearly === "number") {
-            setProPrice(`Rp ${formatRupiahNumber(proPlan.price_yearly)}`);
-          }
         }
       })
       .catch(() => {});
@@ -78,7 +67,7 @@ export const ProductPacks = () => {
   // Kondisi apakah terdapat 3 paket
   const isThreePlans = plans.length === 3;
 
-  // Pemetaan untuk 3 paket
+  // Pemetaan paket
   let freePlan: SaaSPlan = {
     id: 0,
     name: "Free Trial",
@@ -98,23 +87,25 @@ export const ProductPacks = () => {
     features: DEFAULT_PRO_FEATURES,
   };
 
-  if (isThreePlans) {
+  if (plans.length > 0) {
     const identifiedFree = plans.find(
       (p) =>
         p.price_yearly === 0 ||
         p.name.toLowerCase().includes("free") ||
         p.name.toLowerCase().includes("gratis")
     );
-    if (identifiedFree) {
-      freePlan = identifiedFree;
-      const remainingPaid = plans.filter((p) => p.id !== identifiedFree.id);
+    const identifiedPro = plans.find(
+      (p) =>
+        p.name.toLowerCase().includes("pro") ||
+        p.price_yearly > 0
+    );
+    if (identifiedFree) freePlan = identifiedFree;
+    if (identifiedPro) paidPlan2 = identifiedPro;
+
+    if (isThreePlans) {
+      const remainingPaid = plans.filter((p) => p.id !== freePlan.id);
       if (remainingPaid[0]) paidPlan1 = remainingPaid[0];
       if (remainingPaid[1]) paidPlan2 = remainingPaid[1];
-    } else {
-      // Jika semua memiliki harga, ambil paket pertama untuk free trial / starter card di kanan
-      freePlan = plans[0];
-      paidPlan1 = plans[1] || paidPlan1;
-      paidPlan2 = plans[2] || paidPlan2;
     }
   }
 
@@ -235,7 +226,10 @@ export const ProductPacks = () => {
 
                 <div className="w-full md:w-7/12 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
                   <div className="space-y-3.5">
-                    {DEFAULT_FREE_FEATURES.map((feature, idx) => (
+                    {(freePlan.features && freePlan.features.length > 0
+                      ? freePlan.features
+                      : DEFAULT_FREE_FEATURES
+                    ).map((feature, idx) => (
                       <div
                         key={idx}
                         className="flex items-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-300"
@@ -264,17 +258,13 @@ export const ProductPacks = () => {
               <div className="w-full md:w-5/12 flex flex-col h-full justify-between space-y-6 pt-2">
                 <div>
                   <span className="inline-block px-3 py-1 bg-[#FFD33B] text-[#2e3749] text-xs font-bold tracking-wider rounded-md uppercase mb-4">
-                    {isThreePlans
-                      ? paidPlan2.name?.toUpperCase() || "PRO TAHUNAN"
-                      : "PRO TAHUNAN"}
+                    {paidPlan2.name?.toUpperCase() || "PRO TAHUNAN"}
                   </span>
                   <div className="flex items-baseline gap-1.5 whitespace-nowrap">
                     <span className="text-4xl font-bold text-[#2e3749] dark:text-white">
-                      {isThreePlans
-                        ? paidPlan2.price_yearly === 0
-                          ? "Gratis"
-                          : `Rp ${formatRupiahNumber(paidPlan2.price_yearly)}`
-                        : proPrice}
+                      {paidPlan2.price_yearly === 0
+                        ? "Gratis"
+                        : `Rp ${formatRupiahNumber(paidPlan2.price_yearly)}`}
                     </span>
                     <span className="text-slate-400 text-sm">/ Tahun</span>
                   </div>
@@ -287,13 +277,13 @@ export const ProductPacks = () => {
                   href="/daftar"
                   className="inline-flex justify-center items-center w-full py-3 px-4 bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] text-sm font-bold rounded-xl transition-all shadow-sm"
                 >
-                  Pilih {isThreePlans ? paidPlan2.name || "Paket Pro" : "Paket Pro"}
+                  Pilih {paidPlan2.name || "Paket Pro"}
                 </Link>
               </div>
 
               <div className="w-full md:w-7/12 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
                 <div className="space-y-3.5">
-                  {(isThreePlans && paidPlan2.features && paidPlan2.features.length > 0
+                  {(paidPlan2.features && paidPlan2.features.length > 0
                     ? paidPlan2.features
                     : DEFAULT_PRO_FEATURES
                   ).map((feature, idx) => (

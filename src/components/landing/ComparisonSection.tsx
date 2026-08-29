@@ -271,7 +271,6 @@ export function ComparisonSection() {
             pembayaran transfer online maupun tunai langsung di loket sekolah.
           </p>
         </motion.div>
-        z
       </div>
     </section>
   );

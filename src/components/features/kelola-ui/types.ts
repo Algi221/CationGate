@@ -31,6 +31,7 @@ export interface MajorItem {
 export interface RevisionLog {
   id: string;
   version: number;
+  revision_number?: number;
   changed_by: string;
   description: string;
   created_at: string;

@@ -17,7 +17,7 @@ import { ContactScreen } from "@/components/landing/ContactScreen";
 import { CatBotWidget } from "@/components/landing/CatBotWidget";
 
 const VIDEO_COLLECTION = {
-  trailerAnime: "https://www.youtube-nocookie.com/embed/1FcVJxxPWh4",
+  trailerAnime: "https://www.youtube-nocookie.com/embed/JAKZSaq31pc",
   videoLama: "https://www.youtube-nocookie.com/embed/VIDEO_LAMA_ID_DISINI",
   rickroll: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
 };

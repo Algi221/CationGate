@@ -679,6 +679,8 @@ export function useKelolaUIState() {
             localStorage.setItem(`ppdb_partners_config_${slug}`, JSON.stringify(partnersList));
             localStorage.setItem(`ppdb_bank_config_${slug}`, JSON.stringify(bankConfigList));
             localStorage.setItem(`ppdb_fields_config_${slug}`, JSON.stringify(fieldsConfigUI));
+            localStorage.setItem(`ppdb_gelombang_config_${slug}`, JSON.stringify(gelombangConfig));
+            localStorage.setItem(`cation_landing_cache_${slug}`, JSON.stringify(savedData));
           }
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
           localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));

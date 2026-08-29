@@ -165,7 +165,7 @@ export const FloatingVideoWidget: React.FC<FloatingVideoWidgetProps> = ({
 
       <div className="absolute inset-0 pointer-events-none w-100 origin-top-left scale-50">
         <iframe
-          src="https://www.youtube-nocookie.com/embed/1FcVJxxPWh4?autoplay=1&mute=1&loop=1&playlist=1FcVJxxPWh4&controls=0&rel=0&modestbranding=1&playsinline=1&disablekb=1"
+          src="https://www.youtube-nocookie.com/embed/JAKZSaq31pc?autoplay=1&mute=1&loop=1&playlist=JAKZSaq31pc&controls=0&rel=0&modestbranding=1&playsinline=1&disablekb=1"
           title="Floating Background Video"
           className="w-full aspect-video object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-300"
           frameBorder="0"

@@ -43,6 +43,11 @@ const DEFAULT_PRO_FEATURES = [
   "Laporan & Statistik Lengkap",
 ];
 
+const formatRupiahNumber = (val: number | string) => {
+  const num = Number(val || 0);
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
 export const ProductPacks = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
   const [plans, setPlans] = useState<SaaSPlan[]>([]);
@@ -63,7 +68,7 @@ export const ProductPacks = () => {
               p.name?.toLowerCase().includes("pro") || p.id === 2
           );
           if (proPlan && typeof proPlan.price_yearly === "number") {
-            setProPrice(`Rp ${proPlan.price_yearly.toLocaleString("id-ID")}`);
+            setProPrice(`Rp ${formatRupiahNumber(proPlan.price_yearly)}`);
           }
         }
       })
@@ -161,7 +166,7 @@ export const ProductPacks = () => {
                       <span className="text-4xl font-bold text-[#2e3749] dark:text-white">
                         {paidPlan1.price_yearly === 0
                           ? "Gratis"
-                          : `Rp ${paidPlan1.price_yearly.toLocaleString("id-ID")}`}
+                          : `Rp ${formatRupiahNumber(paidPlan1.price_yearly)}`}
                       </span>
                       <span className="text-slate-400 text-sm">/ Tahun</span>
                     </div>
@@ -268,7 +273,7 @@ export const ProductPacks = () => {
                       {isThreePlans
                         ? paidPlan2.price_yearly === 0
                           ? "Gratis"
-                          : `Rp ${paidPlan2.price_yearly.toLocaleString("id-ID")}`
+                          : `Rp ${formatRupiahNumber(paidPlan2.price_yearly)}`
                         : proPrice}
                     </span>
                     <span className="text-slate-400 text-sm">/ Tahun</span>

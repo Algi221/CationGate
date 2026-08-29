@@ -594,9 +594,14 @@ configRouter.get('/revisions', adminAuth, async (c) => {
       }
     }
 
+    const mappedList = list.map((item, idx) => ({
+      ...item,
+      revision_number: list.length - idx
+    }));
+
     return c.json({
       success: true,
-      data: list
+      data: mappedList
     });
   } catch (err: unknown) {
     console.error('Fetch revisions error:', err instanceof Error ? err.message : String(err));

@@ -69,12 +69,10 @@ export function SchoolProfileClient({
     ppdbTitle ||
     serverSchoolSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // Background refresh to catch any recent admin updates without blocking initial 0ms paint
+  // Background refresh only if initialProfile was not provided from server component
   useEffect(() => {
-    if (serverSchoolSlug) {
-      fetch(`/api/school-profile?school_slug=${encodeURIComponent(serverSchoolSlug)}&_t=${Date.now()}`, {
-        cache: "no-store"
-      })
+    if (serverSchoolSlug && (!initialProfile || Object.keys(initialProfile).length === 0)) {
+      fetch(`/api/school-profile?school_slug=${encodeURIComponent(serverSchoolSlug)}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.data) {
@@ -83,7 +81,7 @@ export function SchoolProfileClient({
         })
         .catch(() => {});
     }
-  }, [serverSchoolSlug]);
+  }, [serverSchoolSlug, initialProfile]);
 
   const identitas = {
     nama: (profileData?.nama as string) || (profileData?.identitas?.nama as string) || currentTitle,

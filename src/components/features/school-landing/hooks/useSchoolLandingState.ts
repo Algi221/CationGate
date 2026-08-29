@@ -292,6 +292,14 @@ export function useSchoolLandingState(initialData?: Record<string, unknown>) {
             if (parsedPartners && parsedPartners.length > 0) setPartnersList(parsedPartners);
             const parsedAlur = parseConfigArray<AlurItem>(cfg.ppdb_alur_config);
             if (parsedAlur && parsedAlur.length > 0) setAlurList(parsedAlur);
+
+            if (cfg.ppdb_gelombang_config) {
+              let g = cfg.ppdb_gelombang_config;
+              if (typeof g === "string" && g.trim().startsWith("{")) {
+                try { g = JSON.parse(g); } catch (_e) {}
+              }
+              if (g && typeof g === "object") setGelombangConfig(g);
+            }
           }
         }
       }
@@ -388,9 +396,11 @@ export function useSchoolLandingState(initialData?: Record<string, unknown>) {
           if (typeof g === "string" && g.trim().startsWith("{")) {
             try { g = JSON.parse(g); } catch (_e) {}
           }
-          if (g && typeof g === "object" && (g.gelombang1?.start || g.gelombang2?.start)) {
+          if (g && typeof g === "object") {
             setGelombangConfig(g);
           }
+
+          setLocalLandingCache(schoolSlug, cfg);
         }
       } catch (err) {
         console.warn("Failed to load school landing config:", err);

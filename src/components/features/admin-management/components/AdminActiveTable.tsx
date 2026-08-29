@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { KeyRound, Edit3, Trash2, Mail, CheckCircle2, Clock, Copy, RefreshCw } from "lucide-react";
+import { KeyRound, Edit3, Trash2, Mail, CheckCircle2, RefreshCw } from "lucide-react";
 import { AdminItem } from "../types";
 import Swal from "sweetalert2";
 
@@ -19,7 +19,7 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
   admins,
   loading,
   adminUser,
-  schoolSlug,
+  schoolSlug: _schoolSlug,
   isPro = true,
   handleEditClick,
   handleDeleteAdmin,
@@ -33,22 +33,6 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
       </div>
     );
   }
-
-  const handleCopyActivationLink = (admin: AdminItem) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://cationgate.site";
-    const slug = schoolSlug || "demo";
-    const link = admin.activation_link || `${origin}/${slug}/admin/activate?token=${admin.activation_token}`;
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(link);
-      Swal.fire({
-        icon: "success",
-        title: "Tautan Aktivasi Disalin!",
-        html: `<p class="text-xs text-slate-500 mb-2">Kirimkan tautan ini kepada <strong>${admin.nama_lengkap}</strong>:</p><input readonly value="${link}" class="w-full text-xs p-2 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700 font-mono select-all" />`,
-        confirmButtonText: "Selesai"
-      });
-    }
-  };
 
   return (
     <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
@@ -118,17 +102,9 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                          admin.role === "superadmin"
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
-                            : admin.role === "panitia"
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                            : "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                        }`}
-                      >
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-900/50">
                         <KeyRound size={10} />
-                        {admin.role}
+                        {admin.role?.toLowerCase() === "superadmin" ? "Superadmin" : "Admin"}
                       </span>
                     </td>
                     <td className="py-4 px-6">
@@ -138,20 +114,9 @@ export const AdminActiveTable: React.FC<AdminActiveTableProps> = ({
                           <span>Terverifikasi</span>
                         </div>
                       ) : (
-                        <div className="flex flex-col gap-1 items-start">
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50">
-                            <Clock size={12} />
-                            <span>Menunggu Aktivasi Gmail</span>
-                          </div>
-                          {admin.activation_token && (
-                            <button
-                              type="button"
-                              onClick={() => handleCopyActivationLink(admin)}
-                              className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer mt-0.5"
-                            >
-                              <Copy size={10} /> Salin Link Aktivasi
-                            </button>
-                          )}
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50">
+                          <CheckCircle2 size={12} />
+                          <span>Aktif</span>
                         </div>
                       )}
                     </td>

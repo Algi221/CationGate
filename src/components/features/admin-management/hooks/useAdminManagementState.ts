@@ -173,49 +173,41 @@ export function useAdminManagementState() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          role: "admin"
+        })
       });
       const data = await res.json();
       if (data.success) {
         setSuccessMsg(data.message || "Akun admin baru berhasil dibuat!");
-        const createdLink = data.activation_link || "";
         const emailTarget = formData.email;
+        const usernameTarget = formData.username;
+        const nameTarget = formData.nama_lengkap;
 
         setFormData({ username: "", email: "", password: "", nama_lengkap: "", role: "admin" });
         setShowAddForm(false);
         fetchAdmins();
 
-        const otpCode = data.otp_code || data.activation_token || "";
-
         Swal.fire({
-          title: "Admin Berhasil Didaftarkan! 🎉",
+          title: "Akun Admin Berhasil Dibuat! 🎉",
           html: `
             <div class="text-left text-xs space-y-3 mt-2">
-              <p class="text-slate-600 dark:text-slate-300">
-                Akun staf <strong>${formData.nama_lengkap}</strong> (${emailTarget}) berhasil dibuat.
+              <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                Akun admin untuk <strong>${nameTarget}</strong> (${emailTarget}) telah aktif dan siap digunakan.
               </p>
-              <div class="p-3.5 bg-blue-50 dark:bg-blue-950/40 rounded-2xl border border-blue-200 dark:border-blue-900/50 text-center">
-                <p class="font-bold text-blue-700 dark:text-blue-300 text-[11px] uppercase tracking-wider mb-1">Kode OTP Verifikasi Gmail:</p>
-                <div class="text-2xl font-black font-mono tracking-widest text-blue-600 dark:text-blue-400 my-1 select-all">${otpCode}</div>
-                <p class="text-[10px] text-slate-400">Kode ini telah dikirim ke email staf dan berlaku selama 24 jam.</p>
+              <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 text-left space-y-1.5">
+                <p class="font-bold text-emerald-800 dark:text-emerald-300 text-xs">Informasi Kredensial Login:</p>
+                <p class="text-slate-700 dark:text-slate-300">· <strong>Email:</strong> <span class="font-mono text-blue-600 dark:text-blue-400">${emailTarget}</span></p>
+                <p class="text-slate-700 dark:text-slate-300">· <strong>Username:</strong> <span class="font-mono text-slate-800 dark:text-slate-200">@${usernameTarget}</span></p>
+                <p class="text-slate-700 dark:text-slate-300">· <strong>Hak Akses / Peran:</strong> Admin</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Staf dapat langsung login di portal admin sekolah menggunakan Email/Username dan Kata Sandi yang baru saja dibuat.</p>
               </div>
-              ${createdLink ? `
-              <div class="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                <p class="font-bold text-slate-700 dark:text-slate-300 text-[10px] mb-1">Tautan Halaman Verifikasi:</p>
-                <input readonly value="${createdLink}" class="w-full text-[10px] p-1.5 bg-white dark:bg-slate-950 rounded border border-slate-200 dark:border-slate-700 font-mono select-all" />
-              </div>
-              ` : ''}
             </div>
           `,
           icon: "success",
           confirmButtonColor: "#2563EB",
-          confirmButtonText: "Salin Kode OTP",
-          showCancelButton: true,
-          cancelButtonText: "Tutup"
-        }).then((result) => {
-          if (result.isConfirmed && otpCode && navigator.clipboard) {
-            navigator.clipboard.writeText(otpCode);
-          }
+          confirmButtonText: "Selesai"
         });
       } else {
         setError(data.message || "Gagal membuat akun admin");
@@ -235,7 +227,7 @@ export function useAdminManagementState() {
       email: admin.email || "",
       password: "",
       nama_lengkap: admin.nama_lengkap,
-      role: admin.role
+      role: "admin"
     });
     setShowAddForm(true);
   };
@@ -253,7 +245,7 @@ export function useAdminManagementState() {
         username: formData.username,
         email: formData.email,
         nama_lengkap: formData.nama_lengkap,
-        role: formData.role
+        role: "admin"
       };
       if (formData.password) {
         payload.password = formData.password;

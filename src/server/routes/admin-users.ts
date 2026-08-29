@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { superAdminAuth } from '../middleware/auth';
@@ -357,7 +356,7 @@ adminUsersRouter.post('/', async (c) => {
         errors: result.error.issues.map((err) => err.message)
       }, 400);
     }
-    const { username, email, password, nama_lengkap, role } = result.data;
+    const { username, email, password, nama_lengkap, role: _role } = result.data;
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await getSchoolId(c);
@@ -399,18 +398,19 @@ adminUsersRouter.post('/', async (c) => {
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const activationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    const passwordHash = password ? bcrypt.hashSync(password, 10) : bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
-    const isActive = false; // Requires email OTP activation
+    const passwordHash = bcrypt.hashSync(password, 10);
+    const isActive = true; // Instantly active with provided password
 
     const payload: Record<string, unknown> = {
       username,
       email: email || null,
       password_hash: passwordHash,
       nama_lengkap,
-      role: role || 'admin',
+      role: 'admin',
       is_active: isActive,
       activation_token: otpCode,
       activation_expires_at: activationExpiresAt,
+      email_verified_at: new Date().toISOString(),
       school_id: schoolId
     };
 
@@ -424,10 +424,10 @@ adminUsersRouter.post('/', async (c) => {
     if (!newAdmin) {
       try {
         const pgRes = await pool.query(
-          `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, is_active, activation_token, activation_expires_at, school_id, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::text, NOW())
+          `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, school_id, created_at)
+           VALUES ($1, $2, $3, $4, 'admin', true, $5, $6, NOW(), $7::text, NOW())
            RETURNING *`,
-          [username, email || null, passwordHash, nama_lengkap, role || 'admin', isActive, otpCode, activationExpiresAt, String(schoolId)]
+          [username, email || null, passwordHash, nama_lengkap, otpCode, activationExpiresAt, String(schoolId)]
         );
         if (pgRes.rows && pgRes.rows.length > 0) {
           newAdmin = pgRes.rows[0];
@@ -435,10 +435,10 @@ adminUsersRouter.post('/', async (c) => {
       } catch (_pgErr) {
         // Fallback without school_id column constraint
         const pgRes2 = await pool.query(
-          `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, is_active, activation_token, activation_expires_at, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+          `INSERT INTO admin_users (username, email, password_hash, nama_lengkap, role, is_active, activation_token, activation_expires_at, email_verified_at, created_at)
+           VALUES ($1, $2, $3, $4, 'admin', true, $5, $6, NOW(), NOW())
            RETURNING *`,
-          [username, email || null, passwordHash, nama_lengkap, role || 'admin', isActive, otpCode, activationExpiresAt]
+          [username, email || null, passwordHash, nama_lengkap, otpCode, activationExpiresAt]
         );
         if (pgRes2.rows && pgRes2.rows.length > 0) {
           newAdmin = pgRes2.rows[0];
@@ -446,45 +446,10 @@ adminUsersRouter.post('/', async (c) => {
       }
     }
 
-    // Build activation URL
-    const origin = c.req.header('origin') || c.req.header('referer') || 'https://cationgate.site';
-    let baseHost = 'https://cationgate.site';
-    try {
-      const parsed = new URL(origin);
-      baseHost = `${parsed.protocol}//${parsed.host}`;
-    } catch (_) {}
-
-    const schoolSlug = (c.req.query('school_slug') || c.req.header('x-school-slug') || schoolId || 'demo') as string;
-    const activationLink = `${baseHost}/${schoolSlug}/admin/activate?email=${encodeURIComponent(email || '')}&token=${otpCode}`;
-
-    // Send invitation / activation email if email provided
-    if (email) {
-      let schoolName = schoolSlug.toUpperCase();
-      try {
-        const { data: sch } = await supabase.from('schools').select('name').eq('id', schoolId).maybeSingle();
-        if (sch?.name) schoolName = sch.name;
-      } catch (_) {}
-
-      await EmailService.sendAdminActivationEmail({
-        toEmail: email,
-        staffName: nama_lengkap,
-        schoolName,
-        otpCode,
-        activationLink,
-        username,
-        role: role || 'admin'
-      });
-    }
-
     return c.json({
       success: true,
-      data: newAdmin,
-      activation_token: otpCode,
-      otp_code: otpCode,
-      activation_link: activationLink,
-      message: email
-        ? `Akun admin berhasil dibuat. Kode OTP verifikasi telah dikirimkan ke ${email}.`
-        : 'Akun admin berhasil dibuat. Silakan gunakan kode OTP untuk mengaktifkan akun.'
+      message: 'Akun admin berhasil dibuat. Staf dapat langsung login menggunakan Email/Username dan Kata Sandi.',
+      data: newAdmin
     }, 201);
   } catch (error: unknown) {
     return c.json({ success: false, message: error instanceof Error ? error.message : String(error) }, 500);

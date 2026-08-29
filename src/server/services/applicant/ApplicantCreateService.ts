@@ -364,7 +364,44 @@ export class ApplicantCreateService {
       }
     }
 
-    const registrationNo = `SPMB-${new Date().getFullYear()}-${String(savedRecord.id).padStart(5, "0")}`;
+    // Format Nomor Pendaftaran mengikuti periode (Contoh: 2026-2027 -> 262710001)
+    let yearPrefix = "2627";
+    if (mapped.periode) {
+      const cleaned = String(mapped.periode).replace(/[^0-9/-]/g, "");
+      const parts = cleaned.split(/[/ -]+/);
+      if (parts.length >= 2) {
+        const y1 = parts[0].slice(-2);
+        const y2 = parts[1].slice(-2);
+        if (y1 && y2) yearPrefix = `${y1}${y2}`;
+      } else if (parts.length === 1 && parts[0].length >= 4) {
+        const y1 = parts[0].slice(-2);
+        const y2 = String(parseInt(y1, 10) + 1).padStart(2, "0");
+        yearPrefix = `${y1}${y2}`;
+      }
+    }
+
+    let schoolDigit = "1";
+    const schoolIdent = schoolSlug || schoolId;
+    if (schoolIdent) {
+      if (typeof schoolIdent === "number") {
+        schoolDigit = String(((Math.abs(schoolIdent) - 1) % 9) + 1);
+      } else {
+        const numMatch = String(schoolIdent).match(/\d+/);
+        if (numMatch) {
+          schoolDigit = String(((parseInt(numMatch[0], 10) - 1) % 9) + 1);
+        } else {
+          let hash = 0;
+          for (let i = 0; i < schoolIdent.length; i++) {
+            hash = (hash + schoolIdent.charCodeAt(i)) % 9;
+          }
+          schoolDigit = String(hash + 1);
+        }
+      }
+    }
+
+    const seq = String(savedRecord.id || 1).padStart(4, "0");
+    const registrationNo = `${yearPrefix}${schoolDigit}${seq}`;
+
     try {
       await supabase
         .from("student_applicants")
@@ -372,6 +409,12 @@ export class ApplicantCreateService {
         .eq("id", savedRecord.id)
         .eq("school_id", schoolId);
     } catch (_regErr) {}
+    try {
+      await pool.query(
+        `UPDATE calon_siswa SET registration_no = $1 WHERE id = $2`,
+        [registrationNo, savedRecord.id]
+      );
+    } catch (_pgErr) {}
     savedRecord = { ...savedRecord, registration_no: registrationNo };
 
     return {

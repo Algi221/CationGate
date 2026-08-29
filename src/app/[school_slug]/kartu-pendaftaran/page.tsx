@@ -4,6 +4,7 @@ import React, { useEffect, useState, use } from "react";
 import { Printer, ArrowLeft, AlertCircle, FileText } from "lucide-react";
 import Link from "next/link";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
+import { formatNoPendaftaran } from "@/components/features/pendaftar/components/detail-sections/sanitizeUrl";
 
 interface ApplicantCardData {
   id: number;
@@ -109,7 +110,7 @@ export default function KartuPendaftaranPage({
   }
 
   const schoolName = schoolData?.name || "SMK TARUNA BHAKTI DEPOK";
-  const regNo = applicant.registration_no || `SPMB-${new Date().getFullYear()}-${String(applicant.id).padStart(5, '0')}`;
+  const regNo = applicant.registration_no || formatNoPendaftaran(applicant.periode, applicant.id, school_slug);
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 py-8 px-4 sm:px-6">

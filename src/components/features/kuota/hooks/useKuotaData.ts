@@ -190,11 +190,22 @@ export function useKuotaData(schoolId: string | number | undefined) {
             setAvailablePeriodes(periodesList);
           }
         } else {
-          // Fallback to demo data if backend fails
-          const demoData = getDemoKuotaData(periode || "2026-2027");
-          setData(demoData);
-          setAvailablePeriodes(demoData.availablePeriodes);
-          setSelectedPeriode(demoData.selectedPeriode);
+          if (isDemo) {
+            const demoData = getDemoKuotaData(periode || "2026-2027");
+            setData(demoData);
+            setAvailablePeriodes(demoData.availablePeriodes);
+            setSelectedPeriode(demoData.selectedPeriode);
+          } else {
+            setData({
+              pendaftar: [],
+              siswaAktif: [],
+              totalPendaftar: 0,
+              totalSiswaAktif: 0,
+              totalTarget: 0,
+              availablePeriodes: ["2026-2027"],
+              selectedPeriode: periode || "2026-2027",
+            });
+          }
         }
       } catch (err: unknown) {
         if (isDemo) {
@@ -204,6 +215,15 @@ export function useKuotaData(schoolId: string | number | undefined) {
           setSelectedPeriode(demoData.selectedPeriode);
         } else {
           setError(err instanceof Error ? err.message : String(err));
+          setData({
+            pendaftar: [],
+            siswaAktif: [],
+            totalPendaftar: 0,
+            totalSiswaAktif: 0,
+            totalTarget: 0,
+            availablePeriodes: ["2026-2027"],
+            selectedPeriode: periode || "2026-2027",
+          });
         }
       } finally {
         setLoading(false);

@@ -314,37 +314,40 @@ configRouter.post('/', adminAuth, async (c) => {
       const admin = (c.get as (k: string) => unknown)('admin') as { nama?: string; username?: string; school_slug?: string; slug?: string } | undefined;
       const adminName = admin?.nama || admin?.username || 'Administrator';
 
-      // 1. Atomic PostgreSQL Transaction
-      const pgClient = await pool.connect();
+      let _savedToDb = false;
+
+      // 1. Try Atomic PostgreSQL Transaction
       try {
-        await pgClient.query('BEGIN');
-        for (const [key, val] of Object.entries(processedConfigs)) {
+        const pgClient = await pool.connect();
+        try {
+          await pgClient.query('BEGIN');
+          for (const [key, val] of Object.entries(processedConfigs)) {
+            await pgClient.query(
+              `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+               VALUES ($1, $2, $3, NOW())
+               ON CONFLICT (school_id, config_key)
+               DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+              [numericSchoolId, key, JSON.stringify(val)]
+            );
+          }
           await pgClient.query(
-            `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-             VALUES ($1, $2, $3, NOW())
-             ON CONFLICT (school_id, config_key)
-             DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-            [numericSchoolId, key, JSON.stringify(val)]
+            `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
+             VALUES ($1, $2, $3, $4, NOW())`,
+            [String(numericSchoolId), JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
           );
+          await pgClient.query('COMMIT');
+          _savedToDb = true;
+        } catch (txErr) {
+          await pgClient.query('ROLLBACK');
+          console.error('[PUT /api/config] Transaction failed and rolled back:', txErr);
+        } finally {
+          pgClient.release();
         }
-        await pgClient.query(
-          `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
-           VALUES ($1, $2, $3, $4, NOW())`,
-          [String(numericSchoolId), JSON.stringify(processedConfigs), adminName, description || 'Pembaruan Tampilan Sistem']
-        );
-        await pgClient.query('COMMIT');
-      } catch (txErr) {
-        await pgClient.query('ROLLBACK');
-        console.error('[PUT /api/config] Transaction failed and rolled back:', txErr);
-        return c.json({
-          success: false,
-          message: 'Gagal memperbarui konfigurasi ke basis data.'
-        }, 500);
-      } finally {
-        pgClient.release();
+      } catch (poolConnErr) {
+        console.warn('[PUT /api/config] PostgreSQL pool notice (falling back to Supabase REST):', poolConnErr instanceof Error ? poolConnErr.message : String(poolConnErr));
       }
 
-      // 2. Best-effort Supabase cloud sync
+      // 2. Supabase REST API Sync & Fallback
       try {
         const upsertRows = Object.entries(processedConfigs).map(([key, val]) => ({
           config_key: key,
@@ -352,7 +355,8 @@ configRouter.post('/', adminAuth, async (c) => {
           updated_at: new Date().toISOString(),
           school_id: targetSchoolId
         }));
-        await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'school_id,config_key' });
+        const { error: sbErr } = await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'school_id,config_key' });
+        if (!sbErr) _savedToDb = true;
       } catch (_sbErr) {}
 
       // Invalidate Redis cache
@@ -478,22 +482,6 @@ configRouter.post('/', adminAuth, async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
     const targetSchoolId = String(schoolId);
-
-    if (key === 'ppdb_portal_status' && processedValue === 'open') {
-      const admin = (c.get as (k: string) => unknown)('admin') as { school_slug?: string; slug?: string } | undefined;
-      const targetSlug = admin?.school_slug || admin?.slug || c.req.query('school_slug');
-      if (targetSlug !== 'demo') {
-        const { SaasService } = await import('../services/SaasService');
-        const subStatus = await SaasService.getSubscriptionStatus(String(schoolId), targetSlug || undefined);
-        const isPaidPlan = (subStatus.plan === 'PRO_YEARLY' || subStatus.plan === 'PRO' || subStatus.plan === 'ENTERPRISE') && !subStatus.isExpired && subStatus.status === 'ACTIVE';
-        if (!isPaidPlan) {
-          return c.json({
-            success: false,
-            message: 'Pembukaan pendaftaran publik hanya tersedia untuk instansi dengan paket Pro Tahunan atau Enterprise. Harap aktifkan paket berlangganan terlebih dahulu.'
-          }, 403);
-        }
-      }
-    }
 
     const payload: Record<string, unknown> = {
       config_key: key,
@@ -652,62 +640,68 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     const admin = (c as any).get('admin');
     const adminName = admin?.nama || admin?.username || 'Administrator';
 
-    // Enforce Pro plan requirement for opening SPMB portal
-    if (processedConfigs.ppdb_portal_status === 'open') {
-      const targetSlug = admin?.school_slug || admin?.slug || c.req.query('school_slug');
-      if (targetSlug !== 'demo') {
-        const { SaasService } = await import('../services/SaasService');
-        const subStatus = await SaasService.getSubscriptionStatus(String(schoolId), targetSlug || undefined);
-        const isPaidPlan = (subStatus.plan === 'PRO_YEARLY' || subStatus.plan === 'PRO' || subStatus.plan === 'ENTERPRISE') && !subStatus.isExpired && subStatus.status === 'ACTIVE';
-        if (!isPaidPlan) {
-          processedConfigs.ppdb_portal_status = 'closed';
-        }
-      }
-    }
-
     console.log(`[SAVE-ALL] Saving ${Object.keys(processedConfigs).length} config keys for school_id=${numericSchoolId} (resolved from tenant: ${schoolId})`);
 
-    // 1. Atomic PostgreSQL Transaction
-    const pgClient = await pool.connect();
+    let _savedToDb = false;
+
+    // 1. Try Atomic PostgreSQL Transaction via Pool
     try {
-      await pgClient.query('BEGIN');
-      for (const [key, value] of Object.entries(processedConfigs)) {
+      const pgClient = await pool.connect();
+      try {
+        await pgClient.query('BEGIN');
+        for (const [key, value] of Object.entries(processedConfigs)) {
+          await pgClient.query(
+            `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (school_id, config_key)
+             DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+            [numericSchoolId, key, JSON.stringify(value)]
+          );
+        }
         await pgClient.query(
-          `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-           VALUES ($1, $2, $3, NOW())
-           ON CONFLICT (school_id, config_key)
-           DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-          [numericSchoolId, key, JSON.stringify(value)]
+          `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
+           VALUES ($1, $2, $3, $4, NOW())`,
+          [String(numericSchoolId), JSON.stringify(configs), adminName, description || 'Melakukan pembaruan massal UI']
         );
+        await pgClient.query('COMMIT');
+        _savedToDb = true;
+      } catch (txError) {
+        await pgClient.query('ROLLBACK');
+        console.error('[SAVE-ALL] Transaction failed and rolled back:', txError);
+      } finally {
+        pgClient.release();
       }
-      await pgClient.query(
-        `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
-         VALUES ($1, $2, $3, $4, NOW())`,
-        [String(numericSchoolId), JSON.stringify(configs), adminName, description || 'Melakukan pembaruan massal UI']
-      );
-      await pgClient.query('COMMIT');
-    } catch (txError) {
-      await pgClient.query('ROLLBACK');
-      console.error('[SAVE-ALL] Transaction failed and rolled back:', txError);
-      return c.json({
-        success: false,
-        message: 'Gagal menyimpan seluruh konfigurasi ke basis data. Perubahan telah dibatalkan agar draf tidak hilang.'
-      }, 500);
-    } finally {
-      pgClient.release();
+    } catch (poolConnErr) {
+      console.warn('[SAVE-ALL] PostgreSQL pool connection notice (falling back to Supabase REST):', poolConnErr instanceof Error ? poolConnErr.message : String(poolConnErr));
     }
 
-    // 2. Best-effort Supabase cloud sync
+    // 2. Supabase REST API Sync & Fallback (Resilient over HTTPS)
     try {
-      for (const [key, value] of Object.entries(processedConfigs)) {
-        await supabase.from('landing_page_config').upsert({
-          config_key: key,
-          config_value: value,
-          updated_at: new Date().toISOString(),
-          school_id: numericSchoolId
-        }, { onConflict: 'school_id,config_key' });
+      const upsertRows = Object.entries(processedConfigs).map(([key, value]) => ({
+        config_key: key,
+        config_value: value,
+        updated_at: new Date().toISOString(),
+        school_id: numericSchoolId
+      }));
+
+      const { error: sbErr } = await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'school_id,config_key' });
+      if (!sbErr) {
+        _savedToDb = true;
+      } else {
+        console.warn('[SAVE-ALL] Supabase upsert notice:', sbErr.message);
       }
-    } catch (_sbSyncErr) {}
+
+      // Also record revision in Supabase
+      const revPayload = {
+        config_values: configs,
+        changed_by: adminName,
+        description: description || 'Melakukan pembaruan massal UI',
+        school_id: numericSchoolId
+      };
+      await supabase.from('ui_revisions').insert(revPayload);
+    } catch (sbSyncErr) {
+      console.warn('[SAVE-ALL] Supabase cloud sync notice:', sbSyncErr);
+    }
 
     // Always record in-memory revision log
     const revRecord = {

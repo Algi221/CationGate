@@ -55,33 +55,41 @@ export const KuotaTargetTable: React.FC<KuotaTargetTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
-              <tr key={item.no} className="border-b border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-slate-700 dark:text-slate-300">
-                <td className="p-4 border-r border-slate-200 dark:border-white/10 text-center">{item.no}</td>
-                <td className="p-4 border-r border-slate-200 dark:border-white/10">{item.konsentrasi_keahlian}</td>
-                <td className="p-4 border-r border-slate-200 dark:border-white/10 text-center">{item.jumlah}</td>
-                <td className="p-4 border-r border-slate-200 dark:border-white/10 text-center">
-                  {editMode && item.key !== "Belum Memilih" ? (
-                    <input 
-                      type="number" 
-                      value={editingTargets[item.key] ?? 0} 
-                      onChange={(e) => onTargetChange(item.key, e.target.value)}
-                      className="w-full text-center py-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-600"
-                      min="0"
-                    />
-                  ) : (
-                    item.target
-                  )}
-                </td>
-                <td className="p-4 text-center">
-                  {editMode && item.key !== "Belum Memilih"
-                    ? (editingTargets[item.key] > 0
-                        ? `${Math.round((item.jumlah / editingTargets[item.key]) * 100)}%`
-                        : "0%")
-                    : (item.target > 0 ? item.presentase : "0%")}
+            {items.length === 0 ? (
+              <tr className="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400">
+                <td colSpan={5} className="p-8 text-center text-xs font-normal">
+                  Belum ada program keahlian yang terdaftar. Tambahkan jurusan melalui menu <strong className="font-semibold text-blue-600 dark:text-blue-400">Kelola UI/Data &gt; Program Keahlian (Jurusan)</strong>.
                 </td>
               </tr>
-            ))}
+            ) : (
+              items.map((item) => (
+                <tr key={item.no} className="border-b border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-slate-700 dark:text-slate-300">
+                  <td className="p-4 border-r border-slate-200 dark:border-white/10 text-center">{item.no}</td>
+                  <td className="p-4 border-r border-slate-200 dark:border-white/10">{item.konsentrasi_keahlian}</td>
+                  <td className="p-4 border-r border-slate-200 dark:border-white/10 text-center">{item.jumlah}</td>
+                  <td className="p-4 border-r border-slate-200 dark:border-white/10 text-center">
+                    {editMode && item.key !== "Belum Memilih" ? (
+                      <input 
+                        type="number" 
+                        value={editingTargets[item.key] ?? 0} 
+                        onChange={(e) => onTargetChange(item.key, e.target.value)}
+                        className="w-full text-center py-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-600"
+                        min="0"
+                      />
+                    ) : (
+                      item.target
+                    )}
+                  </td>
+                  <td className="p-4 text-center">
+                    {editMode && item.key !== "Belum Memilih"
+                      ? (editingTargets[item.key] > 0
+                          ? `${Math.round((item.jumlah / editingTargets[item.key]) * 100)}%`
+                          : "0%")
+                      : (item.target > 0 ? item.presentase : "0%")}
+                  </td>
+                </tr>
+              ))
+            )}
             <tr className="bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 font-bold">
               <td colSpan={2} className="p-4 border-r border-amber-200 dark:border-amber-900/50 text-center uppercase">TOTAL KESELURUHAN</td>
               <td className="p-4 border-r border-amber-200 dark:border-amber-900/50 text-center">{totalJumlah}</td>

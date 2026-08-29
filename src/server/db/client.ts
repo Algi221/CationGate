@@ -10,11 +10,13 @@ const connectionString = process.env.DATABASE_URL;
 
 export const pool = new Pool({
   connectionString,
-  ssl: connectionString && !connectionString.includes('localhost') ? { rejectUnauthorized: false } : false
+  ssl: connectionString && !connectionString.includes('localhost') ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000,
 });
 
 pool.on('error', (err: Error) => {
-  console.error('Unexpected error on idle PostgreSQL client', err);
+  console.warn('PostgreSQL pool notice/idle error:', err.message || err);
 });
 
 export async function initDb(): Promise<void> {

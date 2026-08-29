@@ -4,26 +4,28 @@ import { adminAuth } from '../middleware/auth';
 
 const router = new Hono();
 
-const DISPLAY_NAMES: Record<string, string> = {
+// Default demo majors used ONLY for demo mode
+const DEMO_DISPLAY_NAMES: Record<string, string> = {
   "Desain Komunikasi Visual": "Desain Komunikasi Visual (DKV)",
   "Teknik Komputer dan Jaringan": "Teknik Komputer dan Jaringan (TKJ)",
   "Rekayasa Perangkat Lunak": "Rekayasa Perangkat Lunak (RPL)",
   "Broadcasting dan Perfilman": "Broadcasting dan Perfilman (BC)",
-  "Teknik Transmisi Telekomunikasi": "Teknik Transmisi Telekomunikasi (TJA)",
+  "Animasi": "Animasi (ANM)",
+  "Teknik Elektronika": "Teknik Elektronika (TE)",
   "Belum Memilih": "Belum Memilih Jurusan / Unassigned"
 };
 
-const ORDER = [
-  "Desain Komunikasi Visual",
-  "Teknik Komputer dan Jaringan",
+const DEMO_ORDER = [
   "Rekayasa Perangkat Lunak",
+  "Teknik Komputer dan Jaringan",
+  "Desain Komunikasi Visual",
   "Broadcasting dan Perfilman",
-  "Teknik Transmisi Telekomunikasi",
-  "Belum Memilih"
+  "Animasi",
+  "Teknik Elektronika"
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getTargets(supabase: any, schoolId: string | null, customOrder: string[] = ORDER): Promise<Record<string, number>> {
+async function getTargets(supabase: any, schoolId: string | null, customOrder: string[] = []): Promise<Record<string, number>> {
   const baseTargets: Record<string, number> = {};
   customOrder.forEach((k) => {
     baseTargets[k] = 0;
@@ -99,6 +101,8 @@ router.get('/', async (c) => {
     const schoolSlug = c.req.query('school_slug') || null;
     const periodeParam = c.req.query('periode') || null;
 
+    const isDemo = schoolSlug === 'demo' || schoolId === 'demo';
+
     const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
     if (schoolSlug || (schoolId && !isUUID(schoolId))) {
       try {
@@ -110,10 +114,13 @@ router.get('/', async (c) => {
       } catch (_err) {}
     }
 
-    let order = [...ORDER];
-    let displayNames = { ...DISPLAY_NAMES };
+    let order: string[] = [];
+    let displayNames: Record<string, string> = {};
 
-    if (schoolId) {
+    if (isDemo) {
+      order = [...DEMO_ORDER];
+      displayNames = { ...DEMO_DISPLAY_NAMES };
+    } else if (schoolId) {
       try {
         const { data: majorsData } = await supabase
           .from('landing_page_config')
@@ -122,25 +129,35 @@ router.get('/', async (c) => {
           .eq('config_key', 'ppdb_majors_config')
           .maybeSingle();
 
-        if (majorsData && majorsData.config_value) {
-          const majorsList = typeof majorsData.config_value === 'string'
-            ? JSON.parse(majorsData.config_value)
-            : majorsData.config_value;
-          if (Array.isArray(majorsList) && majorsList.length > 0) {
-            order = majorsList.map((m: { title?: string; code?: string }) => m.title || m.code || '');
-            displayNames = {};
-            majorsList.forEach((m: { title?: string; code?: string }) => {
-              const name = m.title || m.code || '';
-              displayNames[name] = m.code && m.title ? `${m.title} (${m.code})` : name;
-            });
-            order.push("Belum Memilih");
-            displayNames["Belum Memilih"] = "Belum Memilih Jurusan / Unassigned";
-          }
+        let majorsList = majorsData?.config_value;
+        if (!majorsList) {
+          try {
+            const { pool } = await import('../db/client');
+            const pgRes = await pool.query(
+              `SELECT config_value FROM landing_page_config WHERE school_id::text = $1 AND config_key = 'ppdb_majors_config' ORDER BY updated_at DESC LIMIT 1`,
+              [schoolId]
+            );
+            if (pgRes.rows && pgRes.rows.length > 0) {
+              majorsList = pgRes.rows[0].config_value;
+            }
+          } catch (_pgErr) {}
+        }
+
+        if (typeof majorsList === 'string') {
+          try { majorsList = JSON.parse(majorsList); } catch (_e) {}
+        }
+
+        if (Array.isArray(majorsList) && majorsList.length > 0) {
+          majorsList.forEach((m: { title?: string; code?: string }) => {
+            const name = (m.title || m.code || '').trim();
+            if (name && !order.includes(name)) {
+              order.push(name);
+              displayNames[name] = m.code && m.title && m.code !== m.title ? `${m.title} (${m.code})` : name;
+            }
+          });
         }
       } catch (_e) {}
     }
-
-    const TARGETS = await getTargets(supabase, schoolId, order);
 
     let pQuery = supabase.from('student_applicants').select('periode');
     let sQuery = supabase.from('active_students').select('periode');
@@ -174,6 +191,38 @@ router.get('/', async (c) => {
 
     const { data: pendaftarRows } = await pendaftarDataQuery;
     const { data: siswaAktifRows } = await siswaAktifDataQuery;
+
+    // Dynamically include any existing student jurusans if not already in order
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pendaftarRows?.forEach((r: any) => {
+      const j = (r.jurusan_1 || '').trim();
+      if (j && j !== 'Belum Memilih' && !order.includes(j)) {
+        order.push(j);
+        if (!displayNames[j]) displayNames[j] = j;
+      }
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    siswaAktifRows?.forEach((r: any) => {
+      const j = (r.jurusan || '').trim();
+      if (j && j !== 'Belum Memilih' && !order.includes(j)) {
+        order.push(j);
+        if (!displayNames[j]) displayNames[j] = j;
+      }
+    });
+
+    // Check if there are any unassigned applicants
+    const hasUnassigned =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pendaftarRows?.some((r: any) => !r.jurusan_1 || r.jurusan_1 === 'Belum Memilih') ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      siswaAktifRows?.some((r: any) => !r.jurusan || r.jurusan === 'Belum Memilih');
+
+    if (hasUnassigned && !order.includes('Belum Memilih')) {
+      order.push('Belum Memilih');
+      displayNames['Belum Memilih'] = 'Belum Memilih Jurusan / Unassigned';
+    }
+
+    const TARGETS = await getTargets(supabase, schoolId, order);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const groupRows = (rows: any[], keyName: string) => {

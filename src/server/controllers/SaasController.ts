@@ -382,4 +382,26 @@ export class SaasController {
       return c.json({ success: true, data: [] });
     }
   }
+
+  static async activateSubscription(c: Context) {
+    try {
+      const body = await c.req.json();
+      const result = await SaasService.activateSubscription(body);
+      return c.json(result);
+    } catch (err: unknown) {
+      console.error('Activate subscription error:', err);
+      return c.json({ success: false, message: 'Gagal mengaktifkan paket langganan: ' + (err instanceof Error ? err.message : String(err)) }, 500);
+    }
+  }
+
+  static async simulatePayment(c: Context) {
+    try {
+      const body = await c.req.json();
+      const result = await SaasService.simulatePayment(body);
+      return c.json(result);
+    } catch (err: unknown) {
+      console.error('Simulate payment error:', err);
+      return c.json({ success: false, message: 'Gagal memproses simulasi pembayaran: ' + (err instanceof Error ? err.message : String(err)) }, 500);
+    }
+  }
 }

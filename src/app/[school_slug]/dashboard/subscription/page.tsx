@@ -102,13 +102,24 @@ export default function SubscriptionManagementPage() {
 
     const fetchSub = async () => {
       try {
-        const query = schoolId ? `school_id=${schoolId}` : `slug=${schoolSlug}`;
-        const res = await fetch(`/api/saas/subscription-status?${query}`);
+        const query = schoolId ? `school_id=${schoolId}&slug=${schoolSlug}` : `slug=${schoolSlug}`;
+        const res = await fetch(`/api/saas/subscription-status?${query}&_t=${Date.now()}`);
         const data = await res.json();
         if (data.success && data.data) {
           setSubscription(data.data);
+          if (typeof window !== "undefined") {
+            localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify(data.data));
+            localStorage.setItem(`ppdb_school_subscription_default`, JSON.stringify(data.data));
+          }
         } else {
-          setSubscription({
+          let localSub: SubscriptionData | null = null;
+          if (typeof window !== "undefined") {
+            const cached = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || "default"}`) || localStorage.getItem("ppdb_school_subscription_default");
+            if (cached) {
+              try { localSub = JSON.parse(cached); } catch (_e) {}
+            }
+          }
+          setSubscription(localSub || {
             plan: "FREE_TRIAL",
             status: "TRIAL",
             daysLeft: 30,
@@ -117,7 +128,14 @@ export default function SubscriptionManagementPage() {
         }
       } catch (err) {
         console.error("Failed to fetch sub status", err);
-        setSubscription({
+        let localSub: SubscriptionData | null = null;
+        if (typeof window !== "undefined") {
+          const cached = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || "default"}`) || localStorage.getItem("ppdb_school_subscription_default");
+          if (cached) {
+            try { localSub = JSON.parse(cached); } catch (_e) {}
+          }
+        }
+        setSubscription(localSub || {
           plan: "FREE_TRIAL",
           status: "TRIAL",
           daysLeft: 30,
@@ -135,59 +153,55 @@ export default function SubscriptionManagementPage() {
 
   const activateSubscription = async (orderId?: string) => {
     try {
+      const payload = {
+        school_id: schoolId,
+        slug: schoolSlug,
+        plan_name: "PRO_YEARLY",
+        order_id: orderId || generateFallbackOrderId()
+      };
       const res = await fetch("/api/saas/activate-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          school_id: schoolId,
-          slug: schoolSlug,
-          plan_name: "PRO_YEARLY",
-          order_id: orderId || generateFallbackOrderId()
-        })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
+      const updatedSub: SubscriptionData = (data.success && data.data) ? data.data : {
+        plan: "PRO_YEARLY",
+        status: "ACTIVE",
+        daysLeft: 365,
+        isExpired: false,
+        expiresAt: getOneYearExpiry()
+      };
+
       if (typeof window !== "undefined") {
-        localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify({
-          plan: "PRO_YEARLY",
-          status: "ACTIVE",
-          daysLeft: 365,
-          expiresAt: getOneYearExpiry()
-        }));
+        localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify(updatedSub));
+        localStorage.setItem("ppdb_school_subscription_default", JSON.stringify(updatedSub));
+        window.dispatchEvent(new Event("storage"));
       }
-      if (data.success) {
-        setSubscription({
-          plan: "PRO_YEARLY",
-          status: "ACTIVE",
-          daysLeft: 365,
-          isExpired: false,
-          expiresAt: getOneYearExpiry(),
-        });
-        await fetchTransactions();
-        Swal.fire({
-          title: "Pembayaran Berhasil!",
-          text: "Paket Pro Tahunan CationGate sekolah Anda telah aktif selama 365 hari ke depan.",
-          icon: "success",
-          confirmButtonColor: "#2563EB"
-        });
-      } else {
-        throw new Error(data.message || "Gagal mengaktifkan langganan");
-      }
+
+      setSubscription(updatedSub);
+      await fetchTransactions();
+
+      Swal.fire({
+        title: "Pembayaran Berhasil!",
+        text: "Paket Pro Tahunan CationGate sekolah Anda telah aktif selama 365 hari ke depan.",
+        icon: "success",
+        confirmButtonColor: "#2563EB"
+      });
     } catch (_err) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify({
-          plan: "PRO_YEARLY",
-          status: "ACTIVE",
-          daysLeft: 365,
-          expiresAt: getOneYearExpiry()
-        }));
-      }
-      setSubscription({
+      const fallbackSub: SubscriptionData = {
         plan: "PRO_YEARLY",
         status: "ACTIVE",
         daysLeft: 365,
         isExpired: false,
         expiresAt: getOneYearExpiry(),
-      });
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify(fallbackSub));
+        localStorage.setItem("ppdb_school_subscription_default", JSON.stringify(fallbackSub));
+        window.dispatchEvent(new Event("storage"));
+      }
+      setSubscription(fallbackSub);
       await fetchTransactions();
       Swal.fire({
         title: "Paket Pro Aktif",

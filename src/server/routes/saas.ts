@@ -36,6 +36,8 @@ saasRouter.get('/plans', SaasController.getPlans);
 
 // 9. PUBLIC: Get subscription status for a school
 saasRouter.get('/subscription-status', SaasController.getSubscriptionStatus);
+saasRouter.post('/activate-subscription', SaasController.activateSubscription);
+saasRouter.post('/simulate-payment', SaasController.simulatePayment);
 
 // 10. PUBLIC/ADMIN: Submit school verification documents (SK & legal accreditation)
 saasRouter.post('/submit-school-verification', SaasController.submitSchoolVerification);

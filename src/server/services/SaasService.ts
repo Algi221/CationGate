@@ -838,102 +838,242 @@ export class SaasService {
     return data;
   }
 
-  static async getSubscriptionStatus(schoolId?: string, slug?: string) {
-    const supabase = getSupabaseClient();
-    let resolvedSchoolId = schoolId;
-    if (!resolvedSchoolId && slug) {
-      const { resolveSchoolUUID } = await import('../db/resolve-school');
-      resolvedSchoolId = await resolveSchoolUUID(slug, fontInMemSchools) || undefined;
-    }
-
-    if (!resolvedSchoolId) {
+  static async getSubscriptionStatus(schoolId?: string | null, slug?: string | null) {
+    if (slug === 'demo' || schoolId === 'demo') {
       return {
-        plan: 'FREE_TRIAL',
+        plan: 'PRO_YEARLY',
         status: 'ACTIVE',
-        daysLeft: 30,
+        daysLeft: 365,
         isExpired: false,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
       };
     }
 
-    const { data: sub } = await supabase
-      .from('school_subscriptions')
-      .select('*')
-      .eq('school_id', resolvedSchoolId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (sub) {
-      const expiresAt = new Date(sub.expires_at);
-      const now = new Date();
-      const diffMs = expiresAt.getTime() - now.getTime();
-      const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-      const isExpired = daysLeft <= 0;
-
-      if (isExpired && sub.status === 'ACTIVE') {
+    let resolvedUUID: string | null = null;
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    if (schoolId && isUUID(schoolId)) {
+      resolvedUUID = schoolId;
+    } else {
+      const targetIdentifier = slug || schoolId;
+      if (targetIdentifier) {
         try {
-          await supabase
-            .from('school_subscriptions')
-            .update({ status: 'EXPIRED', updated_at: new Date().toISOString() })
-            .eq('id', sub.id);
+          resolvedUUID = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
         } catch (_e) {}
       }
-
-      return {
-        plan: sub.plan_name,
-        status: isExpired ? 'EXPIRED' : sub.status,
-        daysLeft,
-        isExpired,
-        expiresAt: sub.expires_at,
-        startedAt: sub.started_at,
-        amountPaid: sub.amount_paid || 0
-      };
     }
 
-    const { data: school } = await supabase
-      .from('schools')
-      .select('created_at, subscription_plan, subscription_end_date')
-      .eq('id', resolvedSchoolId)
-      .maybeSingle();
+    const matchIds = [resolvedUUID, schoolId, slug].filter(Boolean) as string[];
 
-    if (school) {
-      const createdAt = new Date(school.created_at || Date.now());
-      const trialEnd = new Date(createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
-      const now = new Date();
-      const diffMs = trialEnd.getTime() - now.getTime();
-      const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-      const isExpired = daysLeft <= 0;
+    // 1. Check landing_page_config for subscription_data
+    try {
+      const supabase = getSupabaseClient();
+      const { data } = await supabase
+        .from('landing_page_config')
+        .select('config_value, updated_at')
+        .in('school_id', matchIds)
+        .eq('config_key', 'subscription_data')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (school.subscription_end_date) {
-        const legacyEnd = new Date(school.subscription_end_date);
-        const legacyDiff = legacyEnd.getTime() - now.getTime();
-        const legacyDays = Math.max(0, Math.ceil(legacyDiff / (1000 * 60 * 60 * 24)));
-        return {
-          plan: school.subscription_plan || 'FREE_TRIAL',
-          status: legacyDays <= 0 ? 'EXPIRED' : 'ACTIVE',
-          daysLeft: legacyDays,
-          isExpired: legacyDays <= 0,
-          expiresAt: school.subscription_end_date
-        };
+      if (data && data.config_value) {
+        const parsed = typeof data.config_value === 'string' ? JSON.parse(data.config_value) : data.config_value;
+        if (parsed && parsed.expiresAt) {
+          const daysLeft = Math.max(0, Math.ceil((new Date(parsed.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+          const isExpired = daysLeft <= 0;
+          return {
+            plan: parsed.plan || 'PRO_YEARLY',
+            status: isExpired ? 'EXPIRED' : (parsed.status || 'ACTIVE'),
+            daysLeft,
+            isExpired,
+            expiresAt: parsed.expiresAt
+          };
+        }
       }
+    } catch (_sbErr) {}
 
-      return {
-        plan: 'FREE_TRIAL',
-        status: isExpired ? 'EXPIRED' : 'ACTIVE',
-        daysLeft,
-        isExpired,
-        expiresAt: trialEnd.toISOString()
-      };
+    // 2. Check PostgreSQL pool
+    try {
+      const pgRes = await pool.query(
+        `SELECT config_value FROM landing_page_config WHERE school_id::text = ANY($1::text[]) AND config_key = 'subscription_data' ORDER BY updated_at DESC LIMIT 1`,
+        [matchIds]
+      );
+      if (pgRes.rows && pgRes.rows.length > 0) {
+        const raw = pgRes.rows[0].config_value;
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (parsed && parsed.expiresAt) {
+          const daysLeft = Math.max(0, Math.ceil((new Date(parsed.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+          const isExpired = daysLeft <= 0;
+          return {
+            plan: parsed.plan || 'PRO_YEARLY',
+            status: isExpired ? 'EXPIRED' : (parsed.status || 'ACTIVE'),
+            daysLeft,
+            isExpired,
+            expiresAt: parsed.expiresAt
+          };
+        }
+      }
+    } catch (_pgErr) {}
+
+    // 3. Check in-memory store
+    for (const id of matchIds) {
+      if (fontInMemSchools.has(id)) {
+        const mem = fontInMemSchools.get(id);
+        if (mem?.subscription) {
+          const s = mem.subscription;
+          const daysLeft = s.expiresAt ? Math.max(0, Math.ceil((new Date(s.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : 365;
+          return {
+            plan: s.plan || 'PRO_YEARLY',
+            status: daysLeft <= 0 ? 'EXPIRED' : (s.status || 'ACTIVE'),
+            daysLeft,
+            isExpired: daysLeft <= 0,
+            expiresAt: s.expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+          };
+        }
+      }
     }
 
+    // Default: 30-day Free Trial
     return {
       plan: 'FREE_TRIAL',
-      status: 'ACTIVE',
+      status: 'TRIAL',
       daysLeft: 30,
       isExpired: false,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     };
+  }
+
+  static async activateSubscription(data: {
+    school_id?: string | null;
+    slug?: string | null;
+    plan_name?: string;
+    order_id?: string;
+  }) {
+    const { school_id, slug, plan_name = 'PRO_YEARLY', order_id = `ORD-${Date.now()}` } = data;
+
+    let resolvedUUID: string | null = null;
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    if (school_id && isUUID(school_id)) {
+      resolvedUUID = school_id;
+    } else {
+      const targetIdentifier = slug || school_id;
+      if (targetIdentifier) {
+        try {
+          resolvedUUID = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
+        } catch (_e) {}
+      }
+    }
+
+    const targetSchoolId = resolvedUUID || school_id || slug || 'default';
+    const targetSlug = slug || (school_id && !isUUID(school_id) ? school_id : 'school');
+
+    const oneYearExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+    const subRecord = {
+      plan: plan_name,
+      status: 'ACTIVE',
+      daysLeft: 365,
+      isExpired: false,
+      expiresAt: oneYearExpiry,
+      order_id,
+      activated_at: new Date().toISOString()
+    };
+
+    // 1. Save to landing_page_config in Supabase
+    try {
+      const supabase = getSupabaseClient();
+      await supabase.from('landing_page_config').upsert([
+        {
+          school_id: String(targetSchoolId),
+          config_key: 'subscription_data',
+          config_value: subRecord,
+          updated_at: new Date().toISOString()
+        }
+      ], { onConflict: 'school_id,config_key' });
+
+      if (targetSlug && targetSlug !== targetSchoolId) {
+        await supabase.from('landing_page_config').upsert([
+          {
+            school_id: targetSlug,
+            config_key: 'subscription_data',
+            config_value: subRecord,
+            updated_at: new Date().toISOString()
+          }
+        ], { onConflict: 'school_id,config_key' });
+      }
+    } catch (_sbErr) {}
+
+    // 2. Save to landing_page_config in PostgreSQL pool
+    try {
+      await pool.query(
+        `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+         VALUES ($1, 'subscription_data', $2, NOW())
+         ON CONFLICT (school_id, config_key)
+         DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+        [String(targetSchoolId), JSON.stringify(subRecord)]
+      );
+      if (targetSlug && targetSlug !== targetSchoolId) {
+        await pool.query(
+          `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+           VALUES ($1, 'subscription_data', $2, NOW())
+           ON CONFLICT (school_id, config_key)
+           DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+          [targetSlug, JSON.stringify(subRecord)]
+        );
+      }
+    } catch (_pgErr) {}
+
+    // 3. Update in-memory store
+    const keysToUpdate = [targetSchoolId, targetSlug, slug, school_id].filter(Boolean) as string[];
+    keysToUpdate.forEach((k) => {
+      let mem = fontInMemSchools.get(k);
+      if (!mem) {
+        mem = { slug: k, name: k.toUpperCase() };
+        fontInMemSchools.set(k, mem);
+      }
+      mem.subscription = subRecord;
+      mem.plan_type = plan_name;
+    });
+
+    // 4. Record Transaction History
+    const newTx: SaasTransaction = {
+      id: Date.now(),
+      order_id,
+      school_name: targetSlug.toUpperCase().replace(/-/g, ' '),
+      school_slug: targetSlug,
+      plan_name: plan_name === 'PRO_YEARLY' ? 'Pro Tahunan' : (plan_name === 'ENTERPRISE' ? 'Enterprise Institution' : plan_name),
+      amount: 1200000,
+      payment_method: 'Simulasi Sistem (Instan)',
+      status: 'SETTLEMENT',
+      created_at: new Date().toISOString(),
+      settlement_time: new Date().toISOString()
+    };
+    inMemTransactions.unshift(newTx);
+
+    // Redis Invalidation
+    try {
+      await redis.del(`school:${targetSlug}`);
+      await redis.del(`school:${targetSchoolId}`);
+    } catch (_rErr) {}
+
+    return {
+      success: true,
+      message: 'Langganan berhasil diaktifkan.',
+      data: subRecord
+    };
+  }
+
+  static async simulatePayment(data: {
+    school_slug?: string;
+    plan_name?: string;
+    amount?: number;
+    order_id?: string;
+  }) {
+    const { school_slug, plan_name, order_id } = data;
+    return await this.activateSubscription({
+      slug: school_slug,
+      plan_name: plan_name || 'PRO_YEARLY',
+      order_id: order_id || `SIM-${Date.now()}`
+    });
   }
 
   static async submitSchoolVerification(payload: {

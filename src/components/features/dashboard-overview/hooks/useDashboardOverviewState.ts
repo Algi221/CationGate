@@ -264,9 +264,31 @@ export function useDashboardOverviewState() {
     const nextStatus = !isSpmbOpen;
 
     // Validate paid subscription before allowing to open public SPMB registration
-    let isSubscribed = isDemo;
+    let isSubscribed = isDemo || schoolSlug === "demo" || schoolId === "demo";
+
+    if (!isSubscribed) {
+      try {
+        const query = schoolId ? `school_id=${schoolId}&slug=${schoolSlug}` : `slug=${schoolSlug}`;
+        const subRes = await fetch(`/api/saas/subscription-status?${query}&_t=${Date.now()}`);
+        if (subRes.ok) {
+          const subJson = await subRes.json();
+          if (subJson && subJson.success && subJson.data) {
+            const plan = subJson.data.plan;
+            const status = subJson.data.status;
+            const isExpired = subJson.data.isExpired;
+            if ((plan === "PRO_YEARLY" || plan === "PRO" || plan === "ENTERPRISE") && status === "ACTIVE" && !isExpired) {
+              isSubscribed = true;
+            }
+          }
+        }
+      } catch (_e) {}
+    }
+
     if (!isSubscribed && typeof window !== "undefined") {
-      const savedSub = localStorage.getItem(`ppdb_school_subscription_${schoolSlug || 'default'}`);
+      const savedSub =
+        localStorage.getItem(`ppdb_school_subscription_${schoolSlug}`) ||
+        localStorage.getItem(`ppdb_school_subscription_${schoolId}`) ||
+        localStorage.getItem("ppdb_school_subscription_default");
       if (savedSub) {
         try {
           const parsed = JSON.parse(savedSub);

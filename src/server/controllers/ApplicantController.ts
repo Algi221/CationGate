@@ -190,6 +190,21 @@ export class ApplicantController {
     }
   }
 
+  static async getPublicInvoice(c: Context) {
+    try {
+      const nisn = c.req.param('nisn');
+      const schoolSlug = c.req.query('school_slug');
+      const record = await ApplicantService.getPublicInvoice(nisn, schoolSlug);
+      if (!record) {
+        return c.json({ success: false, message: 'Data invoice pendaftar tidak ditemukan.' }, 404);
+      }
+      return c.json({ success: true, data: record });
+    } catch (err) {
+      console.error('Fetch public invoice error:', err);
+      return c.json({ success: false, message: 'Gagal mengambil data invoice pendaftar.' }, 500);
+    }
+  }
+
   static async verifyIdentity(c: Context) {
     try {
       const id = parseInt(c.req.param('id') || '0');

@@ -213,8 +213,13 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
     }
 
     try {
-      const url = schoolSlug ? `${BACKEND_URL}/applicants/public?school_slug=${schoolSlug}` : `${BACKEND_URL}/applicants/public`;
-      const res = await fetch(url);
+      const sep = schoolSlug ? `&` : `?`;
+      const base = schoolSlug ? `${BACKEND_URL}/applicants/public?school_slug=${encodeURIComponent(schoolSlug)}` : `${BACKEND_URL}/applicants/public`;
+      const url = `${base}${sep}_t=${Date.now()}`;
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" }
+      });
       if (!res.ok) return;
       const data = await res.json();
       if (data && data.success && Array.isArray(data.data)) {

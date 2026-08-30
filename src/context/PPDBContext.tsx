@@ -119,7 +119,7 @@ function PPDBLifeCycleSync({ children }: { children: React.ReactNode }) {
     return cleanup;
   }, [initRealtimeSubscription, schoolId]);
 
-  // Initial Public load
+  // Initial Public load & Real-time polling fallback
   useEffect(() => {
     let ignore = false;
     const run = async () => {
@@ -128,8 +128,17 @@ function PPDBLifeCycleSync({ children }: { children: React.ReactNode }) {
       }
     };
     run();
+
+    // Auto-sync public applicant status every 8 seconds for live dashboard/landing consistency
+    const pollInterval = setInterval(() => {
+      if (!ignore) {
+        fetchPublicApplicants().catch(() => {});
+      }
+    }, 8000);
+
     return () => {
       ignore = true;
+      clearInterval(pollInterval);
     };
   }, [fetchPublicApplicants]);
 

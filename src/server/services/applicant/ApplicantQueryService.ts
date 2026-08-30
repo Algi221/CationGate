@@ -267,19 +267,90 @@ export class ApplicantQueryService {
 
   static async getRegistrationCard(nisn: string, schoolSlug?: string) {
     const supabase = getSupabaseClient();
-    const schoolId = schoolSlug ? await resolveSchoolUUID(schoolSlug, fontInMemSchools) : null;
+    const { resolveAllSchoolIdentifiers } = await import("../../db/resolve-school");
+    const matchIds = schoolSlug ? await resolveAllSchoolIdentifiers(schoolSlug, fontInMemSchools) : [];
 
     let query = supabase
       .from("student_applicants")
       .select(
-        "id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified, physical_docs_checklist"
+        "id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified, physical_docs_checklist, school_id"
       )
       .eq("nisn", nisn);
-    if (schoolId) query = query.eq("school_id", schoolId);
+    if (matchIds.length > 0) {
+      query = query.in("school_id", matchIds);
+    }
 
-    const { data: record, error } = await query.single();
-    if (error || !record) return null;
-    return record;
+    const { data: record, error } = await query.maybeSingle();
+    if (!error && record) return record;
+
+    // PostgreSQL pool fallback
+    try {
+      if (matchIds.length > 0) {
+        const pgRes = await pool.query(
+          `SELECT id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified, physical_docs_checklist, school_id
+           FROM student_applicants
+           WHERE nisn = $1 AND school_id::text = ANY($2::text[])
+           LIMIT 1`,
+          [nisn, matchIds]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) return pgRes.rows[0];
+      } else {
+        const pgRes = await pool.query(
+          `SELECT id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified, physical_docs_checklist, school_id
+           FROM student_applicants
+           WHERE nisn = $1
+           LIMIT 1`,
+          [nisn]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) return pgRes.rows[0];
+      }
+    } catch (_pgErr) {}
+
+    return null;
+  }
+
+  static async getPublicInvoice(nisn: string, schoolSlug?: string) {
+    const supabase = getSupabaseClient();
+    const { resolveAllSchoolIdentifiers } = await import("../../db/resolve-school");
+    const matchIds = schoolSlug ? await resolveAllSchoolIdentifiers(schoolSlug, fontInMemSchools) : [];
+
+    let query = supabase
+      .from("student_applicants")
+      .select(
+        "id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified, physical_docs_checklist, payment_status, payment_proof_url, school_id"
+      )
+      .eq("nisn", nisn);
+    if (matchIds.length > 0) {
+      query = query.in("school_id", matchIds);
+    }
+
+    const { data: record, error } = await query.maybeSingle();
+    if (!error && record) return record;
+
+    // PostgreSQL pool fallback
+    try {
+      if (matchIds.length > 0) {
+        const pgRes = await pool.query(
+          `SELECT id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified, physical_docs_checklist, payment_status, payment_proof_url, school_id
+           FROM student_applicants
+           WHERE nisn = $1 AND school_id::text = ANY($2::text[])
+           LIMIT 1`,
+          [nisn, matchIds]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) return pgRes.rows[0];
+      } else {
+        const pgRes = await pool.query(
+          `SELECT id, nama, nisn, registration_no, jurusan_1, sekolah_asal, jenis_kelamin, status, tgl_daftar, gelombang, periode, physical_doc_verified, physical_docs_checklist, payment_status, payment_proof_url, school_id
+           FROM student_applicants
+           WHERE nisn = $1
+           LIMIT 1`,
+          [nisn]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) return pgRes.rows[0];
+      }
+    } catch (_pgErr) {}
+
+    return null;
   }
 
   static async verifyApplicantIdentity(id: number, nik: string, schoolSlug: string) {

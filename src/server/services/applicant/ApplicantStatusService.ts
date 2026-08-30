@@ -18,20 +18,20 @@ export class ApplicantStatusService {
       };
     }
 
+    const { resolveAllSchoolIdentifiers } = await import("../../db/resolve-school");
+    const { fontInMemSchools } = await import("../../routes/saas");
+    const { pool } = await import("../../db/client");
+
+    const allIds = await resolveAllSchoolIdentifiers(schoolId, fontInMemSchools);
+    if (!allIds.includes(schoolId)) allIds.push(schoolId);
+
     const supabase = getSupabaseClient(authToken);
     const query = supabase
       .from("student_applicants")
       .select("*")
       .eq("id", id)
-      .eq("school_id", schoolId);
-    const { data: applicant } = await query.single();
-    if (!applicant) {
-      return {
-        success: false as const,
-        statusCode: 404 as const,
-        message: "Calon siswa tidak ditemukan."
-      };
-    }
+      .in("school_id", allIds);
+    const { data: applicant } = await query.maybeSingle();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = { status };
@@ -49,15 +49,40 @@ export class ApplicantStatusService {
       updateData.alasan_ditolak = null;
     }
 
+    let updatedRecord = null;
     const updateQuery = supabase
       .from("student_applicants")
       .update(updateData)
       .eq("id", id)
-      .eq("school_id", schoolId);
-    const { data: updatedRecord, error } = await updateQuery.select().single();
-    if (error) throw error;
+      .in("school_id", allIds);
+    const { data: sbUpdated } = await updateQuery.select().maybeSingle();
+    if (sbUpdated) updatedRecord = sbUpdated;
 
-    await ApplicantSyncService.syncCandidateToSiswaAktif(updatedRecord);
+    // Direct pool query for reliability
+    try {
+      const pgRes = await pool.query(
+        `UPDATE student_applicants
+         SET status = $1, verified_by = $2, rejected_by = $3, alasan_ditolak = $4, updated_at = NOW()
+         WHERE id = $5 AND school_id::text = ANY($6::text[])
+         RETURNING *`,
+        [status, updateData.verified_by, updateData.rejected_by, updateData.alasan_ditolak, id, allIds]
+      );
+      if (pgRes.rows && pgRes.rows.length > 0) {
+        updatedRecord = pgRes.rows[0];
+      }
+    } catch (_pgErr) {}
+
+    if (!updatedRecord && !applicant) {
+      return {
+        success: false as const,
+        statusCode: 404 as const,
+        message: "Calon siswa tidak ditemukan."
+      };
+    }
+
+    if (updatedRecord) {
+      await ApplicantSyncService.syncCandidateToSiswaAktif(updatedRecord);
+    }
 
     return {
       success: true as const,

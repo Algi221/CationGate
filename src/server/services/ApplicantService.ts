@@ -38,6 +38,10 @@ export class ApplicantService {
     return ApplicantQueryService.getRegistrationCard(nisn, schoolSlug);
   }
 
+  static async getPublicInvoice(nisn: string, schoolSlug?: string) {
+    return ApplicantQueryService.getPublicInvoice(nisn, schoolSlug);
+  }
+
   static async verifyApplicantIdentity(id: number, nik: string, schoolSlug: string) {
     return ApplicantQueryService.verifyApplicantIdentity(id, nik, schoolSlug);
   }

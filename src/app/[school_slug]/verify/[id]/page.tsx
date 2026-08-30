@@ -162,11 +162,14 @@ export default function VerificationPage() {
           {/* Ticket Top bar */}
           <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-4 mb-4 transition-colors">
             <div className="flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo_smktb.png" alt="Logo TB" className="w-9 h-9 object-contain" />
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <User size={18} />
+              </div>
               <div>
-                <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider leading-none">SMK Taruna Bhakti</h4>
-                <p className="text-[10px] text-slate-400 font-bold tracking-tight">Terakreditasi &quot;A&quot; Unggul</p>
+                <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider leading-none">
+                  Portal PPDB & SPMB
+                </h4>
+                <p className="text-[10px] text-slate-400 font-bold tracking-tight">Verifikasi Pendaftaran Resmi</p>
               </div>
             </div>
             <div className="text-right">
@@ -213,16 +216,8 @@ export default function VerificationPage() {
                 <div className="absolute -top-8 -right-8 w-32 h-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/15 transition-colors duration-500" />
                 <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/15 transition-colors duration-500" />
 
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-white dark:bg-[#0f172a] flex items-center justify-center mb-4 relative z-10 border border-slate-200 dark:border-blue-500/25 p-1 shadow-sm">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={getMajorLogoUrl(data.jurusan_1)}
-                    alt="Logo Jurusan"
-                    className="w-full h-full object-contain rounded-full"
-                    onError={(e) => {
-                      e.currentTarget.src = "/logo_smktb.png";
-                    }}
-                  />
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center mb-3 relative z-10 border border-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm font-black text-sm">
+                  {data.jurusan_1?.slice(0, 3)?.toUpperCase() || "JUR"}
                 </div>
 
                 <span className="text-[9px] font-black text-slate-400 tracking-[0.2em] uppercase block mb-2 relative z-10 text-center">Program Keahlian</span>
@@ -230,7 +225,7 @@ export default function VerificationPage() {
                   {data.jurusan_1}
                 </span>
                 <div className="mt-4 inline-block px-4 py-1.5 bg-white dark:bg-[#0f172a] rounded-full border border-slate-200 dark:border-white/10 relative z-10 shadow-sm">
-                  <span className="text-[9px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest block">SMK Taruna Bhakti</span>
+                  <span className="text-[9px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest block">Terverifikasi</span>
                 </div>
               </div>
             </div>

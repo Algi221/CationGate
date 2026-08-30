@@ -72,7 +72,7 @@
 ## Hak Akses & Kredensial Pengujian (Testing Accounts)
 
 ### 1. Akun Superadmin Platform (Gatekeeper)
-Akses URL: `https://[domain]/gatekeeper/login` (atau `http://localhost:3000/gatekeeper/login`)
+Akses URL: `https://cationgate.site/gatekeeper/login` (atau `http://localhost:3000/gatekeeper/login`)
 
 | Username | Email | Role | Catatan |
 | :--- | :--- | :--- | :--- |

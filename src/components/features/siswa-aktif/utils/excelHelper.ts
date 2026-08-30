@@ -18,87 +18,49 @@ export async function downloadActiveStudentsTemplate() {
     views: [{ showGridLines: true }]
   });
 
-  worksheet.columns = [
-    { header: "Nama Lengkap *", key: "nama", width: 30 },
-    { header: "NISN *", key: "nisn", width: 18 },
-    { header: "NIK", key: "nik", width: 22 },
-    { header: "NIPD", key: "nipd", width: 18 },
-    { header: "Jurusan *", key: "jurusan", width: 28 },
-    { header: "Kelas *", key: "kelas", width: 18 },
-    { header: "Tahun Ajaran / Periode *", key: "periode", width: 24 },
-    { header: "Jenis Kelamin (L/P) *", key: "jk", width: 20 },
-    { header: "Tempat Lahir", key: "tempat_lahir", width: 20 },
-    { header: "Tanggal Lahir (YYYY-MM-DD)", key: "tgl_lahir", width: 25 },
-    { header: "Agama", key: "agama", width: 16 },
-    { header: "Alamat Lengkap", key: "alamat", width: 35 },
-    { header: "No WhatsApp / HP", key: "whatsapp", width: 20 },
-    { header: "Email", key: "email", width: 25 },
-    { header: "Asal Sekolah", key: "sekolah_asal", width: 25 },
-    { header: "Nama Ayah", key: "nama_ayah", width: 22 },
-    { header: "Nama Ibu", key: "nama_ibu", width: 22 },
-    { header: "Telepon Orang Tua", key: "telepon_ortu", width: 20 },
+  const headers = [
+    "Nama Lengkap *",
+    "NISN *",
+    "NIK",
+    "NIPD",
+    "Jurusan *",
+    "Kelas *",
+    "Tahun Ajaran / Periode *",
+    "Jenis Kelamin (L/P) *",
+    "Tempat Lahir",
+    "Tanggal Lahir (YYYY-MM-DD)",
+    "Agama",
+    "Alamat Lengkap",
+    "No WhatsApp / HP",
+    "Email",
+    "Asal Sekolah",
+    "Nama Ayah",
+    "Nama Ibu",
+    "Telepon Orang Tua"
   ];
 
-  // Header styling
-  const headerRow = worksheet.getRow(1);
-  headerRow.height = 32;
-  headerRow.eachCell((cell) => {
-    cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 10 };
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FF1E3A8A" } // Dark blue B2B
-    };
-    cell.alignment = { vertical: "middle", horizontal: "center" };
-    cell.border = {
-      top: { style: "thin" },
-      left: { style: "thin" },
-      bottom: { style: "thin" },
-      right: { style: "thin" }
-    };
-  });
+  const dataRows = [
+    [
+      "Ahmad Rizky Pratama", "0071234567", "3201012345670001", "262710001",
+      "Rekayasa Perangkat Lunak", "X PPLG 1", "2026-2027", "L",
+      "Jakarta", "2008-05-14", "Islam", "Jl. Merdeka No. 12 RT 01/RW 04",
+      "081234567890", "ahmad.rizky@example.com", "SMP Negeri 1 Jakarta",
+      "Bambang Pratama", "Siti Aminah", "081298765432"
+    ],
+    [
+      "Siti Nurhaliza", "0069876543", "3201012345670002", "252610002",
+      "Teknik Jaringan Komputer & Telekomunikasi", "XI TJKT 2", "2025-2026", "P",
+      "Bandung", "2007-11-20", "Islam", "Jl. Dago Asri No. 45",
+      "081398765432", "siti.nurhaliza@example.com", "SMP Negeri 5 Bandung",
+      "Herman Santoso", "Dewi Lestari", "081312345678"
+    ]
+  ];
 
-  // Example sample rows
-  worksheet.addRow({
-    nama: "Ahmad Rizky Pratama",
-    nisn: "0071234567",
-    nik: "3201012345670001",
-    nipd: "262710001",
-    jurusan: "Rekayasa Perangkat Lunak",
-    kelas: "X PPLG 1",
-    periode: "2026-2027",
-    jk: "L",
-    tempat_lahir: "Jakarta",
-    tgl_lahir: "2008-05-14",
-    agama: "Islam",
-    alamat: "Jl. Merdeka No. 12 RT 01/RW 04",
-    whatsapp: "081234567890",
-    email: "ahmad.rizky@example.com",
-    sekolah_asal: "SMP Negeri 1 Jakarta",
-    nama_ayah: "Bambang Pratama",
-    nama_ibu: "Siti Aminah",
-    telepon_ortu: "081298765432"
-  });
-
-  worksheet.addRow({
-    nama: "Siti Nurhaliza",
-    nisn: "0069876543",
-    nik: "3201012345670002",
-    nipd: "252610002",
-    jurusan: "Teknik Jaringan Komputer & Telekomunikasi",
-    kelas: "XI TJKT 2",
-    periode: "2025-2026",
-    jk: "P",
-    tempat_lahir: "Bandung",
-    tgl_lahir: "2007-11-20",
-    agama: "Islam",
-    alamat: "Jl. Dago Asri No. 45",
-    whatsapp: "081398765432",
-    email: "siti.nurhaliza@example.com",
-    sekolah_asal: "SMP Negeri 5 Bandung",
-    nama_ayah: "Herman Santoso",
-    nama_ibu: "Dewi Lestari",
-    telepon_ortu: "081312345678"
+  formatExcelTable({
+    worksheet,
+    title: "TEMPLATE IMPORT SISWA AKTIF",
+    headers,
+    dataRows
   });
 
   // Instruction Sheet
@@ -151,7 +113,25 @@ export async function parseActiveStudentsFile(file: File): Promise<{
 
   // Find column headers mapping dynamically
   const headerMap: Record<string, number> = {};
-  const headerRow = worksheet.getRow(1);
+  
+  // Try to find which row contains the headers (look at first 5 rows)
+  let headerRowIndex = 1;
+  for (let i = 1; i <= 5; i++) {
+    const row = worksheet.getRow(i);
+    let matchCount = 0;
+    row.eachCell((cell) => {
+      const text = String(cell.value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (text.includes("nama") || text.includes("nisn") || text.includes("jurusan") || text.includes("kelas")) {
+        matchCount++;
+      }
+    });
+    if (matchCount >= 3) {
+      headerRowIndex = i;
+      break;
+    }
+  }
+
+  const headerRow = worksheet.getRow(headerRowIndex);
   headerRow.eachCell((cell, colNumber) => {
     const headerText = String(cell.value || "")
       .toLowerCase()
@@ -194,7 +174,7 @@ export async function parseActiveStudentsFile(file: File): Promise<{
   };
 
   worksheet.eachRow((row, rowNumber) => {
-    if (rowNumber === 1) return; // Skip header row
+    if (rowNumber <= headerRowIndex) return; // Skip header row and above
 
     const getVal = (key: string): string => {
       const colIdx = headerMap[key];
@@ -234,8 +214,16 @@ export async function parseActiveStudentsFile(file: File): Promise<{
       diterima_kelas: kelas,
       periode,
       jenis_kelamin: jk,
+      tempat_lahir: getVal("tempat_lahir") || undefined,
+      tgl_lahir: getVal("tgl_lahir") || undefined,
+      agama: getVal("agama") || undefined,
+      alamat: getVal("alamat") || undefined,
       whatsapp: whatsapp || undefined,
+      email: getVal("email") || undefined,
       sekolah_asal: sekolahAsal || undefined,
+      nama_ayah: getVal("nama_ayah") || undefined,
+      nama_ibu: getVal("nama_ibu") || undefined,
+      telepon_ortu: getVal("telepon_ortu") || undefined,
       status: "Lulus/Aktif"
     };
 
@@ -291,18 +279,25 @@ export async function exportActiveStudentsToExcel(
 
   const headers = [
     "No.",
-    "NIPD",
     "No. Pendaftaran",
-    "Periode Angkatan",
     "Nama Lengkap",
-    "Jenis Kelamin",
     "NISN",
     "NIK",
-    "Asal Sekolah",
+    "NIPD",
     "Jurusan",
     "Kelas",
-    "No. WhatsApp",
-    "Email"
+    "Tahun Ajaran / Periode",
+    "Jenis Kelamin (L/P)",
+    "Tempat Lahir",
+    "Tanggal Lahir (YYYY-MM-DD)",
+    "Agama",
+    "Alamat Lengkap",
+    "No WhatsApp / HP",
+    "Email",
+    "Asal Sekolah",
+    "Nama Ayah",
+    "Nama Ibu",
+    "Telepon Orang Tua"
   ];
 
   periods.forEach((period) => {
@@ -314,22 +309,29 @@ export async function exportActiveStudentsToExcel(
 
     const dataRows = periodStudents.map((a, idx) => [
       idx + 1,
-      nipdMap.get(a.id) || a.nipd || "-",
       formatNoPendaftaran(a.periode, a.id),
-      a.periode || "2026-2027",
       a.nama || "-",
-      (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")
-        ? "Laki-laki"
-        : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p")
-        ? "Perempuan"
-        : "-",
       a.nisn || "-",
       a.nik || "-",
-      a.sekolah_asal || a.sekolahAsal || "-",
+      nipdMap.get(a.id) || a.nipd || "-",
       a.jurusan || a.jurusan_1 || a.jurusan1 || "-",
       a.diterima_kelas || a.diterimaKelas || "-",
+      a.periode || "2026-2027",
+      (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")
+        ? "L"
+        : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p")
+        ? "P"
+        : "-",
+      a.tempat_lahir || a.tempatLahir || "-",
+      a.tgl_lahir || a.tglLahir || "-",
+      a.agama || "-",
+      a.alamat || "-",
       a.whatsapp || "-",
-      a.email || "-"
+      a.email || "-",
+      a.sekolah_asal || a.sekolahAsal || "-",
+      a.nama_ayah || a.namaAyah || "-",
+      a.nama_ibu || a.namaIbu || "-",
+      a.telepon_ortu || a.teleponOrtu || "-"
     ]);
 
     formatExcelTable({

@@ -89,7 +89,11 @@ export async function resolveSchoolUUID(
     return 'demo';
   }
 
-  return strVal || null;
+  if (isNumeric) {
+    return strVal;
+  }
+
+  return null;
 }
 
 export async function resolveSchoolSlug(

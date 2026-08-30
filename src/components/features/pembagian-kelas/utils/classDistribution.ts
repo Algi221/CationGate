@@ -59,31 +59,51 @@ export const exportClassToExcel = async (
   const headers = [
     "No.",
     "No. Pendaftaran",
-    "NIPD",
-    "Nama Siswa",
-    "L/P",
+    "Nama Lengkap",
     "NISN",
-    "Asal Sekolah",
-    "No. WhatsApp",
+    "NIK",
+    "NIPD",
+    "Jurusan",
+    "Kelas",
+    "Tahun Ajaran / Periode",
+    "Jenis Kelamin (L/P)",
+    "Tempat Lahir",
+    "Tanggal Lahir (YYYY-MM-DD)",
+    "Agama",
+    "Alamat Lengkap",
+    "No WhatsApp / HP",
     "Email",
-    "Tanggal Diterima"
+    "Asal Sekolah",
+    "Nama Ayah",
+    "Nama Ibu",
+    "Telepon Orang Tua"
   ];
 
   const dataRows = classStudents.map((s: Applicant, index: number) => [
     index + 1,
     s.registration_no || s.no_pendaftaran || formatNoPendaftaran(s.periode, s.id),
-    nipdMap.get(s.id) || "-",
     s.nama || "-",
+    s.nisn || "-",
+    s.nik || "-",
+    nipdMap.get(s.id) || "-",
+    s.jurusan || s.jurusan_1 || s.jurusan1 || "-",
+    s.diterima_kelas || s.diterimaKelas || "-",
+    s.periode || "2026-2027",
     (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("l")
       ? "L"
       : (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("p")
       ? "P"
       : "-",
-    s.nisn || "-",
-    s.sekolah_asal || s.sekolahAsal || "-",
+    s.tempat_lahir || s.tempatLahir || "-",
+    s.tgl_lahir || s.tglLahir || "-",
+    s.agama || "-",
+    s.alamat || "-",
     s.whatsapp || "-",
     s.email || "-",
-    s.diterima_tanggal || s.diterimaTanggal || "-"
+    s.sekolah_asal || s.sekolahAsal || "-",
+    s.nama_ayah || s.namaAyah || "-",
+    s.nama_ibu || s.namaIbu || "-",
+    s.telepon_ortu || s.teleponOrtu || "-"
   ]);
 
   formatExcelTable({
@@ -117,11 +137,24 @@ export const exportAllClassesToExcel = async (
   const headers = [
     "No.",
     "No. Pendaftaran",
-    "NIPD",
     "Nama Lengkap",
-    "L/P",
     "NISN",
-    "Asal Sekolah"
+    "NIK",
+    "NIPD",
+    "Jurusan",
+    "Kelas",
+    "Tahun Ajaran / Periode",
+    "Jenis Kelamin (L/P)",
+    "Tempat Lahir",
+    "Tanggal Lahir (YYYY-MM-DD)",
+    "Agama",
+    "Alamat Lengkap",
+    "No WhatsApp / HP",
+    "Email",
+    "Asal Sekolah",
+    "Nama Ayah",
+    "Nama Ibu",
+    "Telepon Orang Tua"
   ];
 
   classesToExport.forEach((c) => {
@@ -141,15 +174,28 @@ export const exportAllClassesToExcel = async (
       return [
         index + 1,
         String(s.registration_no || s.no_pendaftaran || formatNoPendaftaran(s.periode, s.id)),
-        nipdMap.get(s.id) || "-",
         s.nama || "-",
+        s.nisn || "-",
+        s.nik || "-",
+        nipdMap.get(s.id) || "-",
+        s.jurusan || s.jurusan_1 || s.jurusan1 || "-",
+        s.diterima_kelas || s.diterimaKelas || "-",
+        s.periode || "2026-2027",
         (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("l")
           ? "L"
           : (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("p")
           ? "P"
           : "-",
-        s.nisn || "-",
-        s.sekolah_asal || s.sekolahAsal || "-"
+        s.tempat_lahir || s.tempatLahir || "-",
+        s.tgl_lahir || s.tglLahir || "-",
+        s.agama || "-",
+        s.alamat || "-",
+        s.whatsapp || "-",
+        s.email || "-",
+        s.sekolah_asal || s.sekolahAsal || "-",
+        s.nama_ayah || s.namaAyah || "-",
+        s.nama_ibu || s.namaIbu || "-",
+        s.telepon_ortu || s.teleponOrtu || "-"
       ];
     });
 

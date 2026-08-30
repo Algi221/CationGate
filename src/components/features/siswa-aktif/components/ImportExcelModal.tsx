@@ -286,31 +286,54 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
               </div>
 
               <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-xs">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-300">
+                <div className="overflow-x-auto">                  <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-900/50">
                         <th className="p-3 pl-4">NISN</th>
+                        <th className="p-3">NIK</th>
+                        <th className="p-3">NIPD</th>
                         <th className="p-3">Nama Lengkap</th>
                         <th className="p-3 text-center">L/P</th>
+                        <th className="p-3">Tempat Lahir</th>
+                        <th className="p-3">Tanggal Lahir</th>
+                        <th className="p-3">Agama</th>
+                        <th className="p-3">Alamat Lengkap</th>
+                        <th className="p-3">No WhatsApp</th>
+                        <th className="p-3">Email</th>
+                        <th className="p-3">Asal Sekolah</th>
                         <th className="p-3">Jurusan</th>
                         <th className="p-3">Kelas</th>
                         <th className="p-3">Periode</th>
+                        <th className="p-3">Nama Ayah</th>
+                        <th className="p-3">Nama Ibu</th>
+                        <th className="p-3">Telepon Ortu</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                       {previewRows.slice(0, 5).map((row, idx) => (
                         <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                           <td className="p-3 pl-4 font-mono text-blue-600 dark:text-blue-400">{row.nisn || "-"}</td>
+                          <td className="p-3">{row.nik || "-"}</td>
+                          <td className="p-3">{row.nipd || "-"}</td>
                           <td className="p-3 font-extrabold text-slate-800 dark:text-white">{row.nama}</td>
                           <td className="p-3 text-center">
                             <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border">
-                              {row.jenis_kelamin.startsWith("L") ? "L" : "P"}
+                              {(row.jenis_kelamin || "").startsWith("L") ? "L" : (row.jenis_kelamin || "").startsWith("P") ? "P" : "-"}
                             </span>
                           </td>
-                          <td className="p-3">{row.jurusan}</td>
-                          <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">{row.diterima_kelas}</td>
-                          <td className="p-3 font-mono">{row.periode}</td>
+                          <td className="p-3">{row.tempat_lahir || "-"}</td>
+                          <td className="p-3">{row.tgl_lahir || "-"}</td>
+                          <td className="p-3">{row.agama || "-"}</td>
+                          <td className="p-3">{row.alamat || "-"}</td>
+                          <td className="p-3">{row.whatsapp || "-"}</td>
+                          <td className="p-3">{row.email || "-"}</td>
+                          <td className="p-3">{row.sekolah_asal || "-"}</td>
+                          <td className="p-3">{row.jurusan || "-"}</td>
+                          <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">{row.diterima_kelas || "-"}</td>
+                          <td className="p-3 font-mono">{row.periode || "-"}</td>
+                          <td className="p-3">{row.nama_ayah || "-"}</td>
+                          <td className="p-3">{row.nama_ibu || "-"}</td>
+                          <td className="p-3">{row.telepon_ortu || "-"}</td>
                         </tr>
                       ))}
                     </tbody>

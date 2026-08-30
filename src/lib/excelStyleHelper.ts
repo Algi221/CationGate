@@ -83,7 +83,19 @@ export function formatExcelTable({
         fgColor: { argb: bgFill }
       };
 
-      cell.alignment = { horizontal: "center", vertical: "middle" };
+      const headerText = (headers[cIdx] || "").toLowerCase();
+      const isLeftAlign =
+        headerText.includes("nama") ||
+        headerText.includes("sekolah") ||
+        headerText.includes("alamat") ||
+        headerText.includes("email") ||
+        headerText.includes("tempat lahir") ||
+        headerText.includes("keterangan");
+
+      cell.alignment = {
+        horizontal: isLeftAlign ? "left" : "center",
+        vertical: "middle"
+      };
 
       cell.border = {
         top: { style: "thin", color: { argb: "D9D9D9" } },
@@ -105,7 +117,7 @@ export function formatExcelTable({
         const cellStr = String(r[idx] ?? "");
         if (cellStr.length > maxLen) maxLen = cellStr.length;
       });
-      col.width = Math.min(Math.max(maxLen + 5, 14), 45);
+      col.width = Math.min(Math.max(maxLen + 12, 18), 55);
     }
   });
 }

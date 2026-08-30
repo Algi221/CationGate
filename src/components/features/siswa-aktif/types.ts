@@ -110,7 +110,15 @@ export interface ImportPreviewRow {
   diterima_kelas: string;
   periode: string;
   jenis_kelamin: string;
+  tempat_lahir?: string;
+  tgl_lahir?: string;
+  agama?: string;
+  alamat?: string;
   whatsapp?: string;
+  email?: string;
   sekolah_asal?: string;
+  nama_ayah?: string;
+  nama_ibu?: string;
+  telepon_ortu?: string;
   status?: string;
 }

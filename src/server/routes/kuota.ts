@@ -97,22 +97,17 @@ async function getTargets(supabase: any, schoolId: string | null, customOrder: s
 router.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    let schoolId = c.req.query('school_id') || null;
+    const schoolId = c.req.query('school_id') || null;
     const schoolSlug = c.req.query('school_slug') || null;
     const periodeParam = c.req.query('periode') || null;
 
     const isDemo = schoolSlug === 'demo' || schoolId === 'demo';
 
-    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-    if (schoolSlug || (schoolId && !isUUID(schoolId))) {
-      try {
-        const { resolveSchoolUUID } = await import('../db/resolve-school');
-        const { fontInMemSchools } = await import('./saas');
-        const targetIdentifier = schoolSlug || schoolId!;
-        const resolved = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
-        if (resolved) schoolId = resolved;
-      } catch (_err) {}
-    }
+    const { resolveAllSchoolIdentifiers } = await import('../db/resolve-school');
+    const { fontInMemSchools } = await import('./saas');
+    const targetIdentifier = schoolSlug || schoolId || '';
+    const allIds = targetIdentifier ? await resolveAllSchoolIdentifiers(targetIdentifier, fontInMemSchools) : [];
+    if (schoolId && !allIds.includes(schoolId)) allIds.push(schoolId);
 
     let order: string[] = [];
     let displayNames: Record<string, string> = {};
@@ -120,13 +115,15 @@ router.get('/', async (c) => {
     if (isDemo) {
       order = [...DEMO_ORDER];
       displayNames = { ...DEMO_DISPLAY_NAMES };
-    } else if (schoolId) {
+    } else if (allIds.length > 0) {
       try {
         const { data: majorsData } = await supabase
           .from('landing_page_config')
           .select('config_value')
-          .eq('school_id', schoolId)
+          .in('school_id', allIds)
           .eq('config_key', 'ppdb_majors_config')
+          .order('updated_at', { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         let majorsList = majorsData?.config_value;
@@ -134,8 +131,8 @@ router.get('/', async (c) => {
           try {
             const { pool } = await import('../db/client');
             const pgRes = await pool.query(
-              `SELECT config_value FROM landing_page_config WHERE school_id::text = $1 AND config_key = 'ppdb_majors_config' ORDER BY updated_at DESC LIMIT 1`,
-              [schoolId]
+              `SELECT config_value FROM landing_page_config WHERE school_id::text = ANY($1::text[]) AND config_key = 'ppdb_majors_config' ORDER BY updated_at DESC LIMIT 1`,
+              [allIds]
             );
             if (pgRes.rows && pgRes.rows.length > 0) {
               majorsList = pgRes.rows[0].config_value;
@@ -144,15 +141,22 @@ router.get('/', async (c) => {
         }
 
         if (typeof majorsList === 'string') {
-          try { majorsList = JSON.parse(majorsList); } catch (_e) {}
+          try {
+            majorsList = JSON.parse(majorsList);
+            if (typeof majorsList === 'string') majorsList = JSON.parse(majorsList);
+          } catch (_e) {}
         }
 
         if (Array.isArray(majorsList) && majorsList.length > 0) {
-          majorsList.forEach((m: { title?: string; code?: string }) => {
-            const name = (m.title || m.code || '').trim();
-            if (name && !order.includes(name)) {
-              order.push(name);
-              displayNames[name] = m.code && m.title && m.code !== m.title ? `${m.title} (${m.code})` : name;
+          majorsList.forEach((m: { title?: string; code?: string; name?: string }) => {
+            const name = (m.title || m.name || m.code || '').trim();
+            const code = (m.code || '').trim();
+            const key = name || code;
+            if (key && !order.includes(key)) {
+              order.push(key);
+              displayNames[key] = code && name && code.toUpperCase() !== name.toUpperCase()
+                ? `${name} (${code})`
+                : name || code;
             }
           });
         }
@@ -161,9 +165,9 @@ router.get('/', async (c) => {
 
     let pQuery = supabase.from('student_applicants').select('periode');
     let sQuery = supabase.from('active_students').select('periode');
-    if (schoolId) {
-      pQuery = pQuery.eq('school_id', schoolId);
-      sQuery = sQuery.eq('school_id', schoolId);
+    if (allIds.length > 0) {
+      pQuery = pQuery.in('school_id', allIds);
+      sQuery = sQuery.in('school_id', allIds);
     }
 
     const { data: allPeriodesPendaftar } = await pQuery;
@@ -180,9 +184,9 @@ router.get('/', async (c) => {
     let pendaftarDataQuery = supabase.from('student_applicants').select('jurusan_1');
     let siswaAktifDataQuery = supabase.from('active_students').select('jurusan');
 
-    if (schoolId) {
-      pendaftarDataQuery = pendaftarDataQuery.eq('school_id', schoolId);
-      siswaAktifDataQuery = siswaAktifDataQuery.eq('school_id', schoolId);
+    if (allIds.length > 0) {
+      pendaftarDataQuery = pendaftarDataQuery.in('school_id', allIds);
+      siswaAktifDataQuery = siswaAktifDataQuery.in('school_id', allIds);
     }
     if (periodeParam) {
       pendaftarDataQuery = pendaftarDataQuery.eq('periode', periodeParam);
@@ -192,77 +196,68 @@ router.get('/', async (c) => {
     const { data: pendaftarRows } = await pendaftarDataQuery;
     const { data: siswaAktifRows } = await siswaAktifDataQuery;
 
-    // Dynamically include any existing student jurusans if not already in order
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pendaftarRows?.forEach((r: any) => {
-      const j = (r.jurusan_1 || '').trim();
-      if (j && j !== 'Belum Memilih' && !order.includes(j)) {
-        order.push(j);
-        if (!displayNames[j]) displayNames[j] = j;
+    const TARGETS = await getTargets(supabase, schoolId || (allIds[0] ?? null), order);
+
+    const matchMajorKey = (raw: string): string => {
+      if (!raw || raw === 'Belum Memilih') return 'Belum Memilih';
+      const clean = raw.trim();
+      if (order.includes(clean)) return clean;
+      const cleanUpper = clean.toUpperCase();
+      for (const key of order) {
+        const keyUpper = key.toUpperCase();
+        const dispUpper = (displayNames[key] || '').toUpperCase();
+        if (cleanUpper === keyUpper || cleanUpper === dispUpper) return key;
+        if (cleanUpper.includes(keyUpper) || keyUpper.includes(cleanUpper)) return key;
       }
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    siswaAktifRows?.forEach((r: any) => {
-      const j = (r.jurusan || '').trim();
-      if (j && j !== 'Belum Memilih' && !order.includes(j)) {
-        order.push(j);
-        if (!displayNames[j]) displayNames[j] = j;
-      }
-    });
-
-    // Check if there are any unassigned applicants
-    const hasUnassigned =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      pendaftarRows?.some((r: any) => !r.jurusan_1 || r.jurusan_1 === 'Belum Memilih') ||
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      siswaAktifRows?.some((r: any) => !r.jurusan || r.jurusan === 'Belum Memilih');
-
-    if (hasUnassigned && !order.includes('Belum Memilih')) {
-      order.push('Belum Memilih');
-      displayNames['Belum Memilih'] = 'Belum Memilih Jurusan / Unassigned';
-    }
-
-    const TARGETS = await getTargets(supabase, schoolId, order);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const groupRows = (rows: any[], keyName: string) => {
-      const groups: Record<string, number> = {};
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      rows?.forEach((r: any) => {
-        const val = r[keyName];
-        groups[val] = (groups[val] || 0) + 1;
-      });
-      return Object.keys(groups).map(k => ({ [keyName]: k, _count: { _all: groups[k] } }));
+      return 'Belum Memilih';
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const processGroups = (groups: any[], jurusanKey: string) => {
+    const processRows = (rows: any[], keyProp: string) => {
       const counts: Record<string, number> = {};
-      groups.forEach(g => {
-        let key = g[jurusanKey] || "Belum Memilih";
-        if (!order.includes(key) && key !== "Belum Memilih") {
-          key = "Belum Memilih";
+      order.forEach((k) => { counts[k] = 0; });
+      let unassignedCount = 0;
+
+      rows?.forEach((r) => {
+        const rawVal = r[keyProp];
+        const matched = matchMajorKey(rawVal);
+        if (matched !== 'Belum Memilih' && counts[matched] !== undefined) {
+          counts[matched] += 1;
+        } else {
+          unassignedCount += 1;
         }
-        counts[key] = (counts[key] || 0) + g._count._all;
       });
 
-      return order.map((key, index) => {
+      const items = order.map((key, index) => {
         const jumlah = counts[key] || 0;
         const target = TARGETS[key] || 0;
         const presentase = target > 0 ? Math.round((jumlah / target) * 100) : 0;
         return {
           no: index + 1,
-          key: key,
+          key,
           konsentrasi_keahlian: displayNames[key] || key,
           jumlah,
           target,
           presentase: `${presentase}%`
         };
       });
+
+      if (unassignedCount > 0 && order.length === 0) {
+        items.push({
+          no: items.length + 1,
+          key: 'Belum Memilih',
+          konsentrasi_keahlian: 'Belum Memilih Jurusan',
+          jumlah: unassignedCount,
+          target: 0,
+          presentase: '0%'
+        });
+      }
+
+      return items;
     };
 
-    const dataPendaftar = processGroups(groupRows(pendaftarRows || [], 'jurusan_1'), 'jurusan_1');
-    const dataSiswaAktif = processGroups(groupRows(siswaAktifRows || [], 'jurusan'), 'jurusan');
+    const dataPendaftar = processRows(pendaftarRows || [], 'jurusan_1');
+    const dataSiswaAktif = processRows(siswaAktifRows || [], 'jurusan');
 
     const totalTarget = order.reduce((acc, k) => acc + (TARGETS[k] || 0), 0);
     const totalPendaftarJumlah = dataPendaftar.reduce((acc, item) => acc + item.jumlah, 0);

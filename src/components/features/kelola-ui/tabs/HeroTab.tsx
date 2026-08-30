@@ -400,10 +400,24 @@ export const HeroTab: React.FC<HeroTabProps> = ({
           startValue={gelombangConfig.gelombang1.start}
           endValue={gelombangConfig.gelombang1.end}
           onSelectRange={(start, end) => {
-            setGelombangConfig(prev => ({
-              ...prev,
+            const next = {
+              ...gelombangConfig,
               gelombang1: { start, end }
-            }));
+            };
+            setGelombangConfig(next);
+            if (typeof window !== "undefined") {
+              try {
+                localStorage.setItem("ppdb_gelombang_config", JSON.stringify(next));
+                const token = localStorage.getItem("ppdb_admin_token");
+                if (token && start && end) {
+                  fetch("/api/config", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ key: "ppdb_gelombang_config", value: next })
+                  }).catch(() => {});
+                }
+              } catch (_) {}
+            }
           }}
           excludeRange={gelombangConfig.gelombang2.start && gelombangConfig.gelombang2.end ? gelombangConfig.gelombang2 : null}
           error={g1Error}
@@ -415,10 +429,24 @@ export const HeroTab: React.FC<HeroTabProps> = ({
           startValue={gelombangConfig.gelombang2.start}
           endValue={gelombangConfig.gelombang2.end}
           onSelectRange={(start, end) => {
-            setGelombangConfig(prev => ({
-              ...prev,
+            const next = {
+              ...gelombangConfig,
               gelombang2: { start, end }
-            }));
+            };
+            setGelombangConfig(next);
+            if (typeof window !== "undefined") {
+              try {
+                localStorage.setItem("ppdb_gelombang_config", JSON.stringify(next));
+                const token = localStorage.getItem("ppdb_admin_token");
+                if (token && start && end) {
+                  fetch("/api/config", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ key: "ppdb_gelombang_config", value: next })
+                  }).catch(() => {});
+                }
+              } catch (_) {}
+            }
           }}
           excludeRange={gelombangConfig.gelombang1.start && gelombangConfig.gelombang1.end ? gelombangConfig.gelombang1 : null}
           error={g2Error}

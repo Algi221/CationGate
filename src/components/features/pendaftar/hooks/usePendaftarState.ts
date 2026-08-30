@@ -364,11 +364,21 @@ export function usePendaftarState() {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         const json = await res.json();
-        if (json.success && json.data?.ppdb_majors_config && Array.isArray(json.data.ppdb_majors_config)) {
-          const list = json.data.ppdb_majors_config
-            .map((m: { title?: string; name?: string }) => m.title || m.name || "")
+        let configMajors = json.data?.ppdb_majors_config;
+        if (typeof configMajors === "string") {
+          try {
+            configMajors = JSON.parse(configMajors);
+            if (typeof configMajors === "string") configMajors = JSON.parse(configMajors);
+          } catch (_) {}
+        }
+        if (json.success && Array.isArray(configMajors) && configMajors.length > 0) {
+          const list = configMajors
+            .map((m: { title?: string; name?: string; code?: string }) => m.title || m.name || m.code || "")
             .filter(Boolean);
           setMajorsList(list);
+          try {
+            localStorage.setItem("ppdb_majors_config", JSON.stringify(configMajors));
+          } catch (_) {}
         } else if (!isDemoEnv) {
           setMajorsList([]);
         }

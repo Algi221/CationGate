@@ -192,37 +192,30 @@ export class ApplicantQueryService {
     // Run auto-disqualify in background without blocking applicant fetch
     ApplicantSyncService.checkAndDisqualifyExpiredApplicants().catch(() => {});
     const supabase = getSupabaseClient(authToken);
-    const resolvedUUID = await resolveSchoolUUID(schoolId, fontInMemSchools);
-    const targetId = resolvedUUID || schoolId;
-    const numericSchoolId = !isNaN(Number(targetId)) ? Number(targetId) : null;
+    const { resolveAllSchoolIdentifiers } = await import("../../db/resolve-school");
+    const allMatchIds = await resolveAllSchoolIdentifiers(schoolId, fontInMemSchools);
+    if (!allMatchIds.includes(schoolId)) allMatchIds.push(schoolId);
 
     let query = supabase
       .from("student_applicants")
       .select(calonSiswaFields.join(","))
+      .in("school_id", allMatchIds)
       .is("deleted_at", null)
       .order("tgl_daftar", { ascending: false });
 
-    if (numericSchoolId !== null) {
-      query = query.eq("school_id", numericSchoolId);
-    } else {
-      query = query.eq("school_id", targetId);
-    }
-
     const { data: rows, error } = await query;
-    if (error) {
+    if (error || !rows || rows.length === 0) {
       try {
-        const isNum = numericSchoolId !== null;
         const pgRes = await pool.query(
           `SELECT ${calonSiswaFields.join(", ")} FROM student_applicants 
            WHERE deleted_at IS NULL 
-             AND ((CASE WHEN $1 = true THEN school_id = $2::integer ELSE false END) OR school_id::text = $3)
+             AND school_id::text = ANY($1::text[])
            ORDER BY tgl_daftar DESC`,
-          [isNum, isNum ? numericSchoolId : 0, String(targetId)]
+          [allMatchIds]
         );
-        return pgRes.rows || [];
+        if (pgRes.rows && pgRes.rows.length > 0) return pgRes.rows;
       } catch (_pgErr) {
-        console.warn('getAdminApplicants fallback query error:', error.message || error);
-        return [];
+        console.warn('getAdminApplicants fallback query error:', error?.message || _pgErr);
       }
     }
     return rows || [];
@@ -230,39 +223,61 @@ export class ApplicantQueryService {
 
   static async getTrashedApplicants(schoolId: string, authToken?: string) {
     const supabase = getSupabaseClient(authToken);
-    const resolvedUUID = await resolveSchoolUUID(schoolId, fontInMemSchools);
-    const targetId = resolvedUUID || schoolId;
-    const numericSchoolId = !isNaN(Number(targetId)) ? Number(targetId) : null;
+    const { resolveAllSchoolIdentifiers } = await import("../../db/resolve-school");
+    const allMatchIds = await resolveAllSchoolIdentifiers(schoolId, fontInMemSchools);
+    if (!allMatchIds.includes(schoolId)) allMatchIds.push(schoolId);
 
     let query = supabase
       .from("student_applicants")
       .select([...calonSiswaFields, "deleted_at"].join(","))
+      .in("school_id", allMatchIds)
       .not("deleted_at", "is", null)
       .order("deleted_at", { ascending: false });
 
-    if (numericSchoolId !== null) {
-      query = query.eq("school_id", numericSchoolId);
-    } else {
-      query = query.eq("school_id", targetId);
-    }
-
     const { data: rows, error } = await query;
-    if (error) {
-      return [];
+    if (error || !rows || rows.length === 0) {
+      try {
+        const pgRes = await pool.query(
+          `SELECT ${[...calonSiswaFields, "deleted_at"].join(", ")} FROM student_applicants 
+           WHERE deleted_at IS NOT NULL 
+             AND school_id::text = ANY($1::text[])
+           ORDER BY deleted_at DESC`,
+          [allMatchIds]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) return pgRes.rows;
+      } catch (_pgErr) {
+        console.warn('getTrashedApplicants fallback query error:', error?.message || _pgErr);
+      }
     }
     return rows || [];
   }
 
   static async getApplicantById(id: number, schoolId: string, authToken?: string) {
     const supabase = getSupabaseClient(authToken);
+    const { resolveAllSchoolIdentifiers } = await import("../../db/resolve-school");
+    const allMatchIds = await resolveAllSchoolIdentifiers(schoolId, fontInMemSchools);
+    if (!allMatchIds.includes(schoolId)) allMatchIds.push(schoolId);
+
     const query = supabase
       .from("student_applicants")
       .select("*")
       .eq("id", id)
-      .eq("school_id", schoolId);
-    const { data: applicant, error } = await query.single();
-    if (error || !applicant) return null;
-    return applicant;
+      .in("school_id", allMatchIds);
+    const { data: applicant, error } = await query.maybeSingle();
+    if (!error && applicant) return applicant;
+
+    // PostgreSQL pool fallback
+    try {
+      const pgRes = await pool.query(
+        `SELECT * FROM student_applicants 
+         WHERE id = $1 AND school_id::text = ANY($2::text[])
+         LIMIT 1`,
+        [id, allMatchIds]
+      );
+      if (pgRes.rows && pgRes.rows.length > 0) return pgRes.rows[0];
+    } catch (_pgErr) {}
+
+    return null;
   }
 
   static async getRegistrationCard(nisn: string, schoolSlug?: string) {

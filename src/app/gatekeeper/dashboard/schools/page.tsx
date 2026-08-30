@@ -394,9 +394,9 @@ function GatekeeperSchoolManagementContent() {
                     Tidak ada sekolah yang sesuai dengan filter pencarian.
                   </td>
                 </tr>
-              ) : filteredSchools.map((sc) => (
+              ) : filteredSchools.map((sc, idx) => (
                 <SchoolTenantRow
-                  key={sc.id}
+                  key={`school-${sc.id || 'no-id'}-${idx}`}
                   school={sc}
                   getSubdomainUrl={getSchoolSubdomainUrl}
                   onSelect={setSelectedSchoolModal}

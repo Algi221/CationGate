@@ -215,19 +215,21 @@ export const Step7Pendidikan: React.FC<Step7Props> = ({
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">
               {getFieldLabel("jurusan1", "b. Program Keahlian")} {isFieldRequired("jurusan1") && <span className="text-red-500 ml-1">*</span>}
             </label>
-            {majors.length === 0 ? (
-              <div className="p-6 text-center bg-slate-50 dark:bg-[#0f172a] rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Belum ada program keahlian yang dikonfigurasi untuk instansi sekolah ini.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {majors.map((major) => {
-                  const majorTitle = major.title || (major as unknown as { name?: string }).name || major.code;
-                  const majorCode = major.code || majorTitle;
-                  const option = `${majorTitle} (${majorCode})`;
-                  const majorDetails = getMajorDetails(majorTitle || majorCode);
+            {(() => {
+              const activeMajors = (majors && majors.length > 0)
+                ? majors
+                : [
+                    { code: "REG", title: "Kelas Reguler" },
+                    { code: "UNG", title: "Kelas Unggulan" }
+                  ];
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {activeMajors.map((major) => {
+                    const majorTitle = major.title || (major as unknown as { name?: string }).name || major.code;
+                    const majorCode = major.code || majorTitle;
+                    const option = `${majorTitle} (${majorCode})`;
+                    const majorDetails = getMajorDetails(majorTitle || majorCode);
 
                   let isFull = false;
                   if (kuotaData && Array.isArray(kuotaData)) {
@@ -307,7 +309,8 @@ export const Step7Pendidikan: React.FC<Step7Props> = ({
                   );
                 })}
               </div>
-            )}
+            );
+          })()}
           </div>
         )}
       </div>

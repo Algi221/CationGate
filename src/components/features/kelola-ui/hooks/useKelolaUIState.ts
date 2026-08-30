@@ -763,10 +763,7 @@ export function useKelolaUIState() {
 
   const handleSaveAll = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!changeDescription.trim()) {
-      showToastMsg("Deskripsi catatan wajib diisi.", "error");
-      return;
-    }
+    const finalDesc = changeDescription.trim() || "Pembaruan Pengaturan UI";
 
     try {
       setSaving(true);

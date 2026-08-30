@@ -117,13 +117,29 @@ export function SchoolNavbar({
           return;
         }
 
-        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`);
+        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`, {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" }
+        });
         const data = await res.json();
 
         if (data.success && data.data && data.data.ppdb_majors_config) {
           let majorsConfig = data.data.ppdb_majors_config;
-          if (typeof majorsConfig === "string" && (majorsConfig.startsWith("[") || majorsConfig.startsWith("{"))) {
-            try { majorsConfig = JSON.parse(majorsConfig); } catch (_e) {}
+          if (typeof majorsConfig === "string") {
+            let depth = 0;
+            while (depth < 4 && typeof majorsConfig === "string") {
+              const trimmed = majorsConfig.trim();
+              if ((trimmed.startsWith("[") && trimmed.endsWith("]")) || (trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
+                try {
+                  majorsConfig = JSON.parse(trimmed);
+                  depth++;
+                } catch (_) {
+                  break;
+                }
+              } else {
+                break;
+              }
+            }
           }
           if (Array.isArray(majorsConfig) && majorsConfig.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

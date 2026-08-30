@@ -187,7 +187,14 @@ configRouter.get('/', async (c) => {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = c.req.query('school_id') || null;
     const schoolSlug = c.req.query('school_slug');
-    const isBypassCache = Boolean(c.req.query('_t') || c.req.query('t'));
+    const cacheControl = c.req.header('cache-control');
+    const isBypassCache = Boolean(
+      c.req.query('_t') || 
+      c.req.query('t') || 
+      c.req.query('timestamp') || 
+      cacheControl?.includes('no-cache') || 
+      cacheControl?.includes('no-store')
+    );
 
     const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
@@ -875,6 +882,10 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     if (admin?.slug) cacheKeys.add(`config_${admin.slug}`);
     if (targetSlug) cacheKeys.add(`config_${targetSlug}`);
     if (qSlug) cacheKeys.add(`config_${qSlug}`);
+    for (const saveId of allIdsToSave) {
+      cacheKeys.add(`config_${saveId}`);
+      cacheKeys.add(`school_profile_${saveId}`);
+    }
     cacheKeys.add('config_default');
     for (const ck of cacheKeys) {
       await delCached(ck);

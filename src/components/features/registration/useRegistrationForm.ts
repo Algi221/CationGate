@@ -204,7 +204,7 @@ export const useRegistrationForm = () => {
         }
       }
     }
-    const isDemo = schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
+    const isDemo = schoolSlug === "demo";
     return isDemo ? (DEFAULT_MAJORS as Array<{ code: string; title: string; logo?: string; color?: string }>) : [];
   });
 
@@ -236,7 +236,12 @@ export const useRegistrationForm = () => {
 
     const loadLiveConfig = async () => {
       try {
-        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`);
+        const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&_t=${Date.now()}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache"
+          }
+        });
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
@@ -288,10 +293,21 @@ export const useRegistrationForm = () => {
             }
             if (config.ppdb_majors_config !== undefined && config.ppdb_majors_config !== null) {
               let parsedMajors = config.ppdb_majors_config;
-              if (typeof parsedMajors === "string" && (parsedMajors.startsWith("[") || parsedMajors.startsWith("{"))) {
-                try {
-                  parsedMajors = JSON.parse(parsedMajors);
-                } catch (_e) {}
+              if (typeof parsedMajors === "string") {
+                let depth = 0;
+                while (depth < 4 && typeof parsedMajors === "string") {
+                  const trimmed = parsedMajors.trim();
+                  if ((trimmed.startsWith("[") && trimmed.endsWith("]")) || (trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
+                    try {
+                      parsedMajors = JSON.parse(trimmed);
+                      depth++;
+                    } catch (_) {
+                      break;
+                    }
+                  } else {
+                    break;
+                  }
+                }
               }
               if (Array.isArray(parsedMajors) && parsedMajors.length > 0) {
                 setMajors(parsedMajors);
@@ -326,7 +342,7 @@ export const useRegistrationForm = () => {
       }
 
       try {
-        const isDemo = schoolSlug === "demo" || schoolSlug === "smktarunabhakti";
+        const isDemo = schoolSlug === "demo";
         if (isDemo) {
           setIsSubscriptionActive(true);
         } else {

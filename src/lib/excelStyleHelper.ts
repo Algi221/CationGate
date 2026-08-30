@@ -83,26 +83,7 @@ export function formatExcelTable({
         fgColor: { argb: bgFill }
       };
 
-      if (typeof val === "number") {
-        cell.alignment = { horizontal: "right", vertical: "middle" };
-      } else if (
-        typeof val === "string" &&
-        (val.match(/^\d{2}\/\d{2}\/\d{4}/) ||
-          val === "L" ||
-          val === "P" ||
-          val === "Laki-laki" ||
-          val === "Perempuan" ||
-          val === "LUNAS" ||
-          val === "PENDING" ||
-          val === "UNPAID" ||
-          val === "Approved" ||
-          val === "Pending" ||
-          val === "Rejected")
-      ) {
-        cell.alignment = { horizontal: "center", vertical: "middle" };
-      } else {
-        cell.alignment = { horizontal: "left", vertical: "middle" };
-      }
+      cell.alignment = { horizontal: "center", vertical: "middle" };
 
       cell.border = {
         top: { style: "thin", color: { argb: "D9D9D9" } },

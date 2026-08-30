@@ -110,7 +110,22 @@ export function useSiswaAktifState() {
   });
 
   const activeApplicants = useMemo(() => {
-    return activeStudents.filter((a: ActiveStudent) => !!(a.diterima_kelas || a.diterimaKelas));
+    return activeStudents.filter((a: ActiveStudent) => {
+      const cls = String(a.diterima_kelas || a.diterimaKelas || "").trim();
+      const hasAssignedClass = Boolean(
+        cls &&
+        cls !== "-" &&
+        cls !== "X" &&
+        cls !== "XI" &&
+        cls !== "XII" &&
+        cls !== "X (Sepuluh)" &&
+        cls !== "XI (Sebelas)" &&
+        cls !== "XII (Dua Belas)" &&
+        !cls.toLowerCase().includes("belum") &&
+        !cls.toLowerCase().includes("atur")
+      );
+      return hasAssignedClass;
+    });
   }, [activeStudents]);
 
   const filteredApplicants = useMemo(() => {

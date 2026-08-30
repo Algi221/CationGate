@@ -12,7 +12,23 @@ export class ApplicantSyncService {
         return;
       }
 
-      if (candidate.status === "Approved") {
+      const cls = String(candidate.diterima_kelas || candidate.diterimaKelas || "").trim();
+      const hasAssignedClass = Boolean(
+        cls &&
+        cls !== "-" &&
+        cls !== "X" &&
+        cls !== "XI" &&
+        cls !== "XII" &&
+        cls !== "X (Sepuluh)" &&
+        cls !== "XI (Sebelas)" &&
+        cls !== "XII (Dua Belas)" &&
+        !cls.toLowerCase().includes("belum") &&
+        !cls.toLowerCase().includes("atur")
+      );
+
+      const isApproved = candidate.status === "Approved" || candidate.status === "Terverifikasi";
+
+      if (isApproved && hasAssignedClass) {
         const {
           id: calon_siswa_id,
           nama,
@@ -307,6 +323,7 @@ export class ApplicantSyncService {
           await supabase.from("active_students").insert(payload);
         }
       } else {
+        // If not approved or class has not been assigned, delete from active_students
         await supabase
           .from("active_students")
           .delete()

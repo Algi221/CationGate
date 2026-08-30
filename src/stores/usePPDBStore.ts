@@ -320,7 +320,25 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         set({
-          activeStudents: applyClassOverrides(data.data.filter((a: { status?: string }) => a.status === "Approved")),
+          activeStudents: applyClassOverrides(
+            data.data.filter((a: { status?: string; diterima_kelas?: string; diterimaKelas?: string }) => {
+              const isApproved = a.status === "Approved" || a.status === "Terverifikasi";
+              const cls = String(a.diterima_kelas || a.diterimaKelas || "").trim();
+              const hasAssignedClass = Boolean(
+                cls &&
+                cls !== "-" &&
+                cls !== "X" &&
+                cls !== "XI" &&
+                cls !== "XII" &&
+                cls !== "X (Sepuluh)" &&
+                cls !== "XI (Sebelas)" &&
+                cls !== "XII (Dua Belas)" &&
+                !cls.toLowerCase().includes("belum") &&
+                !cls.toLowerCase().includes("atur")
+              );
+              return isApproved && hasAssignedClass;
+            })
+          ),
         });
       } else {
         set({ activeStudents: [] });

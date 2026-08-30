@@ -300,7 +300,8 @@ export function usePembagianKelasState() {
   const approvedApplicantsOfMajor = useMemo(() => {
     return applicants.filter((a: Applicant) => {
       const statusUpper = (a.status || "").toUpperCase();
-      if (statusUpper === "REJECTED" || statusUpper === "DITOLAK") return false;
+      const isApproved = statusUpper === "APPROVED" || statusUpper === "TERVERIFIKASI";
+      if (!isApproved) return false;
 
       const maj1 = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toUpperCase().trim();
       const selCode = (selectedMajor || "").toUpperCase().trim();

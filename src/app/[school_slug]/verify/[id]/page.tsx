@@ -255,7 +255,7 @@ export default function VerificationPage() {
             <div className="space-y-1">
               <h3 className="text-blue-750 dark:text-blue-400 text-sm font-black uppercase tracking-wider">Menunggu Proses Verifikasi</h3>
               <p className="text-slate-700 dark:text-slate-355 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
-                Pendaftaran atas nama <span className="font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">{data.nama}</span> sedang diproses dan menunggu verifikasi berkas oleh Panitia PPDB SMK Taruna Bhakti.
+                Pendaftaran atas nama <span className="font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">{data.nama}</span> sedang diproses dan menunggu verifikasi berkas oleh Panitia PPDB Sekolah.
               </p>
             </div>
           </div>

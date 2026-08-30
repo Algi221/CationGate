@@ -218,11 +218,12 @@ configRouter.get('/', async (c) => {
 
     let configs: Array<{ config_key: string; config_value: unknown }> | null = null;
 
-    // 2. Direct pool query first with matchIds array
+    // 2. Direct pool query first with matchIds array (ordered so latest updates take precedence)
     try {
       const pgRes = await pool.query(
         `SELECT config_key, config_value FROM landing_page_config 
-         WHERE school_id::text = ANY($1::text[])`,
+         WHERE school_id::text = ANY($1::text[])
+         ORDER BY updated_at ASC`,
         [matchIds]
       );
       if (pgRes.rows && pgRes.rows.length > 0) {
@@ -236,7 +237,8 @@ configRouter.get('/', async (c) => {
         const { data: sbConfigs } = await supabase
           .from('landing_page_config')
           .select('*')
-          .in('school_id', matchIds);
+          .in('school_id', matchIds)
+          .order('updated_at', { ascending: true });
         if (sbConfigs && sbConfigs.length > 0) {
           configs = sbConfigs;
         }
@@ -260,6 +262,23 @@ configRouter.get('/', async (c) => {
       }
     }
 
+    // Merge from school_profiles table if missing essential fields
+    try {
+      const { data: prof } = await supabase
+        .from('school_profiles')
+        .select('*')
+        .or(`slug.eq.${schoolSlug || schoolId},school_id.eq.${resolvedUUID || schoolId}`)
+        .maybeSingle();
+      if (prof) {
+        if (!configMap.ppdb_title && prof.nama) configMap.ppdb_title = prof.nama;
+        if (!configMap.ppdb_logo_url && prof.logo_url) configMap.ppdb_logo_url = prof.logo_url;
+        if (!configMap.ppdb_address && prof.alamat) configMap.ppdb_address = prof.alamat;
+        if (!configMap.ppdb_phone && prof.telepon) configMap.ppdb_phone = prof.telepon;
+        if (!configMap.ppdb_email && prof.email) configMap.ppdb_email = prof.email;
+        if (!configMap.ppdb_hero_bg_image && prof.hero_image) configMap.ppdb_hero_bg_image = prof.hero_image;
+      }
+    } catch (_) {}
+
     // Merge from schools table if missing essential fields
     if (!configMap.ppdb_title || !configMap.ppdb_address || !configMap.ppdb_logo_url) {
       try {
@@ -277,6 +296,11 @@ configRouter.get('/', async (c) => {
           if (!configMap.ppdb_email && sch.official_email) configMap.ppdb_email = sch.official_email;
         }
       } catch (_) {}
+    }
+
+    // Default portal status to open if not explicitly configured as closed
+    if (!configMap.ppdb_portal_status) {
+      configMap.ppdb_portal_status = 'open';
     }
 
     // 3. Save to Redis Cache (expire in 1 hour)
@@ -513,39 +537,45 @@ configRouter.post('/', adminAuth, async (c) => {
 
     const supabase = getSupabaseClient(c.req.header('Authorization'));
     const schoolId = await requireTenantId(c);
-    const targetSchoolId = String(schoolId);
+    const { resolveAllSchoolIdentifiers } = await import('../db/resolve-school');
+    const { fontInMemSchools } = await import('./saas');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = (c as any).get('admin');
+    const targetSlug = admin?.school_slug || admin?.slug || (typeof schoolId === 'string' && isNaN(Number(schoolId)) ? schoolId : null);
+    const singleQSlug = c.req.query('school_slug');
 
-    const payload: Record<string, unknown> = {
-      config_key: key,
-      config_value: processedValue,
-      updated_at: new Date().toISOString(),
-      school_id: targetSchoolId
-    };
+    const allIds = await resolveAllSchoolIdentifiers(schoolId || targetSlug || singleQSlug, fontInMemSchools);
+    if (targetSlug && !allIds.includes(targetSlug)) allIds.push(targetSlug);
+    if (singleQSlug && !allIds.includes(singleQSlug)) allIds.push(singleQSlug);
+    if (schoolId && !allIds.includes(String(schoolId))) allIds.push(String(schoolId));
 
-    const { error } = await supabase
-      .from('landing_page_config')
-      .upsert(payload, { onConflict: 'school_id,config_key' });
-
-    if (error) {
+    // Save across all matched school IDs in PostgreSQL pool
+    for (const sid of allIds) {
       try {
         await pool.query(
           `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-           VALUES ($1::uuid, $2, $3, NOW())
+           VALUES ($1, $2, $3, NOW())
            ON CONFLICT (school_id, config_key)
            DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-          [targetSchoolId, key, JSON.stringify(processedValue)]
+          [sid, key, JSON.stringify(processedValue)]
         );
       } catch (_poolErr) {
         console.warn('Fallback pool query for single config error:', _poolErr);
       }
     }
 
-    // Update in-memory store immediately
-    const { fontInMemSchools } = await import('./saas');
-    const admin = (c.get as (k: string) => unknown)('admin') as { school_slug?: string; slug?: string } | undefined;
-    const targetSlug = admin?.school_slug || admin?.slug || (typeof schoolId === 'string' && isNaN(Number(schoolId)) ? schoolId : null);
-    const singleQSlug = c.req.query('school_slug');
+    // Save to Supabase
+    try {
+      const upsertRows = allIds.map((sid) => ({
+        school_id: sid,
+        config_key: key,
+        config_value: processedValue,
+        updated_at: new Date().toISOString()
+      }));
+      await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'school_id,config_key' });
+    } catch (_sbErr) {}
 
+    // Update in-memory store immediately
     const updateInMem = (k: string) => {
       if (!k) return;
       if (!fontInMemSchools.has(k)) {
@@ -558,16 +588,19 @@ configRouter.post('/', adminAuth, async (c) => {
         if (key === 'ppdb_title') inMem.name = String(processedValue);
       }
     };
-    if (targetSlug) updateInMem(targetSlug);
-    if (schoolId) updateInMem(String(schoolId));
-    if (singleQSlug && singleQSlug !== targetSlug) updateInMem(singleQSlug);
+    for (const idKey of allIds) {
+      updateInMem(idKey);
+    }
 
-    // Invalidate Redis cache
-    if (schoolId) await delCached(`config_${schoolId}`);
-    if (admin?.school_slug) await delCached(`config_${admin.school_slug}`);
-    if (admin?.slug) await delCached(`config_${admin.slug}`);
-    if (singleQSlug) await delCached(`config_${singleQSlug}`);
-    await delCached('config_default');
+    // Invalidate Redis cache for all resolved keys
+    const cacheKeys = new Set<string>();
+    for (const idKey of allIds) {
+      cacheKeys.add(`config_${idKey}`);
+    }
+    cacheKeys.add('config_default');
+    for (const ck of cacheKeys) {
+      await delCached(ck);
+    }
 
     return c.json({
       success: true,
@@ -704,38 +737,32 @@ configRouter.post('/save-all', adminAuth, async (c) => {
 
     let _savedToDb = false;
 
-    // 1. Try Atomic PostgreSQL Transaction via Pool
-    try {
-      const pgClient = await pool.connect();
-      try {
-        await pgClient.query('BEGIN');
-        for (const saveId of allIdsToSave) {
-          for (const [key, value] of Object.entries(processedConfigs)) {
-            await pgClient.query(
-              `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-               VALUES ($1, $2, $3, NOW())
-               ON CONFLICT (school_id, config_key)
-               DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-              [saveId, key, JSON.stringify(value)]
-            );
-          }
+    // 1. Direct PostgreSQL Pool Save (Each row committed safely)
+    for (const saveId of allIdsToSave) {
+      for (const [key, value] of Object.entries(processedConfigs)) {
+        try {
+          await pool.query(
+            `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (school_id, config_key)
+             DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+            [saveId, key, JSON.stringify(value)]
+          );
+          _savedToDb = true;
+        } catch (_poolRowErr) {
+          console.warn(`[SAVE-ALL] Pool insert row error for ${key}:`, _poolRowErr);
         }
-        await pgClient.query(
-          `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
-           VALUES ($1, $2, $3, $4, NOW())`,
-          [String(numericSchoolId), JSON.stringify(processedConfigs), adminName, description || 'Melakukan pembaruan massal UI']
-        );
-        await pgClient.query('COMMIT');
-        _savedToDb = true;
-      } catch (txError) {
-        await pgClient.query('ROLLBACK');
-        console.error('[SAVE-ALL] Transaction failed and rolled back:', txError);
-      } finally {
-        pgClient.release();
       }
-    } catch (poolConnErr) {
-      console.warn('[SAVE-ALL] PostgreSQL pool connection notice (falling back to Supabase REST):', poolConnErr instanceof Error ? poolConnErr.message : String(poolConnErr));
     }
+
+    // Try saving revision separately without blocking config persistence
+    try {
+      await pool.query(
+        `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
+         VALUES ($1, $2, $3, $4, NOW())`,
+        [String(numericSchoolId), JSON.stringify(processedConfigs), adminName, description || 'Melakukan pembaruan massal UI']
+      );
+    } catch (_revErr) {}
 
     // 2. Supabase REST API Sync & Fallback (Resilient over HTTPS)
     try {

@@ -63,7 +63,8 @@ export default async function SchoolLandingPage({ params }: PageProps) {
         `SELECT config_key, config_value FROM landing_page_config 
          WHERE school_id::text = $1 
             OR school_id::text IN (SELECT id::text FROM schools WHERE slug = $1)
-            OR school_id::text IN (SELECT id::text FROM prospective_schools WHERE slug = $1)`,
+            OR school_id::text IN (SELECT id::text FROM prospective_schools WHERE slug = $1)
+         ORDER BY updated_at ASC`,
         [schoolSlug]
       );
       if (pgRes.rows && pgRes.rows.length > 0) {

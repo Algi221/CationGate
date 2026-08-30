@@ -64,13 +64,12 @@ export const useRegistrationForm = () => {
 
   const [portalStatus, setPortalStatus] = useState(() => {
     if (typeof window !== "undefined") {
-      return (
+      const cached =
         localStorage.getItem(`ppdb_portal_status_${schoolSlug}`) ||
-        localStorage.getItem("ppdb_portal_status") ||
-        "closed"
-      );
+        localStorage.getItem("ppdb_portal_status");
+      if (cached) return cached;
     }
-    return "closed";
+    return "open";
   });
 
   const [fieldsConfig, setFieldsConfig] = useState<
@@ -262,10 +261,11 @@ export const useRegistrationForm = () => {
               setWaAdmin(config.ppdb_wa_admin);
               localStorage.setItem("ppdb_wa_admin", config.ppdb_wa_admin);
             }
-            if (config.ppdb_portal_status) {
-              setPortalStatus(config.ppdb_portal_status);
-              localStorage.setItem(`ppdb_portal_status_${schoolSlug}`, config.ppdb_portal_status);
-              localStorage.setItem("ppdb_portal_status", config.ppdb_portal_status);
+            const resolvedPortalStatus = config.ppdb_portal_status || "open";
+            setPortalStatus(resolvedPortalStatus);
+            if (typeof window !== "undefined") {
+              localStorage.setItem(`ppdb_portal_status_${schoolSlug}`, resolvedPortalStatus);
+              localStorage.setItem("ppdb_portal_status", resolvedPortalStatus);
             }
             if (config.ppdb_form_guideline) {
               setFormGuideline(config.ppdb_form_guideline);

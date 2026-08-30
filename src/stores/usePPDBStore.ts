@@ -259,7 +259,10 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
     if (!token) return;
 
     try {
-      const url = schoolSlug ? `${BACKEND_URL}/applicants?school_slug=${encodeURIComponent(schoolSlug)}` : `${BACKEND_URL}/applicants`;
+      const targetSlug = schoolSlug || useAuthStore.getState().adminUser?.school_slug || (typeof window !== "undefined" ? window.location.pathname.split("/")[1] : "");
+      const url = targetSlug && targetSlug !== "dashboard" && targetSlug !== "gatekeeper"
+        ? `${BACKEND_URL}/applicants?school_slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`
+        : `${BACKEND_URL}/applicants?_t=${Date.now()}`;
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (res.status === 401) {
         console.warn("Token is invalid or expired. Logging out admin.");
@@ -267,14 +270,11 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
         return;
       }
       const data = await res.json();
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+      if (data.success && Array.isArray(data.data)) {
         set({ applicants: applyClassOverrides(data.data) });
-      } else {
-        set((state) => ({ applicants: state.applicants.length > 0 ? state.applicants : [] }));
       }
     } catch (err: unknown) {
       console.warn("Admin API fetch error:", err instanceof Error ? err.message : String(err));
-      set((state) => ({ applicants: state.applicants.length > 0 ? state.applicants : [] }));
     }
   },
 

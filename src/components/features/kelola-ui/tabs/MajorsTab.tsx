@@ -134,8 +134,16 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                         cancelButtonText: 'Batal'
                       });
                       if (result.isConfirmed) {
-                        setMajorsList(prev => prev.filter(m => m.code !== major.code));
-                        showToastMsg(`Jurusan ${major.code} dihapus secara lokal. Silakan klik "Simpan Perubahan" untuk menerapkannya secara permanen.`, "info");
+                        setMajorsList(prev => {
+                          const updated = prev.filter(m => m.code !== major.code);
+                          if (typeof window !== "undefined") {
+                            const slug = window.location.pathname.split("/")[1];
+                            if (slug) localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(updated));
+                            localStorage.setItem(`ppdb_majors_config`, JSON.stringify(updated));
+                          }
+                          return updated;
+                        });
+                        showToastMsg(`Jurusan ${major.code} dihapus. Silakan klik tombol "Simpan" di atas untuk memperbarui server.`, "info");
                       }
                     }}
                     className="absolute top-3 right-3 p-2 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl shadow-lg border border-rose-500/30 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300 transform -translate-y-1 group-hover:translate-y-0 z-10 hover:scale-105 cursor-pointer"
@@ -634,21 +642,25 @@ export const MajorsTab: React.FC<MajorsTabProps> = ({
                   return;
                 }
 
-                if (isNewMajor) {
-                  const exists = majorsList.some(m => m.code.toUpperCase() === editingMajor.code.toUpperCase());
-                  if (exists) {
-                    showToastMsg(`Kode Jurusan "${editingMajor.code}" sudah terdaftar.`, "error");
-                    return;
+                setMajorsList(prev => {
+                  let updated: MajorItem[];
+                  if (isNewMajor) {
+                    updated = [...prev, editingMajor];
+                  } else {
+                    updated = prev.map(m => m.code === editingMajor.code ? editingMajor : m);
                   }
-                  setMajorsList(prev => [...prev, editingMajor]);
-                  setIsNewMajor(false);
-                } else {
-                  setMajorsList(prev => prev.map(m => m.code === editingMajor.code ? editingMajor : m));
-                }
+                  if (typeof window !== "undefined") {
+                    const slug = window.location.pathname.split("/")[1];
+                    if (slug) localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(updated));
+                    localStorage.setItem(`ppdb_majors_config`, JSON.stringify(updated));
+                  }
+                  return updated;
+                });
+                if (isNewMajor) setIsNewMajor(false);
 
                 const savedCode = editingMajor.code;
                 setEditingMajor(null);
-                showToastMsg(`Workspace ${savedCode} tersimpan secara lokal. Silakan klik "Simpan Perubahan" untuk menerapkannya secara permanen.`, "success");
+                showToastMsg(`Workspace ${savedCode} tersimpan. Silakan klik "Simpan" di atas untuk menyelaraskan ke server.`, "success");
               }}
               className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-md cursor-pointer"
             >

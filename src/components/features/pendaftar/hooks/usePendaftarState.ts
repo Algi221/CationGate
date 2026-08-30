@@ -247,6 +247,12 @@ export function usePendaftarState() {
     }
   }, [activePageTab, fetchTrashedApplicants]);
 
+  useEffect(() => {
+    if (typeof fetchAdminApplicants === "function") {
+      fetchAdminApplicants();
+    }
+  }, [fetchAdminApplicants, schoolSlug]);
+
   const handleViewDetail = async (applicant: Applicant) => {
     setSelectedApplicant(applicant);
     try {

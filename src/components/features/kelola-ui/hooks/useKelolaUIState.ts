@@ -79,25 +79,108 @@ export function useKelolaUIState() {
   const [isLandingPageActive, setIsLandingPageActive] = useState(() => isDemo);
 
   // Collections State
-  const [alurList, setAlurList] = useState<AlurItem[]>(() => isDemo ? DEFAULT_ALUR : []);
-  const [majorsList, setMajorsList] = useState<MajorItem[]>(() => isDemo ? DEFAULT_MAJORS : []);
-  const [faqList, setFaqList] = useState<FaqItem[]>(() => isDemo ? DEFAULT_FAQ : []);
+  const [alurList, setAlurList] = useState<AlurItem[]>(() => {
+    if (isDemo) return DEFAULT_ALUR;
+    if (typeof window !== "undefined") {
+      const saved = (slug ? localStorage.getItem(`ppdb_alur_config_${slug}`) : null) || localStorage.getItem("ppdb_alur_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (_) {}
+      }
+    }
+    return [];
+  });
+  const [majorsList, setMajorsList] = useState<MajorItem[]>(() => {
+    if (isDemo) return DEFAULT_MAJORS;
+    if (typeof window !== "undefined") {
+      const saved = (slug ? localStorage.getItem(`ppdb_majors_config_${slug}`) : null) || localStorage.getItem("ppdb_majors_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (_) {}
+      }
+    }
+    return [];
+  });
+  const [faqList, setFaqList] = useState<FaqItem[]>(() => {
+    if (isDemo) return DEFAULT_FAQ;
+    if (typeof window !== "undefined") {
+      const saved = (slug ? localStorage.getItem(`ppdb_faq_config_${slug}`) : null) || localStorage.getItem("ppdb_faq_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (_) {}
+      }
+    }
+    return [];
+  });
   const [faqTitle, setFaqTitle] = useState(() => isDemo ? "Pertanyaan yang Sering Diajukan" : "");
   const [faqSubtitle, setFaqSubtitle] = useState(() => isDemo ? "Temukan jawaban cepat untuk kendala dan pertanyaan seputar proses pendaftaran." : "");
-  const [partnersList, setPartnersList] = useState<PartnerItem[]>(() => isDemo ? DEFAULT_PARTNERS : []);
-  const [bankConfigList, setBankConfigList] = useState<BankConfigItem[]>(() => isDemo ? [
-    { bankName: "Bank BJB", accountNumber: "0010203040506", accountHolder: "SMK Taruna Bhakti" }
-  ] : []);
-  const [fieldsConfigUI, setFieldsConfigUI] = useState<Record<string, FieldConfigItem>>(DEFAULT_FIELDS_CONFIG_UI);
+  const [partnersList, setPartnersList] = useState<PartnerItem[]>(() => {
+    if (isDemo) return DEFAULT_PARTNERS;
+    if (typeof window !== "undefined") {
+      const saved = (slug ? localStorage.getItem(`ppdb_partners_config_${slug}`) : null) || localStorage.getItem("ppdb_partners_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (_) {}
+      }
+    }
+    return [];
+  });
+  const [bankConfigList, setBankConfigList] = useState<BankConfigItem[]>(() => {
+    if (isDemo) return [
+      { bankName: "Bank BJB", accountNumber: "0010203040506", accountHolder: "SMK Taruna Bhakti" }
+    ];
+    if (typeof window !== "undefined") {
+      const saved = (slug ? localStorage.getItem(`ppdb_bank_config_${slug}`) : null) || localStorage.getItem("ppdb_bank_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (_) {}
+      }
+    }
+    return [];
+  });
+  const [fieldsConfigUI, setFieldsConfigUI] = useState<Record<string, FieldConfigItem>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = (slug ? localStorage.getItem(`ppdb_fields_config_${slug}`) : null) || localStorage.getItem("ppdb_fields_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") return { ...DEFAULT_FIELDS_CONFIG_UI, ...parsed };
+        } catch (_) {}
+      }
+    }
+    return DEFAULT_FIELDS_CONFIG_UI;
+  });
   const [gelombangConfig, setGelombangConfig] = useState<{
     gelombang1: { start: string; end: string };
     gelombang2: { start: string; end: string };
-  }>(() => isDemo ? {
-    gelombang1: { start: "2026-01-01", end: "2026-04-30" },
-    gelombang2: { start: "2026-05-01", end: "2026-07-15" }
-  } : {
-    gelombang1: { start: "", end: "" },
-    gelombang2: { start: "", end: "" }
+  }>(() => {
+    if (isDemo) return {
+      gelombang1: { start: "2026-01-01", end: "2026-04-30" },
+      gelombang2: { start: "2026-05-01", end: "2026-07-15" }
+    };
+    if (typeof window !== "undefined") {
+      const saved = (slug ? localStorage.getItem(`ppdb_gelombang_config_${slug}`) : null) || localStorage.getItem("ppdb_gelombang_config");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") return parsed;
+        } catch (_) {}
+      }
+    }
+    return {
+      gelombang1: { start: "", end: "" },
+      gelombang2: { start: "", end: "" }
+    };
   });
 
   const [g1Error, setG1Error] = useState<string | null>(null);
@@ -373,22 +456,58 @@ export function useKelolaUIState() {
       const parsedAlur = parseConfigArray<AlurItem>(activeConfig.ppdb_alur_config);
       if (parsedAlur && parsedAlur.length > 0) {
         setAlurList(parsedAlur);
+        if (typeof window !== "undefined") {
+          if (slug) localStorage.setItem(`ppdb_alur_config_${slug}`, JSON.stringify(parsedAlur));
+          localStorage.setItem(`ppdb_alur_config`, JSON.stringify(parsedAlur));
+        }
       } else if (isDemo) {
         setAlurList(DEFAULT_ALUR);
+      } else if (typeof window !== "undefined") {
+        const cachedAlur = (slug ? localStorage.getItem(`ppdb_alur_config_${slug}`) : null) || localStorage.getItem("ppdb_alur_config");
+        if (cachedAlur) {
+          try {
+            const parsed = JSON.parse(cachedAlur);
+            if (Array.isArray(parsed) && parsed.length > 0) setAlurList(parsed);
+          } catch (_) {}
+        }
       }
 
       const parsedFaq = parseConfigArray<FaqItem>(activeConfig.ppdb_faq_config);
       if (parsedFaq && parsedFaq.length > 0) {
         setFaqList(parsedFaq);
+        if (typeof window !== "undefined") {
+          if (slug) localStorage.setItem(`ppdb_faq_config_${slug}`, JSON.stringify(parsedFaq));
+          localStorage.setItem(`ppdb_faq_config`, JSON.stringify(parsedFaq));
+        }
       } else if (isDemo) {
         setFaqList(DEFAULT_FAQ);
+      } else if (typeof window !== "undefined") {
+        const cachedFaq = (slug ? localStorage.getItem(`ppdb_faq_config_${slug}`) : null) || localStorage.getItem("ppdb_faq_config");
+        if (cachedFaq) {
+          try {
+            const parsed = JSON.parse(cachedFaq);
+            if (Array.isArray(parsed) && parsed.length > 0) setFaqList(parsed);
+          } catch (_) {}
+        }
       }
 
       const parsedPartners = parseConfigArray<PartnerItem>(activeConfig.ppdb_partners_config);
       if (parsedPartners && parsedPartners.length > 0) {
         setPartnersList(parsedPartners);
+        if (typeof window !== "undefined") {
+          if (slug) localStorage.setItem(`ppdb_partners_config_${slug}`, JSON.stringify(parsedPartners));
+          localStorage.setItem(`ppdb_partners_config`, JSON.stringify(parsedPartners));
+        }
       } else if (isDemo) {
         setPartnersList(DEFAULT_PARTNERS);
+      } else if (typeof window !== "undefined") {
+        const cachedPartners = (slug ? localStorage.getItem(`ppdb_partners_config_${slug}`) : null) || localStorage.getItem("ppdb_partners_config");
+        if (cachedPartners) {
+          try {
+            const parsed = JSON.parse(cachedPartners);
+            if (Array.isArray(parsed) && parsed.length > 0) setPartnersList(parsed);
+          } catch (_) {}
+        }
       }
 
       if (isDemo) {
@@ -413,6 +532,20 @@ export function useKelolaUIState() {
             };
           });
           setMajorsList(mergedMajors);
+          if (typeof window !== "undefined") {
+            if (slug) localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(mergedMajors));
+            localStorage.setItem(`ppdb_majors_config`, JSON.stringify(mergedMajors));
+          }
+        } else if (typeof window !== "undefined") {
+          const cachedMajors = (slug ? localStorage.getItem(`ppdb_majors_config_${slug}`) : null) || localStorage.getItem("ppdb_majors_config");
+          if (cachedMajors) {
+            try {
+              const parsed = JSON.parse(cachedMajors);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setMajorsList(parsed);
+              }
+            } catch (_) {}
+          }
         }
       }
 
@@ -465,12 +598,29 @@ export function useKelolaUIState() {
         }
         if (Array.isArray(bankData) && bankData.length > 0) {
           setBankConfigList(bankData);
+          if (typeof window !== "undefined") {
+            if (slug) localStorage.setItem(`ppdb_bank_config_${slug}`, JSON.stringify(bankData));
+            localStorage.setItem(`ppdb_bank_config`, JSON.stringify(bankData));
+          }
         } else if (bankData && typeof bankData === "object") {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if ((bankData as any).bankName) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setBankConfigList([bankData as any]);
+            const bArr = [bankData as any];
+            setBankConfigList(bArr);
+            if (typeof window !== "undefined") {
+              if (slug) localStorage.setItem(`ppdb_bank_config_${slug}`, JSON.stringify(bArr));
+              localStorage.setItem(`ppdb_bank_config`, JSON.stringify(bArr));
+            }
           }
+        }
+      } else if (typeof window !== "undefined") {
+        const cachedBank = (slug ? localStorage.getItem(`ppdb_bank_config_${slug}`) : null) || localStorage.getItem("ppdb_bank_config");
+        if (cachedBank) {
+          try {
+            const parsed = JSON.parse(cachedBank);
+            if (Array.isArray(parsed) && parsed.length > 0) setBankConfigList(parsed);
+          } catch (_) {}
         }
       }
 
@@ -510,10 +660,6 @@ export function useKelolaUIState() {
         ppdb_fields_config: (activeConfig.ppdb_fields_config && typeof activeConfig.ppdb_fields_config === "object") ? { ...DEFAULT_FIELDS_CONFIG_UI, ...activeConfig.ppdb_fields_config } : DEFAULT_FIELDS_CONFIG_UI
       });
       setInitialSnapshot(initialSnap);
-
-      if (draft) {
-        showToastMsg("Draf perubahan berhasil dipulihkan dari sesi sebelumnya.", "info");
-      }
     } catch (e) {
       console.error("Gagal mengambil konfigurasi UI:", e);
       showToastMsg("Koneksi gagal, memuat konfigurasi cadangan.", "info");

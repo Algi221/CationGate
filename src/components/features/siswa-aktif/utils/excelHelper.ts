@@ -278,16 +278,14 @@ export async function exportActiveStudentsToExcel(
   const periods = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
   const headers = [
-    "No.",
-    "No. Pendaftaran",
-    "Nama Lengkap",
-    "NISN",
+    "Nama Lengkap *",
+    "NISN *",
     "NIK",
     "NIPD",
-    "Jurusan",
-    "Kelas",
-    "Tahun Ajaran / Periode",
-    "Jenis Kelamin (L/P)",
+    "Jurusan *",
+    "Kelas *",
+    "Tahun Ajaran / Periode *",
+    "Jenis Kelamin (L/P) *",
     "Tempat Lahir",
     "Tanggal Lahir (YYYY-MM-DD)",
     "Agama",
@@ -307,9 +305,7 @@ export async function exportActiveStudentsToExcel(
     const periodStudents = groups[period];
     periodStudents.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
-    const dataRows = periodStudents.map((a, idx) => [
-      idx + 1,
-      formatNoPendaftaran(a.periode, a.id),
+    const dataRows = periodStudents.map((a) => [
       a.nama || "-",
       a.nisn || "-",
       a.nik || "-",

@@ -36,6 +36,16 @@ export class ApplicantCreateService {
 
     const supabase = getSupabaseClient();
 
+    const toInt = (val: unknown, defaultVal = 0) => {
+      const n = parseInt(String(val ?? ""), 10);
+      return isNaN(n) ? defaultVal : n;
+    };
+
+    const toFloat = (val: unknown, defaultVal = 0.0) => {
+      const n = parseFloat(String(val ?? ""));
+      return isNaN(n) ? defaultVal : n;
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapped: any = {
       school_id: schoolId,
@@ -59,19 +69,22 @@ export class ApplicantCreateService {
       email: validated.email,
       tinggal_dengan: (validated.tinggalDengan || "-").slice(0, 50),
       transportasi: (validated.transportasi || "-").slice(0, 50),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tinggi_badan: parseInt(validated.tinggiBadan as any) || 0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      berat_badan: parseInt(validated.beratBadan as any) || 0,
+      // Safe numeric bounds & sanitization to prevent numeric field overflow
+      tinggi_badan: Math.min(300, Math.max(0, toInt(validated.tinggiBadan))),
+      berat_badan: Math.min(500, Math.max(0, toInt(validated.beratBadan))),
       jarak_sekolah: (validated.jarakSekolah || "-").slice(0, 50),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jarak_km: parseFloat(validated.jarakKm as any) || 0.0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      waktu_jam: parseInt(validated.waktuJam as any) || 0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      waktu_menit: parseInt(validated.waktuMenit as any) || 0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jumlah_saudara: parseInt(validated.jumlahSaudara as any) || 0,
+      jarak_km: (() => {
+        let raw = toFloat(validated.jarakKm);
+        if (raw < 0) raw = 0.0;
+        if (validated.jarakSekolah === "Kurang dari 1 km" && raw > 20) {
+          raw = raw / 1000; // Convert meters to km
+        }
+        if (raw > 999.99) raw = 999.99;
+        return Math.round(raw * 100) / 100;
+      })(),
+      waktu_jam: Math.min(99, Math.max(0, toInt(validated.waktuJam))),
+      waktu_menit: Math.min(59, Math.max(0, toInt(validated.waktuMenit))),
+      jumlah_saudara: Math.min(99, Math.max(0, toInt(validated.jumlahSaudara))),
       golongan_darah: (validated.golonganDarah || "A").slice(0, 5),
       penyakit_diderita: (validated.penyakitDiderita || "-").slice(0, 150),
       kebutuhan_khusus: validated.kebutuhanKhusus,
@@ -144,8 +157,7 @@ export class ApplicantCreateService {
       no_ijazah: validated.noIjazah,
       no_skhun: validated.noSKHUN,
       no_peserta_un: validated.noPesertaUN,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      lama_belajar: parseInt(validated.lamaBelajar as any) || 3,
+      lama_belajar: Math.min(20, Math.max(1, toInt(validated.lamaBelajar, 3))),
       pindahan_dari: validated.pindahanDari,
       alasan_pindah: validated.alasanPindah,
       diterima_kelas: (validated.diterimaKelas || "X (Sepuluh)").slice(0, 100),
@@ -156,12 +168,24 @@ export class ApplicantCreateService {
       alasan_memilih: validated.alasanMemilih,
       hobi: validated.hobi,
       cita_cita: validated.citaCita,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      nilai_us_teori: parseFloat(validated.nilaiUSTeori as any) || 0.0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      nilai_us_praktik: parseFloat(validated.nilaiUSPraktik as any) || 0.0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      nilai_muatan_lokal: parseFloat(validated.nilaiMuatanLokal as any) || 0.0,
+      nilai_us_teori: (() => {
+        let n = toFloat(validated.nilaiUSTeori);
+        if (n < 0) n = 0.0;
+        if (n > 100) n = 100.0;
+        return Math.round(n * 100) / 100;
+      })(),
+      nilai_us_praktik: (() => {
+        let n = toFloat(validated.nilaiUSPraktik);
+        if (n < 0) n = 0.0;
+        if (n > 100) n = 100.0;
+        return Math.round(n * 100) / 100;
+      })(),
+      nilai_muatan_lokal: (() => {
+        let n = toFloat(validated.nilaiMuatanLokal);
+        if (n < 0) n = 0.0;
+        if (n > 100) n = 100.0;
+        return Math.round(n * 100) / 100;
+      })(),
       cita_cita_setelah_lulus: validated.citaCitaSetelahLulus,
       pelajaran_disenangi: validated.pelajaranDisenangi,
       alasan_disenangi: validated.alasanDisenangi,

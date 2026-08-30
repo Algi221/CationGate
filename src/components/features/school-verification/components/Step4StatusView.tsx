@@ -96,14 +96,14 @@ export const Step4StatusView: React.FC<Step4StatusViewProps> = ({
           </div>
           <div>
             <span className="px-3 py-1 bg-amber-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
-              DALAM PENINJAUAN SUPERADMIN
+              DALAM PENINJAUAN ADMIN
             </span>
             <h2 className="text-xl font-black text-slate-800 dark:text-white mt-3 tracking-tight">
               Dokumen Verifikasi Sedang Ditinjau
             </h2>
             <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
               Pengajuan verifikasi instansi Anda sedang diteliti oleh Tim
-              Superadmin Gatekeeper. Proses ini membutuhkan waktu maksimal 1x24
+              Admin CationGate. Proses ini membutuhkan waktu maksimal 1x24
               jam hari kerja.
             </p>
             <div className="mt-3 p-3 bg-amber-100/60 dark:bg-amber-900/40 rounded-xl text-[11px] font-semibold text-amber-800 dark:text-amber-300">
@@ -112,16 +112,10 @@ export const Step4StatusView: React.FC<Step4StatusViewProps> = ({
             </div>
           </div>
 
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={() => setCurrentStep(1)}
-              className="w-full sm:w-auto px-5 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition"
-            >
-              Edit Kembali Data Pengajuan
-            </button>
+          <div className="pt-4 flex items-center justify-center">
             <a
               href="mailto:support@cationgate.site"
-              className="w-full sm:w-auto px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold rounded-2xl text-xs uppercase tracking-wider transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold rounded-2xl text-xs uppercase tracking-wider transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2"
             >
               Hubungi Tim Bantuan
             </a>

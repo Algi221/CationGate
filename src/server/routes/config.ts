@@ -185,24 +185,24 @@ async function processMajorsConfig(majors: any[], tenant?: string): Promise<any[
 configRouter.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.req.header('Authorization'));
-    let schoolId = c.req.query('school_id') || null;
+    const schoolId = c.req.query('school_id') || null;
     const schoolSlug = c.req.query('school_slug');
     const isBypassCache = Boolean(c.req.query('_t') || c.req.query('t'));
 
     const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
-    let resolvedUUID: string | null = null;
-    if (schoolSlug || (schoolId && !isUUID(schoolId))) {
-      const { resolveSchoolUUID } = await import('../db/resolve-school');
-      const { fontInMemSchools } = await import('./saas');
-      const targetIdentifier = schoolSlug || schoolId!;
-      resolvedUUID = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
-      if (resolvedUUID) {
-        schoolId = resolvedUUID;
-      }
-    }
+    const { resolveAllSchoolIdentifiers, resolveSchoolUUID } = await import('../db/resolve-school');
+    const { fontInMemSchools } = await import('./saas');
 
-    const cacheKey = schoolId ? `config_${schoolId}` : (schoolSlug ? `config_${schoolSlug}` : 'config_default');
+    const targetIdentifier = schoolSlug || schoolId || 'demo';
+    const matchIds = await resolveAllSchoolIdentifiers(targetIdentifier, fontInMemSchools);
+    if (schoolSlug && !matchIds.includes(schoolSlug)) matchIds.push(schoolSlug);
+    if (schoolId && !matchIds.includes(String(schoolId))) matchIds.push(String(schoolId));
+
+    const resolvedUUID = await resolveSchoolUUID(targetIdentifier, fontInMemSchools);
+    if (resolvedUUID && !matchIds.includes(resolvedUUID)) matchIds.push(resolvedUUID);
+
+    const cacheKey = schoolSlug ? `config_${schoolSlug}` : (schoolId ? `config_${schoolId}` : 'config_default');
 
     // 1. Try to get from Redis Cache first (if not cache-busting request)
     if (!isBypassCache) {
@@ -217,45 +217,30 @@ configRouter.get('/', async (c) => {
     }
 
     let configs: Array<{ config_key: string; config_value: unknown }> | null = null;
-    
-    // Collect all possible identifier strings
-    const matchIds: string[] = [];
-    if (schoolId) matchIds.push(String(schoolId));
-    if (schoolSlug && !matchIds.includes(schoolSlug)) matchIds.push(schoolSlug);
-    if (resolvedUUID && !matchIds.includes(resolvedUUID)) matchIds.push(resolvedUUID);
 
-    let query = supabase.from('landing_page_config').select('*');
-    if (matchIds.length === 1) {
-      const singleId = matchIds[0];
-      const numericId = !isNaN(Number(singleId)) ? Number(singleId) : null;
-      if (numericId !== null) {
-        query = query.or(`school_id.eq.${singleId},school_id.eq.${numericId}`);
-      } else {
-        query = query.eq('school_id', singleId);
+    // 2. Direct pool query first with matchIds array
+    try {
+      const pgRes = await pool.query(
+        `SELECT config_key, config_value FROM landing_page_config 
+         WHERE school_id::text = ANY($1::text[])`,
+        [matchIds]
+      );
+      if (pgRes.rows && pgRes.rows.length > 0) {
+        configs = pgRes.rows;
       }
-    } else if (matchIds.length > 1) {
-      const orClauses = matchIds.flatMap((id) => {
-        const num = !isNaN(Number(id)) ? Number(id) : null;
-        return num !== null ? [`school_id.eq.${id}`, `school_id.eq.${num}`] : [`school_id.eq.${id}`];
-      });
-      query = query.or(Array.from(new Set(orClauses)).join(','));
-    }
+    } catch (_pgErr) {}
 
-    const { data: sbConfigs, error } = await query;
-    if (!error && sbConfigs && sbConfigs.length > 0) {
-      configs = sbConfigs;
-    } else {
-      // Direct pool query fallback
+    // 3. Supabase fallback query
+    if (!configs || configs.length === 0) {
       try {
-        const pgRes = await pool.query(
-          `SELECT config_key, config_value FROM landing_page_config 
-           WHERE school_id::text = ANY($1::text[])`,
-          [matchIds]
-        );
-        if (pgRes.rows && pgRes.rows.length > 0) {
-          configs = pgRes.rows;
+        const { data: sbConfigs } = await supabase
+          .from('landing_page_config')
+          .select('*')
+          .in('school_id', matchIds);
+        if (sbConfigs && sbConfigs.length > 0) {
+          configs = sbConfigs;
         }
-      } catch (_pgErr) {}
+      } catch (_sbErr) {}
     }
 
     const configMap: Record<string, unknown> = {};
@@ -264,7 +249,6 @@ configRouter.get('/', async (c) => {
     });
 
     // Merge from in-memory store if available (in-memory has latest saved updates)
-    const { fontInMemSchools } = await import('./saas');
     const lookupSlug = schoolSlug || (typeof schoolId === 'string' ? schoolId : '');
     const inMemKeys = [schoolSlug, String(schoolId), resolvedUUID, lookupSlug].filter(Boolean) as string[];
     for (const key of inMemKeys) {
@@ -706,7 +690,17 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     const admin = (c as any).get('admin');
     const adminName = admin?.nama || admin?.username || 'Administrator';
 
-    console.log(`[SAVE-ALL] Saving ${Object.keys(processedConfigs).length} config keys for school_id=${numericSchoolId} (resolved from tenant: ${schoolId})`);
+    const { resolveAllSchoolIdentifiers } = await import('../db/resolve-school');
+    const { fontInMemSchools } = await import('./saas');
+    const targetSlug = admin?.school_slug || admin?.slug || (typeof schoolId === 'string' && isNaN(Number(schoolId)) ? schoolId : null);
+    const qSlug = c.req.query('school_slug');
+
+    const allIdsToSave = await resolveAllSchoolIdentifiers(schoolId || targetSlug || qSlug, fontInMemSchools);
+    if (targetSlug && !allIdsToSave.includes(targetSlug)) allIdsToSave.push(targetSlug);
+    if (qSlug && !allIdsToSave.includes(qSlug)) allIdsToSave.push(qSlug);
+    if (!allIdsToSave.includes(String(numericSchoolId))) allIdsToSave.push(String(numericSchoolId));
+
+    console.log(`[SAVE-ALL] Saving ${Object.keys(processedConfigs).length} config keys across ids: [${allIdsToSave.join(', ')}]`);
 
     let _savedToDb = false;
 
@@ -715,14 +709,16 @@ configRouter.post('/save-all', adminAuth, async (c) => {
       const pgClient = await pool.connect();
       try {
         await pgClient.query('BEGIN');
-        for (const [key, value] of Object.entries(processedConfigs)) {
-          await pgClient.query(
-            `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
-             VALUES ($1, $2, $3, NOW())
-             ON CONFLICT (school_id, config_key)
-             DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
-            [numericSchoolId, key, JSON.stringify(value)]
-          );
+        for (const saveId of allIdsToSave) {
+          for (const [key, value] of Object.entries(processedConfigs)) {
+            await pgClient.query(
+              `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+               VALUES ($1, $2, $3, NOW())
+               ON CONFLICT (school_id, config_key)
+               DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+              [saveId, key, JSON.stringify(value)]
+            );
+          }
         }
         await pgClient.query(
           `INSERT INTO ui_revisions (school_id, config_values, changed_by, description, created_at)
@@ -743,12 +739,14 @@ configRouter.post('/save-all', adminAuth, async (c) => {
 
     // 2. Supabase REST API Sync & Fallback (Resilient over HTTPS)
     try {
-      const upsertRows = Object.entries(processedConfigs).map(([key, value]) => ({
-        config_key: key,
-        config_value: value,
-        updated_at: new Date().toISOString(),
-        school_id: numericSchoolId
-      }));
+      const upsertRows = allIdsToSave.flatMap((saveId) =>
+        Object.entries(processedConfigs).map(([key, value]) => ({
+          config_key: key,
+          config_value: value,
+          updated_at: new Date().toISOString(),
+          school_id: saveId
+        }))
+      );
 
       const { error: sbErr } = await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'school_id,config_key' });
       if (!sbErr) {
@@ -782,10 +780,6 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     fontInMemRevisions.get(sKey)!.unshift(revRecord);
 
     // Update in-memory store
-    const { fontInMemSchools } = await import('./saas');
-    const targetSlug = admin?.school_slug || admin?.slug || (typeof schoolId === 'string' && isNaN(Number(schoolId)) ? schoolId : null);
-    const qSlug = c.req.query('school_slug');
-
     // Helper: always create entry if missing, then merge configs
     const updateInMem = (k: string) => {
       if (!k) return;
@@ -808,6 +802,45 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     if (schoolId) updateInMem(String(schoolId));
     if (qSlug && qSlug !== targetSlug) updateInMem(qSlug);
 
+    // Keep school_profiles table in sync when saving from Kelola UI
+    try {
+      const profileUpdates: Record<string, unknown> = {};
+      if (processedConfigs.ppdb_school_title) profileUpdates.nama = processedConfigs.ppdb_school_title;
+      if (processedConfigs.ppdb_school_name) profileUpdates.nama = processedConfigs.ppdb_school_name;
+      if (processedConfigs.ppdb_logo_url) profileUpdates.logo_url = processedConfigs.ppdb_logo_url;
+      if (processedConfigs.ppdb_address) profileUpdates.alamat = processedConfigs.ppdb_address;
+      if (processedConfigs.ppdb_phone) profileUpdates.telepon = processedConfigs.ppdb_phone;
+      if (processedConfigs.ppdb_email) profileUpdates.email = processedConfigs.ppdb_email;
+      if (processedConfigs.ppdb_hero_bg_image) profileUpdates.hero_image = processedConfigs.ppdb_hero_bg_image;
+
+      if (Object.keys(profileUpdates).length > 0) {
+        for (const sId of allIdsToSave) {
+          try {
+            await pool.query(
+              `UPDATE school_profiles SET
+                nama = COALESCE($2, nama),
+                logo_url = COALESCE($3, logo_url),
+                alamat = COALESCE($4, alamat),
+                telepon = COALESCE($5, telepon),
+                email = COALESCE($6, email),
+                hero_image = COALESCE($7, hero_image),
+                updated_at = NOW()
+               WHERE school_id = $1`,
+              [
+                sId,
+                profileUpdates.nama || null,
+                profileUpdates.logo_url || null,
+                profileUpdates.alamat || null,
+                profileUpdates.telepon || null,
+                profileUpdates.email || null,
+                profileUpdates.hero_image || null,
+              ]
+            );
+          } catch (_pgErr) {}
+        }
+      }
+    } catch (_syncProfErr) {}
+
     // Invalidate Redis cache — cover ALL possible cache keys
     const cacheKeys = new Set<string>();
     if (schoolId) cacheKeys.add(`config_${schoolId}`);
@@ -819,6 +852,8 @@ configRouter.post('/save-all', adminAuth, async (c) => {
     for (const ck of cacheKeys) {
       await delCached(ck);
     }
+    if (targetSlug) await delCached(`school_profile_${targetSlug}`);
+    if (qSlug) await delCached(`school_profile_${qSlug}`);
 
     console.log('[SUCCESS] Configurations successfully saved to PostgreSQL database.');
     return c.json({

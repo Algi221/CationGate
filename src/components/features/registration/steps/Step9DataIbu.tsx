@@ -68,6 +68,8 @@ export const Step9DataIbu: React.FC<StepProps> = ({
               <input
                 type="text"
                 name="tempatLahirIbu"
+                maxLength={50}
+                placeholder="Kota / Kab Lahir"
                 className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 value={formData.tempatLahirIbu}
                 onChange={handleInputChange}

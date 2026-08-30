@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Plus, Edit2, Trash2, Check, XCircle, LayoutGrid, AlertCircle, ChevronDown, ChevronUp, Banknote
 } from "lucide-react";
@@ -32,8 +33,13 @@ function formatInputDisplay(num: number): string {
 }
 
 export default function GatekeeperPlansPage() {
+  const [mounted, setMounted] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [expandedPlanId, setExpandedPlanId] = useState<number | null>(null);
 
@@ -378,8 +384,8 @@ export default function GatekeeperPlansPage() {
       )}
 
       {/* MODAL FORM */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all duration-300">
+      {mounted && isModalOpen && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-99999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all duration-300">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
             
             <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 z-10">
@@ -387,8 +393,8 @@ export default function GatekeeperPlansPage() {
                 {editingPlan ? "Edit Paket SaaS" : "Tambah Paket Baru"}
               </h3>
               <button 
-                onClick={() => setIsModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                onClick={() => setIsModalOpen(false)} 
+                className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
               >
                 <XCircle size={20} strokeWidth={2} />
               </button>
@@ -444,7 +450,7 @@ export default function GatekeeperPlansPage() {
                 }`}>
                   {isActive && <Check size={12} strokeWidth={4} className="text-[#2e3749]" />}
                 </div>
-                <div>rumah ke rumah
+                <div>
                   <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Status Publikasi</p>
                   <p className="text-xs text-slate-500 mt-0.5">Tampilkan paket berwarna menyala di halaman utama.</p>
                 </div>
@@ -455,19 +461,20 @@ export default function GatekeeperPlansPage() {
               <Button 
                 variant="outline" 
                 onClick={() => setIsModalOpen(false)} 
-                className="rounded-xl h-10 px-5 text-sm font-bold text-slate-600 dark:text-slate-300 dark:border-slate-700"
+                className="rounded-xl h-10 px-5 text-sm font-bold text-slate-600 dark:text-slate-300 dark:border-slate-700 cursor-pointer"
               >
                 Batal
               </Button>
               <Button 
                 onClick={handleSave} 
-                className="bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] rounded-xl h-10 px-5 text-sm font-bold shadow-sm transition-all"
+                className="bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] rounded-xl h-10 px-5 text-sm font-bold shadow-sm transition-all cursor-pointer"
               >
                 Simpan Paket
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

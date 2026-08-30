@@ -177,3 +177,81 @@ export async function resolveSchoolSlug(
 
   return null;
 }
+
+export async function resolveAllSchoolIdentifiers(
+  schoolIdentifier?: string | number | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inMemSchools?: Map<string, any>
+): Promise<string[]> {
+  if (!schoolIdentifier) return [];
+  const strVal = String(schoolIdentifier).trim();
+  if (!strVal) return [];
+
+  const ids = new Set<string>([strVal]);
+  const isNumeric = !isNaN(Number(strVal)) && Number(strVal) > 0;
+
+  // 1. In-memory check
+  if (inMemSchools) {
+    for (const [slug, school] of inMemSchools) {
+      if (
+        slug === strVal ||
+        String(school.id) === strVal ||
+        String(school.school_uuid) === strVal ||
+        school.slug === strVal
+      ) {
+        if (slug) ids.add(slug);
+        if (school.slug) ids.add(school.slug);
+        if (school.id) ids.add(String(school.id));
+        if (school.school_uuid) ids.add(String(school.school_uuid));
+      }
+    }
+  }
+
+  // 2. Direct Postgres pool check across schools & prospective_schools
+  try {
+    const pgRes = await pool.query(
+      `SELECT id::text, slug FROM schools 
+       WHERE slug = $1 OR (CASE WHEN $2 = true THEN id = $3::integer ELSE false END)
+       UNION ALL
+       SELECT id::text, slug FROM prospective_schools 
+       WHERE slug = $1 OR (CASE WHEN $2 = true THEN id = $3::integer ELSE false END)`,
+      [strVal, isNumeric, isNumeric ? Number(strVal) : 0]
+    );
+    if (pgRes.rows && Array.isArray(pgRes.rows)) {
+      pgRes.rows.forEach((r) => {
+        if (r.id) ids.add(String(r.id));
+        if (r.slug) ids.add(String(r.slug));
+      });
+    }
+  } catch (_pgErr) {}
+
+  // 3. Supabase fallback
+  const supabase = getSupabaseClient();
+  try {
+    const { data: sData } = await supabase
+      .from('schools')
+      .select('id, slug')
+      .or(`slug.eq.${strVal}${isNumeric ? `,id.eq.${Number(strVal)}` : ''}`);
+    if (sData && Array.isArray(sData)) {
+      sData.forEach((s) => {
+        if (s.id) ids.add(String(s.id));
+        if (s.slug) ids.add(String(s.slug));
+      });
+    }
+  } catch (_sbErr) {}
+
+  try {
+    const { data: psData } = await supabase
+      .from('prospective_schools')
+      .select('id, slug')
+      .or(`slug.eq.${strVal}${isNumeric ? `,id.eq.${Number(strVal)}` : ''}`);
+    if (psData && Array.isArray(psData)) {
+      psData.forEach((ps) => {
+        if (ps.id) ids.add(String(ps.id));
+        if (ps.slug) ids.add(String(ps.slug));
+      });
+    }
+  } catch (_sbErr2) {}
+
+  return Array.from(ids);
+}

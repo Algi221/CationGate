@@ -341,6 +341,68 @@ schoolProfileRouter.put('/', adminAuth, async (c) => {
       }
     } catch (_) {}
 
+    // 2.5. Keep landing_page_config and in-memory store in sync with updated profile identity
+    try {
+      const { resolveAllSchoolIdentifiers } = await import('../db/resolve-school');
+      const { fontInMemSchools } = await import('./saas');
+      const schoolSlug = (c.req.query('school_slug') || c.req.header('x-school-slug') || '') as string;
+      const allIds = await resolveAllSchoolIdentifiers(schoolId || schoolSlug, fontInMemSchools);
+      if (schoolSlug && !allIds.includes(schoolSlug)) allIds.push(schoolSlug);
+      if (schoolId && !allIds.includes(String(schoolId))) allIds.push(String(schoolId));
+
+      const profileLandingUpdates: Record<string, unknown> = {
+        ppdb_profil_sekolah: payload,
+      };
+      if (payload.nama) {
+        profileLandingUpdates.ppdb_school_title = payload.nama;
+        profileLandingUpdates.ppdb_school_name = payload.nama;
+      }
+      if (payload.logo_url) profileLandingUpdates.ppdb_logo_url = payload.logo_url;
+      if (payload.alamat) profileLandingUpdates.ppdb_address = payload.alamat;
+      if (payload.telepon) profileLandingUpdates.ppdb_phone = payload.telepon;
+      if (payload.email) profileLandingUpdates.ppdb_email = payload.email;
+      if (payload.hero_image) profileLandingUpdates.ppdb_hero_image = payload.hero_image;
+      if (payload.video_profil_url) profileLandingUpdates.ppdb_video_profil_url = payload.video_profil_url;
+
+      for (const sId of allIds) {
+        for (const [k, v] of Object.entries(profileLandingUpdates)) {
+          try {
+            await pool.query(
+              `INSERT INTO landing_page_config (school_id, config_key, config_value, updated_at)
+               VALUES ($1, $2, $3, NOW())
+               ON CONFLICT (school_id, config_key)
+               DO UPDATE SET config_value = EXCLUDED.config_value, updated_at = NOW()`,
+              [sId, k, JSON.stringify(v)]
+            );
+          } catch (_pgErr) {}
+        }
+      }
+
+      const upsertRows = allIds.flatMap((sId) =>
+        Object.entries(profileLandingUpdates).map(([k, v]) => ({
+          school_id: sId,
+          config_key: k,
+          config_value: v,
+          updated_at: new Date().toISOString()
+        }))
+      );
+      try {
+        await supabase.from('landing_page_config').upsert(upsertRows, { onConflict: 'school_id,config_key' });
+      } catch (_sbErr) {}
+
+      // Update in-memory cache
+      for (const k of allIds) {
+        const mem = fontInMemSchools.get(k);
+        if (mem) {
+          if (payload.nama) mem.name = payload.nama;
+          if (payload.logo_url) mem.logo_url = payload.logo_url;
+          if (payload.alamat) mem.address = payload.alamat;
+          if (payload.telepon) mem.phone = payload.telepon;
+          if (payload.email) mem.official_email = payload.email;
+        }
+      }
+    } catch (_syncErr) {}
+
     // 3. Invalidate Redis Caches
     const schoolSlug = (c.req.query('school_slug') || c.req.header('x-school-slug') || '') as string;
     await delCached(`school_profile_${schoolId}`);

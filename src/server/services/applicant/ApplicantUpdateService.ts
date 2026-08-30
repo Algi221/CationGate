@@ -57,8 +57,15 @@ export class ApplicantUpdateService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parseDate = (val: any) => {
       if (!val) return null;
-      const d = new Date(val);
-      return isNaN(d.getTime()) ? null : d.toISOString();
+      const str = String(val).trim();
+      let normalizedStr = str;
+      if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(str)) {
+        const parts = str.split(/[-/]/);
+        normalizedStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      const d = new Date(normalizedStr);
+      if (isNaN(d.getTime()) || d.getFullYear() < 1900 || d.getFullYear() > 2100) return null;
+      return d.toISOString();
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

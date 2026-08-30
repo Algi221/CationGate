@@ -46,6 +46,31 @@ export class ApplicantCreateService {
       return isNaN(n) ? defaultVal : n;
     };
 
+    const safeIsoDate = (val: unknown, fallback: string | null = null): string | null => {
+      if (!val || typeof val !== "string" || !val.trim()) return fallback;
+      const str = val.trim();
+
+      // Normalize potential DD/MM/YYYY or DD-MM-YYYY
+      let normalizedStr = str;
+      if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(str)) {
+        const parts = str.split(/[-/]/);
+        normalizedStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+
+      const d = new Date(normalizedStr);
+      if (isNaN(d.getTime())) {
+        return fallback;
+      }
+
+      // Enforce valid year bounds (1900 to 2100) to protect Postgres timestamptz
+      const year = d.getFullYear();
+      if (year < 1900 || year > 2100) {
+        return fallback;
+      }
+
+      return d.toISOString();
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapped: any = {
       school_id: schoolId,
@@ -53,9 +78,7 @@ export class ApplicantCreateService {
       nisn: validated.nisn || Math.floor(1000000000 + Math.random() * 9000000000).toString(),
       nik: validated.nik || Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString(),
       tempat_lahir: validated.tempatLahir || "-",
-      tgl_lahir: validated.tglLahir
-        ? new Date(validated.tglLahir).toISOString()
-        : new Date("2010-01-01").toISOString(),
+      tgl_lahir: safeIsoDate(validated.tglLahir, "2010-01-01T00:00:00.000Z"),
       jenis_kelamin:
         validated.jenisKelamin === "L" || validated.jenisKelamin === "Laki-laki" ? "L" : "P",
       agama: (validated.agama || "Islam").slice(0, 20),
@@ -103,9 +126,7 @@ export class ApplicantCreateService {
       tahun_selesai_beasiswa: (validated.tahunSelesaiBeasiswa || "-").slice(0, 50),
       nama_ayah: (validated.namaAyah || "-").slice(0, 150),
       tempat_lahir_ayah: (validated.tempatLahirAyah || "-").slice(0, 100),
-      tgl_lahir_ayah: validated.tglLahirAyah
-        ? new Date(validated.tglLahirAyah).toISOString()
-        : null,
+      tgl_lahir_ayah: safeIsoDate(validated.tglLahirAyah, null),
       agama_ayah: (validated.agamaAyah || "Islam").slice(0, 20),
       kewarganegaraan_ayah: validated.kewarganegaraanAyah === "WNA" ? "WNA" : "WNI",
       pendidikan_ayah: (validated.pendidikanAyah || "-").slice(0, 50),
@@ -119,9 +140,7 @@ export class ApplicantCreateService {
       status_ayah: (validated.statusAyah || "Masih Hidup").slice(0, 20),
       nama_ibu: (validated.namaIbu || "-").slice(0, 150),
       tempat_lahir_ibu: (validated.tempatLahirIbu || "-").slice(0, 100),
-      tgl_lahir_ibu: validated.tglLahirIbu
-        ? new Date(validated.tglLahirIbu).toISOString()
-        : null,
+      tgl_lahir_ibu: safeIsoDate(validated.tglLahirIbu, null),
       agama_ibu: (validated.agamaIbu || "Islam").slice(0, 20),
       kewarganegaraan_ibu: validated.kewarganegaraanIbu === "WNA" ? "WNA" : "WNI",
       pendidikan_ibu: (validated.pendidikanIbu || "-").slice(0, 50),
@@ -135,9 +154,7 @@ export class ApplicantCreateService {
       status_ibu: (validated.statusIbu || "Masih Hidup").slice(0, 20),
       nama_wali: (validated.namaWali || "-").slice(0, 150),
       tempat_lahir_wali: (validated.tempatLahirWali || "-").slice(0, 100),
-      tgl_lahir_wali: validated.tglLahirWali
-        ? new Date(validated.tglLahirWali).toISOString()
-        : null,
+      tgl_lahir_wali: safeIsoDate(validated.tglLahirWali, null),
       agama_wali: (validated.agamaWali || "Islam").slice(0, 20),
       kewarganegaraan_wali: validated.kewarganegaraanWali === "WNA" ? "WNA" : "WNI",
       pendidikan_wali: (validated.pendidikanWali || "-").slice(0, 50),
@@ -151,9 +168,7 @@ export class ApplicantCreateService {
       status_wali: (validated.statusWali || "-").slice(0, 20),
       telepon_ortu: (validated.teleponOrtu || "-").slice(0, 50),
       sekolah_asal: (validated.sekolahAsal || "-").slice(0, 150),
-      tgl_lulus: validated.tglLulus
-        ? new Date(validated.tglLulus).toISOString()
-        : new Date("2026-06-10").toISOString(),
+      tgl_lulus: safeIsoDate(validated.tglLulus, "2026-06-10T00:00:00.000Z"),
       no_ijazah: validated.noIjazah,
       no_skhun: validated.noSKHUN,
       no_peserta_un: validated.noPesertaUN,
@@ -161,9 +176,7 @@ export class ApplicantCreateService {
       pindahan_dari: validated.pindahanDari,
       alasan_pindah: validated.alasanPindah,
       diterima_kelas: (validated.diterimaKelas || "X (Sepuluh)").slice(0, 100),
-      diterima_tanggal: validated.diterimaTanggal
-        ? new Date(validated.diterimaTanggal).toISOString()
-        : null,
+      diterima_tanggal: safeIsoDate(validated.diterimaTanggal, null),
       jurusan_1: (validated.jurusan1 || "-").slice(0, 100),
       alasan_memilih: validated.alasanMemilih,
       hobi: validated.hobi,

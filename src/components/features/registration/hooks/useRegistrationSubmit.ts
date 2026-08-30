@@ -72,8 +72,21 @@ export function useRegistrationSubmit({
       finalData.nisn = Math.floor(1000000000 + Math.random() * 9000000000).toString();
     if (!finalData.nik || finalData.nik.trim() === "")
       finalData.nik = Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
+    const cleanDate = (d?: string, fallback = "2010-01-01") => {
+      if (!d || typeof d !== "string" || !d.trim()) return fallback;
+      const str = d.trim();
+      const parsed = new Date(str);
+      if (isNaN(parsed.getTime()) || parsed.getFullYear() < 1900 || parsed.getFullYear() > 2100) {
+        return fallback;
+      }
+      return str.includes("T") ? str.split("T")[0] : str;
+    };
+
     if (!finalData.tempatLahir || finalData.tempatLahir.trim() === "") finalData.tempatLahir = "-";
-    if (!finalData.tglLahir || finalData.tglLahir.trim() === "") finalData.tglLahir = "2010-01-01";
+    finalData.tglLahir = cleanDate(finalData.tglLahir, "2010-01-01");
+    if (finalData.tglLahirAyah) finalData.tglLahirAyah = cleanDate(finalData.tglLahirAyah, "1980-01-01");
+    if (finalData.tglLahirIbu) finalData.tglLahirIbu = cleanDate(finalData.tglLahirIbu, "1985-01-01");
+    if (finalData.tglLahirWali) finalData.tglLahirWali = cleanDate(finalData.tglLahirWali, "1980-01-01");
     if (!finalData.jenisKelamin) finalData.jenisKelamin = "L";
     if (!finalData.agama) finalData.agama = "Islam";
     if (!finalData.kewarganegaraan) finalData.kewarganegaraan = "WNI";
@@ -95,12 +108,12 @@ export function useRegistrationSubmit({
     if (!finalData.golonganDarah) finalData.golonganDarah = "O";
     if (!finalData.teleponOrtu || finalData.teleponOrtu.trim() === "") finalData.teleponOrtu = "-";
     if (!finalData.sekolahAsal || finalData.sekolahAsal.trim() === "") finalData.sekolahAsal = "-";
-    if (!finalData.tglLulus) finalData.tglLulus = "2026-06-10";
+    finalData.tglLulus = cleanDate(finalData.tglLulus, "2026-06-10");
     if (!finalData.lamaBelajar) finalData.lamaBelajar = "3";
     if (!finalData.diterimaKelas) finalData.diterimaKelas = "X (Sepuluh)";
     if (!finalData.jurusan1) {
       const firstMajor = majors[0];
-      finalData.jurusan1 = firstMajor ? `${firstMajor.title} (${firstMajor.code})` : "Rekayasa Perangkat Lunak (RPL)";
+      finalData.jurusan1 = firstMajor ? `${firstMajor.title} (${firstMajor.code})` : "Kelas Reguler (REG)";
     }
 
     let calculatedPeriod = finalData.periode || schoolPeriod || "2026-2027";

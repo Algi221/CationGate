@@ -84,6 +84,8 @@ export const Step8DataAyah: React.FC<StepProps> = ({
               <input
                 type="date"
                 name="tglLahirAyah"
+                min="1920-01-01"
+                max="2035-12-31"
                 className="w-full bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 value={formData.tglLahirAyah}
                 onChange={handleInputChange}

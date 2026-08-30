@@ -53,16 +53,12 @@ const checkIsDemo = () => {
 
 const getInitialApplicants = () => {
   if (typeof window !== "undefined") {
-    const isDemo = checkIsDemo();
-    if (isDemo) {
-      const localStr = localStorage.getItem("demo_admin_applicants");
-      if (localStr) {
-        try {
-          const parsed = JSON.parse(localStr);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        } catch {}
-      }
-      return DEMO_APPLICANTS_SEED;
+    const localStr = localStorage.getItem("demo_admin_applicants") || localStorage.getItem("ppdb_applicants");
+    if (localStr) {
+      try {
+        const parsed = JSON.parse(localStr);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
     }
   }
   return [];
@@ -70,16 +66,12 @@ const getInitialApplicants = () => {
 
 const getInitialPublicApplicants = () => {
   if (typeof window !== "undefined") {
-    const isDemo = checkIsDemo();
-    if (isDemo) {
-      const localStr = localStorage.getItem("demo_public_applicants");
-      if (localStr) {
-        try {
-          const parsed = JSON.parse(localStr);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        } catch {}
-      }
-      return DEMO_APPLICANTS_SEED;
+    const localStr = localStorage.getItem("demo_public_applicants") || localStorage.getItem("ppdb_public_applicants");
+    if (localStr) {
+      try {
+        const parsed = JSON.parse(localStr);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
     }
   }
   return [];
@@ -275,14 +267,14 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
         return;
       }
       const data = await res.json();
-      if (data.success && Array.isArray(data.data)) {
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         set({ applicants: applyClassOverrides(data.data) });
       } else {
-        set({ applicants: [] });
+        set((state) => ({ applicants: state.applicants.length > 0 ? state.applicants : [] }));
       }
     } catch (err: unknown) {
       console.warn("Admin API fetch error:", err instanceof Error ? err.message : String(err));
-      set({ applicants: [] });
+      set((state) => ({ applicants: state.applicants.length > 0 ? state.applicants : [] }));
     }
   },
 

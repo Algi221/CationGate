@@ -4,6 +4,8 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { ActiveStudent, ImportPreviewRow } from "../types";
 import { formatNoPendaftaran } from "@/components/features/pendaftar/components/detail-sections/sanitizeUrl";
+import { formatExcelTable } from "@/lib/excelStyleHelper";
+import { generateDemoActiveStudents } from "@/stores/slices/demoApplicantGenerator";
 
 export { formatNoPendaftaran };
 
@@ -266,14 +268,15 @@ export async function parseActiveStudentsFile(file: File): Promise<{
   return { rows, rawStudents, errors };
 }
 
-/**
- * Exports active students to formatted Excel grouped by Period.
- */
+
 export async function exportActiveStudentsToExcel(
-  students: ActiveStudent[],
+  studentsInput: ActiveStudent[],
   nipdMap: Map<number, string>
 ) {
-  if (students.length === 0) return;
+  const students =
+    studentsInput && studentsInput.length > 0
+      ? studentsInput
+      : (generateDemoActiveStudents() as unknown as ActiveStudent[]);
 
   const workbook = new ExcelJS.Workbook();
   const groups: Record<string, ActiveStudent[]> = {};
@@ -286,67 +289,54 @@ export async function exportActiveStudentsToExcel(
 
   const periods = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
+  const headers = [
+    "No.",
+    "NIPD",
+    "No. Pendaftaran",
+    "Periode Angkatan",
+    "Nama Lengkap",
+    "Jenis Kelamin",
+    "NISN",
+    "NIK",
+    "Asal Sekolah",
+    "Jurusan",
+    "Kelas",
+    "No. WhatsApp",
+    "Email"
+  ];
+
   periods.forEach((period) => {
     const sheetName = `Periode ${period.replace(/[:\\/?*\[\]]/g, "")}`.substring(0, 31);
     const worksheet = workbook.addWorksheet(sheetName);
 
-    worksheet.columns = [
-      { header: "No.", key: "no", width: 8 },
-      { header: "NIPD", key: "nipd", width: 18 },
-      { header: "No. Pendaftaran", key: "no_pendaftaran", width: 20 },
-      { header: "Periode Angkatan", key: "periode", width: 18 },
-      { header: "Nama Lengkap", key: "nama", width: 32 },
-      { header: "Jenis Kelamin", key: "jk", width: 15 },
-      { header: "NISN", key: "nisn", width: 18 },
-      { header: "NIK", key: "nik", width: 20 },
-      { header: "Asal Sekolah", key: "sekolah", width: 28 },
-      { header: "Jurusan", key: "jurusan", width: 28 },
-      { header: "Kelas", key: "kelas", width: 16 },
-      { header: "No. WhatsApp", key: "whatsapp", width: 20 },
-      { header: "Email", key: "email", width: 25 },
-    ];
-
-    const headerRow = worksheet.getRow(1);
-    headerRow.height = 32;
-    headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: "FF000000" } };
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FF9BC2E6" }
-      };
-      cell.alignment = { vertical: "middle", horizontal: "center" };
-      cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" }
-      };
-    });
-
     const periodStudents = groups[period];
     periodStudents.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
-    periodStudents.forEach((a, idx) => {
-      worksheet.addRow({
-        no: idx + 1,
-        nipd: nipdMap.get(a.id) || a.nipd || "-",
-        no_pendaftaran: formatNoPendaftaran(a.periode, a.id),
-        periode: a.periode || "2026-2027",
-        nama: a.nama || "",
-        jk: (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")
-          ? "Laki-laki"
-          : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p")
-            ? "Perempuan"
-            : "-",
-        nisn: a.nisn || "",
-        nik: a.nik || "",
-        sekolah: a.sekolah_asal || a.sekolahAsal || "",
-        jurusan: a.jurusan || a.jurusan_1 || a.jurusan1 || "",
-        kelas: a.diterima_kelas || a.diterimaKelas || "-",
-        whatsapp: a.whatsapp || "",
-        email: a.email || "",
-      });
+    const dataRows = periodStudents.map((a, idx) => [
+      idx + 1,
+      nipdMap.get(a.id) || a.nipd || "-",
+      formatNoPendaftaran(a.periode, a.id),
+      a.periode || "2026-2027",
+      a.nama || "-",
+      (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")
+        ? "Laki-laki"
+        : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p")
+        ? "Perempuan"
+        : "-",
+      a.nisn || "-",
+      a.nik || "-",
+      a.sekolah_asal || a.sekolahAsal || "-",
+      a.jurusan || a.jurusan_1 || a.jurusan1 || "-",
+      a.diterima_kelas || a.diterimaKelas || "-",
+      a.whatsapp || "-",
+      a.email || "-"
+    ]);
+
+    formatExcelTable({
+      worksheet,
+      title: `DATA SISWA AKTIF - PERIODE ${period}`,
+      headers,
+      dataRows
     });
   });
 

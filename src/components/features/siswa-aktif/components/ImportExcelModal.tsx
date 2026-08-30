@@ -181,7 +181,7 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
                 1. Belum memiliki format file?
               </span>
               <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                Unduh template resmi CationGate yang sudah disesuaikan dengan kolom Dapodik (NISN, Nama, Kelas, Jurusan, Periode).
+                Unduh template resmi CationGate yang sudah disesuaikan dengan 18 kolom lengkap (Nama Lengkap, NISN, NIK, NIPD, Jurusan, Kelas, Periode, L/P, dll).
               </p>
             </div>
             <button

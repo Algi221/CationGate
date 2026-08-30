@@ -48,13 +48,10 @@ const TRANSFER_REASONS = [
 ];
 
 export function generateDemoApplicants(): PPDBApplicant[] {
-  const result: PPDBApplicant[] = [];
-  const statuses = ["Approved", "Approved", "Pending", "Approved", "Pending", "Approved", "Rejected", "Approved"];
-  const now = Date.now();
-  const dayMs = 24 * 60 * 60 * 1000;
-  const currentPeriode = "2026-2027";
+  return [];
+}
 
-  for (let i = 1; i <= 50; i++) {
+/*
     const fn = NAMES_FIRST[i % NAMES_FIRST.length];
     const ln = NAMES_LAST[(i * 3) % NAMES_LAST.length];
     const nisn = `008${1000000 + i * 13579}`.slice(0, 10);
@@ -221,6 +218,7 @@ export function generateDemoApplicants(): PPDBApplicant[] {
 
   return result;
 }
+*/
 
 export function generateDemoTrashedApplicants(): PPDBApplicant[] {
   const result: PPDBApplicant[] = [];

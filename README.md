@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/assets/logo_cationgate/CationGate_Logo.png" alt="CationGate Logo" width="90" />
+</p>
+
 # CationGate — Enterprise Multi-Tenant SPMB & School Management SaaS Platform
 
 > **CationGate** adalah platform Software-as-a-Service (SaaS) Multi-Tenant modern untuk sistem Penerimaan Peserta Didik Baru (PPDB/SPMB) dan administrasi sekolah digital di Indonesia. Mendukung routing subdomain dinamis (`https://[school_slug].cationgate.site`), kustomisasi landing page sekolah secara mandiri, formulir pendaftaran 14 langkah, verifikasi berkas otomatis, pembagian rombongan belajar (rombel), hingga portal superadmin pusat (**Gatekeeper**).

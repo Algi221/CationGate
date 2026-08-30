@@ -196,7 +196,7 @@ export class ApplicantQueryService {
     const allMatchIds = await resolveAllSchoolIdentifiers(schoolId, fontInMemSchools);
     if (!allMatchIds.includes(schoolId)) allMatchIds.push(schoolId);
 
-    let query = supabase
+    const query = supabase
       .from("student_applicants")
       .select(calonSiswaFields.join(","))
       .in("school_id", allMatchIds)
@@ -227,7 +227,7 @@ export class ApplicantQueryService {
     const allMatchIds = await resolveAllSchoolIdentifiers(schoolId, fontInMemSchools);
     if (!allMatchIds.includes(schoolId)) allMatchIds.push(schoolId);
 
-    let query = supabase
+    const query = supabase
       .from("student_applicants")
       .select([...calonSiswaFields, "deleted_at"].join(","))
       .in("school_id", allMatchIds)

@@ -28,7 +28,7 @@
   11. Minat & Bakat Kejuruan
   12. Penilaian Budi Pekerti
   13. Review & Konfirmasi Formulir
-  14. Unggah Dokumen Berkas (Akta, KK, Rapor) & Pembayaran
+  14. Pembayaran
 * **Invoice & Payment Gateway**: Integrasi gateway pembayaran dan upload bukti transfer manual dengan status real-time.
 * **Auto-Draft & Hydration**: Progres input siswa tersimpan otomatis di browser sehingga tidak hilang jika koneksi terputus.
 
@@ -43,7 +43,7 @@
 * **Verifikasi Legalitas Sekolah**: Menyetujui atau menolak pendaftaran sekolah baru berdasarkan SK Izin Operasional dan data pokok NPSN.
 * **Manajemen Berlangganan (SaaS Subscription)**: Monitoring paket aktif (Starter, Pro, Enterprise), mutasi transaksi, dan invoice.
 * **System Telemetry & Security**: Monitoring kesehatan database, status cache Redis, audit log per aksi, hingga saklar *Maintenance Mode* global.
-* **Telegram Bot Notifier**: Notifikasi otomatis ke tim superadmin untuk setiap login gatekeeper, pendaftaran sekolah baru, dan pembayaran langganan.
+* **Telegram Bot Notifier**: Notifikasi otomatis ke tim superadmin untuk setiap login gatekeeper.
 
 ---
 

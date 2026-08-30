@@ -19,10 +19,13 @@ export class SaasController {
         return c.json(result, 404);
       }
       return c.json(result);
-    } catch (_err) {
-      const slug = c.req.param('slug');
-      const fallback = await SaasService.getSchoolBySlug(slug);
-      return c.json(fallback, fallback.notFound ? 404 : 200);
+    } catch (err) {
+      console.error('Error in SaasController.getSchoolBySlug:', err);
+      return c.json({
+        success: false,
+        notFound: true,
+        message: 'Gagal memproses data instansi: ' + (err instanceof Error ? err.message : String(err))
+      }, 500);
     }
   }
 

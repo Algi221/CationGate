@@ -78,79 +78,128 @@ export function checkThreeDayTakedown(schoolObj: any): boolean {
 
 export class SaasService {
   static async getSchoolBySlug(slug: string) {
+    const cleanSlug = (slug || '').trim().toLowerCase();
+    if (!cleanSlug) {
+      return {
+        success: false,
+        notFound: true,
+        message: 'Slug atau identifier sekolah tidak boleh kosong.'
+      };
+    }
+
     try {
-      const cached = await redis.get(`school:${slug}`);
+      const cached = await redis.get(`school:${cleanSlug}`);
       if (cached) return { success: true, data: cached };
     } catch (redisErr) {
       console.warn('Redis cache read error:', redisErr);
     }
 
-    const supabase = getSupabaseClient();
-
-    // 1. Check verified 'schools' table first
-    const { data: verifiedData } = await supabase
-      .from('schools')
-      .select('*')
-      .eq('slug', slug)
-      .maybeSingle();
-
-    if (verifiedData) {
-      try {
-        await redis.setex(`school:${slug}`, 300, verifiedData);
-      } catch (_e) {}
-      return { success: true, data: verifiedData };
+    // 1. Direct PG pool check first (Direct Supabase PostgreSQL connection)
+    try {
+      const pgRes = await pool.query(
+        `SELECT * FROM schools WHERE LOWER(slug) = $1 OR id::text = $1 LIMIT 1`,
+        [cleanSlug]
+      );
+      if (pgRes.rows && pgRes.rows.length > 0) {
+        const verifiedData = pgRes.rows[0];
+        try {
+          await redis.setex(`school:${cleanSlug}`, 300, verifiedData);
+        } catch (_e) {}
+        return { success: true, data: verifiedData };
+      }
+    } catch (pgErr) {
+      console.warn('PG pool query error in getSchoolBySlug (schools):', pgErr);
     }
 
-    // 2. Check candidate 'prospective_schools' table
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let candidateData: any = null;
+    // 2. Direct PG pool check for prospective_schools
     try {
+      const pgProspRes = await pool.query(
+        `SELECT * FROM prospective_schools WHERE LOWER(slug) = $1 OR id::text = $1 LIMIT 1`,
+        [cleanSlug]
+      );
+      if (pgProspRes.rows && pgProspRes.rows.length > 0) {
+        const candidateData = pgProspRes.rows[0];
+        checkThreeDayTakedown(candidateData);
+        const memSchool = fontInMemSchools.get(cleanSlug);
+        if (memSchool && memSchool.school_uuid) {
+          candidateData.school_uuid = memSchool.school_uuid;
+        }
+        try {
+          await redis.setex(`school:${cleanSlug}`, 300, candidateData);
+        } catch (_e) {}
+        return { success: true, data: candidateData };
+      }
+    } catch (pgProspErr) {
+      console.warn('PG pool prospective_schools query error:', pgProspErr);
+    }
+
+    // 3. Fallback to Supabase JS client
+    try {
+      const supabase = getSupabaseClient();
+
+      // Check verified 'schools' table
+      const { data: verifiedData } = await supabase
+        .from('schools')
+        .select('*')
+        .ilike('slug', cleanSlug)
+        .maybeSingle();
+
+      if (verifiedData) {
+        try {
+          await redis.setex(`school:${cleanSlug}`, 300, verifiedData);
+        } catch (_e) {}
+        return { success: true, data: verifiedData };
+      }
+
+      // Check candidate 'prospective_schools' table
       const { data: psData } = await supabase
         .from('prospective_schools')
         .select('*')
-        .eq('slug', slug)
+        .ilike('slug', cleanSlug)
         .maybeSingle();
-      candidateData = psData;
-    } catch (_e) {}
 
-    if (!candidateData) {
-      try {
-        const { data: csData } = await supabase
-          .from('calon_sekolah')
-          .select('*')
-          .eq('slug', slug)
-          .maybeSingle();
-        candidateData = csData;
-      } catch (_e) {}
-    }
-
-    if (candidateData) {
-      checkThreeDayTakedown(candidateData);
-      const memSchool = fontInMemSchools.get(slug);
-      if (memSchool && memSchool.school_uuid) {
-        candidateData.school_uuid = memSchool.school_uuid;
+      if (psData) {
+        checkThreeDayTakedown(psData);
+        const memSchool = fontInMemSchools.get(cleanSlug);
+        if (memSchool && memSchool.school_uuid) {
+          psData.school_uuid = memSchool.school_uuid;
+        }
+        try {
+          await redis.setex(`school:${cleanSlug}`, 300, psData);
+        } catch (_e) {}
+        return { success: true, data: psData };
       }
-      try {
-        await redis.setex(`school:${slug}`, 300, candidateData);
-      } catch (_e) {}
-      return { success: true, data: candidateData };
+
+      // Check legacy 'calon_sekolah' table
+      const { data: csData } = await supabase
+        .from('calon_sekolah')
+        .select('*')
+        .ilike('slug', cleanSlug)
+        .maybeSingle();
+
+      if (csData) {
+        checkThreeDayTakedown(csData);
+        return { success: true, data: csData };
+      }
+    } catch (sbErr) {
+      console.warn('Supabase client getSchoolBySlug error:', sbErr);
     }
 
-    // 3. Check in-memory fallback map
-    const localSchool = fontInMemSchools.get(slug);
+    // 4. Check in-memory fallback map
+    const localSchool = fontInMemSchools.get(cleanSlug);
     if (localSchool) {
       checkThreeDayTakedown(localSchool);
       return { success: true, data: { ...localSchool } };
     }
 
-    // Default Seed Fallback ONLY for smktarunabhakti or demo
-    if (slug === 'smktarunabhakti' || slug === 'demo') {
+    // 5. Default Seed Fallback ONLY for smktarunabhakti or demo
+    if (cleanSlug === 'smktarunabhakti' || cleanSlug === 'demo') {
       return {
         success: true,
         data: {
           id: 1,
-          name: slug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : 'SMK Demo Indonesia',
-          slug,
+          name: cleanSlug === 'smktarunabhakti' ? 'SMK Taruna Bhakti' : 'SMK Demo Indonesia',
+          slug: cleanSlug,
           status: 'FULL_VERIFIED',
           is_verified: true,
           logo_url: '/assets/logo_sekolah/logo_smktb.png'

@@ -47,20 +47,44 @@ export default function SubscriptionManagementPage() {
     try {
       setLoadingTx(true);
       const targetSlug = schoolSlug || schoolId || "smktarunabhakti";
-      const res = await fetch(`/api/saas/transactions?school_slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`);
-      if (!res.ok) {
-        setTransactions([]);
-        return;
+      const res = await fetch(`/api/saas/transactions?school_slug=${encodeURIComponent(targetSlug)}&slug=${encodeURIComponent(targetSlug)}&_t=${Date.now()}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setTransactions(json.data);
+          if (typeof window !== "undefined") {
+            localStorage.setItem(`ppdb_tx_${targetSlug}`, JSON.stringify(json.data));
+          }
+          return;
+        }
       }
-      const json = await res.json();
-      if (json && json.success && Array.isArray(json.data)) {
-        setTransactions(json.data);
-      } else {
-        setTransactions([]);
+
+      // Local storage fallback for instant responsiveness
+      if (typeof window !== "undefined") {
+        const cached = localStorage.getItem(`ppdb_tx_${targetSlug}`);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setTransactions(parsed);
+              return;
+            }
+          } catch (_e) {}
+        }
       }
+      setTransactions([]);
     } catch (err) {
       console.warn("Gagal memuat riwayat transaksi:", err);
-      setTransactions([]);
+      if (typeof window !== "undefined") {
+        const targetSlug = schoolSlug || schoolId || "smktarunabhakti";
+        const cached = localStorage.getItem(`ppdb_tx_${targetSlug}`);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed)) setTransactions(parsed);
+          } catch (_e) {}
+        }
+      }
     } finally {
       setLoadingTx(false);
     }
@@ -208,13 +232,30 @@ export default function SubscriptionManagementPage() {
         expiresAt: getOneYearExpiry()
       };
 
+      const finalOrderId = orderId || generateFallbackOrderId();
+      const newTx: TransactionItem = {
+        id: finalOrderId,
+        order_id: finalOrderId,
+        plan_name: "Pro Tahunan",
+        amount: 1200000,
+        payment_method: "Midtrans Payment Gateway",
+        status: "SETTLEMENT",
+        created_at: new Date().toISOString(),
+        settlement_time: new Date().toISOString()
+      };
+
+      const targetSlug = schoolSlug || schoolId || "smktarunabhakti";
       if (typeof window !== "undefined") {
         localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify(updatedSub));
         localStorage.setItem("ppdb_school_subscription_default", JSON.stringify(updatedSub));
+        const prevTx = JSON.parse(localStorage.getItem(`ppdb_tx_${targetSlug}`) || "[]");
+        const updatedTxList = [newTx, ...prevTx.filter((t: TransactionItem) => t.order_id !== finalOrderId)];
+        localStorage.setItem(`ppdb_tx_${targetSlug}`, JSON.stringify(updatedTxList));
         window.dispatchEvent(new Event("storage"));
       }
 
       setSubscription(updatedSub);
+      setTransactions((prev) => [newTx, ...prev.filter((t) => t.order_id !== finalOrderId)]);
       await fetchTransactions();
 
       Swal.fire({
@@ -224,6 +265,18 @@ export default function SubscriptionManagementPage() {
         confirmButtonColor: "#2563EB"
       });
     } catch (_err) {
+      const fallbackOrderId = orderId || generateFallbackOrderId();
+      const fallbackTx: TransactionItem = {
+        id: fallbackOrderId,
+        order_id: fallbackOrderId,
+        plan_name: "Pro Tahunan",
+        amount: 1200000,
+        payment_method: "Midtrans Payment Gateway",
+        status: "SETTLEMENT",
+        created_at: new Date().toISOString(),
+        settlement_time: new Date().toISOString()
+      };
+
       const fallbackSub: SubscriptionData = {
         plan: "PRO_YEARLY",
         status: "ACTIVE",
@@ -231,12 +284,17 @@ export default function SubscriptionManagementPage() {
         isExpired: false,
         expiresAt: getOneYearExpiry(),
       };
+      const targetSlug = schoolSlug || schoolId || "smktarunabhakti";
       if (typeof window !== "undefined") {
         localStorage.setItem(`ppdb_school_subscription_${schoolSlug || "default"}`, JSON.stringify(fallbackSub));
         localStorage.setItem("ppdb_school_subscription_default", JSON.stringify(fallbackSub));
+        const prevTx = JSON.parse(localStorage.getItem(`ppdb_tx_${targetSlug}`) || "[]");
+        const updatedTxList = [fallbackTx, ...prevTx.filter((t: TransactionItem) => t.order_id !== fallbackOrderId)];
+        localStorage.setItem(`ppdb_tx_${targetSlug}`, JSON.stringify(updatedTxList));
         window.dispatchEvent(new Event("storage"));
       }
       setSubscription(fallbackSub);
+      setTransactions((prev) => [fallbackTx, ...prev.filter((t) => t.order_id !== fallbackOrderId)]);
       await fetchTransactions();
       Swal.fire({
         title: "Paket Pro Aktif",

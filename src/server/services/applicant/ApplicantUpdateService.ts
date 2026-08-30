@@ -85,13 +85,20 @@ export class ApplicantUpdateService {
       email: getVal("email", ["email"]),
       tinggal_dengan: getVal("tinggal_dengan", ["tinggal_dengan", "tinggalDengan"]),
       transportasi: getVal("transportasi", ["transportasi"]),
-      tinggi_badan: parseInt(getVal("tinggi_badan", ["tinggi_badan", "tinggiBadan"])) || 0,
-      berat_badan: parseInt(getVal("berat_badan", ["berat_badan", "beratBadan"])) || 0,
+      tinggi_badan: Math.min(300, Math.max(0, parseInt(getVal("tinggi_badan", ["tinggi_badan", "tinggiBadan"])) || 0)),
+      berat_badan: Math.min(500, Math.max(0, parseInt(getVal("berat_badan", ["berat_badan", "beratBadan"])) || 0)),
       jarak_sekolah: getVal("jarak_sekolah", ["jarak_sekolah", "jarakSekolah"]),
-      jarak_km: parseNum(getVal("jarak_km", ["jarak_km", "jarakKm"])) || 0,
-      waktu_jam: parseInt(getVal("waktu_jam", ["waktu_jam", "waktuJam"])) || 0,
-      waktu_menit: parseInt(getVal("waktu_menit", ["waktu_menit", "waktuMenit"])) || 0,
-      jumlah_saudara: parseInt(getVal("jumlah_saudara", ["jumlah_saudara", "jumlahSaudara"])) || 0,
+      jarak_km: (() => {
+        let j = parseNum(getVal("jarak_km", ["jarak_km", "jarakKm"])) || 0;
+        const js = getVal("jarak_sekolah", ["jarak_sekolah", "jarakSekolah"]);
+        if (js === "Kurang dari 1 km" && j > 20) j = j / 1000;
+        if (j > 999.99) j = 999.99;
+        if (j < 0) j = 0;
+        return Math.round(j * 100) / 100;
+      })(),
+      waktu_jam: Math.min(99, Math.max(0, parseInt(getVal("waktu_jam", ["waktu_jam", "waktuJam"])) || 0)),
+      waktu_menit: Math.min(59, Math.max(0, parseInt(getVal("waktu_menit", ["waktu_menit", "waktuMenit"])) || 0)),
+      jumlah_saudara: Math.min(99, Math.max(0, parseInt(getVal("jumlah_saudara", ["jumlah_saudara", "jumlahSaudara"])) || 0)),
       golongan_darah: getVal("golongan_darah", ["golongan_darah", "golonganDarah"]),
       penyakit_diderita: getVal("penyakit_diderita", ["penyakit_diderita", "penyakitDiderita"]),
       punya_kps: getVal("punya_kps", ["punya_kps", "punyaKPS"]),
@@ -140,13 +147,13 @@ export class ApplicantUpdateService {
       kecamatan_wali: getVal("kecamatan_wali", ["kecamatan_wali", "kecamatanWali"]),
       kode_pos_wali: getVal("kode_pos_wali", ["kode_pos_wali", "kodePosWali"]),
       status_wali: getVal("status_wali", ["status_wali", "statusWali"]),
-      telepon_ortu: getVal("telepon_ortu", ["telepon_ortu", "teleponOrtu"]),
+      telepon_ortu: getVal("telepon_ortu", ["telepon_ortu", "teleponOrtu", "telepon"]),
       sekolah_asal: getVal("sekolah_asal", ["sekolah_asal", "sekolahAsal"]),
       tgl_lulus: parseDate(getVal("tgl_lulus", ["tgl_lulus", "tglLulus"])),
       no_ijazah: getVal("no_ijazah", ["no_ijazah", "noIjazah"]),
       no_skhun: getVal("no_skhun", ["no_skhun", "noSKHUN"]),
       no_peserta_un: getVal("no_peserta_un", ["no_peserta_un", "noPesertaUN"]),
-      lama_belajar: parseInt(getVal("lama_belajar", ["lama_belajar", "lamaBelajar"])) || 3,
+      lama_belajar: Math.min(20, Math.max(1, parseInt(getVal("lama_belajar", ["lama_belajar", "lamaBelajar"])) || 3)),
       pindahan_dari: getVal("pindahan_dari", ["pindahan_dari", "pindahanDari"]),
       alasan_pindah: getVal("alasan_pindah", ["alasan_pindah", "alasanPindah"]),
       jurusan_1: getVal("jurusan_1", ["jurusan_1", "jurusan1"]),
@@ -154,9 +161,24 @@ export class ApplicantUpdateService {
       cita_cita: getVal("cita_cita", ["cita_cita", "citaCita"]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       hobi: f.hobi !== undefined ? f.hobi : (existingRecord as any).hobi,
-      nilai_us_teori: parseNum(getVal("nilai_us_teori", ["nilai_us_teori", "nilaiUSTeori"])),
-      nilai_us_praktik: parseNum(getVal("nilai_us_praktik", ["nilai_us_praktik", "nilaiUSPraktik"])),
-      nilai_muatan_lokal: parseNum(getVal("nilai_muatan_lokal", ["nilai_muatan_lokal", "nilaiMuatanLokal"])),
+      nilai_us_teori: (() => {
+        let n = parseNum(getVal("nilai_us_teori", ["nilai_us_teori", "nilaiUSTeori"])) || 0;
+        if (n < 0) n = 0;
+        if (n > 100) n = 100;
+        return Math.round(n * 100) / 100;
+      })(),
+      nilai_us_praktik: (() => {
+        let n = parseNum(getVal("nilai_us_praktik", ["nilai_us_praktik", "nilaiUSPraktik"])) || 0;
+        if (n < 0) n = 0;
+        if (n > 100) n = 100;
+        return Math.round(n * 100) / 100;
+      })(),
+      nilai_muatan_lokal: (() => {
+        let n = parseNum(getVal("nilai_muatan_lokal", ["nilai_muatan_lokal", "nilaiMuatanLokal"])) || 0;
+        if (n < 0) n = 0;
+        if (n > 100) n = 100;
+        return Math.round(n * 100) / 100;
+      })(),
       kesulitan_belajar: getVal("kesulitan_belajar", ["kesulitan_belajar", "kesulitanBelajar"]),
       pelajaran_disenangi: getVal("pelajaran_disenangi", ["pelajaran_disenangi", "pelajaranDisenangi"]),
       cita_cita_setelah_lulus: getVal("cita_cita_setelah_lulus", ["cita_cita_setelah_lulus", "citaCitaSetelahLulus"]),

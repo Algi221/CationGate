@@ -304,25 +304,9 @@ export function useKelolaUIState() {
         } catch (_) {}
       }
 
-      // Merge safely: do not let empty draft strings, empty arrays, or empty gelombang objects overwrite valid server config
-      const mergedConfig = { ...config };
-      if (draft && typeof draft === "object") {
-        Object.entries(draft).forEach(([k, v]) => {
-          if (v !== undefined && v !== null && v !== "") {
-            if (Array.isArray(v) && v.length === 0 && config[k]) return;
-            if (k === "ppdb_gelombang_config" && typeof v === "object") {
-              const gVal = v as { gelombang1?: { start?: string; end?: string }; gelombang2?: { start?: string; end?: string } };
-              const hasDraftDates = Boolean(gVal?.gelombang1?.start || gVal?.gelombang1?.end || gVal?.gelombang2?.start || gVal?.gelombang2?.end);
-              if (!hasDraftDates && config.ppdb_gelombang_config) {
-                return; // preserve valid server gelombang config
-              }
-            }
-            mergedConfig[k] = v;
-          }
-        });
-      }
-
-      const activeConfig = mergedConfig;
+      // Authoritative source: Server Database always takes precedence over stale drafts
+      const hasServerConfig = Object.keys(config).length > 0;
+      const activeConfig = hasServerConfig ? { ...config } : (draft || {});
 
       if (activeConfig.ppdb_hero_title) setHeroTitle(activeConfig.ppdb_hero_title);
       if (activeConfig.ppdb_hero_title_sub) setHeroTitleSub(activeConfig.ppdb_hero_title_sub);
@@ -744,7 +728,7 @@ export function useKelolaUIState() {
 
         // Keep local draft & cache updated with the saved data so nothing disappears on reload
         try {
-          localStorage.setItem(draftKey, JSON.stringify(savedData));
+          localStorage.removeItem(draftKey);
           if (slug) {
             localStorage.setItem(`ppdb_majors_config_${slug}`, JSON.stringify(savedData.ppdb_majors_config || finalMajors));
             localStorage.setItem(`ppdb_majors_config`, JSON.stringify(savedData.ppdb_majors_config || finalMajors));

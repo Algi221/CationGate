@@ -279,7 +279,7 @@ export function useSchoolVerificationState() {
 
         Swal.fire({
           title: "Pengajuan Berhasil!",
-          text: "Dokumen verifikasi instansi Anda telah berhasil diajukan dan sedang diproses oleh Tim Superadmin Gatekeeper.",
+          text: "Dokumen verifikasi instansi Anda telah berhasil diajukan dan sedang diproses oleh Tim Admin CationGate.",
           icon: "success",
           confirmButtonColor: "#2563EB"
         });

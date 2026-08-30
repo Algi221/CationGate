@@ -38,6 +38,8 @@ interface SchoolNavbarProps {
   forceMobile?: boolean;
   overrideTitle?: string;
   overrideLogo?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  overrideMajors?: any[];
 }
 
 const DEFAULT_MAJORS = [
@@ -54,14 +56,35 @@ export function SchoolNavbar({
   isPreview = false,
   forceMobile = false,
   overrideTitle,
-  overrideLogo
+  overrideLogo,
+  overrideMajors
 }: SchoolNavbarProps) {
   const { ppdbLogo, ppdbTitle, isConfigLoaded: _isGlobalConfigLoaded } = usePPDB();
   const { href } = useSchoolHref(schoolSlug);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [majors, setMajors] = useState<any[]>(DEFAULT_MAJORS);
+  const [majors, setMajors] = useState<any[]>(() => {
+    if (overrideMajors && Array.isArray(overrideMajors) && overrideMajors.length > 0) {
+      return overrideMajors;
+    }
+    if (typeof window !== "undefined" && schoolSlug) {
+      try {
+        const cached = localStorage.getItem(`ppdb_majors_config_${schoolSlug}`) || localStorage.getItem("ppdb_majors_config");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (_e) {}
+    }
+    return schoolSlug === "demo" ? DEFAULT_MAJORS : [];
+  });
   const _pathname = usePathname();
+
+  useEffect(() => {
+    if (overrideMajors && Array.isArray(overrideMajors) && overrideMajors.length > 0) {
+      setMajors(overrideMajors);
+    }
+  }, [overrideMajors]);
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, targetPath: string) => {
     if (!isPreview) return;
@@ -89,6 +112,11 @@ export function SchoolNavbar({
   useEffect(() => {
     const loadMajors = async () => {
       try {
+        if (overrideMajors && Array.isArray(overrideMajors) && overrideMajors.length > 0) {
+          setMajors(overrideMajors);
+          return;
+        }
+
         const res = await fetch(`/api/config?school_slug=${encodeURIComponent(schoolSlug)}&t=${Date.now()}`);
         const data = await res.json();
 
@@ -130,7 +158,7 @@ export function SchoolNavbar({
     if (schoolSlug && schoolSlug !== "sekolah") {
       loadMajors();
     }
-  }, [schoolSlug]);
+  }, [schoolSlug, overrideMajors]);
 
   const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && window.location.pathname.startsWith("/demo"));
   const activeLogo = overrideLogo || ppdbLogo;

@@ -727,7 +727,7 @@ export class SaasService {
         await supabase.from('orders').insert({
           order_id: finalOrderId,
           order_type: 'SCHOOL_PLAN',
-          school_id: resolvedUUID,
+          school_id: resolvedUUID || schoolSlug || String(idOrSlug),
           amount: txAmount,
           status: 'SETTLEMENT'
         });
@@ -737,10 +737,10 @@ export class SaasService {
     // Try saving to PostgreSQL pool if available
     try {
       await pool.query(
-        `INSERT INTO orders (order_id, order_type, amount, status)
-         VALUES ($1, 'SCHOOL_PLAN', $2, 'SETTLEMENT')
-         ON CONFLICT (order_id) DO UPDATE SET status = 'SETTLEMENT', updated_at = NOW()`,
-        [finalOrderId, txAmount]
+        `INSERT INTO orders (order_id, order_type, school_id, amount, status, created_at, updated_at)
+         VALUES ($1, 'SCHOOL_PLAN', $2, $3, 'SETTLEMENT', NOW(), NOW())
+         ON CONFLICT (order_id) DO UPDATE SET status = 'SETTLEMENT', school_id = COALESCE(EXCLUDED.school_id, orders.school_id), updated_at = NOW()`,
+        [finalOrderId, resolvedUUID || schoolSlug || String(idOrSlug), txAmount]
       );
     } catch (_pgErr) {}
 
@@ -751,6 +751,8 @@ export class SaasService {
       inMemTransactions[existingIndex].settlement_time = now.toISOString();
       inMemTransactions[existingIndex].amount = txAmount;
       inMemTransactions[existingIndex].plan_name = txPlan;
+      inMemTransactions[existingIndex].school_slug = schoolSlug;
+      inMemTransactions[existingIndex].school_name = schoolName;
     } else {
       inMemTransactions.unshift({
         id: inMemTransactions.length + 1,
@@ -783,10 +785,47 @@ export class SaasService {
   }
 
   static async getTransactions() {
-    // 1. Try fetching from Supabase orders / subscriptions table
     const transactionsList: SaasTransaction[] = [...inMemTransactions];
     const seenOrderIds = new Set<string>(inMemTransactions.map(t => t.order_id));
 
+    // 1. Fetch from PostgreSQL pool orders
+    try {
+      const pgOrders = await pool.query(
+        `SELECT o.*, 
+                COALESCE(s.name, ps.nama_sekolah, o.school_id, 'Sekolah Terdaftar') as school_name,
+                COALESCE(s.slug, ps.slug, o.school_id, 'school') as school_slug,
+                COALESCE(s.admin_name, ps.nama_admin, 'Admin Instansi') as admin_name,
+                COALESCE(s.official_email, ps.email_admin, 'admin@school.id') as official_email
+         FROM orders o
+         LEFT JOIN schools s ON (s.id::text = o.school_id::text OR s.slug = o.school_id::text)
+         LEFT JOIN prospective_schools ps ON (ps.id::text = o.school_id::text OR ps.slug = o.school_id::text)
+         ORDER BY o.created_at DESC`
+      );
+      if (pgOrders.rows && pgOrders.rows.length > 0) {
+        for (const ord of pgOrders.rows) {
+          if (!seenOrderIds.has(ord.order_id)) {
+            seenOrderIds.add(ord.order_id);
+            const ordAmt = Number(ord.amount) || 0;
+            transactionsList.push({
+              id: ord.id || ord.order_id,
+              order_id: ord.order_id,
+              school_name: ord.school_name,
+              school_slug: ord.school_slug,
+              plan_name: ordAmt >= 30000000 ? 'Enterprise Institution' : (ordAmt > 0 ? 'Pro Tahunan' : 'Free Trial'),
+              amount: ordAmt,
+              payment_method: 'Midtrans Payment Gateway',
+              status: (ord.status || 'SETTLEMENT') as SaasTransaction['status'],
+              customer_name: ord.admin_name,
+              customer_email: ord.official_email,
+              created_at: ord.created_at ? new Date(ord.created_at).toISOString() : new Date().toISOString(),
+              settlement_time: ord.updated_at ? new Date(ord.updated_at).toISOString() : new Date().toISOString()
+            });
+          }
+        }
+      }
+    } catch (_pgErr) {}
+
+    // 2. Try fetching from Supabase orders table
     try {
       const supabase = getSupabaseClient();
       const { data: dbOrders } = await supabase
@@ -798,13 +837,14 @@ export class SaasService {
         for (const ord of dbOrders) {
           if (!seenOrderIds.has(ord.order_id)) {
             seenOrderIds.add(ord.order_id);
+            const ordAmt = Number(ord.amount) || 0;
             transactionsList.push({
               id: ord.id || ord.order_id,
               order_id: ord.order_id,
-              school_name: ord.schools?.name || 'Sekolah Terdaftar',
-              school_slug: ord.schools?.slug || 'school',
-              plan_name: ord.amount >= 30000000 ? 'Enterprise Institution' : 'Pro Tahunan',
-              amount: ord.amount || 1200000,
+              school_name: ord.schools?.name || ord.school_id || 'Sekolah Terdaftar',
+              school_slug: ord.schools?.slug || ord.school_id || 'school',
+              plan_name: ordAmt >= 30000000 ? 'Enterprise Institution' : (ordAmt > 0 ? 'Pro Tahunan' : 'Free Trial'),
+              amount: ordAmt,
               payment_method: 'Midtrans Payment Gateway',
               status: (ord.status || 'SETTLEMENT') as SaasTransaction['status'],
               customer_name: ord.schools?.admin_name || 'Admin Instansi',

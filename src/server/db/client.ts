@@ -87,9 +87,12 @@ export async function initDb(): Promise<void> {
             await client.query(`ALTER TABLE ${tbl} ALTER COLUMN ${col} TYPE VARCHAR(255)`);
           } catch (_colErr) {}
         }
-        try {
-          await client.query(`ALTER TABLE ${tbl} ALTER COLUMN jarak_km TYPE NUMERIC`);
-        } catch (_jErr) {}
+        const numColsToExpand = ['jarak_km', 'nilai_us_teori', 'nilai_us_praktik', 'nilai_muatan_lokal'];
+        for (const col of numColsToExpand) {
+          try {
+            await client.query(`ALTER TABLE ${tbl} ALTER COLUMN ${col} TYPE NUMERIC`);
+          } catch (_colErr) {}
+        }
       }
 
       await client.query(`

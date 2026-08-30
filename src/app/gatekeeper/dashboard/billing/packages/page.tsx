@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Plus, Pencil, Trash2, X, CheckCircle2, Box, Sparkles, Shield, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Swal from "sweetalert2";
@@ -33,11 +34,16 @@ function formatInputDisplay(num: number): string {
 }
 
 export default function GatekeeperPackagesPage() {
+  const [mounted, setMounted] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -546,8 +552,8 @@ export default function GatekeeperPackagesPage() {
       )}
 
       {/* ── CREATE / EDIT PLAN MODAL ────────────────────────────────────────── */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+      {mounted && showModal && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-99999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-white dark:bg-[#1e2533] rounded-3xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-white/10">
             <div className="p-6 border-b border-slate-100 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-[#1e2533]/95 backdrop-blur z-10">
               <h2 className="text-lg font-black text-slate-900 dark:text-white">
@@ -618,15 +624,16 @@ export default function GatekeeperPackagesPage() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={saving || (formPriceYearly > 0 && formPriceYearly < 10_000_000)}
-                  className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] shadow-md shadow-[#FFD33B]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={saving || !formName.trim() || formPriceYearly < 0}
+                  className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] shadow-md shadow-[#FFD33B]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {saving ? "Menyimpan..." : "Simpan Paket"}
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -373,10 +373,22 @@ export class SaasController {
 
   static async getTransactions(c: Context) {
     try {
-      const slug = c.req.query('slug') || c.req.query('school_slug');
+      const slug = c.req.query('slug') || c.req.query('school_slug') || c.req.query('school_id');
       const allTx = await SaasService.getTransactions();
       if (slug) {
-        const filtered = allTx.filter(t => t.school_slug === slug || t.school_slug === 'all' || (slug === 'smktarunabhakti' && (t.school_slug === 'smktarunabhakti' || t.school_name?.toLowerCase().includes('taruna bhakti'))));
+        const lowerSlug = slug.toLowerCase();
+        const filtered = allTx.filter(t => {
+          const tSlug = (t.school_slug || '').toLowerCase();
+          const tName = (t.school_name || '').toLowerCase();
+          return (
+            tSlug === lowerSlug ||
+            tSlug === 'all' ||
+            tName.includes(lowerSlug) ||
+            lowerSlug.includes(tSlug) ||
+            (lowerSlug.includes('segar') && (tSlug.includes('segar') || tName.includes('segar'))) ||
+            (lowerSlug.includes('taruna') && (tSlug.includes('taruna') || tName.includes('taruna')))
+          );
+        });
         return c.json({ success: true, data: filtered });
       }
       return c.json({ success: true, data: allTx });

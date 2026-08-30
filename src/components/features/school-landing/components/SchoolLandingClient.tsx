@@ -91,7 +91,7 @@ export function SchoolLandingClient({ initialData, serverSchoolSlug }: SchoolLan
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-[#020617] text-slate-900 dark:text-white transition-colors duration-300 font-sans selection:bg-blue-500 selection:text-white">
       {/* NAVBAR */}
-      <SchoolNavbar schoolSlug={schoolSlug} overrideTitle={schoolDisplayName} />
+      <SchoolNavbar schoolSlug={schoolSlug} overrideTitle={schoolDisplayName} overrideMajors={majors} />
 
       {/* MAIN CONTENT SECTIONS */}
       <main className="grow w-full relative z-0">

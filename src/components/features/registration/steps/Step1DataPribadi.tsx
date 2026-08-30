@@ -120,8 +120,9 @@ export const Step1DataPribadi: React.FC<StepProps> = ({
             <input
               type="text"
               name="tempatLahir"
+              maxLength={50}
               className="w-1/2 bg-white dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              placeholder="Tempat"
+              placeholder="Kota / Kab Lahir"
               value={formData.tempatLahir}
               onChange={handleInputChange}
             />

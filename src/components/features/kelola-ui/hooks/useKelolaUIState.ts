@@ -858,7 +858,7 @@ export function useKelolaUIState() {
         },
         body: JSON.stringify({
           configs: configsPayload,
-          description: changeDescription.trim()
+          description: finalDesc
         })
       });
 

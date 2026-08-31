@@ -23,9 +23,9 @@ interface ChatMessage {
 
 const DEFAULT_SUGGESTIONS = [
   "Apa itu CationGate?",
+  "Siapa pencipta CationGate?",
   "Cara mendaftarkan sekolah SMK?",
   "Metode pembayaran formulir?",
-  "Alur pendaftaran siswa mandiri di HP?",
   "Integrasi ekspor ke Dapodik?",
 ];
 

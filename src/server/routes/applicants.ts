@@ -36,6 +36,9 @@ appRouter.post('/verify/:id', rateLimiter({
 // 6. ADMIN ONLY: Fetch all candidates with full columns (Protected)
 appRouter.get('/', adminAuth, ApplicantController.getAdminList);
 
+// 6b. ADMIN ONLY: Generate dummy applicants based on school majors (Protected)
+appRouter.post('/generate-dummy', adminAuth, ApplicantController.generateDummy);
+
 // 7. ADMIN ONLY: Fetch all trashed applicants (Protected)
 appRouter.get('/trashed', adminAuth, ApplicantController.getTrashed);
 

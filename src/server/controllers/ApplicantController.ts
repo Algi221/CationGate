@@ -29,6 +29,22 @@ export class ApplicantController {
     }
   }
 
+  static async generateDummy(c: Context) {
+    try {
+      const schoolId = await requireTenantId(c);
+      const authToken = c.req.header('Authorization');
+      const body = await c.req.json().catch(() => ({}));
+      const count = typeof body.count === 'number' ? body.count : 5;
+      const statusPreference = body.statusPreference || 'random';
+
+      const result = await ApplicantService.generateDummyApplicants(schoolId, count, statusPreference, authToken);
+      return c.json(result, result.statusCode as any);
+    } catch (err: unknown) {
+      console.error('Generate dummy applicants error:', err);
+      return c.json({ success: false, message: 'Gagal membuat calon siswa dummy: ' + ((err as Error)?.message || String(err)) }, 500);
+    }
+  }
+
   static async getAdminList(c: Context) {
     try {
       const schoolId = await requireTenantId(c);

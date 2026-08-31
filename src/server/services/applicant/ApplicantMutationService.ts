@@ -2,8 +2,17 @@ import { ApplicantCreateService } from "./ApplicantCreateService";
 import { ApplicantUpdateService } from "./ApplicantUpdateService";
 import { ApplicantStatusService } from "./ApplicantStatusService";
 import { ApplicantDeleteService } from "./ApplicantDeleteService";
+import { ApplicantDummyService } from "./ApplicantDummyService";
 
 export class ApplicantMutationService {
+  static async generateDummyApplicants(
+    schoolId: string,
+    count: number = 5,
+    statusPreference: "random" | "Pending" | "Approved" | "Rejected" = "random",
+    authToken?: string
+  ) {
+    return ApplicantDummyService.generateDummyApplicants(schoolId, count, statusPreference, authToken);
+  }
   static async registerApplicant(rawBody: unknown, schoolSlug: string | undefined) {
     return ApplicantCreateService.registerApplicant(rawBody, schoolSlug);
   }

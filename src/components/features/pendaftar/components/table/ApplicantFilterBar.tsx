@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, TableProperties, FileSpreadsheet, Download } from "lucide-react";
+import { Search, TableProperties, FileSpreadsheet, Download, Sparkles } from "lucide-react";
 import { 
   Select, 
   SelectContent, 
@@ -28,6 +28,7 @@ interface ApplicantFilterBarProps {
   isSpreadsheetMode: boolean;
   setIsSpreadsheetMode: (val: boolean) => void;
   onExport: () => void;
+  onOpenDummyModal?: () => void;
   filteredApplicants: Applicant[];
 }
 
@@ -48,6 +49,7 @@ export const ApplicantFilterBar: React.FC<ApplicantFilterBarProps> = ({
   isSpreadsheetMode,
   setIsSpreadsheetMode,
   onExport,
+  onOpenDummyModal,
   filteredApplicants
 }) => {
   return (
@@ -215,6 +217,20 @@ export const ApplicantFilterBar: React.FC<ApplicantFilterBarProps> = ({
             <span className="hidden sm:inline text-emerald-500 font-bold">Excel Preview</span>
           </button>
         </div>
+
+        {/* Tambah Siswa Dummy Button */}
+        {onOpenDummyModal && (
+          <button
+            type="button"
+            onClick={onOpenDummyModal}
+            className="px-3.5 py-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs"
+            title="Tambah calon siswa dummy untuk testing berdasarkan jurusan sekolah"
+          >
+            <Sparkles size={14} className="text-amber-600 dark:text-amber-400" />
+            <span className="hidden sm:inline">Tambah Siswa Dummy</span>
+            <span className="sm:hidden">Dummy</span>
+          </button>
+        )}
 
         {/* Export button */}
         <button

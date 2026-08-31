@@ -67,6 +67,7 @@ export interface PPDBContextType {
   updateApplicant: (id: number, updatedData: PPDBRecord) => Promise<{ success: boolean; data?: PPDBRecord; message?: string }>;
   updateActiveStudent: (id: number, updatedData: PPDBRecord) => Promise<{ success: boolean; data?: PPDBRecord; message?: string }>;
   deleteActiveStudent: (id: number) => Promise<void>;
+  generateDummyApplicants: (count?: number, statusPreference?: string) => Promise<{ success: boolean; count?: number; message?: string; data?: PPDBRecord[] }>;
   fetchPublicApplicants: () => Promise<void>;
   fetchAdminApplicants: () => Promise<void>;
   fetchActiveStudents: () => Promise<void>;
@@ -98,6 +99,7 @@ function PPDBLifeCycleSync({ children }: { children: React.ReactNode }) {
   const updateApplicant = usePPDBStore((s) => s.updateApplicant);
   const updateActiveStudent = usePPDBStore((s) => s.updateActiveStudent);
   const deleteActiveStudent = usePPDBStore((s) => s.deleteActiveStudent);
+  const generateDummyApplicants = usePPDBStore((s) => s.generateDummyApplicants);
   const simulateRegistration = usePPDBStore((s) => s.simulateRegistration);
   const checkPaymentStatus = usePPDBStore((s) => s.checkPaymentStatus);
   const initRealtimeSubscription = usePPDBStore((s) => s.initRealtimeSubscription);
@@ -194,6 +196,7 @@ function PPDBLifeCycleSync({ children }: { children: React.ReactNode }) {
     updateApplicant,
     updateActiveStudent,
     deleteActiveStudent,
+    generateDummyApplicants,
     loginAdmin,
     loginGatekeeper,
     logoutAdmin,
@@ -257,6 +260,7 @@ export function usePPDB(): PPDBContextType {
   const updateApplicant = usePPDBStore((s) => s.updateApplicant);
   const updateActiveStudent = usePPDBStore((s) => s.updateActiveStudent);
   const deleteActiveStudent = usePPDBStore((s) => s.deleteActiveStudent);
+  const generateDummyApplicants = usePPDBStore((s) => s.generateDummyApplicants);
   const simulateRegistration = usePPDBStore((s) => s.simulateRegistration);
   const checkPaymentStatus = usePPDBStore((s) => s.checkPaymentStatus);
 
@@ -308,6 +312,7 @@ export function usePPDB(): PPDBContextType {
     updateApplicant,
     updateActiveStudent,
     deleteActiveStudent,
+    generateDummyApplicants,
     loginAdmin,
     loginGatekeeper,
     logoutAdmin,

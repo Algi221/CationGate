@@ -132,6 +132,8 @@ interface PPDBState {
   deleteActiveStudent: (id: number) => Promise<void>;
   simulateRegistration: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  generateDummyApplicants: (count?: number, statusPreference?: string) => Promise<{ success: boolean; count?: number; message?: string; data?: any[] }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   checkPaymentStatus: (nisn: string) => Promise<any>;
   initRealtimeSubscription: (schoolId?: string) => () => void;
 }
@@ -499,6 +501,104 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
         publicApplicants: state.publicApplicants.filter((a) => a.id !== id),
       }));
       addToast("Applicant Deleted (Offline)", `Pendaftar #${id} dihapus.`, "danger");
+    }
+  },
+
+  generateDummyApplicants: async (count: number = 5, statusPreference: string = "random") => {
+    const { adminToken } = useAuthStore.getState();
+    const { isDemoMode } = useSchoolStore.getState();
+    const { addToast } = useToastStore.getState();
+    const token = adminToken || (typeof window !== "undefined" ? localStorage.getItem("ppdb_admin_token") : null);
+
+    try {
+      if (isDemoMode) throw new Error("Demo Mode");
+      const res = await fetch(`${BACKEND_URL}/applicants/generate-dummy`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ count, statusPreference })
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast("Siswa Dummy Ditambahkan", data.message || `Berhasil membuat ${data.count} siswa dummy.`, "success");
+        await get().fetchAdminApplicants();
+        await get().fetchPublicApplicants();
+        return data;
+      } else {
+        throw new Error(data.message || "Gagal membuat siswa dummy");
+      }
+    } catch (err: unknown) {
+      console.warn("generateDummyApplicants falling back to local:", err instanceof Error ? err.message : String(err));
+      const countToGen = Math.min(50, Math.max(1, count));
+      const existing = get().applicants;
+      const lastId = existing.reduce((max, a) => Math.max(max, Number(a.id) || 0), 100);
+
+      let majorsList = [
+        "Rekayasa Perangkat Lunak",
+        "Teknik Komputer dan Jaringan",
+        "Desain Komunikasi Visual"
+      ];
+      try {
+        const raw = localStorage.getItem("ppdb_majors_config");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            majorsList = parsed
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .map((m: any) => (typeof m === "string" ? m : m.title || m.name || m.code || ""))
+              .filter(Boolean);
+          }
+        }
+      } catch {}
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const localNew: any[] = [];
+      const firstNames = ["Ahmad", "Budi", "Dimas", "Eka", "Fahri", "Farhan", "Naufal", "Rafi", "Reza", "Anisa", "Aulia", "Dewi", "Fitri", "Gita", "Nabila", "Putri", "Siti", "Tiara"];
+      const lastNames = ["Pratama", "Wijaya", "Santoso", "Lestari", "Putra", "Kusuma", "Hidayat", "Saputra", "Ramadhan", "Nugraha"];
+
+      for (let i = 1; i <= countToGen; i++) {
+        const id = lastId + i;
+        const major = majorsList[(i - 1) % majorsList.length];
+        const isMale = i % 2 === 0;
+        const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+        const newApp = {
+          id,
+          nama: `${fn} ${ln}`,
+          nisn: `008${Math.floor(1000000 + Math.random() * 9000000)}`,
+          nik: `327601${String(10 + (i % 20))}0409${String(id).padStart(4, "0")}`,
+          registration_no: `26271${String(id).padStart(4, "0")}`,
+          no_pendaftaran: `26271${String(id).padStart(4, "0")}`,
+          jurusan_1: major,
+          jurusan1: major,
+          sekolah_asal: "SMP Negeri 1",
+          sekolahAsal: "SMP Negeri 1",
+          jenis_kelamin: isMale ? "L" : "P",
+          jenisKelamin: isMale ? "Laki-laki" : "Perempuan",
+          status: statusPreference === "random" ? (i % 3 === 0 ? "Approved" : "Pending") : statusPreference,
+          payment_status: "LUNAS",
+          payment_method: "Bayar Tunai di TU (Cash)",
+          tgl_daftar: new Date().toISOString(),
+          gelombang: "Gelombang 1",
+          periode: "2026-2027",
+          tinggal_dengan: "Orang Tua",
+          nilai_us_teori: 85,
+          nilai_us_praktik: 88,
+          nilai_muatan_lokal: 86,
+          whatsapp: `0812${10000000 + id}`,
+          email: `${fn.toLowerCase()}.${ln.toLowerCase()}${id}@gmail.com`
+        };
+        localNew.push(newApp);
+      }
+
+      set((state) => ({
+        applicants: [...localNew, ...state.applicants],
+        publicApplicants: [...localNew, ...state.publicApplicants]
+      }));
+      addToast("Siswa Dummy Ditambahkan", `Berhasil membuat ${localNew.length} siswa dummy (offline mode).`, "success");
+      return { success: true, count: localNew.length, data: localNew };
     }
   },
 

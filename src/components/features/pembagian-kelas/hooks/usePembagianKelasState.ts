@@ -494,33 +494,9 @@ export function usePembagianKelasState() {
     e.dataTransfer.setData("application/json", JSON.stringify(dragIds));
     e.dataTransfer.effectAllowed = "move";
 
-    try {
-      const student = applicants.find((a: Applicant) => a.id === studentId);
-      const studentName = student?.nama || "Siswa";
-      const count = dragIds.length;
-
-      const dragGhost = document.createElement("div");
-      dragGhost.style.padding = "8px 16px";
-      dragGhost.style.background = "#2563eb";
-      dragGhost.style.color = "#ffffff";
-      dragGhost.style.fontSize = "12px";
-      dragGhost.style.fontWeight = "800";
-      dragGhost.style.borderRadius = "12px";
-      dragGhost.style.position = "absolute";
-      dragGhost.style.top = "-1000px";
-      dragGhost.style.left = "-1000px";
-      dragGhost.style.boxShadow = "0 10px 25px rgba(37, 99, 235, 0.35)";
-      dragGhost.style.zIndex = "99999";
-      dragGhost.style.pointerEvents = "none";
-      dragGhost.textContent = count > 1 ? `Memindahkan ${count} Siswa Terpilih` : `Memindahkan: ${studentName}`;
-      document.body.appendChild(dragGhost);
-      e.dataTransfer.setDragImage(dragGhost, 10, 10);
-      setTimeout(() => {
-        if (document.body.contains(dragGhost)) {
-          document.body.removeChild(dragGhost);
-        }
-      }, 0);
-    } catch (_err) {}
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent, className: string) => {

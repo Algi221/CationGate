@@ -41,10 +41,14 @@ export function usePendaftarState() {
     rejectApplicant,
     deleteApplicant,
     updateApplicant,
+    generateDummyApplicants,
     fetchAdminApplicants,
     addToast,
     isDemoMode,
   } = usePPDB();
+
+  const [isDummyModalOpen, setIsDummyModalOpen] = useState<boolean>(false);
+  const [isGeneratingDummy, setIsGeneratingDummy] = useState<boolean>(false);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -641,6 +645,18 @@ export function usePendaftarState() {
     }
   };
 
+  const handleGenerateDummy = async (count: number = 5, statusPreference: string = "random") => {
+    setIsGeneratingDummy(true);
+    try {
+      await generateDummyApplicants(count, statusPreference);
+      setIsDummyModalOpen(false);
+    } catch (err) {
+      console.error("Failed to generate dummy applicants:", err);
+    } finally {
+      setIsGeneratingDummy(false);
+    }
+  };
+
   return {
     applicants,
     filteredApplicants,
@@ -699,5 +715,9 @@ export function usePendaftarState() {
     trashSuccess,
     handleRestoreApplicant,
     handlePermanentDeleteApplicant,
+    isDummyModalOpen,
+    setIsDummyModalOpen,
+    isGeneratingDummy,
+    handleGenerateDummy,
   };
 }

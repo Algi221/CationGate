@@ -47,6 +47,15 @@ export class ApplicantService {
   }
 
   // ── Mutation Methods ─────────────────────────────────────────────────────────
+  static async generateDummyApplicants(
+    schoolId: string,
+    count: number = 5,
+    statusPreference: "random" | "Pending" | "Approved" | "Rejected" = "random",
+    authToken?: string
+  ) {
+    return ApplicantMutationService.generateDummyApplicants(schoolId, count, statusPreference, authToken);
+  }
+
   static async registerApplicant(rawBody: unknown, schoolSlug: string | undefined) {
     return ApplicantMutationService.registerApplicant(rawBody, schoolSlug);
   }

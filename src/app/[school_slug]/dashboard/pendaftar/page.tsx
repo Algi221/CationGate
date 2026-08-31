@@ -9,6 +9,7 @@ import { EditModal } from "@/components/features/pendaftar/components/EditModal"
 import { RejectModal } from "@/components/features/pendaftar/components/RejectModal";
 import { TrashTab } from "@/components/features/pendaftar/components/TrashTab";
 import { PaymentReceiptModal } from "@/components/features/pendaftar/components/PaymentReceiptModal";
+import { DummyApplicantModal } from "@/components/features/pendaftar/components/DummyApplicantModal";
 
 function ApplicantsDirectoryContent() {
   const {
@@ -66,7 +67,11 @@ function ApplicantsDirectoryContent() {
     trashError,
     trashSuccess,
     handleRestoreApplicant,
-    handlePermanentDeleteApplicant
+    handlePermanentDeleteApplicant,
+    isDummyModalOpen,
+    setIsDummyModalOpen,
+    isGeneratingDummy,
+    handleGenerateDummy
   } = usePendaftarState();
 
   return (
@@ -111,6 +116,7 @@ function ApplicantsDirectoryContent() {
           isSpreadsheetMode={isSpreadsheetMode}
           setIsSpreadsheetMode={setIsSpreadsheetMode}
           onExport={handleExport}
+          onOpenDummyModal={() => setIsDummyModalOpen(true)}
           filteredApplicants={filteredApplicants}
           paginatedApplicants={paginatedApplicants}
           page={page}
@@ -133,6 +139,15 @@ function ApplicantsDirectoryContent() {
           setActiveCell={setActiveCell}
         />
       )}
+
+      {/* Dummy Applicant Generator Modal */}
+      <DummyApplicantModal
+        isOpen={isDummyModalOpen}
+        onClose={() => setIsDummyModalOpen(false)}
+        majorsList={majorsList}
+        isGenerating={isGeneratingDummy}
+        onGenerate={handleGenerateDummy}
+      />
 
       {/* Payment Receipt / Cashier Modal */}
       <PaymentReceiptModal

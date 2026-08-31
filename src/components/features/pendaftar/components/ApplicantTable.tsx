@@ -38,6 +38,7 @@ interface ApplicantTableProps {
   onTogglePhysicalDoc: (applicant: Applicant) => Promise<void>;
   onOpenReceipt: (applicant: Applicant) => void;
   onConfirmPayment: (applicantId: number) => Promise<void>;
+  onOpenDummyModal?: () => void;
   activeCell: { row: number; col: number } | null;
   setActiveCell: (cell: { row: number; col: number } | null) => void;
 }
@@ -59,6 +60,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
   isSpreadsheetMode,
   setIsSpreadsheetMode,
   onExport,
+  onOpenDummyModal,
   filteredApplicants,
   paginatedApplicants,
   page: _page,
@@ -106,6 +108,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
         isSpreadsheetMode={isSpreadsheetMode}
         setIsSpreadsheetMode={setIsSpreadsheetMode}
         onExport={onExport}
+        onOpenDummyModal={onOpenDummyModal}
         filteredApplicants={filteredApplicants}
       />
 

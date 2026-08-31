@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { 
-  CheckCircle2, Search, X, ExternalLink, 
+  CheckCircle2, Search, X, 
   RefreshCw, FileText, Eye, Globe, Trash2, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -292,16 +292,6 @@ function GatekeeperActiveSchoolsContent() {
 
                           <button
                             type="button"
-                            onClick={() => {
-                              safeOpenWindow(`/${sanitizeSlug(school.slug)}/dashboard`);
-                            }}
-                            className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 hover:bg-blue-100 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer"
-                          >
-                            <ExternalLink className="w-3 h-3" /> Dashboard
-                          </button>
-
-                          <button
-                            type="button"
                             onClick={() => handleTakedownSchool(school)}
                             className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                             title="Takedown Instansi"
@@ -488,15 +478,6 @@ function GatekeeperActiveSchoolsContent() {
                 >
                   Takedown Instansi
                 </Button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    safeOpenWindow(`/${sanitizeSlug(selectedSchoolModal.slug)}/dashboard`);
-                  }}
-                  className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs inline-flex items-center gap-1.5 shadow-md shadow-blue-600/20 cursor-pointer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> Buka Dashboard Sekolah
-                </button>
               </div>
             </div>
           </div>

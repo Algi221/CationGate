@@ -310,7 +310,7 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
     if (!token) return;
 
     try {
-      const url = schoolSlug ? `${BACKEND_URL}/applicants?school_slug=${encodeURIComponent(schoolSlug)}` : `${BACKEND_URL}/applicants`;
+      const url = schoolSlug ? `${BACKEND_URL}/siswa-aktif?school_slug=${encodeURIComponent(schoolSlug)}` : `${BACKEND_URL}/siswa-aktif`;
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (res.status === 401) {
         console.warn("Token is invalid or expired. Logging out admin.");
@@ -318,30 +318,40 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
         return;
       }
       const data = await res.json();
-      if (data.success && Array.isArray(data.data)) {
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         set({
-          activeStudents: applyClassOverrides(
-            data.data.filter((a: { status?: string; diterima_kelas?: string; diterimaKelas?: string }) => {
-              const isApproved = a.status === "Approved" || a.status === "Terverifikasi";
-              const cls = String(a.diterima_kelas || a.diterimaKelas || "").trim();
-              const hasAssignedClass = Boolean(
-                cls &&
-                cls !== "-" &&
-                cls !== "X" &&
-                cls !== "XI" &&
-                cls !== "XII" &&
-                cls !== "X (Sepuluh)" &&
-                cls !== "XI (Sebelas)" &&
-                cls !== "XII (Dua Belas)" &&
-                !cls.toLowerCase().includes("belum") &&
-                !cls.toLowerCase().includes("atur")
-              );
-              return isApproved && hasAssignedClass;
-            })
-          ),
+          activeStudents: applyClassOverrides(data.data),
         });
       } else {
-        set({ activeStudents: [] });
+        // Fallback to applicants if siswa-aktif is empty
+        const fallbackUrl = schoolSlug ? `${BACKEND_URL}/applicants?school_slug=${encodeURIComponent(schoolSlug)}` : `${BACKEND_URL}/applicants`;
+        const fbRes = await fetch(fallbackUrl, { headers: { Authorization: `Bearer ${token}` } });
+        const fbData = await fbRes.json();
+        if (fbData.success && Array.isArray(fbData.data)) {
+          set({
+            activeStudents: applyClassOverrides(
+              fbData.data.filter((a: { status?: string; diterima_kelas?: string; diterimaKelas?: string }) => {
+                const isApproved = a.status === "Approved" || a.status === "Terverifikasi";
+                const cls = String(a.diterima_kelas || a.diterimaKelas || "").trim();
+                const hasAssignedClass = Boolean(
+                  cls &&
+                  cls !== "-" &&
+                  cls !== "X" &&
+                  cls !== "XI" &&
+                  cls !== "XII" &&
+                  cls !== "X (Sepuluh)" &&
+                  cls !== "XI (Sebelas)" &&
+                  cls !== "XII (Dua Belas)" &&
+                  !cls.toLowerCase().includes("belum") &&
+                  !cls.toLowerCase().includes("atur")
+                );
+                return isApproved && hasAssignedClass;
+              })
+            ),
+          });
+        } else {
+          set({ activeStudents: data.data || [] });
+        }
       }
     } catch (err: unknown) {
       console.warn("Active students API fetch error:", err instanceof Error ? err.message : String(err));

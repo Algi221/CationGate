@@ -10,7 +10,8 @@ import {
   Trash2, 
   ChevronRight, 
   ChevronLeft, 
-  Search 
+  Search,
+  GripVertical
 } from "lucide-react";
 import { 
   Select, 
@@ -65,11 +66,16 @@ function ClassDivisionManagementContent() {
     enrolledStudentsInDetail,
     classSearchTerm,
     setClassSearchTerm,
+    activeDropClass,
     nipdMap,
     handleSelectAll,
     handleSelectStudent,
     handleAssignSelectedToClass,
     handleAssignSingleStudent,
+    handleDragStart,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
     handleCreateClass,
     handleDeleteClass,
     handleRemoveStudentFromClassDetail,
@@ -280,11 +286,27 @@ function ClassDivisionManagementContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {classesOfSelectedMajor.map((cls) => {
               const stats = classEnrollments[cls.name] || { total: 0, L: 0, P: 0 };
+              const isDropTarget = activeDropClass === cls.name;
               return (
                 <div
                   key={cls.id}
-                  className="bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all hover:shadow-xs"
+                  onDragOver={(e) => handleDragOver(e, cls.name)}
+                  onDragLeave={(e) => handleDragLeave(e)}
+                  onDrop={(e) => handleDrop(e, cls.name)}
+                  className={`rounded-3xl p-5 flex flex-col justify-between transition-all duration-200 border relative overflow-hidden ${
+                    isDropTarget
+                      ? "bg-blue-50/90 dark:bg-blue-950/80 border-blue-500 ring-4 ring-blue-500/30 scale-[1.03] shadow-lg shadow-blue-500/15"
+                      : "bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs"
+                  }`}
                 >
+                  {isDropTarget && (
+                    <div className="absolute inset-0 bg-blue-600/10 dark:bg-blue-500/20 pointer-events-none flex items-center justify-center backdrop-blur-2xs z-10">
+                      <div className="bg-blue-600 text-white text-[11px] font-extrabold px-3 py-1.5 rounded-xl shadow-md uppercase tracking-wider flex items-center gap-1.5 animate-bounce">
+                        <Plus size={14} /> Lepaskan Siswa di Sini
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <div className="flex items-start justify-between">
                       <div>
@@ -375,6 +397,11 @@ function ClassDivisionManagementContent() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="hidden xl:flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 px-3 py-2 rounded-xl">
+              <GripVertical size={13} className="text-blue-600 dark:text-blue-400" />
+              <span>Drag &amp; drop baris siswa ke kartu kelas di atas</span>
+            </div>
           </div>
 
           {selectedStudentIds.length > 0 && (
@@ -409,7 +436,8 @@ function ClassDivisionManagementContent() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/70 dark:bg-slate-900/70 border-b border-slate-200/80 dark:border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                <th className="py-3 px-4 w-10 text-center">
+                <th className="py-3 px-2 w-8 text-center" title="Drag Handle"></th>
+                <th className="py-3 px-3 w-10 text-center">
                   <input
                     type="checkbox"
                     checked={filteredStudents.length > 0 && selectedStudentIds.length === filteredStudents.length}
@@ -430,7 +458,7 @@ function ClassDivisionManagementContent() {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400 font-bold">
+                  <td colSpan={10} className="py-12 text-center text-slate-400 font-bold">
                     Tidak ada data siswa yang sesuai filter.
                   </td>
                 </tr>
@@ -446,11 +474,16 @@ function ClassDivisionManagementContent() {
                   return (
                     <tr
                       key={student.id}
-                      className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors ${
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, student.id)}
+                      className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-grab active:cursor-grabbing select-none group ${
                         isSelected ? "bg-blue-50/40 dark:bg-blue-950/20" : ""
                       }`}
                     >
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-2 text-center text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <GripVertical size={14} className="mx-auto" />
+                      </td>
+                      <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isSelected}

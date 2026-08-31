@@ -493,14 +493,52 @@ export function usePembagianKelasState() {
     const dragIds = selectedStudentIds.includes(studentId) ? selectedStudentIds : [studentId];
     e.dataTransfer.setData("application/json", JSON.stringify(dragIds));
     e.dataTransfer.effectAllowed = "move";
+
+    try {
+      const student = applicants.find((a: Applicant) => a.id === studentId);
+      const studentName = student?.nama || "Siswa";
+      const count = dragIds.length;
+
+      const dragGhost = document.createElement("div");
+      dragGhost.style.padding = "8px 16px";
+      dragGhost.style.background = "#2563eb";
+      dragGhost.style.color = "#ffffff";
+      dragGhost.style.fontSize = "12px";
+      dragGhost.style.fontWeight = "800";
+      dragGhost.style.borderRadius = "12px";
+      dragGhost.style.position = "absolute";
+      dragGhost.style.top = "-1000px";
+      dragGhost.style.left = "-1000px";
+      dragGhost.style.boxShadow = "0 10px 25px rgba(37, 99, 235, 0.35)";
+      dragGhost.style.zIndex = "99999";
+      dragGhost.style.pointerEvents = "none";
+      dragGhost.textContent = count > 1 ? `Memindahkan ${count} Siswa Terpilih` : `Memindahkan: ${studentName}`;
+      document.body.appendChild(dragGhost);
+      e.dataTransfer.setDragImage(dragGhost, 10, 10);
+      setTimeout(() => {
+        if (document.body.contains(dragGhost)) {
+          document.body.removeChild(dragGhost);
+        }
+      }, 0);
+    } catch (_err) {}
   };
 
   const handleDragOver = (e: React.DragEvent, className: string) => {
     e.preventDefault();
-    setActiveDropClass(className);
+    e.dataTransfer.dropEffect = "move";
+    if (activeDropClass !== className) {
+      setActiveDropClass(className);
+    }
   };
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (e?: React.DragEvent) => {
+    if (e && e.currentTarget && e.relatedTarget) {
+      const currentTarget = e.currentTarget as HTMLElement;
+      const relatedTarget = e.relatedTarget as Node | null;
+      if (relatedTarget && currentTarget.contains(relatedTarget)) {
+        return;
+      }
+    }
     setActiveDropClass(null);
   };
 
@@ -522,8 +560,15 @@ export function usePembagianKelasState() {
           });
           if (res?.success) count++;
         }
+        setSelectedStudentIds([]);
         setIsLoading(false);
-        showToast(`Berhasil memindahkan ${count} siswa ke kelas ${targetClassName}!`, "success");
+        if (count === ids.length) {
+          showToast(`Sukses memindahkan ${count} siswa ke kelas ${targetClassName}!`, "success");
+        } else if (count > 0) {
+          showToast(`Sebagian berhasil: memindahkan ${count} dari ${ids.length} siswa ke kelas ${targetClassName}.`, "info");
+        } else {
+          showToast(`Gagal memindahkan siswa ke kelas ${targetClassName}.`, "error");
+        }
       }
     } catch (err) {
       setIsLoading(false);

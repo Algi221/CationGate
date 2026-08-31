@@ -89,8 +89,8 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
     try {
       const token = localStorage.getItem("ppdb_admin_token");
 
-      // Upload in chunks of 500
-      const chunkSize = 500;
+      // Upload in chunks of 100
+      const chunkSize = 100;
       const totalChunks = Math.ceil(rawStudents.length / chunkSize);
       let totalImported = 0;
 
@@ -100,12 +100,18 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token || ""}`
           },
           body: JSON.stringify({ students: chunk })
         });
 
-        const data = await res.json();
+        let data: { success?: boolean; message?: string; count?: number } = {};
+        try {
+          data = await res.json();
+        } catch (_parseErr) {
+          throw new Error(`Server merespon dengan status HTTP ${res.status}`);
+        }
+
         if (!data.success) {
           throw new Error(data.message || `Gagal mengimpor batch ${i + 1}`);
         }

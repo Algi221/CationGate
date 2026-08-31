@@ -6,7 +6,23 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const connectionString = process.env.DATABASE_URL;
+let rawConnStr = process.env.DATABASE_URL || '';
+
+// Auto-fix IPv6-only db.<ref>.supabase.co hostnames to IPv4 pooler if encountered
+if (rawConnStr && rawConnStr.includes('db.') && rawConnStr.includes('.supabase.co')) {
+  const match = rawConnStr.match(/db\.([a-z0-9]+)\.supabase\.co/);
+  if (match) {
+    const projectRef = match[1];
+    rawConnStr = rawConnStr
+      .replace(`@db.${projectRef}.supabase.co:5432`, `@aws-0-ap-southeast-1.pooler.supabase.com:5432`)
+      .replace(`@db.${projectRef}.supabase.co`, `@aws-0-ap-southeast-1.pooler.supabase.com:5432`);
+    if (!rawConnStr.includes(`.${projectRef}:`)) {
+      rawConnStr = rawConnStr.replace(/:\/\/(.*?):/, `://$1.${projectRef}:`);
+    }
+  }
+}
+
+const connectionString = rawConnStr;
 
 export const pool = new Pool({
   connectionString,
@@ -139,6 +155,119 @@ export async function initDb(): Promise<void> {
           sosial_media JSONB DEFAULT '{}'::jsonb,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS active_students (
+          id SERIAL PRIMARY KEY,
+          school_id TEXT,
+          calon_siswa_id INTEGER,
+          nama VARCHAR(255) NOT NULL,
+          nisn VARCHAR(50),
+          nik VARCHAR(50),
+          tempat_lahir VARCHAR(100),
+          tgl_lahir VARCHAR(50),
+          jenis_kelamin VARCHAR(10),
+          agama VARCHAR(50),
+          kewarganegaraan VARCHAR(100),
+          alamat TEXT,
+          rt_rw VARCHAR(50),
+          kelurahan VARCHAR(100),
+          kecamatan VARCHAR(100),
+          kode_pos VARCHAR(20),
+          whatsapp VARCHAR(50),
+          email VARCHAR(100),
+          tinggal_dengan VARCHAR(100),
+          transportasi VARCHAR(100),
+          tinggi_badan NUMERIC DEFAULT 0,
+          berat_badan NUMERIC DEFAULT 0,
+          jarak_sekolah VARCHAR(100),
+          jarak_km NUMERIC DEFAULT 0,
+          waktu_jam NUMERIC DEFAULT 0,
+          waktu_menit NUMERIC DEFAULT 0,
+          jumlah_saudara INTEGER DEFAULT 0,
+          golongan_darah VARCHAR(10),
+          penyakit_diderita TEXT,
+          kebutuhan_khusus TEXT,
+          punya_kps VARCHAR(10),
+          no_kps VARCHAR(50),
+          punya_kip VARCHAR(10),
+          no_kip VARCHAR(50),
+          jenis_prestasi VARCHAR(100),
+          tingkat_prestasi VARCHAR(100),
+          uraian_prestasi TEXT,
+          tahun_prestasi VARCHAR(20),
+          penyelenggara VARCHAR(150),
+          jenis_beasiswa VARCHAR(100),
+          uraian_beasiswa TEXT,
+          tahun_mulai_beasiswa VARCHAR(20),
+          tahun_selesai_beasiswa VARCHAR(20),
+          nama_ayah VARCHAR(150),
+          tempat_lahir_ayah VARCHAR(100),
+          tgl_lahir_ayah VARCHAR(50),
+          agama_ayah VARCHAR(50),
+          kewarganegaraan_ayah VARCHAR(100),
+          pendidikan_ayah VARCHAR(100),
+          pekerjaan_ayah VARCHAR(100),
+          penghasilan_ayah VARCHAR(100),
+          alamat_ayah TEXT,
+          rtrw_ayah VARCHAR(50),
+          kelurahan_ayah VARCHAR(100),
+          kecamatan_ayah VARCHAR(100),
+          kode_pos_ayah VARCHAR(20),
+          status_ayah VARCHAR(50),
+          nama_ibu VARCHAR(150),
+          tempat_lahir_ibu VARCHAR(100),
+          tgl_lahir_ibu VARCHAR(50),
+          agama_ibu VARCHAR(50),
+          kewarganegaraan_ibu VARCHAR(100),
+          pendidikan_ibu VARCHAR(100),
+          pekerjaan_ibu VARCHAR(100),
+          penghasilan_ibu VARCHAR(100),
+          alamat_ibu TEXT,
+          rtrw_ibu VARCHAR(50),
+          kelurahan_ibu VARCHAR(100),
+          kecamatan_ibu VARCHAR(100),
+          kode_pos_ibu VARCHAR(20),
+          status_ibu VARCHAR(50),
+          nama_wali VARCHAR(150),
+          tempat_lahir_wali VARCHAR(100),
+          tgl_lahir_wali VARCHAR(50),
+          agama_wali VARCHAR(50),
+          kewarganegaraan_wali VARCHAR(100),
+          pendidikan_wali VARCHAR(100),
+          pekerjaan_wali VARCHAR(100),
+          penghasilan_wali VARCHAR(100),
+          alamat_wali TEXT,
+          rtrw_wali VARCHAR(50),
+          kelurahan_wali VARCHAR(100),
+          kecamatan_wali VARCHAR(100),
+          kode_pos_wali VARCHAR(20),
+          status_wali VARCHAR(50),
+          telepon_ortu VARCHAR(50),
+          sekolah_asal VARCHAR(150),
+          tgl_lulus VARCHAR(50),
+          no_ijazah VARCHAR(100),
+          no_skhun VARCHAR(100),
+          no_peserta_un VARCHAR(100),
+          lama_belajar VARCHAR(50),
+          pindahan_dari VARCHAR(150),
+          alasan_pindah TEXT,
+          diterima_kelas VARCHAR(100),
+          diterima_tanggal VARCHAR(50),
+          jurusan VARCHAR(150),
+          alasan_memilih TEXT,
+          cita_cita VARCHAR(100),
+          hobi VARCHAR(100),
+          nilai_us_teori NUMERIC,
+          nilai_us_praktik NUMERIC,
+          nilai_muatan_lokal NUMERIC,
+          kesulitan_belajar TEXT,
+          pelajaran_disenangi VARCHAR(100),
+          cita_cita_setelah_lulus VARCHAR(150),
+          periode VARCHAR(50),
+          gelombang VARCHAR(50),
+          nipd VARCHAR(50),
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
       `);
 

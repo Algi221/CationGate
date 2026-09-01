@@ -82,6 +82,8 @@ Akses URL: `https://cationgate.site/gatekeeper/login` (atau `http://localhost:30
 | `husein` | `husein@cationgate.id` | Gatekeeper Admin | Verification & Operations Admin |
 | `uno` | `uno@cationgate.id` | Gatekeeper Admin | Platform Security Monitor |
 
+Semua akun diatas pwnya : cihuahua123 (untuk approve verifikasi sekolah) 
+Kalau mau denger notif login gatekeeper untuk mantau siapa yang login bisa masuk channel TELEGRAM ini https://t.me/+My3xvcqZM6cyYTVl
 ---
 
 ### 2. Akun Khusus Pengujian Keamanan & QA (Pentester Account)

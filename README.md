@@ -65,11 +65,11 @@
   12. Penilaian Budi Pekerti
   13. Review & Konfirmasi Formulir
   14. Pembayaran
-* **Invoice & Payment Gateway**: Integrasi gateway pembayaran Midtrans dan upload bukti transfer manual dengan status real-time.
+* **Invoice & Pembayaran Siswa**: Pembayaran biaya pendaftaran siswa dilakukan secara fleksibel melalui **Transfer Bank Manual** (upload bukti transfer/resi) atau **Bayar Tunai/Cash** langsung di loket pendaftaran sekolah yang diverifikasi langsung oleh panitia PPDB.
 * **Auto-Draft & Hydration**: Progres input siswa tersimpan otomatis di browser (`localStorage`) sehingga tidak hilang jika koneksi terputus.
 
 ### 3. Dashboard Admin Sekolah
-* **Manajemen Calon Siswa**: Verifikasi berkas, persetujuan (*approve*), penolakan (*reject*) dengan alasan, serta unduh rekap data Excel/PDF.
+* **Manajemen Calon Siswa**: Verifikasi berkas, persetujuan (*approve*), penolakan (*reject*) dengan alasan, konfirmasi bukti transfer/pembayaran cash, serta unduh rekap data Excel/PDF.
 * **Kontrol Pendaftaran Publik**: Saklar Buka/Tutup (*Open/Closed*) gelombang pendaftaran secara instan.
 * **Pembagian Kelas / Rombel**: Pengelompokan siswa baru ke dalam rombel secara otomatis atau manual.
 * **Kelola Informasi & Forum**: Publikasi artikel, pengumuman berkas PDF/Video/Foto resmi sekolah.
@@ -77,7 +77,7 @@
 
 ### 4. Portal Pusat Superadmin: Gatekeeper
 * **Verifikasi Legalitas Sekolah**: Menyetujui atau menolak pendaftaran sekolah baru berdasarkan SK Izin Operasional dan data pokok NPSN.
-* **Manajemen Berlangganan (SaaS Subscription)**: Monitoring paket aktif (Starter, Pro, Enterprise), mutasi transaksi, dan invoice.
+* **Manajemen Berlangganan (SaaS Subscription)**: Monitoring paket aktif (Starter, Pro, Enterprise), mutasi transaksi langganan sekolah via Midtrans, dan invoice.
 * **System Telemetry & Security**: Monitoring kesehatan database, status cache Redis, audit log per aksi, hingga saklar *Maintenance Mode* global.
 * **Telegram Bot Notifier**: Notifikasi otomatis ke tim superadmin untuk setiap login gatekeeper dan aktivitas penting.
 
@@ -134,7 +134,7 @@ Diagram ini menggambarkan interaksi dari peramban pengguna, *Edge Ingress*, Serv
 │  │ ├── /config          : Landing page UI builder & school master data                  │   │
 │  │ ├── /chatbot         : AI knowledge retrieval & natural language responses           │   │
 │  │ ├── /gatekeeper      : SaaS subscriptions, school verifications & platform telemetry │   │
-│  │ ├── /payment         : Midtrans Snap Token & asynchronous Webhook handler            │   │
+│  │ ├── /payment         : Midtrans Snap Token (SaaS Subscription Sekolah) & Invoice     │   │
 │  │ ├── /siswa-aktif     : Class distribution (rombel) & student archive migration       │   │
 │  │ └── /storage         : Cloud document uploads, receipt proofs & image compression    │   │
 │  └──────────────────────────────────────────────────────────────────────────────────────┘   │
@@ -145,7 +145,7 @@ Diagram ini menggambarkan interaksi dari peramban pengguna, *Edge Ingress*, Serv
 │                                                                                             │
 │   ┌──────────────────────────┐  ┌──────────────────────────┐  ┌──────────────────────────┐  │
 │   │   Supabase PostgreSQL    │  │    Upstash Redis Cache   │  │   Third-Party Services   │  │
-│   │  - Row Level Security    │  │  - School UI Caching     │  │  - Midtrans (Payment)    │  │
+│   │  - Row Level Security    │  │  - School UI Caching     │  │  - Midtrans (SaaS Pay)   │  │
 │   │  - Multi-Tenant UUID     │  │  - Rate Limit Tokens     │  │  - Telegram Bot API      │  │
 │   │  - Pooler Connection     │  │  - Fast Read Latency     │  │  - Resend / Nodemailer   │  │
 │   └──────────────────────────┘  └──────────────────────────┘  └──────────────────────────┘  │
@@ -156,7 +156,7 @@ Diagram ini menggambarkan interaksi dari peramban pengguna, *Edge Ingress*, Serv
 
 ### 2. Alur Pendaftaran Siswa 14 Langkah (Workflow Diagram)
 
-Diagram ini merinci tahapan pengisian formulir terpadu hingga pencetakan kartu tanda bukti pendaftaran:
+Diagram ini merinci tahapan pengisian formulir terpadu hingga verifikasi pembayaran manual/tunai dan pencetakan kartu tanda bukti pendaftaran:
 
 ```mermaid
 graph TD
@@ -173,14 +173,14 @@ graph TD
     F --> G[Step 11-12: Peminatan Jurusan & Budi Pekerti]:::process
     G --> H[Step 13: Konfirmasi & Review Formulir]:::process
     
-    H --> I{Pilihan Jalur Pembayaran}:::payment
-    I -- Gateway Otomatis --> J[Midtrans Snap: QRIS / VA / E-Wallet]:::payment
-    I -- Transfer Manual --> K[Upload Bukti Transfer Bank]:::payment
+    H --> I{Pilihan Metode Pembayaran Siswa}:::payment
+    I -- Transfer Bank Manual --> J[Upload Bukti Transfer / Resi ATM]:::payment
+    I -- Bayar Tunai di Sekolah --> K[Bayar Cash Langsung di Loket PPDB Sekolah]:::payment
 
-    J --> L[Webhook Midtrans Verifikasi Status]:::payment
-    K --> M[Verifikasi Manual oleh Admin Sekolah]:::process
+    J --> L[Verifikasi Bukti Transfer oleh Panitia PPDB Sekolah]:::process
+    K --> M[Verifikasi & Konfirmasi Pembayaran Tunai oleh Panitia]:::process
 
-    L --> N([Pendaftaran Diterima & Cetak Kartu PDF]):::success
+    L --> N([Pendaftaran Diterima & Cetak Kartu Ujian PDF]):::success
     M --> N
     N --> O[Penempatan Rombel / Pembagian Kelas]:::process
     O --> P([Migrasi ke Data Siswa Aktif]):::success
@@ -236,7 +236,7 @@ Setiap entri calon siswa memiliki transisi status (*state machine*) yang terstru
                                              └───────┬───────┘
                                                      │
                              ┌───────────────────────┴───────────────────────┐
-                             ▼ (Midtrans Callback / Admin ACC)               ▼ (Kadaluarsa / Dibatalkan)
+                             ▼ (Upload Bukti / Bayar Tunai di Loket)          ▼ (Batal / Tidak Valid)
                      ┌───────────────┐                               ┌───────────────┐
                      │ PAYMENT PAID  │                               │PAYMENT EXPIRED│
                      └───────┬───────┘                               └───────────────┘
@@ -280,10 +280,10 @@ Setiap entri calon siswa memiliki transisi status (*state machine*) yang terstru
                               ▼
      [ Akun Aktif: 30-Day Free Trial ]
                               │
-                              ├─── Berlangganan Paket SaaS (Starter / Pro / Enterprise)
+                              ├─── Berlangganan Paket Premium SaaS Sekolah (Starter / Pro / Enterprise)
                               │        │
-                              │        ▼
-                              │    [ Active Subscription (Fitur Penuh & Kuota Terbuka) ]
+                              │        ▼ (Pembayaran Otomatis via Midtrans: QRIS / VA / E-Wallet)
+                              │    [ Active Subscription (Fitur Penuh & Kuota Siswa Terbuka) ]
                               │        │
                               │        ▼
                               └─── Masa Trial / Paket Habis
@@ -319,11 +319,11 @@ Berikut adalah panduan lengkap setiap modul dan file penting dalam proyek Cation
 * **`forum/` & `blog/`**: Portal pengumuman resmi dan artikel edukasi sekolah.
 * **`daftar/`**: Wizard pendaftaran online 14 langkah berstandar Dapodik.
 * **`status/` & `data-pendaftar/`**: Pengecekan mandiri status kelulusan berkas calon siswa menggunakan NISN/NIK.
-* **`kartu-pendaftaran/` & `invoice/`**: Cetak kartu tanda peserta ujian (PDF) dan tagihan pembayaran Midtrans.
+* **`kartu-pendaftaran/` & `invoice/`**: Cetak kartu tanda peserta ujian (PDF) dan invoice tagihan pendaftaran siswa (Transfer manual / Cash).
 * **`dashboard/`**: Panel kendali lengkap bagi staf & admin sekolah:
   * `kelola-ui/`: No-code visual editor untuk mengatur tata letak, warna, dan konten landing page.
   * `profil-sekolah/`: Manajemen informasi legalitas NPSN, alamat, koordinat peta, dan profil pimpinan.
-  * `pendaftar/` & `verifikasi-berkas/`: Tabel manajemen verifikasi berkas pendaftar (Setujui / Tolak dengan catatan).
+  * `pendaftar/` & `verifikasi-berkas/`: Tabel manajemen verifikasi berkas pendaftar & konfirmasi bukti transfer/cash (Setujui / Tolak dengan catatan).
   * `pembagian-kelas/`: Fitur penempatan rombel kelas siswa baru secara otomatis maupun manual.
   * `siswa-aktif/`: Arsip master database siswa yang telah aktif bersekolah.
   * `jalur-pendaftaran/` & `kuota/`: Pengaturan gelombang dan kuota penerimaan per jurusan.
@@ -335,7 +335,7 @@ Berikut adalah panduan lengkap setiap modul dan file penting dalam proyek Cation
 * **`login/`**: Otentikasi superadmin dengan proteksi brute-force, audit log IP, dan notifikasi Telegram Bot instan.
 * **`dashboard/`**:
   * **Schools Overview**: Verifikasi SK izin operasional dan legalitas sekolah pendaftar baru.
-  * **Billing & Plans**: Monitoring transaksi mutasi paket SaaS (Starter, Pro, Enterprise).
+  * **Billing & Plans**: Monitoring transaksi mutasi paket langganan SaaS via Midtrans (Starter, Pro, Enterprise).
   * **System Telemetry**: Monitoring latensi database PostgreSQL, kesehatan memori Redis, dan throughput request API.
 
 ---
@@ -356,14 +356,14 @@ Seluruh business logic backend ditenagai oleh **Hono Framework Monolith API** ya
 | Nama File Route | Endpoint Basis | Deskripsi Fungsionalitas |
 | :--- | :--- | :--- |
 | **[`auth.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/auth.ts)** | `/api/auth` | Login multi-role (Gatekeeper, Admin Sekolah, Siswa), registrasi sekolah baru, reset password, dan penerbitan JWT cookie. |
-| **[`applicants.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/applicants.ts)** | `/api/applicants` | CRUD pendaftaran siswa 14-langkah, verifikasi kelulusan berkas, export Excel/PDF, dan status tracking. |
-| **[`config.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/config.ts)** | `/api/config` | Pengambilan & pembaruan data landing page dinamis, jurusan, FAQ, alur, dan sinkronisasi cache Redis. |
+| **[`applicants.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/applicants.ts)** | `/api/applicants` | CRUD pendaftaran siswa 14-langkah, verifikasi kelulusan berkas & pembayaran manual/cash, export Excel/PDF, dan status tracking. |
+| **[`config.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/config.ts)** | `/api/config` | Pengambilan & pembaruan data landing page dinamis, jurusan, FAQ, alur, rekening sekolah, dan sinkronisasi cache Redis. |
 | **[`chatbot.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/chatbot.ts)** | `/api/chatbot` | Layanan tanya-jawab AI interaktif untuk calon siswa berdasarkan profil dan aturan sekolah. |
 | **[`gatekeeper.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/gatekeeper.ts)** | `/api/gatekeeper` | Audit platform, approval sekolah, monitoring log sistem, pengaturan kuota global, dan telemetri server. |
 | **[`saas.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/saas.ts)** | `/api/saas` | Pengelolaan tier berlangganan, pembatasan kuota siswa per tier, dan riwayat faktur tagihan sekolah. |
-| **[`payment.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/payment.ts)** | `/api/payment` | Pembuatan token pembayaran Midtrans Snap, Webhook notification listener, dan konfirmasi bukti manual. |
+| **[`payment.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/payment.ts)** | `/api/payment` | Integrasi Payment Gateway Midtrans (Snap Token & Webhook) untuk pembayaran paket SaaS premium sekolah serta pencatatan invoice. |
 | **[`siswa-aktif.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/siswa-aktif.ts)** | `/api/siswa-aktif` | Manajemen rombongan belajar (rombel), mutasi siswa, dan pencatatan NIS/NISN aktif. |
-| **[`storage.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/storage.ts)** | `/api/storage` | Upload dokumen aman (Ijazah, KK, Akta, Pas Foto, Bukti Bayar) ke Supabase Storage Bucket. |
+| **[`storage.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/storage.ts)** | `/api/storage` | Upload dokumen aman (Ijazah, KK, Akta, Pas Foto, Bukti Transfer) ke Supabase Storage Bucket. |
 | **[`informasi.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/informasi.ts)** | `/api/informasi` | Publikasi artikel pengumuman, berita sekolah, dan lampiran PDF publik. |
 | **[`school-profile.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/school-profile.ts)** | `/api/school-profile`| Manajemen data pimpinan sekolah, struktur organisasi, dan sejarah instansi. |
 | **[`kuota.ts`](file:///d:/Website%20Project/CationGate/src/server/routes/kuota.ts)** | `/api/kuota` | Konfigurasi kuota per jurusan dan pemantauan sisa kapasitas pendaftar secara realtime. |
@@ -402,7 +402,7 @@ Seluruh business logic backend ditenagai oleh **Hono Framework Monolith API** ya
 Dibangun dengan mematuhi **Anti-AI Slop Standards** dan **Clean B2B Enterprise UI (Stripe / Vercel style)**:
 * **`components/ui/`**: Primitif UI berbasis `shadcn/ui` & Radix UI (Button, Dialog, Dropdown, Table, Accordion, Badge, Tooltip).
 * **`components/landing/`**: Komponen modular landing page sekolah (Hero Section, Jurusan Showcase, Alur Pendaftaran, FAQ Accordion, Testimoni).
-* **`components/features/`**: Komponen interaktif khusus seperti Chatbot AI Widget, Floating CTA, Upload Berkas Dropzone, dan PDF Registration Card Preview.
+* **`components/features/`**: Komponen interaktif khusus seperti Chatbot AI Widget, Floating CTA, Upload Bukti Transfer Dropzone, dan PDF Registration Card Preview.
 
 ---
 
@@ -419,7 +419,7 @@ Dibangun dengan mematuhi **Anti-AI Slop Standards** dan **Clean B2B Enterprise U
 | **Caching Layer** | **Upstash Redis** | Caching konfigurasi landing page untuk performa loading instan |
 | **Security & Auth** | **JWT & Bcrypt** | Autentikasi terenkripsi dengan rate limiter (`authLimiter`) |
 | **Security Scanner** | **Snyk Code Analysis** | 0 Vulnerabilities terverifikasi pada codebase |
-| **Payment Gateway** | **Midtrans** | Pembayaran otomatis QRIS, Virtual Account, & Bank Transfer |
+| **Payment Gateway** | **Midtrans** | Pembayaran otomatis paket langganan SaaS premium sekolah (QRIS, Virtual Account, & E-Wallet) |
 | **Notifications** | **Telegram Bot API & Resend** | Notifikasi real-time via Telegram dan email transaksional |
 
 ---
@@ -448,7 +448,7 @@ Akun ini disediakan khusus untuk keperluan **Security Audit, QA Testing, dan Pen
 * **Username**: `pentester` *(atau `gatekeeper_test`)*
 * **Email**: `pentester@cationgate.id`
 * **Password**: `CationGate2026!` *(atau `cihuahua123`)*
-* **Scope Akses**: Akses penuh ke Gatekeeper Dashboard untuk menguji endpoint verifikasi sekolah, audit log, manajemen transaksi, dan monitoring multi-tenant.
+* **Scope Akses**: Akses penuh ke Gatekeeper Dashboard untuk menguji endpoint verifikasi sekolah, audit log, manajemen transaksi langganan SaaS, dan monitoring multi-tenant.
 
 ---
 

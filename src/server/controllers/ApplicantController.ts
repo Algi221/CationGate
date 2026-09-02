@@ -38,7 +38,7 @@ export class ApplicantController {
       const statusPreference = body.statusPreference || 'random';
 
       const result = await ApplicantService.generateDummyApplicants(schoolId, count, statusPreference, authToken);
-      return c.json(result, result.statusCode as any);
+      return c.json(result, (result.statusCode as 200) || 200);
     } catch (err: unknown) {
       console.error('Generate dummy applicants error:', err);
       return c.json({ success: false, message: 'Gagal membuat calon siswa dummy: ' + ((err as Error)?.message || String(err)) }, 500);

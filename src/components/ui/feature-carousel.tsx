@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface CardProps {

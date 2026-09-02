@@ -29,7 +29,7 @@ const SCHOOLS_ORIGIN = [
   "SMP IT Nurul Fikri", "SMPN 1 Cibinong", "SMP Mardi Yuana"
 ];
 
-const TRANSFER_ORIGINS = [
+const _TRANSFER_ORIGINS = [
   "SMK Negeri 1 Jakarta",
   "SMA Negeri 8 Jakarta",
   "SMK Telkom Sandhy Putra",
@@ -37,14 +37,14 @@ const TRANSFER_ORIGINS = [
   "SMK Negeri 2 Depok",
   "SMA Labschool Cibubur",
   "SMK Taruna Terpadu 1",
-  "SMA Negeri 3 Bekasi"
+  "SMA Negeri 3 Bekasi",
 ];
 
-const TRANSFER_REASONS = [
+const _TRANSFER_REASONS = [
   "Mengikuti perpindahan dinas tugas kerja orang tua ke wilayah Depok",
   "Penyesuaian kurikulum peminatan kejuruan vokasi industri",
   "Pindah domisili keluarga dari luar daerah ke Kota Depok",
-  "Mencari program vokasi yang memiliki kerja sama sertifikasi industri"
+  "Mencari program vokasi yang memiliki kerja sama sertifikasi industri",
 ];
 
 export function generateDemoApplicants(): PPDBApplicant[] {

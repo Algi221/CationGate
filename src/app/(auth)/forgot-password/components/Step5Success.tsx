@@ -10,7 +10,7 @@ export const Step5Success: React.FC = () => {
 
   return (
     <motion.div
-      key="step5"
+      key="step4-success"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className="text-center py-4 space-y-4"
@@ -33,7 +33,7 @@ export const Step5Success: React.FC = () => {
           onClick={() => router.push("/login")}
           className="w-full h-12 rounded-xl bg-[#FFC000] hover:bg-[#F3C625] text-slate-950 font-black text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.99]"
         >
-          <span>Masuk ke Dashboard</span>
+          <span>Masuk ke Akun (Login)</span>
           <ArrowRight className="w-4 h-4 text-slate-950" />
         </button>
       </div>

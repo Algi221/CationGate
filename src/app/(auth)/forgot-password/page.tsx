@@ -7,7 +7,6 @@ import { ForgotPasswordHeader } from "./components/ForgotPasswordHeader";
 import { ForgotPasswordBanner } from "./components/ForgotPasswordBanner";
 import { Step1RequestOtp } from "./components/Step1RequestOtp";
 import { Step2VerifyOtp } from "./components/Step2VerifyOtp";
-import { Step3ActionChoice } from "./components/Step3ActionChoice";
 import { Step4ResetPassword } from "./components/Step4ResetPassword";
 import { Step5Success } from "./components/Step5Success";
 
@@ -34,9 +33,6 @@ export default function ForgotPasswordPage() {
     setSuccessMsg,
     cooldown,
     isMobile,
-    sessionToken,
-    adminUser,
-    schoolSlug,
     handleSendOTP,
     handleResendOTP,
     handleVerifyOTP,
@@ -110,20 +106,6 @@ export default function ForgotPasswordPage() {
               )}
 
               {step === 3 && (
-                <Step3ActionChoice
-                  email={email}
-                  sessionToken={sessionToken}
-                  adminUser={adminUser}
-                  schoolSlug={schoolSlug}
-                  onProceedToReset={() => {
-                    setErrorMsg("");
-                    setSuccessMsg("");
-                    setStep(4);
-                  }}
-                />
-              )}
-
-              {step === 4 && (
                 <Step4ResetPassword
                   email={email}
                   newPassword={newPassword}
@@ -137,14 +119,14 @@ export default function ForgotPasswordPage() {
                   errorMsg={errorMsg}
                   loading={loading}
                   onResetPassword={handleResetPassword}
-                  onBackToChoices={() => {
+                  onBackToOtp={() => {
                     setErrorMsg("");
-                    setStep(3);
+                    setStep(2);
                   }}
                 />
               )}
 
-              {step === 5 && <Step5Success />}
+              {step === 4 && <Step5Success />}
             </AnimatePresence>
           </div>
         </div>

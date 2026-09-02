@@ -18,7 +18,7 @@ interface Step4ResetPasswordProps {
   errorMsg: string;
   loading: boolean;
   onResetPassword: (e: React.FormEvent) => void;
-  onBackToChoices: () => void;
+  onBackToOtp?: () => void;
 }
 
 export const Step4ResetPassword: React.FC<Step4ResetPasswordProps> = ({
@@ -34,11 +34,11 @@ export const Step4ResetPassword: React.FC<Step4ResetPasswordProps> = ({
   errorMsg,
   loading,
   onResetPassword,
-  onBackToChoices
+  onBackToOtp
 }) => {
   return (
     <motion.div
-      key="step4"
+      key="step3-reset"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
@@ -52,7 +52,7 @@ export const Step4ResetPassword: React.FC<Step4ResetPasswordProps> = ({
           Buat Kata Sandi Baru
         </h1>
         <p className="mt-1 text-xs text-slate-500 font-medium">
-          Masukkan kata sandi baru yang kuat untuk akun <strong className="text-slate-800">{email}</strong>.
+          Masukkan kata sandi baru untuk akun <strong className="text-slate-800">{email}</strong>.
         </p>
       </div>
 
@@ -137,18 +137,20 @@ export const Step4ResetPassword: React.FC<Step4ResetPasswordProps> = ({
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4 text-slate-950" />
-                <span>Simpan Kata Sandi Baru</span>
+                <span>Simpan Kata Sandi & Selesai</span>
               </>
             )}
           </button>
 
-          <button
-            type="button"
-            onClick={onBackToChoices}
-            className="w-full p-2.5 text-xs text-slate-500 hover:text-slate-700 font-semibold cursor-pointer text-center transition-colors"
-          >
-            &larr; Pilihan opsi lain
-          </button>
+          {onBackToOtp && (
+            <button
+              type="button"
+              onClick={onBackToOtp}
+              className="w-full p-2.5 text-xs text-slate-500 hover:text-slate-700 font-semibold cursor-pointer text-center transition-colors"
+            >
+              &larr; Ubah Kode OTP
+            </button>
+          )}
         </div>
       </form>
     </motion.div>

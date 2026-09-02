@@ -20,7 +20,7 @@ export const passwordSchema = z.object({
 });
 
 export function useForgotPassword() {
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -182,7 +182,7 @@ export function useForgotPassword() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setStep(5);
+        setStep(4);
       } else {
         setErrorMsg(data.message || "Gagal memperbarui kata sandi.");
       }

@@ -1,37 +1,18 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { usePPDB, DEMO_TRASHED_APPLICANTS_SEED } from "@/context/PPDBContext";
-import Swal from "sweetalert2";
-import { Applicant, EditFormState, BSTNode, PendaftarPageTab } from "../types";
+import { usePPDB } from "@/context/PPDBContext";
+import { Applicant, BSTNode, PendaftarPageTab } from "../types";
 import { exportApplicantsToExcel } from "../utils/exportExcel";
 import { useSchoolHref } from "@/hooks/useSchoolHref";
-
-function bstInsert(root: BSTNode | null, node: BSTNode): BSTNode {
-  if (!root) return node;
-  if (node.key < root.key) root.left = bstInsert(root.left, node);
-  else root.right = bstInsert(root.right, node);
-  return root;
-}
-
-function bstSearch(
-  root: BSTNode | null,
-  query: string,
-  results: number[],
-): void {
-  if (!root) return;
-  bstSearch(root.left, query, results);
-  if (root.key.includes(query)) results.push(root.id);
-  bstSearch(root.right, query, results);
-}
-
-function buildKey(a: Applicant): string {
-  const initial = (a.nama || "").trim().charAt(0).toLowerCase();
-  const jurusan = (a.jurusan_1 || a.jurusan1 || "").toLowerCase();
-  const sekolah = (a.sekolah_asal || a.sekolahAsal || "").toLowerCase();
-  return `${initial}|${jurusan}|${sekolah}`;
-}
+import {
+  bstInsert,
+  bstSearch,
+  buildKey,
+} from "../utils/pendaftarBstSearch";
+import { usePendaftarTrash } from "./usePendaftarTrash";
+import { usePendaftarEditModal } from "./usePendaftarEditModal";
 
 export function usePendaftarState() {
   const {
@@ -73,176 +54,32 @@ export function usePendaftarState() {
   const activeTabParam = searchParams.get("tab") || "active";
   const activePageTab = activeTabParam as PendaftarPageTab;
 
-  const [trashedApplicants, setTrashedApplicants] = useState<Applicant[]>([]);
-  const [trashLoading, setTrashLoading] = useState<boolean>(false);
-  const [trashError, setTrashError] = useState<string>("");
-  const [trashSuccess, setTrashSuccess] = useState<string>("");
-
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "";
   const { href } = useSchoolHref();
+
+  // Sub-hook: Trash management
+  const {
+    trashedApplicants,
+    trashLoading,
+    trashError,
+    trashSuccess,
+    setTrashError,
+    setTrashSuccess,
+    fetchTrashedApplicants,
+    handleRestoreApplicant,
+    handlePermanentDeleteApplicant,
+  } = usePendaftarTrash({
+    isDemoMode,
+    schoolSlug,
+    setApplicants,
+    fetchAdminApplicants,
+  });
 
   const handleTabChange = (tab: PendaftarPageTab) => {
     setTrashError("");
     setTrashSuccess("");
     router.push(href(`/dashboard/pendaftar?tab=${tab}`));
-  };
-
-  const fetchTrashedApplicants = useCallback(async () => {
-    const isDemo =
-      isDemoMode ||
-      schoolSlug === "demo" ||
-      (typeof window !== "undefined" &&
-        window.location.pathname.includes("/demo"));
-    if (isDemo) {
-      setTrashLoading(false);
-      setTrashError("");
-      try {
-        const local =
-          typeof window !== "undefined"
-            ? localStorage.getItem("demo_trashed_applicants")
-            : null;
-        if (local) {
-          const parsed = JSON.parse(local);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setTrashedApplicants(parsed);
-            return;
-          }
-        }
-        setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            "demo_trashed_applicants",
-            JSON.stringify(DEMO_TRASHED_APPLICANTS_SEED),
-          );
-        }
-      } catch (_e) {
-        setTrashedApplicants(DEMO_TRASHED_APPLICANTS_SEED);
-      }
-      return;
-    }
-
-    try {
-      setTrashLoading(true);
-      setTrashError("");
-      const token = localStorage.getItem("ppdb_admin_token");
-      const res = await fetch(`/api/applicants/trashed`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setTrashedApplicants(data.data);
-      } else {
-        setTrashError(
-          data.message || "Gagal mengambil data pendaftar terhapus",
-        );
-      }
-    } catch (err: unknown) {
-      setTrashError(
-        err instanceof Error ? err.message : "Terjadi kesalahan koneksi",
-      );
-    } finally {
-      setTrashLoading(false);
-    }
-  }, [isDemoMode, schoolSlug]);
-
-  const handleRestoreApplicant = async (id: number) => {
-    if (isDemoMode || schoolSlug === "demo") {
-      try {
-        setTrashLoading(true);
-        const itemToRestore = trashedApplicants.find((a) => a.id === id);
-        const remaining = trashedApplicants.filter((a) => a.id !== id);
-        setTrashedApplicants(remaining);
-        localStorage.setItem(
-          "demo_trashed_applicants",
-          JSON.stringify(remaining),
-        );
-
-        if (itemToRestore) {
-          setApplicants((prev) => [itemToRestore, ...prev]);
-        }
-        setTrashSuccess("Data calon siswa berhasil dipulihkan (Demo)!");
-      } catch (_e) {
-        setTrashError("Gagal memulihkan data demo");
-      } finally {
-        setTrashLoading(false);
-      }
-      return;
-    }
-
-    try {
-      setTrashLoading(true);
-      setTrashError("");
-      setTrashSuccess("");
-      const token = localStorage.getItem("ppdb_admin_token");
-      const res = await fetch(`/api/applicants/${id}/restore`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setTrashSuccess("Data calon siswa berhasil dipulihkan!");
-        fetchTrashedApplicants();
-        if (fetchAdminApplicants) await fetchAdminApplicants();
-      } else {
-        setTrashError(data.message || "Gagal memulihkan data");
-      }
-    } catch (err: unknown) {
-      setTrashError(
-        err instanceof Error ? err.message : "Terjadi kesalahan koneksi",
-      );
-    } finally {
-      setTrashLoading(false);
-    }
-  };
-
-  const handlePermanentDeleteApplicant = async (id: number) => {
-    const result = await Swal.fire({
-      title: "Konfirmasi",
-      text: "Apakah Anda yakin ingin menghapus data calon siswa ini secara PERMANEN? Tindakan ini tidak dapat dibatalkan!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya",
-      cancelButtonText: "Batal",
-    });
-    if (!result.isConfirmed) return;
-
-    if (isDemoMode || schoolSlug === "demo") {
-      const remaining = trashedApplicants.filter((a) => a.id !== id);
-      setTrashedApplicants(remaining);
-      localStorage.setItem(
-        "demo_trashed_applicants",
-        JSON.stringify(remaining),
-      );
-      setTrashSuccess(
-        "Data calon siswa berhasil dihapus secara permanen (Demo).",
-      );
-      return;
-    }
-
-    try {
-      setTrashLoading(true);
-      setTrashError("");
-      setTrashSuccess("");
-      const token = localStorage.getItem("ppdb_admin_token");
-      const res = await fetch(`/api/applicants/${id}?permanent=true`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setTrashSuccess("Data calon siswa berhasil dihapus secara permanen.");
-        fetchTrashedApplicants();
-      } else {
-        setTrashError(data.message || "Gagal menghapus data");
-      }
-    } catch (err: unknown) {
-      setTrashError(
-        err instanceof Error ? err.message : "Terjadi kesalahan koneksi",
-      );
-    } finally {
-      setTrashLoading(false);
-    }
   };
 
   useEffect(() => {
@@ -273,9 +110,18 @@ export function usePendaftarState() {
     }
   };
 
-  const [editApplicant, setEditApplicant] = useState<Applicant | null>(null);
-  const [editForm, setEditForm] = useState<Partial<EditFormState>>({});
-  const [isSaving, setIsSaving] = useState<boolean>(false);
+  // Sub-hook: Edit modal form
+  const {
+    editApplicant,
+    setEditApplicant,
+    editForm,
+    setEditForm,
+    isSaving,
+    openEdit,
+    handleEditSave,
+  } = usePendaftarEditModal({
+    updateApplicant,
+  });
 
   const [isSpreadsheetMode, setIsSpreadsheetMode] = useState<boolean>(false);
   const [activeCell, setActiveCell] = useState<{
@@ -283,56 +129,13 @@ export function usePendaftarState() {
     col: number;
   } | null>(null);
 
-  const openEdit = (a: Applicant) => {
-    setEditApplicant(a);
-    setEditForm({
-      nama: a.nama || "",
-      nisn: a.nisn || "",
-      nik: a.nik || "",
-      tempat_lahir: a.tempat_lahir || a.tempatLahir || "",
-      tgl_lahir: a.tgl_lahir || a.tglLahir || "",
-      jenis_kelamin: a.jenis_kelamin || a.jenisKelamin || "",
-      agama: a.agama || "",
-      alamat: a.alamat || "",
-      rt_rw: a.rt_rw || a.rtRw || "",
-      kelurahan: a.kelurahan || "",
-      kecamatan: a.kecamatan || "",
-      kode_pos: a.kode_pos || a.kodePos || "",
-      whatsapp: a.whatsapp || "",
-      email: a.email || "",
-      tinggal_dengan: a.tinggal_dengan || a.tinggalDengan || "",
-      transportasi: a.transportasi || "",
-      tinggi_badan: String(a.tinggi_badan || a.tinggiBadan || ""),
-      berat_badan: String(a.berat_badan || a.beratBadan || ""),
-      golongan_darah: a.golongan_darah || a.golonganDarah || "",
-      sekolah_asal: a.sekolah_asal || a.sekolahAsal || "",
-      tgl_lulus: a.tgl_lulus || a.tglLulus || "",
-      jurusan_1: a.jurusan_1 || a.jurusan1 || "",
-      nama_ayah: a.nama_ayah || a.namaAyah || "",
-      pekerjaan_ayah: a.pekerjaan_ayah || a.pekerjaanAyah || "",
-      penghasilan_ayah: a.penghasilan_ayah || a.penghasilanAyah || "",
-      nama_ibu: a.nama_ibu || a.namaIbu || "",
-      pekerjaan_ibu: a.pekerjaan_ibu || a.pekerjaanIbu || "",
-      penghasilan_ibu: a.penghasilan_ibu || a.penghasilanIbu || "",
-      telepon_ortu: a.telepon_ortu || a.teleponOrtu || "",
-      cita_cita: a.cita_cita || a.citaCita || "",
-      alasan_memilih: a.alasan_memilih || a.alasanMemilih || "",
-    });
-  };
+  const isDemo =
+    isDemoMode ||
+    schoolSlug === "demo" ||
+    (typeof window !== "undefined" &&
+      (window.location.pathname.startsWith("/demo") ||
+        window.location.host.startsWith("demo.")));
 
-  const handleEditSave = async () => {
-    if (!editApplicant) return;
-    setIsSaving(true);
-    const res = await updateApplicant(editApplicant.id, editForm);
-    setIsSaving(false);
-    if (res?.success) {
-      setEditApplicant(null);
-    } else {
-      alert(res?.message || "Gagal menyimpan perubahan.");
-    }
-  };
-
-  const isDemo = isDemoMode || schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
   const [majorsList, setMajorsList] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("ppdb_majors_config");
@@ -340,19 +143,26 @@ export function usePendaftarState() {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.map((m: { title?: string; name?: string }) => m.title || m.name || "").filter(Boolean);
+            return parsed
+              .map(
+                (m: { title?: string; name?: string }) =>
+                  m.title || m.name || "",
+              )
+              .filter(Boolean);
           }
         } catch (_) {}
       }
     }
-    return isDemo ? [
-      "Rekayasa Perangkat Lunak",
-      "Teknik Jaringan Komputer & Telekomunikasi",
-      "Desain Komunikasi Visual",
-      "Broadcasting & Perfilman",
-      "Teknik Elektronika",
-      "Animasi",
-    ] : [];
+    return isDemo
+      ? [
+          "Rekayasa Perangkat Lunak",
+          "Teknik Jaringan Komputer & Telekomunikasi",
+          "Desain Komunikasi Visual",
+          "Broadcasting & Perfilman",
+          "Teknik Elektronika",
+          "Animasi",
+        ]
+      : [];
   });
 
   useEffect(() => {
@@ -365,23 +175,34 @@ export function usePendaftarState() {
           : `/api/config?_t=${Date.now()}`;
         const res = await fetch(url, {
           cache: "no-store",
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const json = await res.json();
         let configMajors = json.data?.ppdb_majors_config;
         if (typeof configMajors === "string") {
           try {
             configMajors = JSON.parse(configMajors);
-            if (typeof configMajors === "string") configMajors = JSON.parse(configMajors);
+            if (typeof configMajors === "string")
+              configMajors = JSON.parse(configMajors);
           } catch (_) {}
         }
-        if (json.success && Array.isArray(configMajors) && configMajors.length > 0) {
+        if (
+          json.success &&
+          Array.isArray(configMajors) &&
+          configMajors.length > 0
+        ) {
           const list = configMajors
-            .map((m: { title?: string; name?: string; code?: string }) => m.title || m.name || m.code || "")
+            .map(
+              (m: { title?: string; name?: string; code?: string }) =>
+                m.title || m.name || m.code || "",
+            )
             .filter(Boolean);
           setMajorsList(list);
           try {
-            localStorage.setItem("ppdb_majors_config", JSON.stringify(configMajors));
+            localStorage.setItem(
+              "ppdb_majors_config",
+              JSON.stringify(configMajors),
+            );
           } catch (_) {}
         } else if (!isDemoEnv) {
           setMajorsList([]);
@@ -645,7 +466,10 @@ export function usePendaftarState() {
     }
   };
 
-  const handleGenerateDummy = async (count: number = 5, statusPreference: string = "random") => {
+  const handleGenerateDummy = async (
+    count: number = 5,
+    statusPreference: string = "random",
+  ) => {
     setIsGeneratingDummy(true);
     try {
       await generateDummyApplicants(count, statusPreference);

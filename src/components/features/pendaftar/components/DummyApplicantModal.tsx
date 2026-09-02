@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Sparkles, Loader2, Users, BookOpen, CheckCircle2 } from "lucide-react";
+import { X, Loader2, Users, BookOpen, CheckCircle2, UserPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface DummyApplicantModalProps {
@@ -45,15 +45,15 @@ export const DummyApplicantModal: React.FC<DummyApplicantModalProps> = ({
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
-                <Sparkles size={20} />
+              <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-200 dark:border-blue-900/50">
+                <UserPlus size={18} />
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
-                  Tambah Calon Siswa Dummy
+                  Test Tambah Calon Siswa
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Generate data pendaftar otomatis untuk pengujian sistem
+                  Tambahkan contoh data pendaftar untuk simulasi sistem
                 </p>
               </div>
             </div>
@@ -86,12 +86,12 @@ export const DummyApplicantModal: React.FC<DummyApplicantModalProps> = ({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-amber-600 dark:text-amber-400 italic">
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic">
                   Belum ada jurusan kustom, data akan menggunakan jurusan kejuruan standar.
                 </p>
               )}
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                * Data calon siswa dummy akan di-generate secara acak strictly berdasarkan jurusan di atas.
+                * Data contoh calon siswa akan dibuat secara otomatis berdasarkan jurusan di atas.
               </p>
             </div>
 
@@ -183,17 +183,17 @@ export const DummyApplicantModal: React.FC<DummyApplicantModalProps> = ({
               <button
                 type="submit"
                 disabled={isGenerating}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
               >
                 {isGenerating ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    <span>Membuat Data...</span>
+                    <span>Menambahkan Data...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles size={14} />
-                    <span>Buat {selectedCount} Calon Siswa Dummy</span>
+                    <UserPlus size={14} />
+                    <span>Tambahkan {selectedCount} Calon Siswa</span>
                   </>
                 )}
               </button>

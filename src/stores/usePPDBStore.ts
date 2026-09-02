@@ -522,12 +522,22 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
       });
       const data = await res.json();
       if (data.success) {
-        addToast("Siswa Dummy Ditambahkan", data.message || `Berhasil membuat ${data.count} siswa dummy.`, "success");
+        addToast("Calon Siswa Berhasil Ditambahkan", data.message || `Berhasil menambahkan ${data.count || 0} calon siswa untuk simulasi.`, "success");
+        if (Array.isArray(data.data) && data.data.length > 0) {
+          set((state) => {
+            const existingIds = new Set(state.applicants.map((a) => a.id));
+            const newOnly = data.data.filter((d: { id: number }) => !existingIds.has(d.id));
+            return {
+              applicants: [...newOnly, ...state.applicants],
+              publicApplicants: [...newOnly, ...state.publicApplicants],
+            };
+          });
+        }
         await get().fetchAdminApplicants();
         await get().fetchPublicApplicants();
         return data;
       } else {
-        throw new Error(data.message || "Gagal membuat siswa dummy");
+        throw new Error(data.message || "Gagal membuat calon siswa");
       }
     } catch (err: unknown) {
       console.warn("generateDummyApplicants falling back to local:", err instanceof Error ? err.message : String(err));
@@ -579,7 +589,9 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
           jenisKelamin: isMale ? "Laki-laki" : "Perempuan",
           status: statusPreference === "random" ? (i % 3 === 0 ? "Approved" : "Pending") : statusPreference,
           payment_status: "LUNAS",
+          status_pembayaran: "LUNAS",
           payment_method: "Bayar Tunai di TU (Cash)",
+          metode_pembayaran: "Bayar Tunai di TU (Cash)",
           tgl_daftar: new Date().toISOString(),
           gelombang: "Gelombang 1",
           periode: "2026-2027",
@@ -593,11 +605,22 @@ export const usePPDBStore = create<PPDBState>((set, get) => ({
         localNew.push(newApp);
       }
 
-      set((state) => ({
-        applicants: [...localNew, ...state.applicants],
-        publicApplicants: [...localNew, ...state.publicApplicants]
-      }));
-      addToast("Siswa Dummy Ditambahkan", `Berhasil membuat ${localNew.length} siswa dummy (offline mode).`, "success");
+      const updatedApplicants = [...localNew, ...get().applicants];
+      const updatedPublic = [...localNew, ...get().publicApplicants];
+
+      set({
+        applicants: updatedApplicants,
+        publicApplicants: updatedPublic
+      });
+
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("demo_admin_applicants", JSON.stringify(updatedApplicants));
+          localStorage.setItem("demo_public_applicants", JSON.stringify(updatedPublic));
+        } catch (_e) {}
+      }
+
+      addToast("Calon Siswa Berhasil Ditambahkan", `Berhasil menambahkan ${localNew.length} calon siswa untuk simulasi.`, "success");
       return { success: true, count: localNew.length, data: localNew };
     }
   },

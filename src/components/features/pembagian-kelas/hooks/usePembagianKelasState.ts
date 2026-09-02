@@ -1,23 +1,24 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import { generateNipdMap } from "@/utils/nipd";
-import Swal from "sweetalert2";
-import { 
-  Applicant, 
-  ClassItem, 
-  MajorConfigItem, 
-  GradeLevel 
+import {
+  Applicant,
+  ClassItem,
+  MajorConfigItem,
+  GradeLevel,
 } from "../types";
-import { 
-  DEFAULT_MAJORS, 
-  getClassGrade, 
-  getMajorLogoUrl, 
-  exportClassToExcel, 
-  exportAllClassesToExcel 
+import {
+  DEFAULT_MAJORS,
+  getClassGrade,
+  getMajorLogoUrl,
+  exportClassToExcel,
+  exportAllClassesToExcel,
 } from "../utils/classDistribution";
+import { usePembagianKelasDnd } from "./usePembagianKelasDnd";
+import { usePembagianKelasCrud } from "./usePembagianKelasCrud";
 
 function parseConfigArray<T>(val: unknown): T[] | null {
   if (!val) return null;
@@ -36,13 +37,24 @@ function parseConfigArray<T>(val: unknown): T[] | null {
 }
 
 export function usePembagianKelasState() {
-  const { applicants, updateActiveStudent, fetchActiveStudents, fetchAdminApplicants } = usePPDB();
+  const {
+    applicants,
+    updateActiveStudent,
+    fetchActiveStudents,
+    fetchAdminApplicants,
+  } = usePPDB();
   const params = useParams();
   const schoolSlug = (params?.school_slug as string) || "";
 
-  const isDemo = schoolSlug === "demo" || (typeof window !== "undefined" && (window.location.pathname.startsWith("/demo") || window.location.host.startsWith("demo.")));
+  const isDemo =
+    schoolSlug === "demo" ||
+    (typeof window !== "undefined" &&
+      (window.location.pathname.startsWith("/demo") ||
+        window.location.host.startsWith("demo.")));
 
-  const [dynamicMajorsList, setDynamicMajorsList] = useState<MajorConfigItem[]>(() => {
+  const [dynamicMajorsList, setDynamicMajorsList] = useState<
+    MajorConfigItem[]
+  >(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("ppdb_majors_config");
       if (saved) {
@@ -56,24 +68,41 @@ export function usePembagianKelasState() {
     }
     return isDemo ? DEFAULT_MAJORS : [];
   });
-  const [selectedMajor, setSelectedMajor] = useState<string>(() => isDemo ? "RPL" : "");
+  const [selectedMajor, setSelectedMajor] = useState<string>(() =>
+    isDemo ? "RPL" : "",
+  );
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>(10);
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [searchTerm, setSearchTerm] = useState("");
-  const [assignmentFilter, setAssignmentFilter] = useState<"ALL" | "UNASSIGNED" | "ASSIGNED">("ALL");
+  const [assignmentFilter, setAssignmentFilter] = useState<
+    "ALL" | "UNASSIGNED" | "ASSIGNED"
+  >("ALL");
   const [genderFilter, setGenderFilter] = useState<"ALL" | "L" | "P">("ALL");
 
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
 
   const [classes, setClasses] = useState<ClassItem[]>([]);
-  const [newClassName, setNewClassName] = useState("");
-  const [isAddingClass, setIsAddingClass] = useState(false);
-
-  const [selectedClassDetail, setSelectedClassDetail] = useState<ClassItem | null>(null);
+  const [selectedClassDetail, setSelectedClassDetail] =
+    useState<ClassItem | null>(null);
   const [classSearchTerm, setClassSearchTerm] = useState("");
-  const [activeDropClass, setActiveDropClass] = useState<string | null>(null);
+
+  const showToast = useCallback(
+    (
+      message: string,
+      type: "success" | "error" | "info" = "success",
+    ) => {
+      setToast({ message, type });
+      setTimeout(() => {
+        setToast(null);
+      }, 4500);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (typeof fetchActiveStudents === "function") {
@@ -93,22 +122,38 @@ export function usePembagianKelasState() {
           : `/api/config?_t=${Date.now()}`;
         const res = await fetch(url, {
           cache: "no-store",
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const json = await res.json();
         if (json.success && json.data) {
           if (json.data.ppdb_school_period) {
             setSchoolPeriod(json.data.ppdb_school_period);
           }
-          const parsedMajors = parseConfigArray<MajorConfigItem>(json.data.ppdb_majors_config);
+          const parsedMajors = parseConfigArray<MajorConfigItem>(
+            json.data.ppdb_majors_config,
+          );
           if (parsedMajors && parsedMajors.length > 0) {
             setDynamicMajorsList(parsedMajors);
             try {
-              localStorage.setItem("ppdb_majors_config", JSON.stringify(parsedMajors));
+              localStorage.setItem(
+                "ppdb_majors_config",
+                JSON.stringify(parsedMajors),
+              );
             } catch (_) {}
-            setSelectedMajor(prev => {
-              if (prev && parsedMajors.some(m => (m.code || m.name || m.title) === prev)) return prev;
-              return parsedMajors[0].code || parsedMajors[0].title || parsedMajors[0].name || "";
+            setSelectedMajor((prev) => {
+              if (
+                prev &&
+                parsedMajors.some(
+                  (m) => (m.code || m.name || m.title) === prev,
+                )
+              )
+                return prev;
+              return (
+                parsedMajors[0].code ||
+                parsedMajors[0].title ||
+                parsedMajors[0].name ||
+                ""
+              );
             });
           }
         }
@@ -126,13 +171,14 @@ export function usePembagianKelasState() {
     } else if (isDemo) {
       list = DEFAULT_MAJORS;
     } else {
-      // Fallback: derive from applicants if config hasn't loaded
       const unique = new Map<string, string>();
       applicants.forEach((a: Applicant) => {
         const m = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").trim();
         if (m) {
           const match = m.match(/\(([A-Z0-9_-]+)\)/i);
-          const code = (match ? match[1] : m.split(" ")[0] || m).toUpperCase();
+          const code = (
+            match ? match[1] : m.split(" ")[0] || m
+          ).toUpperCase();
           if (!unique.has(code)) {
             unique.set(code, m);
           }
@@ -142,7 +188,7 @@ export function usePembagianKelasState() {
         list = Array.from(unique.entries()).map(([code, name]) => ({
           code,
           name,
-          title: name
+          title: name,
         }));
       }
     }
@@ -154,31 +200,72 @@ export function usePembagianKelasState() {
       }
       return {
         ...m,
-        logo
+        logo,
       };
     });
   }, [dynamicMajorsList, isDemo, applicants]);
 
   useEffect(() => {
     if (activeMajors.length > 0) {
-      if (!selectedMajor || !activeMajors.some(m => (m.code || m.title || m.name) === selectedMajor)) {
-        setSelectedMajor(activeMajors[0].code || activeMajors[0].title || activeMajors[0].name || "");
+      if (
+        !selectedMajor ||
+        !activeMajors.some(
+          (m) => (m.code || m.title || m.name) === selectedMajor,
+        )
+      ) {
+        setSelectedMajor(
+          activeMajors[0].code ||
+            activeMajors[0].title ||
+            activeMajors[0].name ||
+            "",
+        );
       }
     }
   }, [activeMajors, selectedMajor]);
 
   const generateDefaultClasses = useCallback((): ClassItem[] => {
     const defaultList: ClassItem[] = [];
-    const sourceMajors = activeMajors.length > 0 ? activeMajors : DEFAULT_MAJORS;
+    const sourceMajors =
+      activeMajors.length > 0 ? activeMajors : DEFAULT_MAJORS;
     sourceMajors.forEach((m) => {
-      defaultList.push({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
-      defaultList.push({ id: `X-${m.code}-2`, name: `X ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({
+        id: `X-${m.code}-1`,
+        name: `X ${m.code} 1`,
+        majorCode: m.code,
+        maxCapacity: 100,
+      });
+      defaultList.push({
+        id: `X-${m.code}-2`,
+        name: `X ${m.code} 2`,
+        majorCode: m.code,
+        maxCapacity: 100,
+      });
 
-      defaultList.push({ id: `XI-${m.code}-1`, name: `XI ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
-      defaultList.push({ id: `XI-${m.code}-2`, name: `XI ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({
+        id: `XI-${m.code}-1`,
+        name: `XI ${m.code} 1`,
+        majorCode: m.code,
+        maxCapacity: 100,
+      });
+      defaultList.push({
+        id: `XI-${m.code}-2`,
+        name: `XI ${m.code} 2`,
+        majorCode: m.code,
+        maxCapacity: 100,
+      });
 
-      defaultList.push({ id: `XII-${m.code}-1`, name: `XII ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
-      defaultList.push({ id: `XII-${m.code}-2`, name: `XII ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({
+        id: `XII-${m.code}-1`,
+        name: `XII ${m.code} 1`,
+        majorCode: m.code,
+        maxCapacity: 100,
+      });
+      defaultList.push({
+        id: `XII-${m.code}-2`,
+        name: `XII ${m.code} 2`,
+        majorCode: m.code,
+        maxCapacity: 100,
+      });
     });
     return defaultList;
   }, [activeMajors]);
@@ -189,12 +276,15 @@ export function usePembagianKelasState() {
         const token = localStorage.getItem("ppdb_admin_token");
         const res = await fetch(`/api/config?_t=${Date.now()}`, {
           cache: "no-store",
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const json = await res.json();
         if (json.success && json.data && json.data.ppdb_classes_config) {
           setClasses(json.data.ppdb_classes_config);
-          localStorage.setItem("ppdb_classes_config", JSON.stringify(json.data.ppdb_classes_config));
+          localStorage.setItem(
+            "ppdb_classes_config",
+            JSON.stringify(json.data.ppdb_classes_config),
+          );
           return;
         }
       } catch (e) {
@@ -243,39 +333,38 @@ export function usePembagianKelasState() {
         return 10;
       }
     },
-    [schoolPeriod]
+    [schoolPeriod],
   );
 
-  const getStudentCurrentClass = useCallback((student: Applicant): string | null => {
-    const cls = student.diterima_kelas || student.diterimaKelas;
-    if (!cls) return null;
-    const clean = String(cls).trim();
-    if (
-      clean === "X (Sepuluh)" ||
-      clean === "XI (Sebelas)" ||
-      clean === "XII (Dua Belas)" ||
-      clean === "X" ||
-      clean === "XI" ||
-      clean === "XII" ||
-      clean === "-" ||
-      clean.toLowerCase() === "belum ada kelas" ||
-      clean.toLowerCase() === "belum diatur"
-    ) {
-      return null;
-    }
-    return clean;
-  }, []);
-
-  const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => {
-      setToast(null);
-    }, 4500);
-  };
+  const getStudentCurrentClass = useCallback(
+    (student: Applicant): string | null => {
+      const cls = student.diterima_kelas || student.diterimaKelas;
+      if (!cls) return null;
+      const clean = String(cls).trim();
+      if (
+        clean === "X (Sepuluh)" ||
+        clean === "XI (Sebelas)" ||
+        clean === "XII (Dua Belas)" ||
+        clean === "X" ||
+        clean === "XI" ||
+        clean === "XII" ||
+        clean === "-" ||
+        clean.toLowerCase() === "belum ada kelas" ||
+        clean.toLowerCase() === "belum diatur"
+      ) {
+        return null;
+      }
+      return clean;
+    },
+    [],
+  );
 
   const saveClassesToStorage = async (updatedClasses: ClassItem[]) => {
     setClasses(updatedClasses);
-    localStorage.setItem("ppdb_classes_config", JSON.stringify(updatedClasses));
+    localStorage.setItem(
+      "ppdb_classes_config",
+      JSON.stringify(updatedClasses),
+    );
 
     const token = localStorage.getItem("ppdb_admin_token");
     if (token) {
@@ -284,12 +373,12 @@ export function usePembagianKelasState() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             key: "ppdb_classes_config",
-            value: updatedClasses
-          })
+            value: updatedClasses,
+          }),
         });
       } catch (e) {
         console.error("Gagal menyimpan konfigurasi kelas ke backend:", e);
@@ -300,16 +389,33 @@ export function usePembagianKelasState() {
   const approvedApplicantsOfMajor = useMemo(() => {
     return applicants.filter((a: Applicant) => {
       const statusUpper = (a.status || "").toUpperCase();
-      const isApproved = statusUpper === "APPROVED" || statusUpper === "TERVERIFIKASI";
+      const isApproved =
+        statusUpper === "APPROVED" || statusUpper === "TERVERIFIKASI";
       if (!isApproved) return false;
 
-      const maj1 = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toUpperCase().trim();
+      const maj1 = (
+        a.jurusan ||
+        a.jurusan_1 ||
+        a.jurusan1 ||
+        ""
+      )
+        .toUpperCase()
+        .trim();
       const selCode = (selectedMajor || "").toUpperCase().trim();
 
       const foundMajor = dynamicMajorsList.find(
-        (m) => (m.code || "").toUpperCase() === selCode || (m.name || m.title || "").toUpperCase() === selCode
+        (m) =>
+          (m.code || "").toUpperCase() === selCode ||
+          (m.name || m.title || "").toUpperCase() === selCode,
       );
-      const selName = (foundMajor?.name || foundMajor?.title || selectedMajor || "").toUpperCase().trim();
+      const selName = (
+        foundMajor?.name ||
+        foundMajor?.title ||
+        selectedMajor ||
+        ""
+      )
+        .toUpperCase()
+        .trim();
 
       if (!selCode) return true;
 
@@ -334,13 +440,26 @@ export function usePembagianKelasState() {
         );
       }
       if (selCode === "DKV") {
-        return maj1 === "DKV" || maj1.includes("DESAIN KOMUNIKASI VISUAL") || maj1.includes("DKV");
+        return (
+          maj1 === "DKV" ||
+          maj1.includes("DESAIN KOMUNIKASI VISUAL") ||
+          maj1.includes("DKV")
+        );
       }
       if (selCode === "BC") {
-        return maj1 === "BC" || maj1.includes("BROADCASTING") || maj1.includes("PERFILMAN") || maj1.includes("BC");
+        return (
+          maj1 === "BC" ||
+          maj1.includes("BROADCASTING") ||
+          maj1.includes("PERFILMAN") ||
+          maj1.includes("BC")
+        );
       }
       if (selCode === "ANM") {
-        return maj1 === "ANM" || maj1.includes("ANIMASI") || maj1.includes("ANM");
+        return (
+          maj1 === "ANM" ||
+          maj1.includes("ANIMASI") ||
+          maj1.includes("ANM")
+        );
       }
       if (selCode === "TE") {
         return (
@@ -353,7 +472,6 @@ export function usePembagianKelasState() {
         );
       }
 
-      // Dynamic / custom school majors (e.g. DSA, TKRO, TBSM, AKL, OTKP, etc.)
       return (
         maj1 === selCode ||
         maj1 === selName ||
@@ -370,7 +488,9 @@ export function usePembagianKelasState() {
       const grade = getStudentGrade(a);
       if (grade !== selectedGrade) return false;
 
-      const nameMatch = (a.nama || "").toLowerCase().includes(searchTerm.toLowerCase());
+      const nameMatch = (a.nama || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
       const nisnMatch = (a.nisn || "").includes(searchTerm);
       const searchMatch = nameMatch || nisnMatch;
 
@@ -390,18 +510,31 @@ export function usePembagianKelasState() {
       }
       return searchMatch;
     });
-  }, [approvedApplicantsOfMajor, searchTerm, assignmentFilter, genderFilter, selectedGrade, getStudentGrade, getStudentCurrentClass]);
+  }, [
+    approvedApplicantsOfMajor,
+    searchTerm,
+    assignmentFilter,
+    genderFilter,
+    selectedGrade,
+    getStudentGrade,
+    getStudentCurrentClass,
+  ]);
 
   const classesOfSelectedMajor = useMemo(() => {
     return classes.filter((c) => {
-      const matchMajor = (c.majorCode || "").toUpperCase() === (selectedMajor || "").toUpperCase();
+      const matchMajor =
+        (c.majorCode || "").toUpperCase() ===
+        (selectedMajor || "").toUpperCase();
       const matchGrade = getClassGrade(c.name) === selectedGrade;
       return matchMajor && matchGrade;
     });
   }, [classes, selectedMajor, selectedGrade]);
 
   const classEnrollments = useMemo(() => {
-    const enrollmentCounts: Record<string, { total: number; L: number; P: number }> = {};
+    const enrollmentCounts: Record<
+      string,
+      { total: number; L: number; P: number }
+    > = {};
 
     classesOfSelectedMajor.forEach((c) => {
       enrollmentCounts[c.name] = { total: 0, L: 0, P: 0 };
@@ -432,7 +565,9 @@ export function usePembagianKelasState() {
       if (!isClassMatch) return false;
 
       const matchesSearch =
-        (a.nama || "").toLowerCase().includes(classSearchTerm.toLowerCase()) ||
+        (a.nama || "")
+          .toLowerCase()
+          .includes(classSearchTerm.toLowerCase()) ||
         (a.nisn || "").includes(classSearchTerm);
       return matchesSearch;
     });
@@ -450,188 +585,46 @@ export function usePembagianKelasState() {
 
   const handleSelectStudent = (id: number) => {
     setSelectedStudentIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
-  const handleAssignSelectedToClass = async (className: string) => {
-    if (selectedStudentIds.length === 0) return;
+  // Sub-hook: Drag and drop
+  const {
+    activeDropClass,
+    handleDragStart,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleAssignSelectedToClass,
+    handleAssignSingleStudent,
+  } = usePembagianKelasDnd({
+    selectedStudentIds,
+    setSelectedStudentIds,
+    updateActiveStudent,
+    showToast,
+    setIsLoading,
+  });
 
-    const total = selectedStudentIds.length;
-    let successCount = 0;
-
-    showToast(`Memindahkan ${total} siswa ke kelas ${className || "Belum Ditentukan"}...`, "info");
-    setIsLoading(true);
-
-    try {
-      for (let i = 0; i < total; i++) {
-        const id = selectedStudentIds[i];
-        const payload = {
-          diterima_kelas: className || null,
-          diterima_tanggal: className ? new Date().toISOString().split("T")[0] : null
-        };
-        const result = await updateActiveStudent(id, payload);
-        if (result?.success) {
-          successCount++;
-        }
-      }
-    } finally {
-      setIsLoading(false);
-    }
-
-    setSelectedStudentIds([]);
-    if (successCount === total && total > 0) {
-      showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className || "Belum Ditentukan"}!`, "success");
-    } else if (successCount > 0) {
-      showToast(`Sebagian berhasil: memindahkan ${successCount} dari ${total} siswa ke kelas ${className || "Belum Ditentukan"}.`, "info");
-    } else {
-      showToast(`Gagal memindahkan siswa. Pastikan Anda tidak dalam mode demo atau offline.`, "error");
-    }
-  };
-
-  const handleDragStart = (e: React.DragEvent, studentId: number) => {
-    const dragIds = selectedStudentIds.includes(studentId) ? selectedStudentIds : [studentId];
-    e.dataTransfer.setData("application/json", JSON.stringify(dragIds));
-    e.dataTransfer.effectAllowed = "move";
-
-    if (e.currentTarget instanceof HTMLElement) {
-      e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent, className: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    if (activeDropClass !== className) {
-      setActiveDropClass(className);
-    }
-  };
-
-  const handleDragLeave = (e?: React.DragEvent) => {
-    if (e && e.currentTarget && e.relatedTarget) {
-      const currentTarget = e.currentTarget as HTMLElement;
-      const relatedTarget = e.relatedTarget as Node | null;
-      if (relatedTarget && currentTarget.contains(relatedTarget)) {
-        return;
-      }
-    }
-    setActiveDropClass(null);
-  };
-
-  const handleDrop = async (e: React.DragEvent, targetClassName: string) => {
-    e.preventDefault();
-    setActiveDropClass(null);
-    try {
-      const data = e.dataTransfer.getData("application/json");
-      if (!data) return;
-      const ids: number[] = JSON.parse(data);
-      if (Array.isArray(ids) && ids.length > 0) {
-        setIsLoading(true);
-        showToast(`Memindahkan ${ids.length} siswa ke kelas ${targetClassName}...`, "info");
-        let count = 0;
-        for (const id of ids) {
-          const res = await updateActiveStudent(id, {
-            diterima_kelas: targetClassName,
-            diterima_tanggal: new Date().toISOString().split("T")[0]
-          });
-          if (res?.success) count++;
-        }
-        setSelectedStudentIds([]);
-        setIsLoading(false);
-        if (count === ids.length) {
-          showToast(`Sukses memindahkan ${count} siswa ke kelas ${targetClassName}!`, "success");
-        } else if (count > 0) {
-          showToast(`Sebagian berhasil: memindahkan ${count} dari ${ids.length} siswa ke kelas ${targetClassName}.`, "info");
-        } else {
-          showToast(`Gagal memindahkan siswa ke kelas ${targetClassName}.`, "error");
-        }
-      }
-    } catch (err) {
-      setIsLoading(false);
-      console.error("Drop error:", err);
-    }
-  };
-
-  const handleCreateClass = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newClassName.trim()) {
-      showToast("Nama kelas tidak boleh kosong!", "error");
-      return;
-    }
-
-    let prefix = "X";
-    if (selectedGrade === 11) prefix = "XI";
-    if (selectedGrade === 12) prefix = "XII";
-
-    let cleanName = newClassName.trim().toUpperCase();
-    if (!cleanName.startsWith(prefix + " ")) {
-      cleanName = `${prefix} ${cleanName}`;
-    }
-
-    if (classes.some((c) => c.name === cleanName)) {
-      showToast(`Kelas "${cleanName}" sudah terdaftar!`, "error");
-      return;
-    }
-
-    const newClass: ClassItem = {
-      id: `${selectedMajor}-${Date.now()}`,
-      name: cleanName,
-      majorCode: selectedMajor,
-      maxCapacity: 100
-    };
-
-    const updated = [...classes, newClass];
-    saveClassesToStorage(updated);
-
-    setNewClassName("");
-    setIsAddingClass(false);
-    showToast(`Kelas ${cleanName} berhasil dibuat!`);
-  };
-
-  const handleDeleteClass = async (id: string, name: string) => {
-    const count = classEnrollments[name]?.total || 0;
-    if (count > 0) {
-      showToast(`Gagal menghapus: Masih ada ${count} siswa terdaftar di dalam kelas ${name}.`, "error");
-      return;
-    }
-
-    const result = await Swal.fire({
-      title: "Konfirmasi",
-      text: `Apakah Anda yakin ingin menghapus kelas ${name}?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya",
-      cancelButtonText: "Batal"
-    });
-    if (result.isConfirmed) {
-      const updated = classes.filter((c) => c.id !== id);
-      saveClassesToStorage(updated);
-      showToast(`Kelas ${name} berhasil dihapus.`);
-    }
-  };
-
-  const handleRemoveStudentFromClassDetail = async (studentId: number, studentNama: string) => {
-    const result = await Swal.fire({
-      title: "Konfirmasi",
-      text: `Keluarkan ${studentNama} dari kelas ${selectedClassDetail?.name}?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya",
-      cancelButtonText: "Batal"
-    });
-    if (result.isConfirmed) {
-      const res = await updateActiveStudent(studentId, {
-        diterima_kelas: null,
-        diterima_tanggal: null
-      });
-
-      if (res?.success) {
-        showToast(`${studentNama} berhasil dikeluarkan dari kelas.`);
-      } else {
-        showToast("Gagal mengeluarkan siswa.", "error");
-      }
-    }
-  };
+  // Sub-hook: CRUD operations
+  const {
+    newClassName,
+    setNewClassName,
+    isAddingClass,
+    setIsAddingClass,
+    handleCreateClass,
+    handleDeleteClass,
+    handleRemoveStudentFromClassDetail,
+  } = usePembagianKelasCrud({
+    classes,
+    saveClassesToStorage,
+    classEnrollments,
+    selectedGrade,
+    selectedMajor,
+    selectedClassDetail,
+    updateActiveStudent,
+    showToast,
+  });
 
   const handleExportClassCSV = async (className: string) => {
     const classStudents = applicants
@@ -642,7 +635,11 @@ export function usePembagianKelasState() {
       })
       .sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
-    const success = await exportClassToExcel(className, classStudents, nipdMap);
+    const success = await exportClassToExcel(
+      className,
+      classStudents,
+      nipdMap,
+    );
     if (!success) {
       showToast("Kelas kosong, tidak ada data untuk diekspor.", "error");
     }
@@ -655,7 +652,7 @@ export function usePembagianKelasState() {
       activeMajors,
       selectedMajor,
       schoolPeriod,
-      nipdMap
+      nipdMap,
     );
     if (!exportedCount) {
       showToast("Tidak ada kelas atau data siswa untuk diekspor.", "error");
@@ -668,42 +665,24 @@ export function usePembagianKelasState() {
     return Object.values(classEnrollments).filter((s) => s.total > 0).length;
   }, [classEnrollments]);
 
-  const handleAssignSingleStudent = async (studentId: number, className: string) => {
-    setIsLoading(true);
-    showToast(`Memindahkan siswa ke kelas ${className || "Belum Ditentukan"}...`, "info");
-    try {
-      const payload = {
-        diterima_kelas: className || null,
-        diterima_tanggal: className ? new Date().toISOString().split("T")[0] : null
-      };
-      const result = await updateActiveStudent(studentId, payload);
-      if (result?.success) {
-        showToast(`Siswa berhasil dipindahkan ke kelas ${className || "Belum Ditentukan"}!`, "success");
-      } else {
-        showToast("Gagal memindahkan siswa.", "error");
-      }
-    } catch (e) {
-      console.error(e);
-      showToast("Terjadi kesalahan saat memindahkan siswa.", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleExportAllMajors = async () => {
-    const classesInGrade = classes.filter((c) => getClassGrade(c.name) === selectedGrade);
+    const classesInGrade = classes.filter(
+      (c) => getClassGrade(c.name) === selectedGrade,
+    );
     const exportedCount = await exportAllClassesToExcel(
       classesInGrade,
       applicants,
       activeMajors,
       `SEMUA_JURUSAN_KELAS_${selectedGrade}`,
       schoolPeriod,
-      nipdMap
+      nipdMap,
     );
     if (!exportedCount) {
       showToast("Tidak ada kelas atau data siswa untuk diekspor.", "error");
     } else {
-      showToast(`Berhasil mengekspor seluruh kelas tingkat ${selectedGrade} ke Excel!`);
+      showToast(
+        `Berhasil mengekspor seluruh kelas tingkat ${selectedGrade} ke Excel!`,
+      );
     }
   };
 
@@ -712,7 +691,13 @@ export function usePembagianKelasState() {
 
   useEffect(() => {
     setPage(1);
-  }, [selectedMajor, selectedGrade, searchTerm, assignmentFilter, genderFilter]);
+  }, [
+    selectedMajor,
+    selectedGrade,
+    searchTerm,
+    assignmentFilter,
+    genderFilter,
+  ]);
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(filteredStudents.length / pageSize));
@@ -772,6 +757,6 @@ export function usePembagianKelasState() {
     handleRemoveStudentFromClassDetail,
     handleExportClassCSV,
     handleExportAllClasses,
-    handleExportAllMajors
+    handleExportAllMajors,
   };
 }

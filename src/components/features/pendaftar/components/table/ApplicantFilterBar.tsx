@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, TableProperties, FileSpreadsheet, Download, Sparkles } from "lucide-react";
+import { Search, TableProperties, FileSpreadsheet, Download, UserPlus } from "lucide-react";
 import { 
   Select, 
   SelectContent, 
@@ -218,17 +218,17 @@ export const ApplicantFilterBar: React.FC<ApplicantFilterBarProps> = ({
           </button>
         </div>
 
-        {/* Tambah Siswa Dummy Button */}
+        {/* Test Tambah Calon Siswa Button */}
         {onOpenDummyModal && (
           <button
             type="button"
             onClick={onOpenDummyModal}
-            className="px-3.5 py-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs"
-            title="Tambah calon siswa dummy untuk testing berdasarkan jurusan sekolah"
+            className="px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-200/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs"
+            title="Tambah data contoh calon siswa untuk pengujian sistem"
           >
-            <Sparkles size={14} className="text-amber-600 dark:text-amber-400" />
-            <span className="hidden sm:inline">Tambah Siswa Dummy</span>
-            <span className="sm:hidden">Dummy</span>
+            <UserPlus size={14} className="text-slate-500 dark:text-slate-400" />
+            <span className="hidden sm:inline">Test Tambah Calon Siswa</span>
+            <span className="sm:hidden">Test Tambah</span>
           </button>
         )}
 

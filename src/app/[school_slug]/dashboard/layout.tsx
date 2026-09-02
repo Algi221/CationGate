@@ -260,9 +260,9 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         />
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-transparent scroll-smooth">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-transparent scroll-smooth">
           <motion.div
-            className="mx-auto max-w-[1600px]"
+            className="w-full max-w-[1850px] mx-auto transition-all duration-300"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{

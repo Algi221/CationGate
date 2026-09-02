@@ -113,24 +113,24 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       />
 
       {/* Primary Data Grid */}
-      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
+      <div className="border-t border-slate-200 dark:border-slate-800/60 overflow-hidden">
         {!isSpreadsheetMode ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-300">
+            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 font-black text-[9px] uppercase tracking-widest bg-slate-50 dark:bg-slate-900/50">
-                  <th className="py-4 px-6 pl-8">No. Pendaftaran</th>
-                  <th className="py-4 px-6">Nama Calon Siswa</th>
-                  <th className="py-4 px-6 text-center w-20">L/P</th>
-                  <th className="py-4 px-6">Asal Sekolah</th>
-                  <th className="py-4 px-6">Pilihan Jurusan Utama</th>
-                  <th className="py-4 px-6 text-center">Status Berkas</th>
-                  <th className="py-4 px-6 text-center">Biaya Formulir</th>
-                  <th className="py-4 px-6 text-center">Berkas Fisik</th>
-                  <th className="py-4 px-6 text-right pr-8">Aksi Administrasi</th>
+                <tr className="border-b border-slate-200 dark:border-slate-800/80 text-slate-500 dark:text-slate-400 font-bold text-[11px] uppercase tracking-wider bg-slate-50/80 dark:bg-slate-900/60">
+                  <th className="py-3.5 px-5 pl-6 whitespace-nowrap">No. Pendaftaran</th>
+                  <th className="py-3.5 px-5">Nama Calon Siswa</th>
+                  <th className="py-3.5 px-4 text-center w-16">L/P</th>
+                  <th className="py-3.5 px-5">Asal Sekolah</th>
+                  <th className="py-3.5 px-5">Pilihan Jurusan Utama</th>
+                  <th className="py-3.5 px-4 text-center">Status Berkas</th>
+                  <th className="py-3.5 px-5 text-center">Biaya Formulir</th>
+                  <th className="py-3.5 px-4 text-center">Berkas Fisik</th>
+                  <th className="py-3.5 px-5 text-right pr-6">Aksi Administrasi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+              <tbody>
                 {paginatedApplicants.map((a: Applicant, idx: number) => (
                   <ApplicantStandardRow
                     key={a.id || idx}

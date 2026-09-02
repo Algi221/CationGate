@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle2, KeyRound, ChevronRight, ArrowRight, Loader2 } from "lucide-react";
+import { safeRedirect } from "@/lib/sanitizeUrl";
 
 interface Step3ActionChoiceProps {
   email: string;
@@ -21,7 +21,6 @@ export const Step3ActionChoice: React.FC<Step3ActionChoiceProps> = ({
   schoolSlug = "smktarunabhakti",
   onProceedToReset
 }) => {
-  const router = useRouter();
   const [navigating, setNavigating] = useState(false);
 
   const handleSkipToDashboard = () => {
@@ -39,7 +38,16 @@ export const Step3ActionChoice: React.FC<Step3ActionChoiceProps> = ({
     }
 
     const targetSlug = schoolSlug || "smktarunabhakti";
-    router.push(`/${targetSlug}/dashboard`);
+    const host = typeof window !== "undefined" ? window.location.host.toLowerCase() : "";
+    const isLocalhost = host.includes("localhost");
+    const port = typeof window !== "undefined" && window.location.port ? `:${window.location.port}` : "";
+    const tokenQuery = sessionToken ? `?auth_token=${encodeURIComponent(sessionToken)}` : "";
+
+    const targetUrl = isLocalhost
+      ? `http://${targetSlug}.localhost${port}/dashboard${tokenQuery}`
+      : `https://${targetSlug}.cationgate.site/dashboard${tokenQuery}`;
+
+    safeRedirect(targetUrl, `/${targetSlug}/dashboard`);
   };
 
   return (

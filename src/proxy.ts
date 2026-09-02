@@ -146,7 +146,11 @@ export default function proxy(request: NextRequest) {
       redirectTarget = `https://${schoolSlug}.cationgate.site${cleanPath}${request.nextUrl.search}`;
     }
 
-    return NextResponse.redirect(new URL(redirectTarget), 307);
+    const response = NextResponse.redirect(new URL(redirectTarget), 307);
+    response.headers.set("Access-Control-Allow-Origin", "*");
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "*");
+    return response;
   }
 
   return NextResponse.next();

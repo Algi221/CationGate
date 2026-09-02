@@ -243,27 +243,58 @@ mailerRouter.post('/verify-otp', async (c) => {
       } catch (_pgU) {}
     }
 
-    let schoolSlug = 'smktarunabhakti';
+    let schoolSlug = '';
+    const { isValidUUID } = await import("../db/resolve-school");
+
     if (adminUser?.school_id) {
       try {
-        const { data: school } = await supabase
-          .from('schools')
-          .select('slug')
-          .or(`id.eq.${adminUser.school_id},slug.eq.${adminUser.school_id}`)
-          .maybeSingle();
-        if (school?.slug) {
-          schoolSlug = school.slug;
+        if (isValidUUID(String(adminUser.school_id))) {
+          const { data: school } = await supabase
+            .from('schools')
+            .select('slug')
+            .eq('id', adminUser.school_id)
+            .maybeSingle();
+          if (school?.slug) schoolSlug = school.slug;
+        } else {
+          const { data: school } = await supabase
+            .from('schools')
+            .select('slug')
+            .eq('slug', String(adminUser.school_id))
+            .maybeSingle();
+          if (school?.slug) schoolSlug = school.slug;
         }
       } catch (_sErr) {}
-    } else {
+
+      if (!schoolSlug) {
+        try {
+          const pgS = await pool.query(
+            `SELECT slug FROM schools WHERE id::text = $1 OR slug = $1 LIMIT 1`,
+            [String(adminUser.school_id)]
+          );
+          if (pgS.rows.length > 0) schoolSlug = pgS.rows[0].slug;
+        } catch (_pgS) {}
+      }
+    }
+
+    if (!schoolSlug) {
       try {
         const { data: school } = await supabase
           .from('schools')
           .select('slug')
-          .ilike('official_email', cleanEmail)
+          .or(`email.ilike.${cleanEmail},official_email.ilike.${cleanEmail}`)
           .maybeSingle();
         if (school?.slug) schoolSlug = school.slug;
       } catch (_sErr2) {}
+
+      if (!schoolSlug) {
+        try {
+          const pgS = await pool.query(
+            `SELECT slug FROM schools WHERE LOWER(email) = LOWER($1) OR LOWER(official_email) = LOWER($1) LIMIT 1`,
+            [cleanEmail]
+          );
+          if (pgS.rows.length > 0) schoolSlug = pgS.rows[0].slug;
+        } catch (_pgS2) {}
+      }
     }
 
     const adminPayload = {
@@ -272,8 +303,8 @@ mailerRouter.post('/verify-otp', async (c) => {
       nama: adminUser?.nama_lengkap || adminUser?.username || cleanEmail.split('@')[0],
       email: cleanEmail,
       role: adminUser?.role || 'admin',
-      school_id: adminUser?.school_id || schoolSlug,
-      school_slug: schoolSlug
+      school_id: adminUser?.school_id || schoolSlug || null,
+      school_slug: schoolSlug || null
     };
 
     const jwtSecret = process.env.JWT_SECRET;
@@ -284,10 +315,10 @@ mailerRouter.post('/verify-otp', async (c) => {
 
     return c.json({
       success: true,
-      message: 'Verifikasi kode OTP berhasil.',
+      message: 'Kode OTP berhasil diverifikasi.',
       token,
       admin: adminPayload,
-      schoolSlug
+      schoolSlug: schoolSlug || null
     });
   } catch (err: unknown) {
     console.error('Verify OTP Error:', err);

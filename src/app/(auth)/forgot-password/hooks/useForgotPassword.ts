@@ -35,7 +35,7 @@ export function useForgotPassword() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [schoolSlug, setSchoolSlug] = useState<string>("smktarunabhakti");
+  const [schoolSlug, setSchoolSlug] = useState<string>("");
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -143,7 +143,7 @@ export function useForgotPassword() {
         if (data.token) {
           setSessionToken(data.token);
           setAdminUser(data.admin);
-          setSchoolSlug(data.schoolSlug || "smktarunabhakti");
+          setSchoolSlug(data.schoolSlug || "");
         }
         setStep(3);
       } else {

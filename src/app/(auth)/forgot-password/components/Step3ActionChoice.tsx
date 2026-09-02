@@ -18,7 +18,7 @@ export const Step3ActionChoice: React.FC<Step3ActionChoiceProps> = ({
   email,
   sessionToken,
   adminUser,
-  schoolSlug = "smktarunabhakti",
+  schoolSlug = "",
   onProceedToReset
 }) => {
   const [navigating, setNavigating] = useState(false);
@@ -37,17 +37,34 @@ export const Step3ActionChoice: React.FC<Step3ActionChoiceProps> = ({
       localStorage.setItem("ppdb_admin_slug", schoolSlug);
     }
 
-    const targetSlug = schoolSlug || "smktarunabhakti";
     const host = typeof window !== "undefined" ? window.location.host.toLowerCase() : "";
     const isLocalhost = host.includes("localhost");
     const port = typeof window !== "undefined" && window.location.port ? `:${window.location.port}` : "";
     const tokenQuery = sessionToken ? `?auth_token=${encodeURIComponent(sessionToken)}` : "";
 
-    const targetUrl = isLocalhost
-      ? `http://${targetSlug}.localhost${port}/dashboard${tokenQuery}`
-      : `https://${targetSlug}.cationgate.site/dashboard${tokenQuery}`;
+    // If Superadmin / Gatekeeper without school_id
+    if ((adminUser?.role === "superadmin" || adminUser?.role === "gatekeeper") && !schoolSlug) {
+      const targetUrl = isLocalhost
+        ? `http://localhost${port}/gatekeeper/dashboard${tokenQuery}`
+        : `https://cationgate.site/gatekeeper/dashboard${tokenQuery}`;
+      safeRedirect(targetUrl, "/gatekeeper/dashboard");
+      return;
+    }
 
-    safeRedirect(targetUrl, `/${targetSlug}/dashboard`);
+    // If School Admin with registered schoolSlug
+    if (schoolSlug) {
+      const targetUrl = isLocalhost
+        ? `http://${schoolSlug}.localhost${port}/dashboard${tokenQuery}`
+        : `https://${schoolSlug}.cationgate.site/dashboard${tokenQuery}`;
+      safeRedirect(targetUrl, `/${schoolSlug}/dashboard`);
+      return;
+    }
+
+    // Default Fallback to standard login
+    const targetUrl = isLocalhost
+      ? `http://localhost${port}/login${tokenQuery}`
+      : `https://cationgate.site/login${tokenQuery}`;
+    safeRedirect(targetUrl, "/login");
   };
 
   return (

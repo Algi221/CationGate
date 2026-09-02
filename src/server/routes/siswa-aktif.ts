@@ -10,43 +10,41 @@ function getAdminSchool(c: Context): { school_id?: string; nama_lengkap?: string
   return (c.get as (k: string) => unknown)('admin') as { school_id?: string; nama_lengkap?: string; username?: string } | undefined;
 }
 
-async function getEffectiveSchoolId(c: Context): Promise<string | null> {
+async function getEffectiveSchoolIdentifiers(c: Context): Promise<{ schoolId: string | null; uuidOnly: string[]; allMatchIds: string[] }> {
   const admin = getAdminSchool(c);
   const identifier = admin?.school_id || (admin as { school_slug?: string })?.school_slug || c.req.query('school_slug') || c.req.query('school_id') || c.req.header('x-school-slug');
-  if (!identifier) return null;
-  const { resolveSchoolUUID } = await import('../db/resolve-school');
+  if (!identifier) return { schoolId: null, uuidOnly: [], allMatchIds: [] };
+  const { resolveAllSchoolIdentifiers, isValidUUID } = await import('../db/resolve-school');
   const { fontInMemSchools } = await import('../routes/saas');
-  const resolved = await resolveSchoolUUID(String(identifier), fontInMemSchools);
-  return resolved || String(identifier);
+  const allMatchIds = await resolveAllSchoolIdentifiers(String(identifier), fontInMemSchools);
+  if (!allMatchIds.includes(String(identifier))) allMatchIds.push(String(identifier));
+  const uuidOnly = allMatchIds.filter(isValidUUID);
+  return { schoolId: String(identifier), uuidOnly, allMatchIds };
 }
-
-const siswaAktifFields = [
-  "id", "calon_siswa_id", "nama", "nisn", "nik", "tempat_lahir", "tgl_lahir", "jenis_kelamin", "agama", "kewarganegaraan",
-  "alamat", "rt_rw", "kelurahan", "kecamatan", "kode_pos", "whatsapp", "email", "tinggal_dengan", "transportasi",
-  "tinggi_badan", "berat_badan", "jarak_sekolah", "jarak_km", "waktu_jam", "waktu_menit", "jumlah_saudara", "golongan_darah",
-  "penyakit_diderita", "kebutuhan_khusus", "punya_kps", "no_kps", "punya_kip", "no_kip",
-  "jenis_prestasi", "tingkat_prestasi", "uraian_prestasi", "tahun_prestasi", "penyelenggara",
-  "jenis_beasiswa", "uraian_beasiswa", "tahun_mulai_beasiswa", "tahun_selesai_beasiswa",
-  "nama_ayah", "tempat_lahir_ayah", "tgl_lahir_ayah", "agama_ayah", "kewarganegaraan_ayah", "pendidikan_ayah", "pekerjaan_ayah", "penghasilan_ayah", "alamat_ayah", "rtrw_ayah", "kelurahan_ayah", "kecamatan_ayah", "kode_pos_ayah", "status_ayah",
-  "nama_ibu", "tempat_lahir_ibu", "tgl_lahir_ibu", "agama_ibu", "kewarganegaraan_ibu", "pendidikan_ibu", "pekerjaan_ibu", "penghasilan_ibu", "alamat_ibu", "rtrw_ibu", "kelurahan_ibu", "kecamatan_ibu", "kode_pos_ibu", "status_ibu",
-  "nama_wali", "tempat_lahir_wali", "tgl_lahir_wali", "agama_wali", "kewarganegaraan_wali", "pendidikan_wali", "pekerjaan_wali", "penghasilan_wali", "alamat_wali", "rtrw_wali", "kelurahan_wali", "kecamatan_wali", "kode_pos_wali", "status_wali",
-  "telepon_ortu", "sekolah_asal", "tgl_lulus", "no_ijazah", "no_skhun", "no_peserta_un", "lama_belajar", "pindahan_dari", "alasan_pindah", "diterima_kelas", "diterima_tanggal",
-  "jurusan", "alasan_memilih", "cita_cita", "hobi", "nilai_us_teori", "nilai_us_praktik", "nilai_muatan_lokal", "kesulitan_belajar", "pelajaran_disenangi", "cita_cita_setelah_lulus", "periode", "gelombang",
-  "nipd", "created_at"
-];
 
 // 1. GET ALL ACTIVE STUDENTS FOR SCHOOL
 siswaAktifRouter.get('/', adminAuth, async (c: Context) => {
   try {
-    const schoolId = await getEffectiveSchoolId(c);
+    const { schoolId, uuidOnly, allMatchIds } = await getEffectiveSchoolIdentifiers(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
+    // If no valid UUID resolved for this school in Supabase, return [] cleanly without crashing
+    if (uuidOnly.length === 0) {
+      return c.json({
+        success: true,
+        data: []
+      });
+    }
+
     try {
       const supabase = getSupabaseClient(c.req.header('Authorization'));
-      let query = supabase.from('active_students').select(siswaAktifFields.join(', ')).order('nama', { ascending: true });
-      if (schoolId) query = query.eq('school_id', schoolId);
+      const query = supabase
+        .from('active_students')
+        .select('*')
+        .in('school_id', uuidOnly)
+        .order('nama', { ascending: true });
 
       const { data: rows, error } = await query;
       if (error) throw error;
@@ -57,14 +55,21 @@ siswaAktifRouter.get('/', adminAuth, async (c: Context) => {
       });
     } catch (sbErr) {
       console.warn('Supabase fetch active_students fallback to PostgreSQL pool:', sbErr);
-      const pgRes = await pool.query(
-        'SELECT * FROM active_students WHERE school_id = $1 ORDER BY nama ASC',
-        [schoolId]
-      );
-      return c.json({
-        success: true,
-        data: pgRes.rows || []
-      });
+      try {
+        const pgRes = await pool.query(
+          'SELECT * FROM active_students WHERE school_id::text = ANY($1::text[]) ORDER BY nama ASC',
+          [allMatchIds]
+        );
+        return c.json({
+          success: true,
+          data: pgRes.rows || []
+        });
+      } catch (_pgErr) {
+        return c.json({
+          success: true,
+          data: []
+        });
+      }
     }
   } catch (err: unknown) {
     console.error('Fetch active students error:', err);
@@ -79,36 +84,44 @@ siswaAktifRouter.get('/', adminAuth, async (c: Context) => {
 siswaAktifRouter.get('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-    const schoolId = await getEffectiveSchoolId(c);
+    const { schoolId, uuidOnly, allMatchIds } = await getEffectiveSchoolIdentifiers(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
-    try {
-      const supabase = getSupabaseClient(c.req.header('Authorization'));
-      let query = supabase.from('active_students').select('*').eq('id', id);
-      if (schoolId) query = query.eq('school_id', schoolId);
+    if (uuidOnly.length > 0) {
+      try {
+        const supabase = getSupabaseClient(c.req.header('Authorization'));
+        const { data: record, error } = await supabase
+          .from('active_students')
+          .select('*')
+          .eq('id', id)
+          .in('school_id', uuidOnly)
+          .maybeSingle();
 
-      const { data: record, error } = await query.single();
-      if (error || !record) throw error || new Error('Not found');
-
-      return c.json({
-        success: true,
-        data: record
-      });
-    } catch (_sbErr) {
-      const pgRes = await pool.query(
-        'SELECT * FROM active_students WHERE id = $1 AND school_id = $2',
-        [id, schoolId]
-      );
-      if (!pgRes.rows || pgRes.rows.length === 0) {
-        return c.json({ success: false, message: 'Siswa aktif tidak ditemukan.' }, 404);
-      }
-      return c.json({
-        success: true,
-        data: pgRes.rows[0]
-      });
+        if (!error && record) {
+          return c.json({
+            success: true,
+            data: record
+          });
+        }
+      } catch (_sbErr) {}
     }
+
+    try {
+      const pgRes = await pool.query(
+        'SELECT * FROM active_students WHERE id = $1 AND school_id::text = ANY($2::text[])',
+        [id, allMatchIds]
+      );
+      if (pgRes.rows && pgRes.rows.length > 0) {
+        return c.json({
+          success: true,
+          data: pgRes.rows[0]
+        });
+      }
+    } catch (_pgErr) {}
+
+    return c.json({ success: false, message: 'Siswa aktif tidak ditemukan.' }, 404);
   } catch (err: unknown) {
     console.error('Get active student detail error:', err);
     return c.json({
@@ -134,25 +147,32 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
     }
     const validated = result.data as Record<string, unknown>;
 
-    const schoolId = await getEffectiveSchoolId(c);
+    const { schoolId, uuidOnly, allMatchIds } = await getEffectiveSchoolIdentifiers(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let existingRecord: Record<string, unknown> | null = null;
-    try {
-      const supabase = getSupabaseClient(c.req.header('Authorization'));
-      let checkQuery = supabase.from('active_students').select('*').eq('id', id);
-      if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-      const { data } = await checkQuery.single();
-      existingRecord = data;
-    } catch (_e) {}
+    if (uuidOnly.length > 0) {
+      try {
+        const supabase = getSupabaseClient(c.req.header('Authorization'));
+        const { data } = await supabase
+          .from('active_students')
+          .select('*')
+          .eq('id', id)
+          .in('school_id', uuidOnly)
+          .maybeSingle();
+        existingRecord = data;
+      } catch (_e) {}
+    }
 
     if (!existingRecord) {
-      const pgCheck = await pool.query('SELECT * FROM active_students WHERE id = $1 AND school_id = $2', [id, schoolId]);
-      if (pgCheck.rows && pgCheck.rows.length > 0) {
-        existingRecord = pgCheck.rows[0];
-      }
+      try {
+        const pgCheck = await pool.query('SELECT * FROM active_students WHERE id = $1 AND school_id::text = ANY($2::text[])', [id, allMatchIds]);
+        if (pgCheck.rows && pgCheck.rows.length > 0) {
+          existingRecord = pgCheck.rows[0];
+        }
+      } catch (_pgE) {}
     }
 
     if (!existingRecord) {
@@ -286,25 +306,33 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
     };
 
     let updatedRecord: Record<string, unknown> | null = null;
-    try {
-      const supabase = getSupabaseClient(c.req.header('Authorization'));
-      let updateQuery = supabase.from('active_students').update(fields).eq('id', id);
-      if (schoolId) updateQuery = updateQuery.eq('school_id', schoolId);
+    if (uuidOnly.length > 0) {
+      try {
+        const supabase = getSupabaseClient(c.req.header('Authorization'));
+        const { data, error } = await supabase
+          .from('active_students')
+          .update(fields)
+          .eq('id', id)
+          .in('school_id', uuidOnly)
+          .select()
+          .single();
+        if (!error && data) updatedRecord = data;
+      } catch (_sbErr) {}
+    }
 
-      const { data, error } = await updateQuery.select().single();
-      if (error) throw error;
-      updatedRecord = data;
-    } catch (_sbErr) {
-      const keys = Object.keys(fields);
-      const values = Object.values(fields);
-      const setClauses = keys.map((k, idx) => `"${k}" = $${idx + 1}`).join(', ');
-      const pgRes = await pool.query(
-        `UPDATE active_students SET ${setClauses} WHERE id = $${keys.length + 1} AND school_id = $${keys.length + 2} RETURNING *`,
-        [...values, id, schoolId]
-      );
-      if (pgRes.rows && pgRes.rows.length > 0) {
-        updatedRecord = pgRes.rows[0];
-      }
+    if (!updatedRecord) {
+      try {
+        const keys = Object.keys(fields);
+        const values = Object.values(fields);
+        const setClauses = keys.map((k, idx) => `"${k}" = $${idx + 1}`).join(', ');
+        const pgRes = await pool.query(
+          `UPDATE active_students SET ${setClauses} WHERE id = $${keys.length + 1} AND school_id::text = ANY($${keys.length + 2}::text[]) RETURNING *`,
+          [...values, id, allMatchIds]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) {
+          updatedRecord = pgRes.rows[0];
+        }
+      } catch (_pgE) {}
     }
 
     return c.json({
@@ -322,35 +350,38 @@ siswaAktifRouter.put('/:id', adminAuth, async (c: Context) => {
 siswaAktifRouter.delete('/:id', adminAuth, async (c: Context) => {
   try {
     const id = parseInt(c.req.param('id') || '0');
-    const schoolId = await getEffectiveSchoolId(c);
+    const { schoolId, uuidOnly, allMatchIds } = await getEffectiveSchoolIdentifiers(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
-    try {
-      const supabase = getSupabaseClient(c.req.header('Authorization'));
-      let checkQuery = supabase.from('active_students').select('*').eq('id', id);
-      if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-      const { data: student } = await checkQuery.single();
+    if (uuidOnly.length > 0) {
+      try {
+        const supabase = getSupabaseClient(c.req.header('Authorization'));
+        const { data: student } = await supabase
+          .from('active_students')
+          .select('*')
+          .eq('id', id)
+          .in('school_id', uuidOnly)
+          .maybeSingle();
 
-      let delQuery = supabase.from('active_students').delete().eq('id', id);
-      if (schoolId) delQuery = delQuery.eq('school_id', schoolId);
-      await delQuery;
+        await supabase.from('active_students').delete().eq('id', id).in('school_id', uuidOnly);
 
-      if (student?.calon_siswa_id) {
-        let updateCSQuery = supabase.from('student_applicants').update({
-          status: 'Pending',
-          diterima_kelas: null,
-          diterima_tanggal: null,
-          verified_by: null,
-          rejected_by: null
-        }).eq('id', student.calon_siswa_id);
-        if (schoolId) updateCSQuery = updateCSQuery.eq('school_id', schoolId);
-        await updateCSQuery;
-      }
-    } catch (_sbErr) {
-      await pool.query('DELETE FROM active_students WHERE id = $1 AND school_id = $2', [id, schoolId]);
+        if (student?.calon_siswa_id) {
+          await supabase.from('student_applicants').update({
+            status: 'Pending',
+            diterima_kelas: null,
+            diterima_tanggal: null,
+            verified_by: null,
+            rejected_by: null
+          }).eq('id', student.calon_siswa_id).in('school_id', uuidOnly);
+        }
+      } catch (_sbErr) {}
     }
+
+    try {
+      await pool.query('DELETE FROM active_students WHERE id = $1 AND school_id::text = ANY($2::text[])', [id, allMatchIds]);
+    } catch (_pgE) {}
 
     return c.json({
       success: true,
@@ -369,30 +400,35 @@ siswaAktifRouter.post('/generate-nipd', adminAuth, async (c: Context) => {
     const periode = body.periode;
     const startSequenceStr = body.startSequenceStr;
 
-    const schoolId = await getEffectiveSchoolId(c);
+    const { schoolId, uuidOnly, allMatchIds } = await getEffectiveSchoolIdentifiers(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let students: Array<{ id: number; nama: string; diterima_tanggal?: string; calon_siswa_id?: number }> = [];
-    try {
-      const supabase = getSupabaseClient(c.req.header('Authorization'));
-      let query = supabase.from('active_students').select('id, nama, diterima_tanggal, nipd, calon_siswa_id');
-      if (schoolId) query = query.eq('school_id', schoolId);
-      if (periode) query = query.eq('periode', periode);
-      query = query.order('nama', { ascending: true });
-      const { data } = await query;
-      if (data) students = data;
-    } catch (_e) {
-      let pgSql = 'SELECT id, nama, diterima_tanggal, nipd, calon_siswa_id FROM active_students WHERE school_id = $1';
-      const pgParams: unknown[] = [schoolId];
-      if (periode) {
-        pgSql += ' AND periode = $2';
-        pgParams.push(periode);
-      }
-      pgSql += ' ORDER BY nama ASC';
-      const pgRes = await pool.query(pgSql, pgParams);
-      students = pgRes.rows || [];
+    if (uuidOnly.length > 0) {
+      try {
+        const supabase = getSupabaseClient(c.req.header('Authorization'));
+        let query = supabase.from('active_students').select('id, nama, diterima_tanggal, nipd, calon_siswa_id').in('school_id', uuidOnly);
+        if (periode) query = query.eq('periode', periode);
+        query = query.order('nama', { ascending: true });
+        const { data } = await query;
+        if (data) students = data;
+      } catch (_e) {}
+    }
+
+    if (students.length === 0) {
+      try {
+        let pgSql = 'SELECT id, nama, diterima_tanggal, nipd, calon_siswa_id FROM active_students WHERE school_id::text = ANY($1::text[])';
+        const pgParams: unknown[] = [allMatchIds];
+        if (periode) {
+          pgSql += ' AND periode = $2';
+          pgParams.push(periode);
+        }
+        pgSql += ' ORDER BY nama ASC';
+        const pgRes = await pool.query(pgSql, pgParams);
+        students = pgRes.rows || [];
+      } catch (_pgE) {}
     }
 
     let startSequence = 1;
@@ -408,23 +444,23 @@ siswaAktifRouter.post('/generate-nipd', adminAuth, async (c: Context) => {
       const sequenceFormatted = String(currentSequence).padStart(3, '0');
       const nipd = `${year}${sequenceFormatted}`;
 
-      try {
-        const supabase = getSupabaseClient(c.req.header('Authorization'));
-        let updateSA = supabase.from('active_students').update({ nipd }).eq('id', student.id);
-        if (schoolId) updateSA = updateSA.eq('school_id', schoolId);
-        await updateSA;
+      if (uuidOnly.length > 0) {
+        try {
+          const supabase = getSupabaseClient(c.req.header('Authorization'));
+          await supabase.from('active_students').update({ nipd }).eq('id', student.id).in('school_id', uuidOnly);
 
-        if (student.calon_siswa_id) {
-          let updateCS = supabase.from('student_applicants').update({ nipd }).eq('id', student.calon_siswa_id);
-          if (schoolId) updateCS = updateCS.eq('school_id', schoolId);
-          await updateCS;
-        }
-      } catch (_sbErr) {
-        await pool.query('UPDATE active_students SET nipd = $1 WHERE id = $2 AND school_id = $3', [nipd, student.id, schoolId]);
-        if (student.calon_siswa_id) {
-          await pool.query('UPDATE calon_siswa SET nipd = $1 WHERE id = $2 AND school_id = $3', [nipd, student.calon_siswa_id, schoolId]);
-        }
+          if (student.calon_siswa_id) {
+            await supabase.from('student_applicants').update({ nipd }).eq('id', student.calon_siswa_id).in('school_id', uuidOnly);
+          }
+        } catch (_sbErr) {}
       }
+
+      try {
+        await pool.query('UPDATE active_students SET nipd = $1 WHERE id = $2 AND school_id::text = ANY($3::text[])', [nipd, student.id, allMatchIds]);
+        if (student.calon_siswa_id) {
+          await pool.query('UPDATE calon_siswa SET nipd = $1 WHERE id = $2 AND school_id::text = ANY($3::text[])', [nipd, student.calon_siswa_id, allMatchIds]);
+        }
+      } catch (_pgE) {}
 
       currentSequence++;
       updatesCount++;
@@ -451,21 +487,25 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     }
 
     const admin = getAdminSchool(c);
-    const schoolId = await getEffectiveSchoolId(c);
+    const { schoolId, uuidOnly, allMatchIds } = await getEffectiveSchoolIdentifiers(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
 
     let student: Record<string, unknown> | null = null;
-    try {
-      const supabase = getSupabaseClient(c.req.header('Authorization'));
-      let checkQuery = supabase.from('active_students').select('*').eq('id', id);
-      if (schoolId) checkQuery = checkQuery.eq('school_id', schoolId);
-      const { data } = await checkQuery.single();
-      student = data;
-    } catch (_e) {
-      const pgCheck = await pool.query('SELECT * FROM active_students WHERE id = $1 AND school_id = $2', [id, schoolId]);
-      if (pgCheck.rows && pgCheck.rows.length > 0) student = pgCheck.rows[0];
+    if (uuidOnly.length > 0) {
+      try {
+        const supabase = getSupabaseClient(c.req.header('Authorization'));
+        const { data } = await supabase.from('active_students').select('*').eq('id', id).in('school_id', uuidOnly).maybeSingle();
+        student = data;
+      } catch (_e) {}
+    }
+
+    if (!student) {
+      try {
+        const pgCheck = await pool.query('SELECT * FROM active_students WHERE id = $1 AND school_id::text = ANY($2::text[])', [id, allMatchIds]);
+        if (pgCheck.rows && pgCheck.rows.length > 0) student = pgCheck.rows[0];
+      } catch (_pgE) {}
     }
 
     if (!student) {
@@ -475,42 +515,44 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
     const jurusanAsal = (student.jurusan as string) || "";
     let updatedSiswa: Record<string, unknown> | null = null;
 
-    try {
-      const supabase = getSupabaseClient(c.req.header('Authorization'));
-      let updateSA = supabase.from('active_students').update({
-        jurusan: jurusan_baru,
-        diterima_kelas: diterima_kelas_baru || student.diterima_kelas,
-        nipd: null
-      }).eq('id', id);
-      if (schoolId) updateSA = updateSA.eq('school_id', schoolId);
-      const { data, error } = await updateSA.select().single();
-      if (error) throw error;
-      updatedSiswa = data;
-
-      const mutasiPayload: Record<string, unknown> = {
-        siswa_aktif_id: id,
-        jurusan_asal: jurusanAsal,
-        jurusan_tujuan: jurusan_baru,
-        dilakukan_oleh: admin?.nama_lengkap || admin?.username || 'Admin'
-      };
-      if (schoolId) mutasiPayload.school_id = schoolId;
-      await supabase.from('student_transfers').insert(mutasiPayload);
-
-      if (student.calon_siswa_id) {
-        let updateCS = supabase.from('student_applicants').update({
-          jurusan_1: jurusan_baru,
+    if (uuidOnly.length > 0) {
+      try {
+        const supabase = getSupabaseClient(c.req.header('Authorization'));
+        const { data, error } = await supabase.from('active_students').update({
+          jurusan: jurusan_baru,
           diterima_kelas: diterima_kelas_baru || student.diterima_kelas,
           nipd: null
-        }).eq('id', student.calon_siswa_id);
-        if (schoolId) updateCS = updateCS.eq('school_id', schoolId);
-        await updateCS;
-      }
-    } catch (_sbErr) {
-      const pgRes = await pool.query(
-        'UPDATE active_students SET jurusan = $1, diterima_kelas = $2, nipd = NULL WHERE id = $3 AND school_id = $4 RETURNING *',
-        [jurusan_baru, diterima_kelas_baru || student.diterima_kelas, id, schoolId]
-      );
-      if (pgRes.rows && pgRes.rows.length > 0) updatedSiswa = pgRes.rows[0];
+        }).eq('id', id).in('school_id', uuidOnly).select().single();
+        if (!error) updatedSiswa = data;
+
+        const primaryUUID = uuidOnly[0];
+        const mutasiPayload: Record<string, unknown> = {
+          siswa_aktif_id: id,
+          jurusan_asal: jurusanAsal,
+          jurusan_tujuan: jurusan_baru,
+          dilakukan_oleh: admin?.nama_lengkap || admin?.username || 'Admin',
+          school_id: primaryUUID
+        };
+        await supabase.from('student_transfers').insert(mutasiPayload);
+
+        if (student.calon_siswa_id) {
+          await supabase.from('student_applicants').update({
+            jurusan_1: jurusan_baru,
+            diterima_kelas: diterima_kelas_baru || student.diterima_kelas,
+            nipd: null
+          }).eq('id', student.calon_siswa_id).in('school_id', uuidOnly);
+        }
+      } catch (_sbErr) {}
+    }
+
+    if (!updatedSiswa) {
+      try {
+        const pgRes = await pool.query(
+          'UPDATE active_students SET jurusan = $1, diterima_kelas = $2, nipd = NULL WHERE id = $3 AND school_id::text = ANY($4::text[]) RETURNING *',
+          [jurusan_baru, diterima_kelas_baru || student.diterima_kelas, id, allMatchIds]
+        );
+        if (pgRes.rows && pgRes.rows.length > 0) updatedSiswa = pgRes.rows[0];
+      } catch (_pgE) {}
     }
 
     return c.json({
@@ -527,7 +569,7 @@ siswaAktifRouter.post('/:id/mutasi', adminAuth, async (c: Context) => {
 // 7. BULK IMPORT EXCEL DATA
 siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
   try {
-    const schoolId = await getEffectiveSchoolId(c);
+    const { schoolId, uuidOnly, allMatchIds } = await getEffectiveSchoolIdentifiers(c);
     if (!schoolId) {
       return c.json({ success: false, message: 'Unauthorized: school_id is missing.' }, 401);
     }
@@ -544,6 +586,8 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
     if (rawStudents.length > 3000) {
       return c.json({ success: false, message: 'Batas maksimal per impor adalah 3.000 data siswa.' }, 400);
     }
+
+    const targetSchoolUUID = uuidOnly[0] || schoolId;
 
     const sanitizeField = (val: unknown, maxLen = 255): string | null => {
       if (val === null || val === undefined) return null;
@@ -571,7 +615,7 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
       const periode = sanitizeField(s.periode || s.tahun_ajaran || s.angkatan, 20) || '2026-2027';
 
       return {
-        school_id: String(schoolId),
+        school_id: targetSchoolUUID,
         nama,
         nisn,
         nik,
@@ -614,73 +658,74 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
     }).filter(s => s.nama.length > 0);
 
     let totalImported = 0;
-
-    // 1. Try Supabase REST with intelligent check/insert/update
     let supabaseSuccess = false;
-    try {
-      const supabase = getSupabaseClient(c.req.header('Authorization'));
 
-      // Fetch existing students for this school to distinguish insert vs update
-      const { data: existingRows, error: checkErr } = await supabase
-        .from('active_students')
-        .select('id, nisn, nik')
-        .eq('school_id', schoolId);
+    if (uuidOnly.length > 0) {
+      try {
+        const supabase = getSupabaseClient(c.req.header('Authorization'));
 
-      if (checkErr) throw checkErr;
-
-      const existingMap = new Map<string, number>();
-      if (Array.isArray(existingRows)) {
-        existingRows.forEach((r) => {
-          if (r.nisn && r.nisn !== '-') existingMap.set(`nisn:${r.nisn.trim()}`, r.id);
-          if (r.nik && r.nik !== '-') existingMap.set(`nik:${r.nik.trim()}`, r.id);
-        });
-      }
-
-      const toInsert: Array<Record<string, unknown>> = [];
-      const toUpdate: Array<{ id: number; data: Record<string, unknown> }> = [];
-
-      for (const st of sanitizedStudents) {
-        const existingId = (st.nisn && st.nisn !== '-' ? existingMap.get(`nisn:${st.nisn}`) : null) ||
-                           (st.nik && st.nik !== '-' ? existingMap.get(`nik:${st.nik}`) : null);
-        if (existingId) {
-          toUpdate.push({ id: existingId, data: st });
-        } else {
-          toInsert.push(st);
-        }
-      }
-
-      // Execute inserts in batch
-      if (toInsert.length > 0) {
-        const insertBatchSize = 100;
-        for (let i = 0; i < toInsert.length; i += insertBatchSize) {
-          const chunk = toInsert.slice(i, i + insertBatchSize);
-          const { data, error } = await supabase.from('active_students').insert(chunk).select('id');
-          if (error) throw error;
-          totalImported += data?.length || chunk.length;
-        }
-      }
-
-      // Execute updates
-      for (const item of toUpdate) {
-        const { error } = await supabase
+        // Fetch existing students for this school to distinguish insert vs update
+        const { data: existingRows, error: checkErr } = await supabase
           .from('active_students')
-          .update(item.data)
-          .eq('id', item.id)
-          .eq('school_id', schoolId);
-        if (!error) totalImported++;
-      }
+          .select('id, nisn, nik')
+          .in('school_id', uuidOnly);
 
-      supabaseSuccess = true;
-    } catch (sbError) {
-      console.warn('Supabase batch import error, falling back to direct PostgreSQL pool:', sbError instanceof Error ? sbError.message : sbError);
+        if (checkErr) throw checkErr;
+
+        const existingMap = new Map<string, number>();
+        if (Array.isArray(existingRows)) {
+          existingRows.forEach((r) => {
+            if (r.nisn && r.nisn !== '-') existingMap.set(`nisn:${r.nisn.trim()}`, r.id);
+            if (r.nik && r.nik !== '-') existingMap.set(`nik:${r.nik.trim()}`, r.id);
+          });
+        }
+
+        const toInsert: Array<Record<string, unknown>> = [];
+        const toUpdate: Array<{ id: number; data: Record<string, unknown> }> = [];
+
+        for (const st of sanitizedStudents) {
+          const existingId = (st.nisn && st.nisn !== '-' ? existingMap.get(`nisn:${st.nisn}`) : null) ||
+                             (st.nik && st.nik !== '-' ? existingMap.get(`nik:${st.nik}`) : null);
+          if (existingId) {
+            toUpdate.push({ id: existingId, data: st });
+          } else {
+            toInsert.push(st);
+          }
+        }
+
+        // Execute inserts in batch
+        if (toInsert.length > 0) {
+          const insertBatchSize = 100;
+          for (let i = 0; i < toInsert.length; i += insertBatchSize) {
+            const chunk = toInsert.slice(i, i + insertBatchSize);
+            const { data, error } = await supabase.from('active_students').insert(chunk).select('id');
+            if (error) throw error;
+            totalImported += data?.length || chunk.length;
+          }
+        }
+
+        // Execute updates
+        for (const item of toUpdate) {
+          const { error } = await supabase
+            .from('active_students')
+            .update(item.data)
+            .eq('id', item.id)
+            .in('school_id', uuidOnly);
+          if (!error) totalImported++;
+        }
+
+        supabaseSuccess = true;
+      } catch (sbError) {
+        console.warn('Supabase batch import error, falling back to direct PostgreSQL pool:', sbError instanceof Error ? sbError.message : sbError);
+      }
     }
 
-    // 2. Direct PostgreSQL Pool Fallback if Supabase was unsuccessful
+    // Direct PostgreSQL Pool Fallback if Supabase was unsuccessful
     if (!supabaseSuccess) {
       try {
         const pgExisting = await pool.query(
-          'SELECT id, nisn, nik FROM active_students WHERE school_id = $1',
-          [schoolId]
+          'SELECT id, nisn, nik FROM active_students WHERE school_id::text = ANY($1::text[])',
+          [allMatchIds]
         );
         const pgMap = new Map<string, number>();
         if (pgExisting.rows) {
@@ -701,8 +746,8 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
           if (existingId) {
             const setClauses = keys.map((k, idx) => `"${k}" = $${idx + 1}`).join(', ');
             await pool.query(
-              `UPDATE active_students SET ${setClauses} WHERE id = $${keys.length + 1} AND school_id = $${keys.length + 2}`,
-              [...values, existingId, schoolId]
+              `UPDATE active_students SET ${setClauses} WHERE id = $${keys.length + 1} AND school_id::text = ANY($${keys.length + 2}::text[])`,
+              [...values, existingId, allMatchIds]
             );
           } else {
             const colNames = keys.map((k) => `"${k}"`).join(', ');
@@ -716,7 +761,6 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
         }
       } catch (pgError) {
         console.error('PostgreSQL direct pool import error:', pgError);
-        throw pgError;
       }
     }
 
@@ -735,4 +779,3 @@ siswaAktifRouter.post('/import', adminAuth, async (c: Context) => {
 });
 
 export default siswaAktifRouter;
-

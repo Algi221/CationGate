@@ -168,7 +168,7 @@ export default function DaftarSaaS() {
 
         {/* RIGHT COLUMN: INTERACTIVE WIZARD FORM */}
         <div className="lg:col-span-6 flex flex-col justify-center px-1 sm:px-6 lg:px-12 z-10">
-          <div className="w-full max-w-115 mx-auto bg-white lg:bg-transparent p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
+          <div className="w-full max-w-115 mx-auto bg-white p-4 sm:p-6 lg:p-0 rounded-2xl lg:rounded-none">
             {/* Form Header */}
             <div className="mb-4 sm:mb-6 text-left">
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">

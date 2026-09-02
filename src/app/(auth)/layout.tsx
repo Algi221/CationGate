@@ -1,4 +1,5 @@
 import React from "react";
+import { ForceLightMode } from "./ForceLightMode";
 
 export const metadata = {
   robots: {
@@ -13,7 +14,8 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="light bg-white text-slate-950 min-h-screen w-full scheme-light" style={{ colorScheme: "light" }}>
+    <div className="bg-white text-slate-950 min-h-screen w-full" style={{ colorScheme: "light" }}>
+      <ForceLightMode />
       {children}
     </div>
   );

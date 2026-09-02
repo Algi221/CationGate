@@ -1,48 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
 import { getBrowserSupabase } from "@/lib/supabase-client";
+import { Landmark, CheckCircle2, Hourglass, FileQuestion } from "lucide-react";
 import {
-  Building2, ShieldCheck, CheckCircle2, Clock, RefreshCw,
-  TrendingUp, ArrowUpRight, AlertCircle, Bell, PieChart,
-  Landmark, Hourglass, FileQuestion, Activity, MapPin, XCircle,
-  Globe2, Database
-} from "lucide-react";
-import dynamic from "next/dynamic";
-
-// Dynamic import ApexCharts
-const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
-
-// Ganti baris import "./SchoolMap" menjadi path alias "@/components/map/SchoolMap"
-const SchoolMap = dynamic(() => import("@/components/map/SchoolMap"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-64 w-full rounded-3xl bg-slate-900/60 animate-pulse border border-white/10 flex items-center justify-center text-xs text-white/40 font-bold">
-      Memuat Peta Sebaran Real-Time...
-    </div>
-  ),
-});
-
-interface SchoolTenant {
-  id: number | string;
-  name: string;
-  slug: string;
-  npsn?: string;
-  dapodik_code?: string;
-  official_email?: string;
-  plan_type?: string;
-  status: "UNVERIFIED" | "BELUM_KIRIM_VERIFIKASI" | "PENDING_VERIFICATION" | "FULL_VERIFIED" | "TAKEDOWN" | "SUSPENDED";
-  created_at?: string;
-  legal_sk_number?: string;
-  accreditation?: string;
-  admin_name?: string;
-  sk_document_name?: string;
-  sk_document_url?: string;
-  lat?: number;
-  lng?: number;
-  region?: string;
-}
+  SchoolTenant,
+  GatekeeperHeaderBanner,
+  GatekeeperStatsCards,
+  GatekeeperChartsSection,
+  GatekeeperGeoSection,
+  GatekeeperPendingSchools,
+} from "@/components/features/gatekeeper/overview";
 
 export default function GatekeeperOverviewPage() {
   const [schools, setSchools] = useState<SchoolTenant[]>([]);
@@ -62,12 +30,15 @@ export default function GatekeeperOverviewPage() {
       setLoading(true);
       setError("");
 
-      const token = typeof window !== 'undefined' ? localStorage.getItem("gatekeeper_token") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("gatekeeper_token")
+          : null;
 
       const res = await fetch("/api/gatekeeper/schools", {
         headers: {
-          ...(token ? { "Authorization": `Bearer ${token}` } : {})
-        }
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
 
       if (!res.ok) {
@@ -103,14 +74,14 @@ export default function GatekeeperOverviewPage() {
     const supabase = getBrowserSupabase();
     if (supabase) {
       const channel = supabase
-        .channel('public:schools')
+        .channel("public:schools")
         .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'schools' },
+          "postgres_changes",
+          { event: "*", schema: "public", table: "schools" },
           (payload) => {
-            console.log('Real-Time Supabase Change Received (Schools):', payload);
+            console.log("Real-Time Supabase Change Received (Schools):", payload);
             fetchSchools();
-          }
+          },
         )
         .subscribe();
 
@@ -122,11 +93,13 @@ export default function GatekeeperOverviewPage() {
 
   // Compute Live Metrics
   const totalSchoolsCount = schools.length;
-  const verifiedCount = schools.filter(s => s.status === "FULL_VERIFIED").length;
-  const pendingCount = schools.filter(s => s.status === "PENDING_VERIFICATION").length;
-  const unverifiedCount = schools.filter(s => s.status === "BELUM_KIRIM_VERIFIKASI" || s.status === "UNVERIFIED").length;
+  const verifiedCount = schools.filter((s) => s.status === "FULL_VERIFIED").length;
+  const pendingCount = schools.filter((s) => s.status === "PENDING_VERIFICATION").length;
+  const unverifiedCount = schools.filter(
+    (s) => s.status === "BELUM_KIRIM_VERIFIKASI" || s.status === "UNVERIFIED",
+  ).length;
 
-  const pendingSchools = schools.filter(s => s.status === "PENDING_VERIFICATION");
+  const pendingSchools = schools.filter((s) => s.status === "PENDING_VERIFICATION");
 
   // Dynamic Real School Geo-mapping & Regional Classifier
   const mapSchools = useMemo(() => {
@@ -140,7 +113,7 @@ export default function GatekeeperOverviewPage() {
     }
 
     return schools.map((s, idx) => {
-      const text = `${s.name || ''} ${s.slug || ''} ${s.official_email || ''}`.toLowerCase();
+      const text = `${s.name || ""} ${s.slug || ""} ${s.official_email || ""}`.toLowerCase();
       const jitterLat = (((idx * 17 + (s.slug?.length || 3)) % 10) - 5) * 0.04;
       const jitterLng = (((idx * 23 + (s.name?.length || 5)) % 10) - 5) * 0.04;
 
@@ -199,7 +172,7 @@ export default function GatekeeperOverviewPage() {
         lng,
         region,
         status: s.status,
-        npsn: s.npsn
+        npsn: s.npsn,
       };
     });
   }, [schools]);
@@ -207,7 +180,7 @@ export default function GatekeeperOverviewPage() {
   // Live Demographics Summary from Real School Data
   const regionDemographics = useMemo(() => {
     const counts: Record<string, number> = {};
-    mapSchools.forEach(s => {
+    mapSchools.forEach((s) => {
       counts[s.region] = (counts[s.region] || 0) + 1;
     });
 
@@ -217,7 +190,7 @@ export default function GatekeeperOverviewPage() {
       .map(([region, count]) => ({
         region,
         count,
-        percentage: total > 0 ? `${Math.round((count / total) * 100)}%` : "0%"
+        percentage: total > 0 ? `${Math.round((count / total) * 100)}%` : "0%",
       }));
   }, [mapSchools]);
 
@@ -227,485 +200,67 @@ export default function GatekeeperOverviewPage() {
       value: totalSchoolsCount.toString(),
       change: `${totalSchoolsCount} Instansi Terdaftar`,
       icon: Landmark,
-      color: "text-[#2e3749] dark:text-[#FFD33B] bg-[#FFD33B]/15 dark:bg-white/10"
+      color: "text-[#2e3749] dark:text-[#FFD33B] bg-[#FFD33B]/15 dark:bg-white/10",
     },
     {
       label: "Verifikasi Resmi (Aktif)",
       value: verifiedCount.toString(),
-      change: totalSchoolsCount > 0 ? `${Math.round((verifiedCount / totalSchoolsCount) * 100)}% Terverifikasi` : "0% Terverifikasi",
+      change:
+        totalSchoolsCount > 0
+          ? `${Math.round((verifiedCount / totalSchoolsCount) * 100)}% Terverifikasi`
+          : "0% Terverifikasi",
       icon: CheckCircle2,
-      color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40"
+      color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40",
     },
     {
       label: "Menunggu Verifikasi SK",
       value: pendingCount.toString(),
       change: pendingCount > 0 ? "Perlu Tindakan Gatekeeper" : "Semua Berkas Diproses",
       icon: Hourglass,
-      color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40"
+      color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40",
     },
     {
       label: "Belum Kirim Dokumen SK",
       value: unverifiedCount.toString(),
       change: "Pendaftar Baru / Belum SK",
       icon: FileQuestion,
-      color: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40"
+      color: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40",
     },
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chartOptions: any = {
-    chart: {
-      type: 'donut',
-      fontFamily: 'inherit',
-      background: 'transparent',
-    },
-    labels: ['Terverifikasi', 'Menunggu Verifikasi', 'Belum Mengirim Berkas'],
-    colors: ['#059669', '#FFD33B', '#2e3749'],
-    stroke: { width: 0 },
-    dataLabels: { enabled: false },
-    plotOptions: {
-      pie: {
-        donut: {
-          size: '75%',
-          labels: {
-            show: true,
-            name: { show: true, fontSize: '12px', fontWeight: 600, color: '#94a3b8' },
-            value: { show: true, fontSize: '24px', fontWeight: 800, color: '#FFD33B' },
-            total: {
-              show: true,
-              showAlways: true,
-              label: 'Total',
-              color: '#94a3b8',
-              fontSize: '12px',
-              fontWeight: 600
-            }
-          }
-        }
-      }
-    },
-    legend: {
-      show: true,
-      position: 'bottom',
-      fontSize: '12px',
-      fontWeight: 600,
-      labels: { colors: '#94a3b8' },
-      markers: { width: 10, height: 10, radius: 10, offsetX: -4 }
-    },
-    theme: { mode: 'dark' }
-  };
-
-  const chartSeries = [verifiedCount, pendingCount, unverifiedCount];
-
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 w-full animate-in fade-in duration-500">
+      {/* 1. Header Banner & Notification */}
+      <GatekeeperHeaderBanner
+        pendingCount={pendingCount}
+        totalSchoolsCount={totalSchoolsCount}
+        loading={loading}
+        onRefresh={fetchSchools}
+      />
 
-      {/* Real-time Notification Banner */}
-      {pendingCount > 0 && (
-        <div className="bg-[#FFD33B] text-[#2e3749] rounded-3xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in border border-[#F3C625]">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-[#2e3749]/10 shrink-0">
-              <Bell className="w-6 h-6 text-[#2e3749] animate-bounce" />
-            </div>
-            <div>
-              <h4 className="font-extrabold text-sm uppercase tracking-wider">Notifikasi Gatekeeper: Berkas SK Baru Diterima!</h4>
-              <p className="text-xs font-semibold opacity-90">
-                Terdapat <strong className="underline">{pendingCount} sekolah</strong> yang baru saja mengunggah dokumen SK Operasional &amp; menunggu verifikasi Anda.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION"
-            className="px-4 py-2.5 bg-[#2e3749] hover:bg-[#222937] text-white rounded-2xl text-xs font-bold uppercase tracking-wider transition-all shadow-xs shrink-0 self-start sm:self-center"
-          >
-            Tinjau Verifikasi Sekarang →
-          </Link>
-        </div>
-      )}
+      {/* 2. Top Stats Cards Grid */}
+      <GatekeeperStatsCards stats={stats} loading={loading} />
 
-      {/* Top Banner Header */}
-      <div className="bg-white dark:bg-[#2e3749] border border-slate-200 dark:border-white/10 rounded-3xl p-6 md:p-8 shadow-xs relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 opacity-[0.03] dark:opacity-10 pointer-events-none">
-          <ShieldCheck className="w-96 h-96 text-slate-900 dark:text-white" />
-        </div>
-        <div className="relative z-10 max-w-3xl space-y-3">
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Selamat Datang, Gatekeeper <span className="text-[#FFD33B]">Superadmin</span> 👋
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-white/70 leading-relaxed font-medium">
-            Kelola verifikasi legalitas sekolah pendaftar, tanggapan feedback admin sekolah, dan pantau kesehatan infrastruktur SaaS CationGate secara terpusat.
-          </p>
-          <div className="pt-2 flex flex-wrap gap-3">
-            <Link
-              href="/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION"
-              className="px-4 py-2.5 rounded-2xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] text-xs font-bold transition-all shadow-md shadow-[#FFD33B]/20 flex items-center gap-2"
-            >
-              <Clock className="w-4 h-4" /> Tinjau {pendingCount} Sekolah Menunggu Verifikasi
-            </Link>
-            <Link
-              href="/gatekeeper/dashboard/schools"
-              className="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-white text-xs font-bold transition-all border border-slate-200 dark:border-white/10 flex items-center gap-2"
-            >
-              <Building2 className="w-4 h-4" /> Kelola Semua Sekolah ({totalSchoolsCount})
-            </Link>
-            <button
-              onClick={fetchSchools}
-              disabled={loading}
-              className="px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-white text-xs font-bold transition-all border border-slate-200 dark:border-white/10 flex items-center gap-1.5"
-              title="Refresh Data Live"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh Live
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* 3. Charts: Registration Trend & Donut Ratio */}
+      <GatekeeperChartsSection
+        isMounted={isMounted}
+        totalSchoolsCount={totalSchoolsCount}
+        verifiedCount={verifiedCount}
+        pendingCount={pendingCount}
+        unverifiedCount={unverifiedCount}
+      />
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((st, i) => {
-          const Icon = st.icon;
-          return (
-            <div
-              key={i}
-              className="p-5 rounded-3xl bg-white dark:bg-[#2e3749] border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 dark:text-white/60 uppercase tracking-wider">
-                  {st.label}
-                </span>
-                <div className={`p-2.5 rounded-2xl ${st.color}`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tight font-mono">
-                  {loading ? "..." : st.value}
-                </p>
-                <p className="text-xs font-semibold text-slate-500 dark:text-white/60 mt-1 flex items-center gap-1">
-                  <span className="text-emerald-600 dark:text-[#FFD33B] font-bold">{st.change}</span>
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* 4. Geography Map & Infrastructure Usage */}
+      <GatekeeperGeoSection
+        mapSchools={mapSchools}
+        regionDemographics={regionDemographics}
+      />
 
-      {/* BARIS 1: Tren Pendaftaran & Rasio Status Verifikasi */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white dark:bg-[#2e3749] rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base">Tren Pendaftaran Institusi</h3>
-              <p className="text-xs text-slate-500 dark:text-white/60">Pertumbuhan sekolah pengguna CationGate (7 bulan terakhir)</p>
-            </div>
-            <div className="p-2.5 rounded-2xl bg-slate-100 dark:bg-white/10 text-[#2e3749] dark:text-[#FFD33B] border border-slate-200 dark:border-white/10">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="h-64 w-full">
-            {isMounted && (
-              <Chart
-                options={{
-                  chart: {
-                    type: 'area',
-                    fontFamily: 'inherit',
-                    toolbar: { show: false },
-                    zoom: { enabled: false }
-                  },
-                  colors: ['#FFD33B'],
-                  fill: {
-                    type: 'gradient',
-                    gradient: {
-                      shadeIntensity: 1,
-                      opacityFrom: 0.35,
-                      opacityTo: 0.05,
-                      stops: [0, 90, 100]
-                    }
-                  },
-                  dataLabels: { enabled: false },
-                  stroke: { curve: 'smooth', width: 3 },
-                  xaxis: {
-                    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul'],
-                    axisBorder: { show: false },
-                    axisTicks: { show: false },
-                    labels: { style: { colors: '#94a3b8', fontSize: '12px', fontWeight: 500 } }
-                  },
-                  yaxis: {
-                    labels: { style: { colors: '#94a3b8', fontSize: '12px', fontWeight: 500 } }
-                  },
-                  grid: {
-                    borderColor: 'rgba(255,255,255,0.05)',
-                    strokeDashArray: 4,
-                    xaxis: { lines: { show: false } },
-                    yaxis: { lines: { show: true } },
-                    padding: { top: 0, right: 0, bottom: 0, left: 10 }
-                  },
-                  tooltip: { theme: 'dark' }
-                }}
-                series={[{ name: 'Sekolah Terdaftar', data: [5, 12, 18, 24, 35, 42, totalSchoolsCount > 42 ? totalSchoolsCount : 56] }]}
-                type="area"
-                height="100%"
-              />
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#2e3749] rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between">
-          <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-            <PieChart className="w-5 h-5 text-[#FFD33B]" /> Rasio Status Verifikasi
-          </h3>
-
-          <div className="relative my-auto py-2">
-            {isMounted && (
-              <Chart options={chartOptions} series={chartSeries} type="donut" height="230" />
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* BARIS 2: Sebaran Wilayah Institusi (Interactive Leaflet Map) & Infrastructure Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        {/* Supabase Free Plan Usage (CationGate Themed) */}
-        <div className="bg-white dark:bg-[#2e3749] text-slate-800 dark:text-slate-200 rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between transition-colors duration-300 relative overflow-hidden">
-          <div>
-            <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-white/10 mb-4">
-              <div>
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight flex items-center gap-2">
-                  <Database className="w-4 h-4 text-[#FFD33B]" /> Free Plan Usage
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-white/60 font-medium mt-0.5">Current billing cycle</p>
-              </div>
-              <span className="px-3 py-1 text-xs font-bold rounded-xl bg-[#FFD33B]/15 dark:bg-[#FFD33B]/20 text-[#2e3749] dark:text-[#FFD33B] border border-[#FFD33B]/40 transition-all hover:bg-[#FFD33B]/25 shadow-xs">
-                Upgrade to Pro
-              </span>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              {/* Egress */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 shrink-0"></span>
-                    <span className="text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">EGRESS</span>
-                  </div>
-                  <span className="text-slate-900 dark:text-white font-mono font-bold text-xs">106 MB / 5 GB</span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-[2%]"></div>
-                </div>
-              </div>
-
-              {/* Database Size (Supabase 500 MB Limit) */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 shrink-0"></span>
-                    <span className="text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">DATABASE SIZE</span>
-                  </div>
-                  <span className="text-slate-900 dark:text-white font-mono font-bold text-xs">30 MB / 500 MB</span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-[6%]"></div>
-                </div>
-              </div>
-
-              {/* Monthly Active Users */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#FFD33B] ring-2 ring-[#FFD33B]/20 shrink-0"></span>
-                    <span className="text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">MONTHLY ACTIVE USERS</span>
-                  </div>
-                  <span className="text-slate-900 dark:text-white font-mono font-bold text-xs">0 / 50,000</span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-[#FFD33B] rounded-full w-[1%]"></div>
-                </div>
-              </div>
-
-              {/* File Storage */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500 ring-2 ring-sky-500/20 shrink-0"></span>
-                    <span className="text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">FILE STORAGE</span>
-                  </div>
-                  <span className="text-slate-900 dark:text-white font-mono font-bold text-xs">2 MB / 1 GB</span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-sky-500 rounded-full w-[1%]"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-slate-100 dark:border-white/10 mt-4 flex items-center justify-between text-[11px] text-slate-500 dark:text-white/60">
-            <span className="flex items-center gap-1.5 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Supabase Postgres DB
-            </span>
-            <span className="font-mono text-slate-700 dark:text-white font-bold">Uptime 99.9%</span>
-          </div>
-        </div>
-        {/* Sebaran Wilayah (Interactive Map 2/3) */}
-   <div className="lg:col-span-2 bg-white dark:bg-[#2e3749] rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between">
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-            <Globe2 className="w-5 h-5 text-[#2e3749] dark:text-[#FFD33B]" /> Sebaran Wilayah Institusi
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-white/60">Demografi lokasi sekolah terdaftar</p>
-        </div>
-       
-      </div>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-      {/* Peta Terang */}
-      <SchoolMap schools={mapSchools} />
-
-<div className="space-y-2.5 max-h-64 overflow-y-auto pr-1.5 scrollbar-thin [scrollbar-color:#cbd5e1_transparent] dark:[scrollbar-color:#475569_transparent]">
-  {regionDemographics.map((item, idx) => (
-    <div 
-      key={idx} 
-      className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200/70 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-colors"
-    >
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-white shrink-0">
-          {idx + 1}
-        </div>
-        <div className="flex flex-col">
-          <span className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-slate-400" /> {item.region}
-          </span>
-          <span className="text-[10px] font-semibold text-slate-400 dark:text-white/40">
-            {item.percentage} dari total sekolah
-          </span>
-        </div>
-      </div>
-      <div className="text-right">
-        <span className="text-sm font-black text-slate-900 dark:text-white font-mono">
-          {item.count}
-        </span>
-        <span className="text-[10px] font-bold text-slate-400 dark:text-white/40 block">
-          Sekolah
-        </span>
-      </div>
-    </div>
-  ))}
-</div>
-    </div>
-  </div>
-
-        {/* Infrastructure Health (1/3) */}
-      
-
-      </div>
-
-      {/* BARIS 3: Antrean Verifikasi Sekolah Real-time (Full Width) */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch w-full">
-
-  {/* Antrean Verifikasi Sekolah Real-time */}
-  <div className="bg-white dark:bg-[#2e3749] rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between">
-    <div>
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/10">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50">
-            <Clock className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-base">Antrean Verifikasi Real-time</h3>
-            <p className="text-xs text-slate-500 dark:text-white/60">Sekolah menunggu verifikasi SK</p>
-          </div>
-        </div>
-
-        <Link
-          href="/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION"
-          className="text-xs font-bold text-[#FFD33B] hover:underline flex items-center gap-1"
-        >
-          Lihat Semua ({pendingSchools.length}) <ArrowUpRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
-
-      <div className="divide-y divide-slate-100 dark:divide-white/5 py-2 max-h-80 overflow-y-auto">
-        {loading ? (
-          <div className="p-8 text-center text-slate-400 text-xs font-bold">Memuat antrean verifikasi...</div>
-        ) : pendingSchools.length > 0 ? (
-          <>
-            {pendingSchools.slice(0, 5).map((sc) => (
-              <div key={sc.id} className="py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-white/5 p-2 rounded-2xl transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-2xl bg-[#FFD33B] text-[#2e3749] font-black text-sm flex items-center justify-center shrink-0">
-                    {sc.name.substring(0, 2).toUpperCase()}
-                  </div>
-                  <div className="truncate">
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">{sc.name}</h4>
-                    <p className="text-xs text-slate-500 dark:text-white/60 font-mono">NPSN: {sc.npsn || "-"}</p>
-                  </div>
-                </div>
-
-                <Link
-                  href={`/gatekeeper/dashboard/schools?filter=PENDING_VERIFICATION`}
-                  className="px-3.5 py-2 rounded-xl bg-[#FFD33B] hover:bg-[#F3C625] text-[#2e3749] text-xs font-bold transition-colors shadow-xs flex items-center gap-1 shrink-0"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Review
-                </Link>
-              </div>
-            ))}
-          </>
-        ) : (
-          <div className="p-8 text-center space-y-2">
-            <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-            <h4 className="font-extrabold text-slate-700 dark:text-white text-sm">Tidak Ada Antrean Verifikasi</h4>
-            <p className="text-xs text-slate-500 dark:text-white/60 max-w-xs mx-auto">
-              Semua dokumen sekolah yang terdaftar saat ini sudah diverifikasi.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-
-  {/* Gatekeeper Audit Log */}
-  <div className="bg-white dark:bg-[#2e3749] rounded-3xl border border-slate-200 dark:border-white/10 p-6 shadow-xs flex flex-col justify-between">
-    <div>
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/10">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-2xl bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-white/80 border border-slate-200 dark:border-white/10">
-            <Activity className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-base">Gatekeeper Audit Log</h3>
-            <p className="text-xs text-slate-500 dark:text-white/60">Riwayat aksi verifikasi terbaru</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="divide-y divide-slate-100 dark:divide-white/5 py-2 max-h-80 overflow-y-auto">
-        {[
-          { action: "Verifikasi SK Diterima", subject: "SMAN 1 Nusantara", time: "10 menit lalu", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/40" },
-          { action: "Pendaftaran Ditolak (SK Buram)", subject: "SMP Cipta Bangsa", time: "1 jam lalu", icon: XCircle, color: "text-rose-500", bg: "bg-rose-50 dark:bg-rose-950/40" },
-          { action: "Suspend Tenant (Tunggakan)", subject: "SMK Budi Mulia", time: "3 jam lalu", icon: AlertCircle, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/40" },
-          { action: "Verifikasi SK Diterima", subject: "SD Global Islamic", time: "Kemarin", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/40" },
-        ].map((log, idx) => (
-          <div key={idx} className="py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-white/5 p-2 rounded-2xl transition-colors">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className={`p-2.5 rounded-2xl ${log.bg} ${log.color} shrink-0`}>
-                <log.icon className="w-4 h-4" />
-              </div>
-              <div className="truncate">
-                <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">{log.action}</h4>
-                <p className="text-xs text-slate-500 dark:text-white/60 truncate">{log.subject}</p>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-white/40 uppercase tracking-wider shrink-0">{log.time}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-
-</div>
+      {/* 5. Pending Schools Verification & Audit Log */}
+      <GatekeeperPendingSchools
+        loading={loading}
+        pendingSchools={pendingSchools}
+      />
     </div>
   );
 }
